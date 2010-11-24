@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "event.h"
 #include "sck.h"
@@ -29,6 +30,8 @@ typedef struct http_client_t {
     char*              url;
     dtab_t(option)    *options;
 } http_client_t;
+
+static int fd_src = 0;
 
 char *strdelim(char *str, const char *delim, int size, char **saveptr)
 {
@@ -169,7 +172,7 @@ void client_callback(int nevt, struct pollfd *pfd, void *data)
         int  size;
 
         do {
-            size = read(0, buffer, sizeof(buffer));
+            size = read(fd_src, buffer, sizeof(buffer));
             if(size <= 0)
             {
                 if(errno == EINTR)
@@ -215,8 +218,15 @@ void srv_callback(int next, struct pollfd *pfd, void *data)
     event_register_fd(sck, &client_callback, POLLIN, hclt);
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
     int srv;
+
+    if(argc > 1)
+    {
+        fd_src = open(argv[1], O_RDONLY);
+	if(fd_src == -1)
+	  fd_src = 0;
+    }
 
     event_init();
     srv = xlisten(6080);
