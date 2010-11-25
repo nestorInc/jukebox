@@ -13,6 +13,7 @@ extern "C" {
     void event_unregister(int nevt);
     void event_register_fd(int fd, event_f *fnc, short event, void *data);
     void event_loop(void);
+    void event_exit(void);
 
 #ifdef __cplusplus
 }

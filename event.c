@@ -16,6 +16,7 @@ DTAB(event,  event_t);
 
 static dtab_t(pollfd) *fds        = NULL;
 static dtab_t(event)  *events     = NULL;
+static int             noexit     = 1;
 
 void event_init(void)
 {
@@ -49,6 +50,11 @@ void event_register_fd(int fd, event_f *fnc, short event, void *data)
     pevt->data      = data;
 }
 
+void event_exit(void)
+{
+    noexit = 0;
+}
+
 void event_loop(void)
 {
     int                 v;
@@ -60,7 +66,7 @@ void event_loop(void)
     assert(fds);
     assert(events);
 
-    while(1)
+    while(noexist)
     {
         v = poll(fds->data, fds->size, -1);
         if(v == -1)
