@@ -12,6 +12,9 @@
 
 #define CRLF "\r\n"
 
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
 DBUF(http, 4096);
 
 typedef struct http_option_t {
@@ -21,17 +24,112 @@ typedef struct http_option_t {
 
 DTAB(option, http_option_t);
 
+#define BUFFER_CIRC_SIZE 64*1024
+
+typedef struct buffer_circ_t {
+    uint8_t data[BUFFER_CIRC_SIZE];
+    int     pos;
+} buffer_circ_t;
+
+buffer_circ_t*     input;
+
 typedef struct http_client_t {
-    dbuf_t(http)      *buf;
+    dbuf_t(http)*      buf;
     int                pos;
     int                http_major;
     int                http_minor;
     char*              action;
     char*              url;
-    dtab_t(option)    *options;
+    dtab_t(option)*    options;
+    int                input_pos;
 } http_client_t;
 
 static int fd_src = 0;
+
+void buffer_circ_init(buffer_circ_t* bc)
+{
+    bc->pos = 0;
+}
+
+buffer_circ_t* buffer_circ_new(void)
+{
+    buffer_circ_t* bc;
+
+    bc = (buffer_circ_t*) malloc(sizeof(buffer_circ_t));
+    buffer_circ_init(bc);
+    
+    return bc;
+}
+
+void buffer_circ_delete(buffer_circ_t* bc)
+{
+    free(bc);
+}
+
+void buffer_circ_add(buffer_circ_t* bc, uint8_t* data, int size)
+{
+    int bread;
+
+    while(size)
+    {
+        bread   = MIN(size, BUFFER_CIRC_SIZE - bc->pos);
+
+        memcpy(&bc->data[bc->pos], data, bread);
+        bc->pos  += bread;
+        size     -= bread;
+        data     += bread;
+        if(bc->pos == BUFFER_CIRC_SIZE)
+            bc->pos = 0;
+    }
+
+}
+
+int buffer_circ_get(buffer_circ_t* bc, uint8_t* data, int size, int pos)
+{
+    int tread;
+    int bread;
+
+    pos   %= BUFFER_CIRC_SIZE;
+    tread  = 0;
+
+    while(size)
+    {
+        if(pos < bc->pos)
+        {
+            bread   = MIN(size, bc->pos - pos);
+        } else {
+            bread   = MIN(size, BUFFER_CIRC_SIZE - pos);
+        }
+
+        memcpy(data, &bc->data[pos], bread);
+        pos      += bread;
+        size     -= bread;
+        data     += bread;
+        tread    += bread;
+        if(pos == bc->pos)
+            break;
+    }
+    return tread;
+}
+
+int buffer_circ_fetch(buffer_circ_t* bc, uint8_t* data, int size, int* pos)
+{
+    uint8_t buffer[BUFFER_CIRC_SIZE/4];
+    int     bread;
+
+    if(*pos == bc->pos)
+    {
+        bread = read(fd_src, buffer, sizeof(buffer));
+        if(bread <= 0)
+            return bread;
+        buffer_circ_add(bc, buffer, bread);
+    }
+    bread   = buffer_circ_get(bc, data, size, *pos);
+    *pos   += bread;
+    *pos   %= BUFFER_CIRC_SIZE;
+
+    return bread;
+}
 
 char *strdelim(char *str, const char *delim, int size, char **saveptr)
 {
@@ -65,9 +163,11 @@ int http_request(http_client_t *hclt, char *request)
     char *http_version;
     int   ret;
 
-    hclt->action = strtok_r(request, " ", &pos);
-    hclt->url    = strtok_r(NULL,    " ", &pos);
-    http_version = strtok_r(NULL,    " ", &pos);
+    hclt->input_pos = 0;
+
+    hclt->action    = strtok_r(request, " ", &pos);
+    hclt->url       = strtok_r(NULL,    " ", &pos);
+    http_version    = strtok_r(NULL,    " ", &pos);
 
     if(http_version == NULL ||
        hclt->url    == NULL ||
@@ -121,7 +221,7 @@ void http_response(http_client_t *hclt, struct pollfd *pfd)
 {
     char header[] =
         "HTTP/1.1 200 OK" CRLF
-        "Connection: closed" CRLF
+        "Connection: close" CRLF
         "Content-Type: audio/mpeg" CRLF
         CRLF;
     hclt = hclt;
@@ -168,11 +268,11 @@ void client_callback(int nevt, struct pollfd *pfd, void *data)
     }
     if(pfd->revents & POLLOUT)
     {
-        char buffer[4096];
-        int  size;
+        uint8_t buffer[4096];
+        int     size;
 
         do {
-            size = read(fd_src, buffer, sizeof(buffer));
+            size = buffer_circ_fetch(input, buffer, sizeof(buffer), &hclt->input_pos);
             if(size <= 0)
             {
                 if(errno == EINTR)
@@ -218,15 +318,18 @@ void srv_callback(int next, struct pollfd *pfd, void *data)
     event_register_fd(sck, &client_callback, POLLIN, hclt);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     int srv;
 
     if(argc > 1)
     {
         fd_src = open(argv[1], O_RDONLY);
-	if(fd_src == -1)
-	  fd_src = 0;
     }
+    if(fd_src == -1)
+        fd_src = 0;
+
+    input = buffer_circ_new();
 
     event_init();
     srv = xlisten(6080);
