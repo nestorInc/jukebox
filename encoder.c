@@ -73,25 +73,25 @@ int read_in(int fd, char *buffer, const int size) {
     time_t        cur_time;
     int           read_size;
 
-    deb:
-    cur_time = time(0);
-    if(last_time < cur_time) {
-        if(last_time == 0) {
-            // Pre fetch 10s
-            last_time = cur_time - 10;
+    do {
+        cur_time = time(0);
+        if(last_time < cur_time) {
+            if(last_time == 0) {
+                // Pre fetch 10s
+                last_time = cur_time - 5;
+            }
+            bytes_available += (cur_time - last_time)
+                * BITRATE * NB_CHANNEL * sizeof(uint16_t);
+
+            fprintf(stderr, "\nupdate cnt %i\n", bytes_available);
+            last_time = cur_time;
         }
-        bytes_available += (cur_time - last_time)
-            * BITRATE * NB_CHANNEL * sizeof(uint16_t);
 
-        fprintf(stderr, "\nupdate cnt %i\n", bytes_available);
-        last_time = cur_time;
-    }
-
-    if(size > bytes_available) {
-        usleep(1000000);
-        goto deb;
-        fprintf(stderr, "\nwait\n");
-    }
+        if(size > bytes_available) {
+            usleep(1000000);
+            continue;
+        }
+    } while(0);
     read_size = read(fd, buffer, size);
 
     if(read_size <= 0) 
