@@ -40,6 +40,15 @@
       return &dtab->data[dtab->size-1];                                 \
   }                                                                     \
                                                                         \
+  int dtab_##name##_get_index(dtab_t(name)* dtab, type* data)           \
+  {                                                                     \
+      int pos;                                                          \
+      pos = (data - dtab->data);                                        \
+      if(pos < 0 || pos >= dtab->size)                                  \
+          return -1;                                                    \
+      return pos;                                                       \
+  }                                                                     \
+                                                                        \
   type* dtab_##name##_get(dtab_t(name)* dtab, int pos)                  \
   {                                                                     \
       if(pos < 0 || pos >= dtab->size)                                  \
@@ -83,6 +92,9 @@
 
 #define dtab_get(name, dtab, pos)                                       \
     dtab_##name##_get(dtab, pos)
+
+#define dtab_get_index(name, dtab, data)                                \
+    dtab_##name##_get_index(dtab, data)
 
 #define dtab_clean(name, dtab)                                          \
   dtab_##name##_clean(dtab)
