@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 1
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -23,8 +25,11 @@ typedef struct http_option_t {
 } http_option_t;
 
 DTAB(option, http_option_t);
+DTAB(pevent, event_t *);
 
-#define BUFFER_CIRC_SIZE 64*1024
+#define BUFFER_CIRC_SIZE 1024*1024
+
+dtab_t(pevent)*    out_wait;
 
 typedef struct buffer_circ_t {
     uint8_t data[BUFFER_CIRC_SIZE];
@@ -81,52 +86,50 @@ void buffer_circ_add(buffer_circ_t* bc, uint8_t* data, int size)
         if(bc->pos == BUFFER_CIRC_SIZE)
             bc->pos = 0;
     }
-
 }
 
-int buffer_circ_get(buffer_circ_t* bc, uint8_t* data, int size, int pos)
+int buffer_circ_get(buffer_circ_t* bc, uint8_t* data, int size, int* pos)
 {
     int tread;
     int bread;
 
-    pos   %= BUFFER_CIRC_SIZE;
-    tread  = 0;
+    *pos   %= BUFFER_CIRC_SIZE;
+    tread   = 0;
+
+    if(*pos == bc->pos)
+        return 0;
 
     while(size)
     {
-        if(pos < bc->pos)
+        if(*pos < bc->pos)
         {
-            bread   = MIN(size, bc->pos - pos);
+            bread   = MIN(size, bc->pos - *pos);
         } else {
-            bread   = MIN(size, BUFFER_CIRC_SIZE - pos);
+            bread   = MIN(size, BUFFER_CIRC_SIZE - *pos);
         }
 
-        memcpy(data, &bc->data[pos], bread);
-        pos      += bread;
+        memcpy(data, &bc->data[*pos], bread);
+        *pos     += bread;
         size     -= bread;
         data     += bread;
         tread    += bread;
-        if(pos == bc->pos)
+        *pos     %= BUFFER_CIRC_SIZE;
+        if(*pos == bc->pos)
             break;
     }
+
     return tread;
 }
 
-int buffer_circ_fetch(buffer_circ_t* bc, uint8_t* data, int size, int* pos)
+int buffer_circ_fetch(buffer_circ_t* bc)
 {
     uint8_t buffer[BUFFER_CIRC_SIZE/4];
     int     bread;
 
-    if(*pos == bc->pos)
-    {
-        bread = read(fd_src, buffer, sizeof(buffer));
-        if(bread <= 0)
-            return bread;
-        buffer_circ_add(bc, buffer, bread);
-    }
-    bread   = buffer_circ_get(bc, data, size, *pos);
-    *pos   += bread;
-    *pos   %= BUFFER_CIRC_SIZE;
+    bread = read(fd_src, buffer, sizeof(buffer));
+    if(bread <= 0)
+        return bread;
+    buffer_circ_add(bc, buffer, bread);
 
     return bread;
 }
@@ -222,19 +225,22 @@ void http_response(http_client_t *hclt, struct pollfd *pfd)
     char header[] =
         "HTTP/1.1 200 OK" CRLF
         "Connection: close" CRLF
-        "Content-Type: audio/mpeg" CRLF
+        "Content-Type: audio/ogg" CRLF
         CRLF;
     hclt = hclt;
 
     xsend(pfd->fd, header, sizeof(header)-1, 0);
 }
 
-void client_callback(int nevt, struct pollfd *pfd, void *data)
+void client_callback(event_t* ev, void *data)
 {
     int                     size;
     int                     s;
     http_client_t          *hclt;
     char                   *header;
+    struct pollfd          *pfd;
+
+    pfd = event_fd_get_pfd(ev);
 
     hclt = data;
     if(pfd->revents & POLLIN)
@@ -249,7 +255,7 @@ void client_callback(int nevt, struct pollfd *pfd, void *data)
                   size - hclt->pos - 1, 0);
         if(s <= 0) {
             xclose(pfd->fd);
-            event_unregister(nevt);
+            event_unregister(ev);
             printf("SHUTDOWN\n");
             return;
         }
@@ -272,17 +278,21 @@ void client_callback(int nevt, struct pollfd *pfd, void *data)
         int     size;
 
         do {
-            size = buffer_circ_fetch(input, buffer, sizeof(buffer), &hclt->input_pos);
-            if(size <= 0)
-            {
-                if(errno == EINTR)
-                    continue;
-                xclose(pfd->fd);
-                event_unregister(nevt);
-                printf("SHUTDOWN\n");
-                break;
+            size = buffer_circ_get(input, buffer, sizeof(buffer), &hclt->input_pos);
+            if(size == 0) {
+                pfd->events = 0;
+                dtab_add(pevent, out_wait, &ev);
             } else {
-                xsend(pfd->fd, buffer, size, 0);
+                size = xsend(pfd->fd, buffer, size, 0);
+                if(size <= 0)
+                {
+                    if(errno == EINTR)
+                        continue;
+                    xclose(pfd->fd);
+                    event_unregister(ev);
+                    printf("SHUTDOWN\n");
+                    break;
+                }
             }
         }
         while(0);
@@ -290,19 +300,21 @@ void client_callback(int nevt, struct pollfd *pfd, void *data)
     if(pfd->revents & POLLERR || pfd->revents & POLLHUP)
     {
         xclose(pfd->fd);
-        event_unregister(nevt);
+        event_unregister(ev);
         printf("SHUTDOWN\n");
     }
 }
 
-void srv_callback(int next, struct pollfd *pfd, void *data)
+void srv_callback(event_t *ev, void *data)
 {
     struct sockaddr_in      addr;
     int                     sck;
     http_client_t          *hclt;
+    struct pollfd          *pfd;
 
-    next = next;
     data = data;
+
+    pfd = event_fd_get_pfd(ev);
 
     sck = xaccept(pfd->fd, &addr);
     if(sck == -1 || xsetnonblock(sck) == -1)
@@ -315,12 +327,38 @@ void srv_callback(int next, struct pollfd *pfd, void *data)
     hclt->pos         = 0;
     hclt->options     = dtab_init(option);
 
-    event_register_fd(sck, &client_callback, POLLIN, hclt);
+    event_fd_register(sck, POLLIN, &client_callback, hclt);
+}
+
+void in_callback(event_t *ev, void *data)
+{
+    struct pollfd  *pfd;
+    int             i;
+
+    data = data;
+
+    pfd = event_fd_get_pfd(ev);
+
+    if(pfd->revents & POLLIN)
+    {
+        event_t        **out_ev;
+        buffer_circ_fetch(input);
+        dtab_for_each(pevent, out_wait, out_ev) {
+            event_fd_get_pfd(*out_ev)->events = POLLOUT;
+        }
+        out_wait->size = 0;
+    }
+    if(pfd->revents & POLLERR || pfd->revents & POLLHUP)
+    {
+        abort();
+    }
 }
 
 int main(int argc, char *argv[])
 {
     int srv;
+
+    out_wait     = dtab_init(pevent);
 
     if(argc > 1)
     {
@@ -329,11 +367,11 @@ int main(int argc, char *argv[])
     if(fd_src == -1)
         fd_src = 0;
 
-    input = buffer_circ_new();
-
     event_init();
+    input = buffer_circ_new();
+    event_fd_register(fd_src, POLLIN, &in_callback,  NULL);
     srv = xlisten(6080);
-    event_register_fd(srv, &srv_callback, POLLIN, NULL);
+    event_fd_register(srv,    POLLIN, &srv_callback, NULL);
     event_loop();
 
     return 0;
