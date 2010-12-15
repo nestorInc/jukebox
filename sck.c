@@ -1,3 +1,5 @@
+#define _BSD_SOURCE 1
+
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
