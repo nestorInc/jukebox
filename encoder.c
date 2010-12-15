@@ -1,3 +1,5 @@
+#define _BSD_SOURCE 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +8,9 @@
 #include <vorbis/vorbisenc.h>
 #include <stdint.h>
 #include <unistd.h>
+
+#include "event.h"
+
 
 #define READ 1024
 
@@ -20,6 +25,9 @@ vorbis_comment   vc; /* struct that stores all the user comments */
 
 vorbis_dsp_state vd; /* central working state for the packet->PCM decoder */
 vorbis_block     vb; /* local working space for packet->PCM decode */
+
+event_t         *ev_out;
+event_t         *ev_in;
 
 void init_ogg_encode(void)
 {
@@ -65,41 +73,23 @@ int init_stream_ogg_encode(int out)
     return 0;
 }
 
-int read_in(int fd, char *buffer, const int size) {
+static int    bytes_available;
 
-    static int    bytes_available;
-    static time_t last_time        = 0;
-
-    time_t        cur_time;
+int read_in(int fd, char *buffer, const int size)
+{
     int           read_size;
 
-    do {
-        cur_time = time(0);
-        if(last_time < cur_time) {
-            if(last_time == 0) {
-                // Pre fetch 10s
-                last_time = cur_time - 5;
-            }
-            bytes_available += (cur_time - last_time)
-                * BITRATE * NB_CHANNEL * sizeof(uint16_t);
+    if(size > bytes_available) {
+        event_fd_get_pfd(ev_in)->events = 0;
+        return 0;
+    }
 
-            fprintf(stderr, "\nupdate cnt %i\n", bytes_available);
-            last_time = cur_time;
-        }
-
-        if(size > bytes_available) {
-            usleep(1000000);
-            continue;
-        }
-    } while(0);
     read_size = read(fd, buffer, size);
 
-    if(read_size <= 0) 
-        return 0;
+    if(read_size <= 0)
+        return read_size;
     
     bytes_available -= read_size;
-
-    fprintf(stderr, "\ravailable %i         ", bytes_available);
 
     return read_size;
 }
@@ -116,7 +106,10 @@ int run_ogg_encode(int in, int out)
     bytes = read_in(in, (char *)readbuffer,
                     READ*sizeof(uint16_t)*NB_CHANNEL); /* stereo hardwired here */
 
-    if(bytes == 0) {
+    if(bytes == 0)
+        return bytes;
+
+    if(bytes < 0) {
         /* end of file.  this can be done implicitly in the mainline,
            but it's easier to see here in non-clever fashion.
            Tell the library we're at end of stream so that it can handle
@@ -158,18 +151,16 @@ int run_ogg_encode(int in, int out)
             int result = ogg_stream_pageout(&os, &og);
             if(result == 0)
                 break;
+
             write(out, og.header, og.header_len);
             write(out, og.body,   og.body_len);
 
+            if(ogg_page_eos(&og))
+                return -1;
             /* this could be set above, but for illustrative purposes, I do
                it here (to show that vorbis does know where the stream ends) */
 
-            if(ogg_page_eos(&og))
-                return -1;
         }
-    }
-    if(bytes <= 0) {
-        fprintf(stderr, "end\n");
     }
 
     return 0;
@@ -184,6 +175,36 @@ void clean_ogg_encode(void)
     vorbis_info_clear(&vi);
 }
 
+
+
+void in_callback(event_t *ev, void *data)
+{
+    int           *out;
+    struct pollfd *pfd;
+
+    out = data;
+
+    if(event_get_kind(ev) == EVENT_KIND_TIMER)
+    {
+        bytes_available += BITRATE * NB_CHANNEL * sizeof(uint16_t) / 5;
+
+        event_fd_get_pfd(ev_in)->events = POLLIN;
+        return;
+    }
+
+    pfd = event_fd_get_pfd(ev);
+    if(pfd->revents & POLLIN)
+    {
+        if(run_ogg_encode(pfd->fd, *out) != 0) {
+            event_exit();
+        }
+    }
+    if(pfd->revents & POLLERR || pfd->revents & POLLHUP)
+    {
+        abort();
+    }
+}
+
 int main(int argc, char *argv[])
 {
   int fd_in  = 0;
@@ -194,7 +215,13 @@ int main(int argc, char *argv[])
 
   init_ogg_encode();
   init_stream_ogg_encode(fd_out);
-  while(run_ogg_encode(fd_in, fd_out) == 0);
+
+  event_init();
+  ev_in  = event_fd_register(fd_in,  POLLIN,  &in_callback,  &fd_out);
+//  ev_out = event_fd_register(fd_out, 0,       &out_callback, NULL);
+  event_timer_register(200, 1, &in_callback, NULL);
+  event_loop();
+
   clean_ogg_encode();
 
   fprintf(stderr,"Done.\n");
