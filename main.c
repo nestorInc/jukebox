@@ -8,6 +8,7 @@
 
 #include "event.h"
 #include "sck.h"
+#include "encoder.h"
 
 #include "dbuf.h"
 #include "dtab.h"
@@ -47,6 +48,7 @@ typedef struct http_client_t {
     char*              url;
     dtab_t(option)*    options;
     int                input_pos;
+    encoder_hdl_t      enc;
 } http_client_t;
 
 static int fd_src = 0;
@@ -230,6 +232,7 @@ void http_response(http_client_t *hclt, struct pollfd *pfd)
     hclt = hclt;
 
     xsend(pfd->fd, header, sizeof(header)-1, 0);
+    encoder_init_stream(hclt->enc, pfd->fd);
 }
 
 void client_callback(event_t* ev, void *data)
@@ -326,6 +329,7 @@ void srv_callback(event_t *ev, void *data)
     hclt->buf         = dbuf_init(http);
     hclt->pos         = 0;
     hclt->options     = dtab_init(option);
+    hclt->enc         = data;
 
     event_fd_register(sck, POLLIN, &client_callback, hclt);
 }
@@ -356,22 +360,26 @@ void in_callback(event_t *ev, void *data)
 
 int main(int argc, char *argv[])
 {
-    int srv;
+    int           srv;
+    int           con[2];
+    encoder_hdl_t enc;
 
-    out_wait     = dtab_init(pevent);
+    argc = argc;
+    argv = argv;
 
-    if(argc > 1)
-    {
-        fd_src = open(argv[1], O_RDONLY);
-    }
-    if(fd_src == -1)
-        fd_src = 0;
+    out_wait = dtab_init(pevent);
+    pipe(con);
 
     event_init();
-    input = buffer_circ_new();
-    event_fd_register(fd_src, POLLIN, &in_callback,  NULL);
-    srv = xlisten(6080);
-    event_fd_register(srv,    POLLIN, &srv_callback, NULL);
+    enc = encoder_init(STDIN_FILENO, con[1]);
+    assert(enc);
+
+    fd_src = con[0];
+    input  = buffer_circ_new();
+    srv    = xlisten(6080);
+
+    event_fd_register(con[0], POLLIN, &in_callback,  NULL);
+    event_fd_register(srv,    POLLIN, &srv_callback, enc);
     event_loop();
 
     return 0;
