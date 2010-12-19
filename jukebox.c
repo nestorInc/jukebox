@@ -123,11 +123,16 @@ void callback(event_t *ev, void *data)
         pfd_in->events  = POLLIN;
         pfd_out->events = 0;
     }
+    if(pfd_out->revents & POLLERR)
+    {
+        abort();
+    }
 }
 
 
 int main(int argc, char **argv)
 {
+//    int            srv;
     dbuf_t(file)  *library;
     dtab_t(file)  *file_list;
 
@@ -146,7 +151,8 @@ int main(int argc, char **argv)
 
     event_init();
     srand(time(0));
-    xsetnonblock(1);
+//    xsetnonblock(1);
+//    srv = xlisten(6080);
     file_out = event_fd_register(1, 0, callback, file_list);
     load_new_file(file_list);
     event_loop();
