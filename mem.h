@@ -7,6 +7,9 @@
 #define m_alloc(type) ((type*)malloc(sizeof(type)))
 #define ma_alloc(type, size) ((type*)malloc(sizeof(type)*size))
 
+#define m_realloc(data, type) ((type*)realloc(data, sizeof(type)))
+#define ma_realloc(data, type, size) ((type*)realloc(data, sizeof(type)*size))
+
 #define m_release(data) free(data)
 #define ma_release(data) free(data)
 
