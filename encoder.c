@@ -64,7 +64,8 @@ int init_stream_ogg_encode(encoder_t *enc)
     ogg_packet header_comm;
     ogg_packet header_code;
 
-    ogg_page         og; /* one Ogg bitstream page.  Vorbis packets are inside */
+    ogg_page   og; /* one Ogg bitstream page.  Vorbis packets are inside */
+    int        pos;
 
     vorbis_analysis_headerout(&enc->vd, &enc->vc, 
                               &header, &header_comm,&header_code);
@@ -80,10 +81,24 @@ int init_stream_ogg_encode(encoder_t *enc)
     if(result == 0)
         return -1;
 
-    enc->header_len = og.header_len* og.body_len;
-    enc->header     = ma_alloc(char, enc->header_len);
-    memcpy(enc->header, og.header, og.header_len); 
-    memcpy(enc->header + og.header_len, og.body, og.body_len);
+    pos              = 0;
+    enc->header_len  = og.header_len + og.body_len;
+    enc->header      = ma_alloc(char, enc->header_len);
+    memcpy(enc->header + pos, og.header, og.header_len); 
+    pos             += og.header_len;
+    memcpy(enc->header + pos, og.body, og.body_len);
+    pos             += og.body_len;
+
+    if(ogg_stream_flush(&enc->os, &og)) {
+        enc->header_len += og.header_len + og.body_len;
+        enc->header      = ma_realloc(enc->header, char, enc->header_len);
+        memcpy(enc->header + pos, og.header, og.header_len); 
+        pos             += og.header_len;
+        memcpy(enc->header + pos, og.body, og.body_len);
+        pos             += og.body_len;
+    }
+
+    printf("flush init stream %i\n", result);
 
     return 0;
 }
