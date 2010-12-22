@@ -242,6 +242,8 @@ void client_callback(event_t* ev, void *data)
     http_client_t          *hclt;
     char                   *header;
     struct pollfd          *pfd;
+    int                     i;
+    event_t               **out_ev;
 
     pfd = event_fd_get_pfd(ev);
 
@@ -258,6 +260,12 @@ void client_callback(event_t* ev, void *data)
                   size - hclt->pos - 1, 0);
         if(s <= 0) {
             xclose(pfd->fd);
+            dtab_for_each(pevent, out_wait, out_ev) {
+                if(event_fd_get_pfd(*out_ev) == pfd) {
+                    dtab_del(pevent, out_wait, i);
+                    break;
+                }
+            }
             event_unregister(ev);
             printf("SHUTDOWN\n");
             return;
@@ -303,6 +311,12 @@ void client_callback(event_t* ev, void *data)
     if(pfd->revents & POLLERR || pfd->revents & POLLHUP)
     {
         xclose(pfd->fd);
+        dtab_for_each(pevent, out_wait, out_ev) {
+            if(event_fd_get_pfd(*out_ev) == pfd) {
+                dtab_del(pevent, out_wait, i);
+                break;
+            }
+        }
         event_unregister(ev);
         printf("SHUTDOWN\n");
     }
