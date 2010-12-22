@@ -100,6 +100,7 @@
   dtab_##name##_clean(dtab)
 
 #define dtab_for_each(name, dtab, __data)                               \
-    for(i = 0, __data = dtab->data; i < dtab->size; ++i, ++__data)
+    for(i = dtab->size, __data = &dtab->data[dtab->size - 1];           \
+        i--; --__data)
 
 #endif /* __DTAB_H__ */
