@@ -92,9 +92,6 @@ ssize_t xsend(int s, const void *buffer, const size_t length, int flags)
         ret = send(s, buffer, length, flags);
     } while(ret == -1 && errno == EAGAIN);
 
-    if(ret != (ssize_t)length)
-        return -1;
-
     return ret;
 }
 
@@ -106,9 +103,9 @@ void xclose(int s)
 
 int xsetnonblock(int s)
 {
-    long opt;
+    int opt;
     do {
-        opt = fcntl(s, F_GETFD);
+        opt = fcntl(s, F_GETFL);
         if(opt == -1)
         {
             if(errno == EINTR)
@@ -117,5 +114,5 @@ int xsetnonblock(int s)
         }
     } while(0);
     opt |= O_NONBLOCK;
-    return fcntl(s, F_SETFD, &opt);
+    return fcntl(s, F_SETFL, opt);
 }
