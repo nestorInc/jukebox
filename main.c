@@ -166,11 +166,11 @@ int http_request(http_client_t *hclt, char *request)
     char *http_version;
     int   ret;
 
-    hclt->input_pos = 0;
-
-    hclt->action    = strtok_r(request, " ", &pos);
-    hclt->url       = strtok_r(NULL,    " ", &pos);
-    http_version    = strtok_r(NULL,    " ", &pos);
+    hclt->input_pos  = input->pos + BUFFER_CIRC_SIZE / 2;
+    hclt->input_pos %= BUFFER_CIRC_SIZE;
+    hclt->action     = strtok_r(request, " ", &pos);
+    hclt->url        = strtok_r(NULL,    " ", &pos);
+    http_version     = strtok_r(NULL,    " ", &pos);
 
     if(http_version == NULL ||
        hclt->url    == NULL ||
