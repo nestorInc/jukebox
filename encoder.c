@@ -1,6 +1,5 @@
 #define _BSD_SOURCE 1
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -98,14 +97,11 @@ int init_stream_ogg_encode(encoder_t *enc)
         pos             += og.body_len;
     }
 
-    printf("flush init stream %i\n", result);
-
     return 0;
 }
 
 int encoder_init_stream(encoder_t *enc, int out)
 {
-    fprintf(stderr, "\n\ninit_stream %p %i\n\n", enc->header, enc->header_len);
     return write(out, enc->header, enc->header_len);
 }
 
