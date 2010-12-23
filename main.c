@@ -12,11 +12,9 @@
 
 #include "dbuf.h"
 #include "dtab.h"
+#include "common.h"
 
 #define CRLF "\r\n"
-
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 DBUF(http, 4096);
 
