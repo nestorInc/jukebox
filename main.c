@@ -285,6 +285,7 @@ void client_callback(event_t* ev, void *data)
     {
         uint8_t buffer[4096];
         int     size;
+        int     rsize;
 
         do {
             size = buffer_circ_get(input, buffer, sizeof(buffer), &hclt->input_pos);
@@ -292,8 +293,8 @@ void client_callback(event_t* ev, void *data)
                 pfd->events = 0;
                 dtab_add(pevent, out_wait, &ev);
             } else {
-                size = xsend(pfd->fd, buffer, size, 0);
-                if(size <= 0)
+                rsize = xsend(pfd->fd, buffer, size, 0);
+                if(rsize <= 0)
                 {
                     if(errno == EINTR)
                         continue;
@@ -302,6 +303,7 @@ void client_callback(event_t* ev, void *data)
                     printf("SHUTDOWN\n");
                     break;
                 }
+                hclt->input_pos += rsize - size;
             }
         }
         while(0);
