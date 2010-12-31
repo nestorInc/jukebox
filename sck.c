@@ -73,6 +73,8 @@ int xconnect (const char *addr, const short port, const short local_port)
     return s;
 }
 
+#include <stdio.h>
+
 ssize_t xrecv(int s, void *buffer, const size_t length, int flags)
 {
     ssize_t ret;
@@ -80,6 +82,9 @@ ssize_t xrecv(int s, void *buffer, const size_t length, int flags)
     do {
         ret = recv(s, buffer, length, flags);
     } while(ret == -1 && errno == EAGAIN);
+
+    if(ret != (signed)length)
+        printf("incomplete recv %ji/%ji\n", ret, length);
 
     return ret;
 }
@@ -91,6 +96,9 @@ ssize_t xsend(int s, const void *buffer, const size_t length, int flags)
     do {
         ret = send(s, buffer, length, flags);
     } while(ret == -1 && errno == EAGAIN);
+
+    if(ret != (signed)length)
+        printf("incomplete send %ji/%ji\n", ret, length);
 
     return ret;
 }

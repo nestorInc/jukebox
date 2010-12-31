@@ -48,7 +48,7 @@ void init_ogg_encode(encoder_t *enc)
     if(ret != 0)
         return ;
     vorbis_comment_init(&enc->vc);
-    vorbis_comment_add_tag(&enc->vc, "ENCODER", "encoder_example.c");
+    vorbis_comment_add_tag(&enc->vc, "ENCODER", "Le meilleur c'est qui c'est bibi");
 
     vorbis_analysis_init(&enc->vd, &enc->vi);
     vorbis_block_init(&enc->vd, &enc->vb);
