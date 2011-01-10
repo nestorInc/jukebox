@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include "sck.h"
 #include "event.h"
 #include "encoder.h"
 #include "mem.h"
@@ -139,7 +140,7 @@ int run_ogg_encode(encoder_t *enc)
                     READ*sizeof(uint16_t)*NB_CHANNEL); /* stereo hardwired here */
 
     if(bytes == 0)
-        return bytes;
+        return -1;
 
     if(bytes < 0) {
         /* end of file.  this can be done implicitly in the mainline,
@@ -212,33 +213,64 @@ void in_ogg_encoder_callback(event_t *ev, void *data)
 {
     encoder_t     *enc;
     struct pollfd *pfd;
+    int            ret;
 
     enc = data;
+    ret = 0;
 
     if(event_get_kind(ev) == EVENT_KIND_TIMER)
     {
         enc->bytes_available += BITRATE * NB_CHANNEL * sizeof(uint16_t) / 5;
 
-        event_fd_get_pfd(enc->ev_in)->events = POLLIN;
+        if(enc->ev_in) {
+            event_fd_get_pfd(enc->ev_in)->events = POLLIN;
+        }
         return;
     }
 
     pfd = event_fd_get_pfd(ev);
     if(pfd->revents & POLLIN)
     {
-        if(run_ogg_encode(enc) != 0) {
-            event_exit();
-        }
+        ret = run_ogg_encode(enc);
     }
-    if(pfd->revents & POLLERR || pfd->revents & POLLHUP)
+    if(pfd->revents & POLLERR || pfd->revents & POLLHUP || ret < 0)
     {
-        abort();
+        xclose(pfd->fd);
+        event_unregister(enc->ev_in);
+        enc->ev_in = NULL;
     }
 }
 
-encoder_t * encoder_init(int fd_in, int fd_out)
+
+static void srv_callback(event_t *ev, void *data)
+{
+    struct sockaddr_in      addr;
+    int                     sck;
+    encoder_t              *enc;
+    struct pollfd          *pfd;
+
+    enc = (encoder_t*)data;
+
+    pfd = event_fd_get_pfd(ev);
+
+    sck = xaccept(pfd->fd, &addr);
+    if(sck == -1 || xsetnonblock(sck) == -1)
+    {
+        return;
+    }
+    if(enc->ev_in != NULL)
+    {
+        xclose(sck);
+        return;
+    }
+
+    enc->ev_in = event_fd_register(sck, POLLIN, &in_ogg_encoder_callback, enc);
+}
+
+encoder_t * encoder_init(int port, int fd_out)
 {
     encoder_t *ret;
+    int        srv;
 
     ret = m_alloc(encoder_t);
     ret->out             = fd_out;
@@ -248,8 +280,10 @@ encoder_t * encoder_init(int fd_in, int fd_out)
 
     event_init();
 
-    ret->ev_in = event_fd_register(fd_in,  POLLIN, &in_ogg_encoder_callback, ret);
+    srv = xlisten(port);
+//  ret->ev_in = event_fd_register(fd_in,  POLLIN, &in_ogg_encoder_callback, ret);
 //  ev_out = event_fd_register(fd_out, 0,       &out_callback, NULL);
+    event_fd_register(srv, POLLIN, &srv_callback, ret);
     ret->timer = event_timer_register(200, 1, &in_ogg_encoder_callback, ret);
 
     return ret;

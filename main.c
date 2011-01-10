@@ -385,7 +385,7 @@ int main(int argc, char *argv[])
     pipe(con);
 
     event_init();
-    enc = encoder_init(STDIN_FILENO, con[1]);
+    enc = encoder_init(9999, con[1]);
     assert(enc);
 
     fd_src = con[0];
