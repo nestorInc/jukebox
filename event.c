@@ -1,8 +1,11 @@
+#define _POSIX_SOURCE
+
 #include <poll.h>
 #include <assert.h>
 #include <errno.h>
 #include <sys/time.h>
 #include <stdint.h>
+#include <signal.h>
 
 #include "mem.h"
 #include "dlist.h"
@@ -63,9 +66,16 @@ static inline void timeval_add(struct timeval *tv, int v)
 
 void event_init(void)
 {
+    sigset_t sig;
+
     fds = dtab_init(pollfd);
     dlist_init(&events_fd);
     dlist_init(&events_tm);
+
+    sigemptyset(&sig);
+    sigaddset(&sig, SIGPIPE);
+
+    sigprocmask(SIG_BLOCK, &sig, NULL);
 }
 
 event_kind_t    event_get_kind(event_t *ev)

@@ -7,6 +7,7 @@
 #include <vorbis/vorbisenc.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #include "sck.h"
 #include "event.h"
@@ -120,7 +121,7 @@ int read_in(encoder_t *enc, char *buffer, const int size)
     read_size = read(pfd->fd, buffer, size);
 
     if(read_size <= 0)
-        return read_size;
+        return -1;
     
     enc->bytes_available -= read_size;
 
@@ -140,6 +141,9 @@ int run_ogg_encode(encoder_t *enc)
                     READ*sizeof(uint16_t)*NB_CHANNEL); /* stereo hardwired here */
 
     if(bytes == 0)
+        return 0;
+
+    if(bytes < 0)
         return -1;
 
     if(bytes < 0) {
