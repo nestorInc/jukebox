@@ -93,7 +93,7 @@ void event_unregister(event_t *ev)
 
     switch(ev->kind) {
     case EVENT_KIND_FD:
-        dtab_del(pollfd, fds, ev->opt.fd.ipfd);
+        dtab_del_at(pollfd, fds, ev->opt.fd.ipfd);
 
         dlist_for_each(&events_fd) {
             cur_evt = (struct event_t *)cur;

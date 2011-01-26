@@ -246,6 +246,20 @@ void client_callback(event_t* ev, void *data)
     pfd = event_fd_get_pfd(ev);
 
     hclt = data;
+
+    if(pfd->revents & POLLERR || pfd->revents & POLLHUP)
+    {
+        printf("SHUTDOWN1 %m\n");
+        xclose(pfd->fd);
+        dtab_for_each(pevent, out_wait, out_ev) {
+            if(event_fd_get_pfd(*out_ev) == pfd) {
+                dtab_del_at(pevent, out_wait, i);
+                break;
+            }
+        }
+        event_unregister(ev);
+        return;
+    }
     if(pfd->revents & POLLIN)
     {
         size = dbuf_getsize(http, hclt->buf);
@@ -257,15 +271,15 @@ void client_callback(event_t* ev, void *data)
         s = xrecv(pfd->fd, hclt->buf->data + hclt->pos,
                   size - hclt->pos - 1, 0);
         if(s <= 0) {
+            printf("SHUTDOWN %i %m\n", s);
             xclose(pfd->fd);
             dtab_for_each(pevent, out_wait, out_ev) {
                 if(event_fd_get_pfd(*out_ev) == pfd) {
-                    dtab_del(pevent, out_wait, i);
+                    dtab_del_at(pevent, out_wait, i);
                     break;
                 }
             }
             event_unregister(ev);
-            printf("SHUTDOWN\n");
             return;
         }
         hclt->pos                   += s;
@@ -296,29 +310,23 @@ void client_callback(event_t* ev, void *data)
                 rsize = xsend(pfd->fd, buffer, size, 0);
                 if(rsize <= 0)
                 {
+                    printf("SHUTDOWN2 %m\n");
                     if(errno == EINTR)
                         continue;
                     xclose(pfd->fd);
+                    dtab_for_each(pevent, out_wait, out_ev) {
+                        if(event_fd_get_pfd(*out_ev) == pfd) {
+                            dtab_del_at(pevent, out_wait, i);
+                            break;
+                        }
+                    }
                     event_unregister(ev);
-                    printf("SHUTDOWN\n");
                     break;
                 }
                 hclt->input_pos += rsize - size;
             }
         }
         while(0);
-    }
-    if(pfd->revents & POLLERR || pfd->revents & POLLHUP)
-    {
-        xclose(pfd->fd);
-        dtab_for_each(pevent, out_wait, out_ev) {
-            if(event_fd_get_pfd(*out_ev) == pfd) {
-                dtab_del(pevent, out_wait, i);
-                break;
-            }
-        }
-        event_unregister(ev);
-        printf("SHUTDOWN\n");
     }
 }
 

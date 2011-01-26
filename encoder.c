@@ -192,7 +192,7 @@ int run_ogg_encode(encoder_t *enc)
             write(enc->out, og.body,   og.body_len);
 
             if(ogg_page_eos(&og))
-                return -1;
+                return -2;
             /* this could be set above, but for illustrative purposes, I do
                it here (to show that vorbis does know where the stream ends) */
 
@@ -239,6 +239,7 @@ void in_ogg_encoder_callback(event_t *ev, void *data)
     }
     if(pfd->revents & POLLERR || pfd->revents & POLLHUP || ret < 0)
     {
+        fprintf(stderr, "SHUTDOWN4 %i %m\n", ret);
         xclose(pfd->fd);
         event_unregister(enc->ev_in);
         enc->ev_in = NULL;
@@ -267,6 +268,7 @@ static void srv_callback(event_t *ev, void *data)
         xclose(sck);
         return;
     }
+    fprintf(stderr, "ACCEPT\n");
 
     enc->ev_in = event_fd_register(sck, POLLIN, &in_ogg_encoder_callback, enc);
 }
