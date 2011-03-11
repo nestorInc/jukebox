@@ -10,23 +10,9 @@ library_file.each_line { | line |
 }
 library_file.close();
 server = TCPServer.new(nil, 20000)
+out = TCPSocket.new("localhost", 9999)
 
 data = [];
-def skip_tag(data)
-  size = 0;
-  if(data[0 .. 2] == "ID3")
-    size += data[6].unpack("c")[0].to_i();
-    size = size * 128;
-    size += data[7].unpack("c")[0].to_i();
-    size = size * 128;
-    size += data[8].unpack("c")[0].to_i();
-    size = size * 128;
-    size += data[9].unpack("c")[0].to_i();
-
-    size += 10;
-    data.slice!(0 ... size-1);
-  end
-end
 
 def load_new_file(library)
   pos = rand(library.size - 1);
@@ -34,18 +20,15 @@ def load_new_file(library)
   mp3_file = File.new(library[pos], "rb");
   data = mp3_file.read();
   mp3_file.close();
-  skip_tag(data);
   return data;
 end
 
 read_fd  = [ server ];
-write_fd = [ $stdout ];
+write_fd = [ out ];
 
-opt = $stdout.fcntl(Fcntl::F_GETFL )
+opt = out.fcntl(Fcntl::F_GETFL)
 opt |= Fcntl::O_NONBLOCK;
-$stdout.fcntl(Fcntl::F_SETFL, opt);
-
-puts $stdout.fcntl(Fcntl::F_GETFL ).inspect + "aa\n";
+out.fcntl(Fcntl::F_SETFL, opt);
 
 client_data = {}
 
@@ -53,9 +36,10 @@ while(TRUE) do
   data = load_new_file(library) if(data.size == 0);
   r,w,e = IO.select(read_fd, write_fd, nil, nil);
   r.each { |read_io|
-    if(read_io == server)
+    case(read_io)
+    when server
       clt = server.accept();
-      read_fd += [ clt ];
+      read_fd.push(clt);
       client_data[clt] = "";
     else
       cdata = client_data[read_io];
@@ -101,9 +85,9 @@ while(TRUE) do
     end
   }
   w.each { |write_io|
-    if(write_io == $stdout)
+    if(write_io == out)
       tmp  = data.slice!(0 ... 1023);
-      $stdout.write(tmp);
+      out.write(tmp);
     end
   }
 end

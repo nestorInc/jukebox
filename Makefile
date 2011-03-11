@@ -4,11 +4,14 @@ LD=gcc
 CFLAGS=-Wunused -W -Wall -Werror -g -Iplugin -I. -fPIC -std=c99
 LDFLAGS=-lm -Wall -g -fPIC -logg -lvorbis -lvorbisenc
 
-all: audios jukebox decoder
+all: audios jukebox decoder audiosmp3
 
 install: all
 
 audios: event.o main.o sck.o encoder.o
+	${LD}  -o $@ $+ ${LDFLAGS}
+
+audiosmp3: event.o main.o sck.o mp3stream.o
 	${LD}  -o $@ $+ ${LDFLAGS}
 
 #encoder: encoder.o event.o

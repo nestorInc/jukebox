@@ -26,7 +26,7 @@ typedef struct http_option_t {
 DTAB(option, http_option_t);
 DTAB(pevent, event_t *);
 
-#define BUFFER_CIRC_SIZE 1024*1024
+#define BUFFER_CIRC_SIZE 4*1024
 
 dtab_t(pevent)*    out_wait;
 
@@ -225,10 +225,10 @@ void http_response(http_client_t *hclt, struct pollfd *pfd)
     char header[] =
         "HTTP/1.1 200 OK" CRLF
         "Connection: close" CRLF
-        "Content-Type: audio/ogg" CRLF
+        "Content-Type: audio/mpeg" CRLF
         CRLF;
     hclt = hclt;
-
+    printf("audio mpeg\n");
     xsend(pfd->fd, header, sizeof(header)-1, 0);
     encoder_init_stream(hclt->enc, pfd->fd);
 }

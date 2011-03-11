@@ -54,6 +54,6 @@ static inline dlist_t * dlist_pop(dlist_t *h)
 }
 
 #define dlist_for_each(h)                                               \
-  for(dlist_t *cur = (h)->next; cur != (h); cur = cur->next)
+    for(dlist_t *cur = (h)->next, *_next = cur->next; cur != (h); cur = _next, _next = cur->next)
 
 #endif /* __DLIST_H__ */
