@@ -101,7 +101,7 @@ class Mp3Trame < Mp3Header
     while(data.size >= 4)
       v = data.unpack("N")[0];
       if(decode(v) == false)
-        data = data [4 .. -1];
+        data.replace(data [4 .. -1]);
         next;
       end
 
