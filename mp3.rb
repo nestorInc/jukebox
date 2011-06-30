@@ -116,14 +116,8 @@ class Mp3Trame < Mp3Header
 end
 
 class Mp3Stream
-  def initialize(data)
-    data.force_encoding("BINARY");
-
-    @trames = [];
-    while(data.size >= 4)
-      trame = Mp3Trame.new(data);
-      @trames.push(trame);
-    end
+  def initialize()
+    @trames    = [];
   end
 
   def start(t = nil)
@@ -134,14 +128,37 @@ class Mp3Stream
     end
   end
 
+  def time
+    @time;
+  end
+
+  def fetchData
+  end
+
   def play()
-    if(@trames.size == 0)
-      return nil
-    end
+    cur = [];
+
     t = Time.now();
     # 26ms by frame
     nb_frame, delta = (t - @time).divmod(0.026);
     @time = t - delta;
-    @trames.shift(nb_frame);
+    while(nb_frame != 0)
+      if(@trames.size < nb_frame)
+        cur.concat(@trames);
+        nb_frame -= @trames.size;
+        data = "";
+        data = fetchData();
+        data.force_encoding("BINARY");
+        while(data.size >= 4)
+          trame = Mp3Trame.new(data);
+          @trames.push(trame);
+        end
+      else
+        cur.concat(@trames.shift(nb_frame));
+        nb_frame = 0;
+      end
+    end
+
+    cur;
   end
 end
