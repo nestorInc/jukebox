@@ -37,7 +37,6 @@ class Mp3Channel < Mp3Stream
     @files = files;
     @scks  = [];
     super();
-    start();
   end
 
   def name
@@ -56,6 +55,7 @@ class Mp3Channel < Mp3Stream
   def register(s)
     if(@scks.size() == 0)
       $channelsCron.register(self);
+      start();
     end
     @scks.push(s);
   end
