@@ -6,6 +6,31 @@ require 'socket'
 load 'http.rb'
 load 'mp3.rb'
 
+class ChannelsCron < Rev::TimerWatcher
+  def initialize()
+    super(0.2, true);
+    @channels = [];
+  end
+
+  def register(ch)
+    @channels.push(ch);
+  end
+
+  def unregister(ch)
+    @channels.delete(ch);
+  end
+
+  private 
+  def on_timer
+    @channels.each { |c|
+      c.cron();
+    }
+  end
+end
+
+$channelsCron = ChannelsCron.new();
+$channelsCron.attach(Rev::Loop.default)
+
 class Mp3Channel < Mp3Stream
   def initialize(files)
     @files = files;
@@ -24,6 +49,9 @@ class Mp3Channel < Mp3Stream
   end
 
   def register(s)
+    if(@scks.size() == 0)
+      $channelsCron.register(self);
+    end
     @scks.push(s);
   end
 
@@ -49,29 +77,7 @@ class Mp3Channel < Mp3Stream
   end
 end
 
-class ChannelsCron < Rev::TimerWatcher
-  def initialize()
-    super(0.2, true);
-    @channels = [];
-  end
-
-  def register(ch)
-    @channels.push(ch);
-  end
-
-  private 
-  def on_timer
-    @channels.each { |c|
-      c.cron();
-    }
-  end
-end
-
-
 ch = Mp3Channel.new(ARGV);
-t = ChannelsCron.new();
-t.register(ch);
-t.attach(Rev::Loop.default)
 
 
 h = HttpServer.new();
