@@ -14,10 +14,12 @@ class ChannelsCron < Rev::TimerWatcher
 
   def register(ch)
     @channels.push(ch);
+    puts "Cron register channel #{ch.name()} [#{@channels.size()}]"
   end
 
   def unregister(ch)
     @channels.delete(ch);
+    puts "Cron unregister channel #{ch.name()} [#{@channels.size()}]"
   end
 
   private 
@@ -37,6 +39,7 @@ class Mp3Channel < Mp3Stream
     @files = files;
     @scks  = [];
     super();
+    puts "Create new channel #{name}";
   end
 
   def name
@@ -58,6 +61,7 @@ class Mp3Channel < Mp3Stream
       start();
     end
     @scks.push(s);
+    puts "Register channel #{@name} [#{@scks.size()}]";
   end
 
   def unregister(s)
@@ -65,15 +69,18 @@ class Mp3Channel < Mp3Stream
     if(@scks.size() == 0)
       $channelsCron.unregister(self);
     end
+    puts "Unregister channel #{@name} [#{@scks.size()}]";
   end
 
   def next()
+    puts "Next channel #{@name}";    
     flush();
   end
 
   private
   def fetchData()
     p = @files[0];
+    puts "Fetch channel #{@name}: #{p}";
     @files.rotate!();
     fd = File.open(p);
     data = fd.read();
