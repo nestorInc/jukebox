@@ -103,6 +103,11 @@ class HttpSession < Rev::TCPSocket
     super(socket);
   end
 
+  def on_disconnect(*args, &block)
+    @close_block = block;
+    @close_args  = args;
+  end
+
   private
   def on_connect()
     puts "#{remote_addr}:#{remote_port} connected"
@@ -110,6 +115,9 @@ class HttpSession < Rev::TCPSocket
       
   def on_close()
     puts "#{remote_addr}:#{remote_port} disconnected"
+    if(@close_block)
+      @close_block.call(self, *@close_args);
+    end
   end
       
   def on_read(data)

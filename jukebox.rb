@@ -71,6 +71,10 @@ h.addFile("/test", ch) { |s, req, ch|
   rep = HttpResponse.new(req.proto, 200, "OK", options);
   s.write(rep.to_s);
   ch.register(s);
+
+  s.on_disconnect(ch) { |s, ch|
+    ch.unregister(s);
+  }
 }
 
 h.addPath("/session") { |s, req, data|
