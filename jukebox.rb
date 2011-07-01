@@ -83,9 +83,6 @@ h.addPath("/session") { |s, req, data|
   s.write(rep.to_s);
 }
 
-#  
-
-
 h.attach(Rev::Loop.default)
 
 Rev::Loop.default.run();
