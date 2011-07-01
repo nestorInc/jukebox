@@ -132,7 +132,8 @@ class Mp3Stream
     @time;
   end
 
-  def fetchData
+  def flush
+    cur = [];
   end
 
   def play()
