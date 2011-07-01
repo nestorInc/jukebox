@@ -27,6 +27,10 @@ class Mp3Channel < Mp3Stream
     @scks.push(s);
   end
 
+  def next()
+    flush();
+  end
+
   private
   def fetchData()
     p = @files[0];
