@@ -27,6 +27,13 @@ class Mp3Channel < Mp3Stream
     @scks.push(s);
   end
 
+  def unregister(s)
+    @scks.delete(s);
+    if(@scks.size() == 0)
+      $channelsCron.unregister(self);
+    end
+  end
+
   def next()
     flush();
   end
