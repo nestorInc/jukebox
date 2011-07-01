@@ -89,27 +89,50 @@ class Mp3Channel < Mp3Stream
   end
 end
 
-ch = Mp3Channel.new(ARGV);
-
+$library = ARGV;
+channelList = {};
 
 h = HttpServer.new();
-h.addFile("/test", ch) { |s, req, ch|
-  options = {
-    "Connection"   => "Close",
-    "Content-type" => "audio/mpeg"};
-  rep = HttpResponse.new(req.proto, 200, "OK", options);
-  s.write(rep.to_s);
-  ch.register(s);
 
-  s.on_disconnect(ch) { |s, ch|
-    ch.unregister(s);
-  }
-}
+h.addPath("/ch", channelList) { |s, req, list|
+  uri = req.uri[4 .. -1];
+  uri = "" if(uri == nil)
+  channelName, action = uri.split("/", 2);
+  if(channelName == "")
+    channelName = "general";
+  end
+  ch = channelList[channelName];
+  if(action == nil)
+    options = {
+      "Connection"   => "Close",
+      "Content-type" => "audio/mpeg"};
+    rep = HttpResponse.new(req.proto, 200, "OK", options);
+    s.write(rep.to_s);
 
-h.addPath("/session") { |s, req, data|
-  rep = HttpResponse.new(req.proto, 200, "OK");
-  rep.setData("<html><head><title>session</title></head><body><H1>MY session #{req.uri}</H1></body></head>");
-  s.write(rep.to_s);
+    if(ch == nil)
+      ch = Mp3Channel.new(channelName, $library);
+      channelList[channelName] = ch;
+    end
+    ch.register(s);
+
+    s.on_disconnect(ch) { |s, ch|
+      ch.unregister(s);
+    }    
+  else
+    rep = HttpResponse.new(req.proto, 200, "OK");
+    if(ch == nil)
+      rep.setData("<html><head><title>Error</title></head><body><H1>Unknown channel #{channelName}</H1></body></head>");
+    else
+      case action
+      when "next"
+        rep.setData("<html><head><title>Error</title></head><body><H1>Next</H1></body></head>");
+        ch.next()
+      else
+        rep.setData("<html><head><title>Error</title></head><body><H1>Unknown action #{action}</H1></body></head>");
+      end
+    end
+    s.write(rep.to_s);
+  end
 }
 
 h.attach(Rev::Loop.default)
