@@ -97,7 +97,7 @@ end
 
 class HttpSession < Rev::TCPSocket
   def initialize(socket, server)
-    @server = server[0];
+    @server = server;
     @data   = "";
     @length = 0;
     super(socket);
@@ -151,14 +151,14 @@ class HttpServer < Rev::TCPServer
     @uri_table  = {};
     @path_table = {};
 
-    super(nil, port, HttpSession, [self]);
+    super(nil, port, HttpSession, self);
   end
 
-  def addFile(uri, data = nil, &block)
+  def addFile(uri, *data, &block)
     @uri_table[uri] = [ block, data ];
   end
 
-  def addPath(path, data = nil, &block)
+  def addPath(path, *data, &block)
     if (path[-1] == "/")
       path = path[0 .. -2];
     end
@@ -174,7 +174,7 @@ class HttpServer < Rev::TCPServer
     end
 
     if(page)
-      page[0].call(s, req, page[1]);
+      page[0].call(s, req, *page[1]);
     else
       rep = HttpResponse.new(req.proto, 404, "Not found");
 
