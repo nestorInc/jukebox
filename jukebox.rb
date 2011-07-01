@@ -32,11 +32,16 @@ $channelsCron = ChannelsCron.new();
 $channelsCron.attach(Rev::Loop.default)
 
 class Mp3Channel < Mp3Stream
-  def initialize(files)
+  def initialize(name, files)
+    @name  = name;
     @files = files;
     @scks  = [];
     super();
     start();
+  end
+
+  def name
+    @name
   end
 
   def cron()
