@@ -133,7 +133,7 @@ class Mp3Stream
   end
 
   def flush
-    cur = [];
+    @trames = [];
   end
 
   def play()
