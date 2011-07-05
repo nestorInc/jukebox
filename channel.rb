@@ -73,9 +73,8 @@ class Mp3Channel < Mp3Stream
 
   private
   def fetchData()
-    p = @files[0];
+    p = @files[rand(@files.size())];
     puts "Fetch channel #{@name}: #{p}";
-    @files.rotate!();
     fd = File.open(p);
     data = fd.read();
     fd.close();
