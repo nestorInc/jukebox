@@ -3,15 +3,12 @@
 require 'rev'
 require 'thread'
 
-class Encode < Rev::TimerWatcher
-  def initialize(originDir, encodedDir)
-    @originDir            = originDir;
-    @encodedDir           = encodedDir;
+class EncodingThread < Rev::AsyncWatcher
+  def initialize
     @hEncodingFiles       = {}
     @hWaitEncodingFiles   = {}
     @curEncodingFile      = nil;
     @mutexEncoding        = Mutex.new();
-    @condEncoding         = ConditionVariable.new();
 
     begin 
       File.open("list") { | fd |
@@ -21,8 +18,18 @@ class Encode < Rev::TimerWatcher
       }
     rescue
     end
+  end
 
-    @thEncoding = Thread.new() {
+  def update(&block)
+    @mutexEncoding.synchronize {
+      block.call(@hEncodingFiles,
+                 @hWaitEncodingFiles,
+                 @curEncodingFile);
+    }
+  end
+
+  private
+  def on_signal()
       name = "";
       @mutexEncoding.synchronize {
         if(@hWaitEncodingFiles.size() == 0)
@@ -47,8 +54,22 @@ class Encode < Rev::TimerWatcher
         @curEncodingFile = nil;
       }
       saveFile();
-    }
+  end
 
+  def saveFile()
+    File.open("list", "w") { | fd |
+      @hEncodingFiles.each { | k, v |
+        fd.write(k + "\n");
+      }
+    }
+  end
+end
+
+class Encode < Rev::TimerWatcher
+  def initialize(originDir, encodedDir)
+    @originDir            = originDir;
+    @encodedDir           = encodedDir;
+    @th                   = EncodingThread.new();
     super(30, true);
   end
 
@@ -58,23 +79,23 @@ class Encode < Rev::TimerWatcher
   end
 
   def scan()
-    files = Dir.glob(@originDir + "/*.mp3");
-
-    @mutexEncoding.synchronize {        
+    files  = Dir.glob(@originDir + "/*.mp3");
+    signal = false;
+    @th.update { |hEncodingFiles, hWaitEncodingFiles, curEncodingFile  |
       files.each { | f |
         name = f.scan(/.*\/(.*)/);
         name = name[0][0];
-        if(@hEncodingFiles[name]     == nil &&
-           @hWaitEncodingFiles[name] == nil &&
-           name                      != @curEncodingFile)
-          @hWaitEncodingFiles[name] = true;
+        if(hEncodingFiles[name]     == nil &&
+           hWaitEncodingFiles[name] == nil &&
+           name                      != curEncodingFile)
+          hWaitEncodingFiles[name] = true;
         end
       }
-      if(@hWaitEncodingFiles.size() != 0)
-        @condEncoding.signal();
+      if(hWaitEncodingFiles.size() != 0)
+        signal = true;
       end
     }
-
+    @th.signal() if(signal == true);
   end
 
   def saveFile()
