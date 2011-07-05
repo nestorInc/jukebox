@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'rev'
+
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
     super(0.2, true);

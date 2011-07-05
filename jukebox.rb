@@ -6,6 +6,7 @@ require 'socket'
 load 'http.rb'
 load 'mp3.rb'
 load 'channel.rb'
+load 'encode.rb'
 
 $library = ARGV;
 channelList = {};
@@ -54,6 +55,9 @@ h.addPath("/ch", channelList) { |s, req, list|
 }
 
 h.attach(Rev::Loop.default)
+
+e = Encode.new("/home/aetu/musik", "/home/aetu/musik/encoded");
+e.attach(Rev::Loop.default);
 
 Rev::Loop.default.run();
 
