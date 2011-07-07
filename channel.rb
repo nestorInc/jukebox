@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+load 'encode.rb'
+
 require 'rev'
 
 class ChannelsCron < Rev::TimerWatcher
@@ -30,9 +32,9 @@ $channelsCron = ChannelsCron.new();
 $channelsCron.attach(Rev::Loop.default)
 
 class Mp3Channel < Mp3Stream
-  def initialize(name, files)
+  def initialize(name, e)
     @name  = name;
-    @files = files;
+    @enc   = e;
     @scks  = [];
     super();
     puts "Create new channel #{name}";
@@ -75,7 +77,8 @@ class Mp3Channel < Mp3Stream
 
   private
   def fetchData()
-    p = @files[rand(@files.size())];
+    files = @enc.files();
+    p = files[rand(files.size())];
     puts "Fetch channel #{@name}: #{p}";
     fd = File.open(p);
     data = fd.read();

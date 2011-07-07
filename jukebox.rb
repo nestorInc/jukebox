@@ -8,7 +8,9 @@ load 'mp3.rb'
 load 'channel.rb'
 load 'encode.rb'
 
-$library = ARGV;
+e = Encode.new(ARGV[0], ARGV[1]);
+e.attach(Rev::Loop.default);
+
 channelList = {};
 
 h = HttpServer.new();
@@ -29,7 +31,7 @@ h.addPath("/ch", channelList) { |s, req, list|
     s.write(rep.to_s);
 
     if(ch == nil)
-      ch = Mp3Channel.new(channelName, $library);
+      ch = Mp3Channel.new(channelName, e);
       channelList[channelName] = ch;
     end
     ch.register(s);
@@ -55,9 +57,6 @@ h.addPath("/ch", channelList) { |s, req, list|
 }
 
 h.attach(Rev::Loop.default)
-
-e = Encode.new("/home/aetu/musik", "/home/aetu/musik/encoded");
-e.attach(Rev::Loop.default);
 
 Rev::Loop.default.run();
 
