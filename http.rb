@@ -129,7 +129,7 @@ class HttpSession < Rev::TCPSocket
         break if(body == nil);
 
         @req = HttpRequest.parse(header);
-        length = @req.options["Content-length"];
+        length = @req.options["Content-Length"];
         if(length == nil)
           @length = 0;
         else
