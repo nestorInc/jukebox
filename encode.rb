@@ -3,12 +3,24 @@
 require 'rev'
 require 'thread'
 
+load 'id3.rb'
+
 class EncodingThread < Rev::IO
   def initialize(src, dst, *args, &block)
     @block = block;
     @args  = args;
+    extra_lame_param = "--id3v2-only ";
+
     puts "Encoding #{src} -> #{dst}"
-    @fd = IO.popen("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r > /dev/null 2> /dev/null");
+
+    tag = Id3.decode(src);
+    extra_lame_param << "--tt \"#{tag.title}\" "  if(tag.title)
+    extra_lame_param << "--ta \"#{tag.artist}\" " if(tag.artist)
+    extra_lame_param << "--tl \"#{tag.album}\" "  if(tag.album)
+    extra_lame_param << "--tn \"#{tag.track}\" "  if(tag.track != 0)
+    extra_lame_param << "--ty \"#{tag.data}\" "   if(tag.data != 0)
+      
+    @fd = IO.popen("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -t #{extra_lame_param} > /dev/null 2> /dev/null");
     super(@fd);
   end
 

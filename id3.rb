@@ -21,6 +21,14 @@ class Id3
     decodeV2(data);
   end
 
+  def Id3.decode(file)
+    fd = File.open(file)
+    data = fd.read();
+    fd.close();
+
+    Id3.new(data);
+  end
+
 private
   def decodeV1(data)
     return false if(data.bytesize() < 128);
