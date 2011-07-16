@@ -2,6 +2,7 @@
 
 require 'rev'
 require 'socket'
+require 'cgi'
 
 load 'http.rb'
 load 'mp3.rb'
@@ -48,6 +49,11 @@ h.addPath("/ch", channelList) { |s, req, list|
       when "next"
         rep.setData("<html><head><title>Error</title></head><body><H1>Next</H1></body></head>");
         ch.next()
+      when "control"
+        params = req.data.split(/&/);
+
+        p CGI::unescape(req.data)
+
       else
         rep.setData("<html><head><title>Error</title></head><body><H1>Unknown action #{action}</H1></body></head>");
       end

@@ -129,6 +129,7 @@ class Mp3Stream
     else
       @time = Time.now();
     end
+    @nbSamples = 0;
   end
 
   def time
@@ -143,9 +144,10 @@ class Mp3Stream
     cur = [];
 
     t = Time.now();
-    # 26ms by frame
-    nb_frame, delta = (t - @time).divmod(0.026);
-    @time = t - delta;
+    samples     = (t - @time) * 44100;
+    delta       = samples - @nbSamples;
+    nb_frame    = (delta / 1152).round; 
+    @nbSamples += nb_frame * 1152;
     while(nb_frame != 0)
       if(@trames.size < nb_frame)
         cur.concat(@trames);

@@ -22,6 +22,7 @@ class Id3
   end
 
   def Id3.decode(file)
+  p file;
     fd = File.open(file)
     data = fd.read();
     fd.close();

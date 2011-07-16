@@ -166,6 +166,8 @@ class HttpServer < Rev::TCPServer
   end
 
   def findUri(s, req)
+  p req.inspect;
+  p req.uri;
     uri  = req.uri;
     page = @uri_table[uri];
     while(page == nil && uri != "")
