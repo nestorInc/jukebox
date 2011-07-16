@@ -137,11 +137,3 @@ private
 end
 
 
-ARGV.each { |f|
-  fd = File.open(f);
-
-  data = fd.read();
-  fd.close();
-
-  p Id3.new(data);
-}

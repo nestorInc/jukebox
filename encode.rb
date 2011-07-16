@@ -18,7 +18,7 @@ class EncodingThread < Rev::IO
     extra_lame_param << "--ta \"#{tag.artist}\" " if(tag.artist)
     extra_lame_param << "--tl \"#{tag.album}\" "  if(tag.album)
     extra_lame_param << "--tn \"#{tag.track}\" "  if(tag.track != 0)
-    extra_lame_param << "--ty \"#{tag.data}\" "   if(tag.data != 0)
+    extra_lame_param << "--ty \"#{tag.date}\" "   if(tag.date != 0)
       
     @fd = IO.popen("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -t #{extra_lame_param} > /dev/null 2> /dev/null");
     super(@fd);
