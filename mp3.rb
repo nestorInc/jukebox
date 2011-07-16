@@ -99,14 +99,17 @@ end
 class Mp3Trame < Mp3Header
   def initialize(data)
     while(data.size >= 4)
-      v = data.unpack("N")[0];
-      if(decode(v) == false)
-        data.replace(data [4 .. -1]);
-        next;
+      @trame = Id3.fetch(data)
+      if(@trame)
+        frame_size = @trame.bytesize();
+      else
+        v = data.unpack("N")[0];
+        if(decode(v) == false)
+          data.replace(data [4 .. -1]);
+          next;
+        end
+        @trame = data.slice![0 .. frame_size-1];
       end
-
-      @trame = data[0 .. frame_size-1];
-      data.replace(data[frame_size .. -1]);
       break;
     end
   end

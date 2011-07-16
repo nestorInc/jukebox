@@ -29,6 +29,12 @@ class Id3
     Id3.new(data);
   end
 
+  def Id3.fetch(data)
+    meta = Id3.decodeV2Header(data);
+    data.slice!(0..meta.bytesize()-1);
+    meta;
+  end
+
 private
   def decodeV1(data)
     return false if(data.bytesize() < 128);
@@ -60,7 +66,7 @@ private
     data.encode("UTF-8");
   end
 
-  def getV2Size(data)
+  def Id3.getV2Size(data)
     size = 0;
     data[0..3].each_byte { |d|
       size *= 128;
@@ -69,23 +75,28 @@ private
     size;
   end
 
-  def decodeV2(data)
-    tag = {};
-
+  def Id3.decodeV2Header(data)
     # search only on the beginning of the file
-    return false if(data.bytesize() < 10);
-    return false if (data[0..2] != "ID3");
+    return nil if(data.bytesize() < 10);
+    return nil if (data[0..2] != "ID3");
 
     # check version
     version_minor = data[3].ord();
     version_minus = data[4].ord();
-    return false if(version_minor > 4);
-    return false if(version_minor == 4 && version_minus > 0);
+    return nil if(version_minor > 4);
+    return nil if(version_minor == 4 && version_minus > 0);
 
     flag = data[5].ord();
-    size = getV2Size(data[6..9]);
-    return false if(data.bytesize() < size);
-    meta = data[0..size-1];
+    size = Id3.getV2Size(data[6..9]);
+    return nil if(data.bytesize() < size);
+    data[0..size-1];
+  end
+
+  def decodeV2(data)
+    tag = {};
+
+    meta = Id3.decodeV2Header(data);
+    return false if(meta == nil);
 
     # remove header
     meta.slice!(0..9);
@@ -93,7 +104,7 @@ private
     # extended header (remove it)
     if ((flag & 0x40) == true)
       puts "extended header";
-      size = getV2Size(meta[0..3]);
+      size = Id3.getV2Size(meta[0..3]);
       meta.slice!(0..size-1)
     end
 
@@ -104,7 +115,7 @@ private
 
     while(meta.bytesize() >= 10)
       id   = meta[0..3];
-      size = getV2Size(meta[4..7]);
+      size = Id3.getV2Size(meta[4..7]);
       break if(id == "\x00\x00\x00\x00");
       flag = meta[8..9];
       meta.slice!(0..9);
