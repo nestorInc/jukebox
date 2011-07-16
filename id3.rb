@@ -55,9 +55,9 @@ private
     enc = data.slice!(0).ord();
     case(enc)
     when 0x01
-      data.force_encoding("UTF16-LE");
+      data.force_encoding("UTF-16LE");
     when 0x02
-      data.force_encoding("UTF16-BE");
+      data.force_encoding("UTF-16BE");
     when 0x03
       data.force_encoding("UTF8");
     else
