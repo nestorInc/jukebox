@@ -92,7 +92,7 @@ private
     return nil if(version_minor == 4 && version_minus > 0);
 
     flag = data[5].ord();
-    size = Id3.getV2Size(data[6..9]);
+    size = Id3.getV2Size(data[6..9]) + 10;
     return nil if(data.bytesize() < size);
 
     [ data.slice!(0..size-1), flag ];
