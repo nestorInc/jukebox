@@ -109,14 +109,8 @@ private
 
     # extended header (remove it)
     if ((flag & 0x40) == true)
-      puts "extended header";
       size = Id3.getV2Size(meta[0..3]);
       meta.slice!(0..size-1)
-    end
-
-    # remove footer
-    if ((flag & 0x10) == true)
-      meta.slice!(-10..-1);
     end
 
     while(meta.bytesize() >= 10)
