@@ -45,8 +45,8 @@ class Mp3Channel < Mp3Stream
   end
 
   def cron()
-    trames = play();
-    trames.each { |t|
+    frames = play();
+    frames.each { |t|
       @scks.each { |s|
         s.write(t.to_s());
       }

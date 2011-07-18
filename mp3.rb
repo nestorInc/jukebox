@@ -1,6 +1,107 @@
 #!/usr/bin/env ruby
 
-class Mp3Header
+class Mp3Frame
+  attr_reader :version
+  attr_reader :layer
+  attr_reader :protection
+  attr_reader :bitrate
+  attr_reader :samplerate
+  attr_reader :padding
+  attr_reader :hprivate
+  attr_reader :channel
+  attr_reader :extension
+  attr_reader :copyright
+  attr_reader :original
+  attr_reader :emphasis
+
+  def size
+    @size;
+  end
+
+  def to_s()
+    @frame;
+  end
+
+  def Mp3Frame.fetch(data)
+    v = data.unpack("N")[0];
+
+    sync        = (v >> 21) & 0x7FF;
+    return nil if(sync != 0x7FF);
+
+    version     = (v >> 19) & 0x003;
+    layer       = (v >> 17) & 0x003;
+    protection  = (v >> 16) & 0x001;
+    bitrate     = (v >> 12) & 0x00F;
+    samplerate  = (v >> 10) & 0x003;
+    padding     = (v >>  9) & 0x001;
+    hprivate    = (v >>  8) & 0x001;
+    channel     = (v >>  6) & 0x003;
+    extension   = (v >>  4) & 0x003;
+    copyright   = (v >>  3) & 0x001;
+    original    = (v >>  2) & 0x001; 
+    emphasis    = (v >>  0) & 0x003;
+
+    if(version     == MPEG1_VERSION_RESERVED ||
+       layer       == MPEG1_LAYER_RESERVED   ||
+       samplerate == 3)
+      return nil;
+    end
+
+    layer = case(layer)
+            when MPEG1_LAYER_1 then 1;
+            when MPEG1_LAYER_2 then 2;
+            when MPEG1_LAYER_3 then 3;
+            end
+
+    samplerate = case(samplerate)
+                 when 0 then 44100;
+                 when 1 then 48000;
+                 when 2 then 32000;
+                 end
+
+    case(version)
+    when MPEG1_VERSION_1
+      version    = 1;
+      samplerate = samplerate;
+    when MPEG1_VERSION_2
+      version    = 2;
+      samplerate = samplerate >> 1;
+    when MPEG1_VERSION_2_5
+      version    = 2;
+      samplerate = samplerate >> 2;
+    end
+
+    bitrate = BITRATE_TABLE[bitrate][(layer-1)+((version-1)*3)];
+
+    return nil if(bitrate == 0);
+    if(layer == 1)
+      size = (12 * bitrate / samplerate + padding) * 4;
+    else
+      size = 144 * bitrate / samplerate + padding;
+    end
+
+    return nil if(data.bytesize < size);
+
+    frame = data[0..size-1];
+    data.replace(data[size..-1]);
+
+    Mp3Frame.new(version,
+                 layer,
+                 protection,
+                 bitrate,
+                 samplerate,
+                 padding,
+                 hprivate,
+                 channel,
+                 extension,
+                 copyright,
+                 original,
+                 emphasis,
+                 size,
+                 frame);
+  end
+
+private
   MPEG1_VERSION_1        = 3;
   MPEG1_VERSION_2        = 2;
   MPEG1_VERSION_2_5      = 0;
@@ -29,99 +130,40 @@ class Mp3Header
      [ 448000, 384000, 320000, 256000, 160000, 160000 ],
      [      0,      0,      0,      0,      0,      0 ]];
 
-  def frame_size
-    @frame_size;
-  end
-
-  def decode(v)
-    @sync        = (v >> 21) & 0x7FF;
-    return false if(@sync != 0x7FF);
-
-    @version     = (v >> 19) & 0x003;
-    @layer       = (v >> 17) & 0x003;
-    @protection  = (v >> 16) & 0x001;
-    @bitrate     = (v >> 12) & 0x00F;
-    @samplerate  = (v >> 10) & 0x003;
-    @padding     = (v >>  9) & 0x001;
-    @private     = (v >>  8) & 0x001;
-    @channel     = (v >>  6) & 0x003;
-    @extension   = (v >>  4) & 0x003;
-    @copyright   = (v >>  3) & 0x001;
-    @original    = (v >>  2) & 0x001; 
-    @emphasis    = (v >>  0) & 0x003;
-
-    if(@version     == MPEG1_VERSION_RESERVED ||
-       @layer       == MPEG1_LAYER_RESERVED   ||
-       @samplerate == 3)
-      return false;
-    end
-
-    @layer = case(@layer)
-             when MPEG1_LAYER_1 then 1;
-             when MPEG1_LAYER_2 then 2;
-             when MPEG1_LAYER_3 then 3;
-             end
-
-    @samplerate = case(@samplerate)
-                  when 0 then 44100;
-                  when 1 then 48000;
-                  when 2 then 32000;
-                  end
-
-    case(@version)
-    when MPEG1_VERSION_1
-      @version    = 1;
-      @samplerate = @samplerate;
-    when MPEG1_VERSION_2
-      @version    = 2;
-      @samplerate = @samplerate >> 1;
-    when MPEG1_VERSION_2_5
-      @version    = 2;
-      @samplerate = @samplerate >> 2;
-    end
-
-    @bitrate = BITRATE_TABLE[@bitrate][(@layer-1)+((@version-1)*3)];
-
-    if(@bitrate == 0)
-      return false;
-    end
-    if(@layer == 1)
-      @frame_size = (12 * @bitrate / @samplerate + @padding) * 4;
-    else
-      @frame_size = 144 * @bitrate / @samplerate + @padding;
-    end
-
-    return true;
-  end
-
-end
-
-class Mp3Trame < Mp3Header
-  def initialize(data)
-    while(data.size >= 4)
-      @trame = Id3.fetch(data)
-      if(@trame)
-        frame_size = @trame.bytesize();
-      else
-        v = data.unpack("N")[0];
-        if(decode(v) == false)
-          data.replace(data[1, -1]);
-          next;
-        end
-        @trame = data[0 .. @frame_size-1];
-        data.replace(data[@frame_size .. -1]);
-      end
-      break;
-    end
-  end
-  def to_s()
-    @trame;
+  def initialize(version,
+                layer,
+                protection,
+                bitrate,
+                samplerate,
+                padding,
+                hprivate,
+                channel,
+                extension,
+                copyright,
+                original,
+                emphasis,
+                size,
+                data)
+                @version    = version;
+                @layer      = layer;
+                @protection = protection;
+                @bitrate    = bitrate;
+                @samplerate = samplerate;
+                @padding    = padding;
+                @private    = hprivate;
+                @channel    = channel;
+                @extension  = extension;
+                @copyright  = copyright;
+                @original   = original;
+                @emphasis   = emphasis;
+                @size       = size;
+                @frame      = data;
   end
 end
 
 class Mp3Stream
   def initialize()
-    @trames    = [];
+    @frames    = [];
   end
 
   def start(t = nil)
@@ -138,7 +180,7 @@ class Mp3Stream
   end
 
   def flush
-    @trames = [];
+    @frames = [];
   end
 
   def play()
@@ -150,18 +192,22 @@ class Mp3Stream
     nb_frame    = (delta / 1152).round; 
     @nbSamples += nb_frame * 1152;
     while(nb_frame != 0)
-      if(@trames.size < nb_frame)
-        cur.concat(@trames);
-        nb_frame -= @trames.size;
-        data = "";
+      if(@frames.size < nb_frame)
+        cur.concat(@frames);
+        nb_frame -= @frames.size;
         data = fetchData();
         data.force_encoding("BINARY");
         while(data.size >= 4)
-          trame = Mp3Trame.new(data);
-          @trames.push(trame);
+          frame = Mp3Frame.fetch(data);
+          frame = Id3.fetch(data) if(frame == nil);
+          if(frame)
+            @frames.push(frame);
+          else
+            data.replace(data[1, -1]);
+          end
         end
       else
-        cur.concat(@trames.shift(nb_frame));
+        cur.concat(@frames.shift(nb_frame));
         nb_frame = 0;
       end
     end
