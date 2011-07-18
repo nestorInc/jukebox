@@ -31,15 +31,14 @@ class Id3
   end
 
   def Id3.fetch(data)
-    meta = Id3.decodeV2Header(data);
-    data.slice!(0..meta.bytesize()-1);
+    meta, flag = Id3.fetchV2Frame(data);
     meta;
   end
 
 private
   def decodeV1(data)
     return false if(data.bytesize() < 128);
-    meta = data [-128..-1];
+    meta = data [-128..-1].force_encoding("ISO-8859-1");
     return false if(meta.slice!(0..2) != "TAG");
 
     @title  = meta.slice!(0..29).strip().encode("UTF-8");
@@ -81,7 +80,7 @@ private
     size;
   end
 
-  def Id3.decodeV2Header(data)
+  def Id3.fetchV2Frame(data)
     # search only on the beginning of the file
     return nil if(data.bytesize() < 10);
     return nil if (data[0..2] != "ID3");
@@ -95,13 +94,14 @@ private
     flag = data[5].ord();
     size = Id3.getV2Size(data[6..9]);
     return nil if(data.bytesize() < size);
-    data[0..size-1];
+
+    [ data.slice!(0..size-1), flag ];
   end
 
   def decodeV2(data)
     tag = {};
 
-    meta = Id3.decodeV2Header(data);
+    meta, flag = Id3.fetchV2Frame(data);
     return false if(meta == nil);
 
     # remove header
