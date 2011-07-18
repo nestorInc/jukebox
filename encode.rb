@@ -46,6 +46,7 @@ class Encode < Rev::TimerWatcher
     @curEncodingFile      = nil;
     loadFile();
     super(30, true);
+    scan();
   end
 
   def files()
@@ -58,6 +59,7 @@ class Encode < Rev::TimerWatcher
       @files.push(@encodedDir + "/" + @curEncodingFile);
       @hEncodingFiles[@curEncodingFile] = true;
       @curEncodingFile = nil;
+      saveFile();
     end
     if(@hWaitEncodingFiles.size() != 0)
       name, file = @hWaitEncodingFiles.shift();
@@ -67,7 +69,6 @@ class Encode < Rev::TimerWatcher
       }
       @th.attach(@loop) if(@loop != nil);
     end
-    saveFile()
   end
 
   def attach(loop)
