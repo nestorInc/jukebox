@@ -108,7 +108,8 @@ class Mp3Trame < Mp3Header
           data.replace(data[1, -1]);
           next;
         end
-        @trame = data.slice![0 .. frame_size-1];
+        @trame = data[0 .. @frame_size-1];
+        data.replace(data[@frame_size .. -1]);
       end
       break;
     end
