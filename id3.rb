@@ -56,15 +56,20 @@ private
     enc = data.slice!(0).ord();
     case(enc)
     when 0x01
-      data.force_encoding("UTF-16LE");
+      bom = data.slice!(0..1);
+      if(bom == "\xFF\xFE")
+        data.force_encoding("UTF-16LE");
+      else  
+        data.force_encoding("UTF-16BE");
+      end
     when 0x02
       data.force_encoding("UTF-16BE");
     when 0x03
-      data.force_encoding("UTF8");
+      data.force_encoding("UTF-8");
     else
       data.force_encoding("ISO-8859-1");
     end
-    data.encode("UTF-8");
+    data.encode("UTF-8").strip;
   end
 
   def Id3.getV2Size(data)
