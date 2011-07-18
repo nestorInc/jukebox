@@ -105,7 +105,7 @@ class Mp3Trame < Mp3Header
       else
         v = data.unpack("N")[0];
         if(decode(v) == false)
-          data.replace(data [4 .. -1]);
+          data.replace(data[1, -1]);
           next;
         end
         @trame = data.slice![0 .. frame_size-1];
