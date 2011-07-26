@@ -5,6 +5,8 @@ require 'thread'
 
 load 'id3.rb'
 
+ENCODE_DELAY_SCAN = 30; # seconds
+
 class EncodingThread < Rev::IO
   def initialize(src, dst, *args, &block)
     @block = block;
@@ -45,7 +47,7 @@ class Encode < Rev::TimerWatcher
     @hWaitEncodingFiles   = {}
     @curEncodingFile      = nil;
     loadFile();
-    super(30, true);
+    super(ENCODE_DELAY_SCAN, true);
     scan();
   end
 
@@ -61,13 +63,15 @@ class Encode < Rev::TimerWatcher
       @curEncodingFile = nil;
       saveFile();
     end
-    if(@hWaitEncodingFiles.size() != 0)
+    while(@hWaitEncodingFiles.size() != 0)
       name, file = @hWaitEncodingFiles.shift();
+      next if(Time.now()-File::Stat.new(file).atime() < ENCODE_DELAY_SCAN*2);
       @curEncodingFile = name;
       @th = EncodingThread.new(file, @encodedDir + "/" + name, self) { |obj|
         obj.nextEncode();
       }
       @th.attach(@loop) if(@loop != nil);
+      break;
     end
   end
 
