@@ -65,7 +65,7 @@ class Encode < Rev::TimerWatcher
     end
     while(@hWaitEncodingFiles.size() != 0)
       name, file = @hWaitEncodingFiles.shift();
-      next if(Time.now()-File::Stat.new(file).atime() < ENCODE_DELAY_SCAN*2);
+      next if(Time.now()-File::Stat.new(file).mtime() < ENCODE_DELAY_SCAN*2);
       @curEncodingFile = name;
       @th = EncodingThread.new(file, @encodedDir + "/" + name, self) { |obj|
         obj.nextEncode();
