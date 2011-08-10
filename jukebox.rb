@@ -3,6 +3,7 @@
 require 'rev'
 require 'socket'
 require 'cgi'
+require 'yaml.rb'
 
 load 'http.rb'
 load 'mp3.rb'
@@ -64,6 +65,23 @@ h.addPath("/ch", channelList) { |s, req, list|
 
 h.attach(Rev::Loop.default)
 
-Rev::Loop.default.run();
+begin
+  Rev::Loop.default.run();
+rescue => e
+  fd = File.open("exception_stat", File::RDONLY | File::CREAT, 0600);
+  data = fd.read();
+  stat = YAML::load(data);
+  stat = {} if(stat == false);
+  fd.close();
+
+  detail = ([ e.class ] + e.backtrace).join("\n")
+  stat[detail]  = 0 if(stat[detail] == nil);
+  stat[detail] += 1;
+
+  fd = File.open("exception_stat", "w");
+  data = YAML::dump(stat);
+  fd.write(data);
+  fd.close();
+end
 
 
