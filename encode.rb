@@ -16,14 +16,14 @@ class EncodingThread < Rev::IO
     puts "Encoding #{src} -> #{dst}"
 
     tag = Id3.decode(src);
-    extra_lame_param << "--tt \"#{tag.title}\" "  if(tag.title)
-    extra_lame_param << "--ta \"#{tag.artist}\" " if(tag.artist)
-    extra_lame_param << "--tl \"#{tag.album}\" "  if(tag.album)
+    extra_lame_param << "--tt \"#{tag.title.sub('"', '\"')}\" "  if(tag.title)
+    extra_lame_param << "--ta \"#{tag.artist.sub('"', '\"')}\" " if(tag.artist)
+    extra_lame_param << "--tl \"#{tag.album.sub('"', '\"')}\" "  if(tag.album)
     extra_lame_param << "--tn \"#{tag.track}\" "  if(tag.track != 0)
     extra_lame_param << "--ty \"#{tag.date}\" "   if(tag.date != 0)
     extra_lame_param.encode!("locale");
  
-    @fd = IO.popen("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -t #{extra_lame_param} > /dev/null 2> /dev/null");
+    @fd = IO.popen("mpg123 --stereo -r 44100 -s \"#{src.sub('"', '\"')}\" | lame - \"#{dst.sub('"', '\"')}\" -r -b 192 -t #{extra_lame_param} > /dev/null 2> /dev/null");
     super(@fd);
   end
 
