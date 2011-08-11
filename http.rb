@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'date'
+
 class HttpRequest
   attr_reader :method;
   attr_reader :options;
@@ -96,6 +98,7 @@ class HttpResponse
 end
 
 class HttpSession < Rev::TCPSocket
+  @@logfd = nil;
   def initialize(socket, server)
     @server = server;
     @data   = "";
@@ -109,12 +112,20 @@ class HttpSession < Rev::TCPSocket
   end
 
   private
+  def log(str)
+    if(@@logfd == nil)
+      @@logfd = File.open("http.log", "a+");
+      @@logfd.sync = true;
+    end
+    @@logfd.write("#{DateTime.now()} #{remote_addr}:#{remote_port} #{str}\n");
+  end
+
   def on_connect()
-    puts "#{remote_addr}:#{remote_port} connected"
+    log("connected");
   end
       
   def on_close()
-    puts "#{remote_addr}:#{remote_port} disconnected"
+    log("disconnected");
     if(@close_block)
       @close_block.call(self, *@close_args);
     end
@@ -140,6 +151,7 @@ class HttpSession < Rev::TCPSocket
 
       if(@data.bytesize() >= @length)
         @req.addData(@data.slice!(0 .. @length - 1)) if(@length != 0);
+        log(@req);
         @server.findUri(self, @req);
       end
     end
@@ -166,8 +178,6 @@ class HttpServer < Rev::TCPServer
   end
 
   def findUri(s, req)
-  p req.inspect;
-  p req.uri;
     uri  = req.uri;
     page = @uri_table[uri];
     while(page == nil && uri != "")
