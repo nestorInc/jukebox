@@ -172,7 +172,12 @@ class HttpServer < Rev::TCPServer
     page = @uri_table[uri];
     while(page == nil && uri != "")
       page = @path_table[uri];
-      uri  = uri.scan(/(.*)\/(.*)/)[0][0];
+      uri  = uri.scan(/(.*)\/(.*)/)[0];
+      if(uri)
+        uri  = uri[0];
+      else
+        uri  = "";
+      end
     end
 
     if(page)
