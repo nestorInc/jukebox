@@ -78,6 +78,7 @@ rescue => e
   fd.close();
 
   detail = ([ e.class ] + e.backtrace).join("\n")
+  puts detail;
   stat[detail]  = 0 if(stat[detail] == nil);
   stat[detail] += 1;
 
