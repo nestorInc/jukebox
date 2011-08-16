@@ -46,9 +46,12 @@ h.addPath("/ch", channelList) { |s, req, list|
     if(ch == nil)
       rep.setData("<html><head><title>Error</title></head><body><H1>Unknown channel #{channelName}</H1></body></head>");
     else
-      case action
+      case(action)
+      when "previous"
+        rep.setData("<html><head><title>Previous</title></head><body><H1>Previous</H1></body></head>");
+        ch.previous()
       when "next"
-        rep.setData("<html><head><title>Error</title></head><body><H1>Next</H1></body></head>");
+        rep.setData("<html><head><title>next</title></head><body><H1>Next</H1></body></head>");
         ch.next()
       when "control"
         params = req.data.split(/&/);

@@ -33,9 +33,11 @@ $channelsCron.attach(Rev::Loop.default)
 
 class Mp3Channel < Mp3Stream
   def initialize(name, e)
-    @name  = name;
-    @enc   = e;
-    @scks  = [];
+    @name    = name;
+    @enc     = e;
+    @scks    = [];
+    @history = []
+    @pos     = 0;
     super();
     puts "Create new channel #{name}";
   end
@@ -75,10 +77,22 @@ class Mp3Channel < Mp3Stream
     flush();
   end
 
+  def previous()
+    puts "Previous channel #{@name}";
+    @pos -=2 if(@pos > 1);
+    flush();
+  end
+
   private
   def fetchData()
-    files = @enc.files();
-    p = files[rand(files.size())];
+    if(@history[@pos] == nil)
+      files = @enc.files();
+      p = files[rand(files.size())];
+      @history.push(p);
+    else
+      p = @history[@pos];
+    end
+    @pos += 1;
     puts "Fetch channel #{@name}: #{p}";
     fd = File.open(p);
     data = fd.read();
