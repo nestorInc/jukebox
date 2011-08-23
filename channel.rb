@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-load 'encode.rb'
-
 require 'rev'
 
 class ChannelsCron < Rev::TimerWatcher
