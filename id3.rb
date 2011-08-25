@@ -9,9 +9,9 @@ class Id3
    attr_reader :genre
 
   def initialize(data)
-    @title  = "(no title)";
-    @artist = "(no artist)";
-    @album  = "(no album)";
+    @title  = nil;
+    @artist = nil;
+    @album  = nil;
     @date   = 0;
     @track  = 0;
     @genre  = 0xFF;
@@ -22,7 +22,6 @@ class Id3
   end
 
   def Id3.decode(file)
-  p file;
     fd = File.open(file)
     data = fd.read();
     fd.close();

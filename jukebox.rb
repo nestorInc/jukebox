@@ -9,8 +9,11 @@ load 'http.rb'
 load 'mp3.rb'
 load 'channel.rb'
 load 'encode.rb'
+load 'db.rb'
 
-e = Encode.new(ARGV[0], ARGV[1]);
+library = Library.new();
+
+e = Encode.new(library, ARGV[0], ARGV[1]);
 e.attach(Rev::Loop.default);
 
 channelList = {};
@@ -33,7 +36,7 @@ h.addPath("/ch", channelList) { |s, req, list|
     s.write(rep.to_s);
 
     if(ch == nil)
-      ch = Mp3Channel.new(channelName, e);
+      ch = Mp3Channel.new(channelName, library);
       channelList[channelName] = ch;
     end
     ch.register(s);
@@ -55,7 +58,8 @@ h.addPath("/ch", channelList) { |s, req, list|
         ch.next()
       when "control"
         params = req.data.split(/&/);
-
+        options = {
+        "Content-type" => "application/json"};
         p CGI::unescape(req.data)
 
       else

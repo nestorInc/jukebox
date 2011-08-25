@@ -2,28 +2,33 @@
 
 require 'rev'
 require 'thread'
-
 load 'id3.rb'
 
 ENCODE_DELAY_SCAN = 30; # seconds
 
 class EncodingThread < Rev::IO
-  def initialize(src, dst, *args, &block)
+  def initialize(file, *args, &block)
     @block = block;
     @args  = args;
     extra_lame_param = "--id3v2-only ";
-
+    mid, src, dst, title, artist, album, years, status = file;
     puts "Encoding #{src} -> #{dst}"
 
-    tag = Id3.decode(src);
-    extra_lame_param << "--tt \"#{tag.title.sub('"', '\"')}\" "  if(tag.title)
-    extra_lame_param << "--ta \"#{tag.artist.sub('"', '\"')}\" " if(tag.artist)
-    extra_lame_param << "--tl \"#{tag.album.sub('"', '\"')}\" "  if(tag.album)
-    extra_lame_param << "--tn \"#{tag.track}\" "  if(tag.track != 0)
-    extra_lame_param << "--ty \"#{tag.date}\" "   if(tag.date != 0)
+    extra_lame_param << "--tt \"#{title.sub('"', '\"')}\" "  if(title)
+    extra_lame_param << "--ta \"#{artist.sub('"', '\"')}\" " if(artist)
+    extra_lame_param << "--tl \"#{album.sub('"', '\"')}\" "  if(album)
+#    extra_lame_param << "--tn \"#{tag.track}\" "  if(tag.track != 0)
+    extra_lame_param << "--ty \"#{years}\" "   if(years != 0)
     extra_lame_param.encode!("locale");
- 
-    @fd = IO.popen("mpg123 --stereo -r 44100 -s \"#{src.sub('"', '\"')}\" | lame - \"#{dst.sub('"', '\"')}\" -r -b 192 -t #{extra_lame_param} > /dev/null 2> /dev/null");
+    rd, wr = IO.pipe
+    @pid = fork {
+      rd.close()
+      STDOUT.reopen(wr)
+      wr.close();
+      exec("mpg123 --stereo -r 44100 -s \"#{src.sub('"', '\"')}\" | lame - \"#{dst.sub('"', '\"')}\" -r -b 192 -t #{extra_lame_param}> /dev/null 2> /dev/null");
+    }
+    wr.close();
+    @fd  = rd;
     super(@fd);
   end
 
@@ -34,19 +39,16 @@ class EncodingThread < Rev::IO
   end
 
   def on_close()
-    @block.call(*@args);
+    pid, status = Process.waitpid2(@pid);
+    @block.call(status.exitstatus(), *@args);
   end
 end
 
 class Encode < Rev::TimerWatcher
-  def initialize(originDir, encodedDir)
+  def initialize(library, originDir, encodedDir)
     @originDir            = originDir;
     @encodedDir           = encodedDir;
-    @files                = [];
-    @hEncodingFiles       = {}
-    @hWaitEncodingFiles   = {}
-    @curEncodingFile      = nil;
-    loadFile();
+    @library              = library;
     super(ENCODE_DELAY_SCAN, true);
     scan();
   end
@@ -57,22 +59,7 @@ class Encode < Rev::TimerWatcher
 
   def nextEncode()
     @th = nil;
-    if(@curEncodingFile != nil)
-      @files.push(@encodedDir + "/" + @curEncodingFile);
-      @hEncodingFiles[@curEncodingFile] = true;
-      @curEncodingFile = nil;
-      saveFile();
-    end
-    while(@hWaitEncodingFiles.size() != 0)
-      name, file = @hWaitEncodingFiles.shift();
-      next if(Time.now()-File::Stat.new(file).mtime() < ENCODE_DELAY_SCAN*2);
-      @curEncodingFile = name;
-      @th = EncodingThread.new(file, @encodedDir + "/" + name, self) { |obj|
-        obj.nextEncode();
-      }
-      @th.attach(@loop) if(@loop != nil);
-      break;
-    end
+    encode();
   end
 
   def attach(loop)
@@ -82,24 +69,25 @@ class Encode < Rev::TimerWatcher
   end
 
   private
-  def saveFile()
-    File.open("list", "w") { | fd |
-      @hEncodingFiles.each { | k, v |
-        fd.write(k + "\n");
-      }
-    }
-  end
 
-  def loadFile()
-    begin 
-      File.open("list") { | fd |
-        fd.each { |l|
-          @hEncodingFiles[l.strip] = true;
-          @files.push(@encodedDir + "/" + l.strip);
-        }
-      }
-    rescue
-    end
+  def encode()
+    return if(@th);
+
+    file = @library.encode_file()
+    return if(file == nil);
+
+    mid = file[0];
+
+    @library.change_stat(mid, Library::FILE_ENCODING_PROGRESS);
+    @th = EncodingThread.new(file, self, @library, mid) { |status, obj, lib, mid|
+      if(status == 0)
+        @library.change_stat(mid, Library::FILE_OK)
+      else
+        @library.change_stat(mid, Library::FILE_ENCODING_FAIL)
+      end
+      obj.nextEncode();
+    }
+    @th.attach(@loop) if(@loop != nil);
   end
 
   def on_timer
@@ -113,16 +101,21 @@ class Encode < Rev::TimerWatcher
     files.each { | f |
       name = f.scan(/.*\/(.*)/);
       name = name[0][0];
-      if(@hEncodingFiles[name]     == nil &&
-         @hWaitEncodingFiles[name] == nil &&
-         name                      != @curEncodingFile)
-         @hWaitEncodingFiles[name] = f;
+      if(@library.check_file(f))
+        tag = Id3.decode(f);
+        if(tag.title == nil || tag.artist == nil || tag.album == nil)
+          @library.add(f, @encodedDir,
+                       tag.title, tag.artist, tag.album, tag.date,
+                       Library::FILE_BAD_TAG);
+        else
+          @library.add(f, @encodedDir + "/" + name,
+                       tag.title, tag.artist, tag.album,
+                       tag.date, Library::FILE_WAIT);
+        end
       end
     }
 
-    if(@hWaitEncodingFiles.size() != 0 && @th == nil)
-      nextEncode();
-    end
+    encode();
   end
 
 end
