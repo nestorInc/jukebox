@@ -4,6 +4,7 @@ require 'rev'
 require 'socket'
 require 'cgi'
 require 'yaml.rb'
+require 'json'
 
 load 'http.rb'
 load 'mp3.rb'
@@ -60,8 +61,18 @@ h.addPath("/ch", channelList) { |s, req, list|
         params = req.data.split(/&/);
         options = {
         "Content-type" => "application/json"};
-        p CGI::unescape(req.data)
-
+        query = CGI::unescape(req.data)
+        req_string = query[6..-2]
+        json_struct = JSON.parse(req_string)
+        reply = "{\"timestamp\":1314886609.21,\"current_song\":{\"id\":2,\"title\":\"Titre euhhhh\",\"artist\":\"Artisteeuhhhh\",\"total_time\":203,\"elapsed_time\":70},\"channel_infos\":{\"listener_count\":3},\"play_queue\":{\"songs\":[{\"artist\":\"Artiste\",\"title\":\"Titre\",\"duration\":270},{\"artist\":\"Muse\",\"title\":\"New Born\",\"duration\":260},{\"artist\":\"Metallica\",\"title\":\"Master of Puppets\",\"duration\":560}]}}";
+        json_obj = JSON.load(reply)
+        json_gen = JSON.generate(json_obj)
+        if(json_struct["action"] == "next")
+          ch.next()
+        elsif(json_struct["action"] == "previous")
+          ch.previous()
+        end
+        rep.setData(json_gen)
       else
         rep.setData("<html><head><title>Error</title></head><body><H1>Unknown action #{action}</H1></body></head>");
       end

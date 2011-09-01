@@ -159,7 +159,7 @@ class HttpSession < Rev::TCPSocket
 end
 
 class HttpServer < Rev::TCPServer
-  def initialize(port = 8080)
+  def initialize(port = 8042)
     @uri_table  = {};
     @path_table = {};
 
