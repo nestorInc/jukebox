@@ -23,9 +23,11 @@ class Library
     if(mid == nil)
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
       res = req.execute!();
+      req.close();
     else
       req = @db.prepare("SELECT * FROM library WHERE mid=? AND status=#{FILE_OK} LIMIT 1");
       res = req.execute!(mid);
+      req.close();
     end
 
     res[0];
@@ -34,6 +36,7 @@ class Library
   def encode_file()
     req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_WAIT} LIMIT 1");
     res = req.execute!();
+    req.close();
     return nil if(res.size == 0);
     return res[0];
   end
@@ -41,24 +44,28 @@ class Library
   def change_stat(mid, state)
     req = @db.prepare("UPDATE library SET status=? where mid=?");  
     res = req.execute!(state, mid);
+    req.close();
+    res;
   end
 
   def all_file()
     req = @db.prepare("SELECT * from library");  
     res = req.execute!();
-    p res;
+    req.close();
     res;
   end
 
   def check_file(src)
     req = @db.prepare("SELECT * from library where src=?");  
     res = req.execute!(src);
+    req.close();
     res.size == 0;
   end
 
   def add(src, dst, title, artist, album, years, status)
     req = @db.prepare("INSERT INTO library (mid, src, dst, title, artist, album, years, status) VALUES(?,?,?,?,?,?,?,?)");
     req.execute(nil, src, dst, title, artist, album, years, status);
+    req.close();
   end
 
 end
