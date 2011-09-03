@@ -35,7 +35,7 @@ class Mp3Channel < Mp3Stream
     @library = library;
     @scks    = [];
     @history = []
-    @pos     = 0;
+    @pos     = -1;
     @nbPreload = 5;
     @currentEntry = [];
     super();
@@ -74,12 +74,13 @@ class Mp3Channel < Mp3Stream
 
   def next()
     puts "Next channel #{@name}";    
+    @pos += 1;
     flush();
   end
 
   def previous()
     puts "Previous channel #{@name}";
-    @pos -=2 if(@pos > 1);
+    @pos -=1 if(@pos > 0);
     flush();
   end
 
@@ -105,9 +106,7 @@ class Mp3Channel < Mp3Stream
           entry = @library.get_file();
         end while @history.include?(entry[0])
         @history.push(entry[0]);
-        if(i == 0)
-          @currentEntry = entry; # store the current entry to open the good file (see below)
-        end
+        @currentEntry = entry if(i == 0); # store the current entry to open the good file (see below)
       end
       # end of preloading
     # if we are not at the end, jsut move to the next entry
@@ -116,7 +115,6 @@ class Mp3Channel < Mp3Stream
       @currentEntry = @library.get_file(mid);
     end
     # refresh the position in the playlist
-    @pos += 1;
     file = @currentEntry[2];
     puts "Fetch channel #{@name}: #{file}";
     fd = File.open(file);
