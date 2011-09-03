@@ -36,6 +36,8 @@ class Mp3Channel < Mp3Stream
     @scks    = [];
     @history = []
     @pos     = 0;
+    @nbPreload = 5;
+    @currentEntry = [];
     super();
     puts "Create new channel #{name}";
   end
@@ -89,17 +91,33 @@ class Mp3Channel < Mp3Stream
     return @pos;
   end
 
+  def getLibrary()
+    return @library;
+  end
+
   private
   def fetchData()
     if(@history[@pos] == nil)
-      entry = @library.get_file();
-      @history.push(entry[0]);
+      # when we are at the history end, preload some files
+      for i in 0..@nbPreload
+        # keep a file from being include twice
+        begin
+          entry = @library.get_file();
+        end while @history.include?(entry[0])
+        @history.push(entry[0]);
+        if(i == 0)
+          @currentEntry = entry; # store the current entry to open the good file (see below)
+        end
+      end
+      # end of preloading
+    # if we are not at the end, jsut move to the next entry
     else
       mid = @history[@pos];
-      entry = @library.get_file(mid);
+      @currentEntry = @library.get_file(mid);
     end
+    # refresh the position in the playlist
     @pos += 1;
-    file = entry[2];
+    file = @currentEntry[2];
     puts "Fetch channel #{@name}: #{file}";
     fd = File.open(file);
     data = fd.read();

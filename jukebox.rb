@@ -64,13 +64,14 @@ h.addPath("/ch", channelList) { |s, req, list|
         options = {
         "Content-type" => "application/json"};
         query = CGI::unescape(req.data);
-        json_struct = json.parse_query(query);
-        if(json_struct["action"] == "next")
+        json_obj = json.s_to_obj(query);
+        if(json_obj["action"] == "next")
           ch.next();
-        elsif(json_struct["action"] == "previous")
+        elsif(json_obj["action"] == "previous")
           ch.previous();
         end
-        json_str = json.reply(ch.getMids(), ch.getPos());
+        json.refresh(ch.getMids(), ch.getPos(), ch.getLibrary());
+        json_str = json.current_to_s();
         rep.setData(json_str);
       else
         rep.setData("<html><head><title>Error</title></head><body><H1>Unknown action #{action}</H1></body></head>");
