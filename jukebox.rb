@@ -11,8 +11,10 @@ load 'mp3.rb'
 load 'channel.rb'
 load 'encode.rb'
 load 'db.rb'
+load 'jsonManager.rb'
 
 library = Library.new();
+json = JsonManager.new(library);
 
 e = Encode.new(library, ARGV[0], ARGV[1]);
 e.attach(Rev::Loop.default);
@@ -29,7 +31,7 @@ h.addPath("/ch", channelList) { |s, req, list|
     channelName = "general";
   end
   ch = channelList[channelName];
-  if(action == nil)
+  if(action == nil)	
     options = {
       "Connection"   => "Close",
       "Content-type" => "audio/mpeg"};
@@ -61,18 +63,15 @@ h.addPath("/ch", channelList) { |s, req, list|
         params = req.data.split(/&/);
         options = {
         "Content-type" => "application/json"};
-        query = CGI::unescape(req.data)
-        req_string = query[6..-2]
-        json_struct = JSON.parse(req_string)
-        reply = "{\"timestamp\":1314886609.21,\"current_song\":{\"id\":2,\"title\":\"Titre euhhhh\",\"artist\":\"Artisteeuhhhh\",\"total_time\":203,\"elapsed_time\":70},\"channel_infos\":{\"listener_count\":3},\"play_queue\":{\"songs\":[{\"artist\":\"Artiste\",\"title\":\"Titre\",\"duration\":270},{\"artist\":\"Muse\",\"title\":\"New Born\",\"duration\":260},{\"artist\":\"Metallica\",\"title\":\"Master of Puppets\",\"duration\":560}]}}";
-        json_obj = JSON.load(reply)
-        json_gen = JSON.generate(json_obj)
+        query = CGI::unescape(req.data);
+        json_struct = json.parse_query(query);
         if(json_struct["action"] == "next")
-          ch.next()
+          ch.next();
         elsif(json_struct["action"] == "previous")
-          ch.previous()
+          ch.previous();
         end
-        rep.setData(json_gen)
+        json_str = json.reply(ch.getMids(), ch.getPos());
+        rep.setData(json_str);
       else
         rep.setData("<html><head><title>Error</title></head><body><H1>Unknown action #{action}</H1></body></head>");
       end

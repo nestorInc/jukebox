@@ -81,6 +81,14 @@ class Mp3Channel < Mp3Stream
     flush();
   end
 
+  def getMids()
+    return @history;
+  end
+
+  def getPos()
+    return @pos;
+  end
+
   private
   def fetchData()
     if(@history[@pos] == nil)

@@ -18,7 +18,21 @@ class Library
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
                        status INTEGER);" );
   end
+  
+  def get_title(mid)
+    req = @db.prepare("SELECT title FROM library WHERE mid=? LIMIT 1");
+    res = req.execute!(mid);
+    req.close();
+    res[0];
+  end
 
+  def get_artist(mid)
+    req = @db.prepare("SELECT artist FROM library WHERE mid=? LIMIT 1");
+    res = req.execute!(mid);
+    req.close();
+    res[0];
+  end
+  
   def get_file(mid = nil)
     if(mid == nil)
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
