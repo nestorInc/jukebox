@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'rev'
+require 'time'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
@@ -38,6 +39,7 @@ class Mp3Channel < Mp3Stream
     @pos     = 0;
     @nbPreload = 5;
     @currentEntry = [];
+    @timestamp = "";
     super();
     puts "Create new channel #{name}";
   end
@@ -94,6 +96,11 @@ class Mp3Channel < Mp3Stream
   def getLibrary()
     return @library;
   end
+  
+  # return the timestamp of the last modification in the playlist as an integer in seconds since epoch
+  def getTimestamp()
+    return @timestamp.to_i();
+  end
 
   private
   def fetchData()
@@ -105,9 +112,7 @@ class Mp3Channel < Mp3Stream
           entry = @library.get_file();
         end while @history.include?(entry[0])
         @history.push(entry[0]);
-        if(i == 0)
-          @currentEntry = entry; # store the current entry to open the good file (see below)
-        end
+        @currentEntry = entry if(i == 0); # store the current entry to open the good file (see below)
       end
       # end of preloading
     # if we are not at the end, jsut move to the next entry
@@ -122,6 +127,7 @@ class Mp3Channel < Mp3Stream
     fd = File.open(file);
     data = fd.read();
     fd.close();
+    @timestamp = Time.now();
     data;    
   end
 end

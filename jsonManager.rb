@@ -10,11 +10,11 @@ class JsonManager
   def initialize(library)
     @currentMid = 0;
     @currentTitle = [];
-    @currentArstist = [];
+    @currentArtist = [];
     @reply = "{}";
   end
 
-  def refresh(playlistMids, pos, library)
+  def refresh(playlistMids, pos, library, timestamp)
     @currentMid = playlistMids[pos-1];
     @currentTitle = library.get_title(@currentMid);
     @currentArtist = library.get_artist(@currentMid);
@@ -29,7 +29,7 @@ class JsonManager
         end
       end
     end
-    @reply = "{\"timestamp\":1314886609.21,\"current_song\":{\"id\":#{@currentMid},\"title\":\"#{@currentTitle[0]}\",\"artist\":\"#{@currentArtist[0]}\",\"total_time\":203,\"elapsed_time\":70},\"channel_infos\":{\"listener_count\":3},\"play_queue\":{\"songs\":[#{songs}]}}";
+    @reply = "{\"timestamp\":#{timestamp},\"current_song\":{\"id\":#{@currentMid},\"title\":\"#{@currentTitle[0]}\",\"artist\":\"#{@currentArtist[0]}\",\"total_time\":203,\"elapsed_time\":70},\"channel_infos\":{\"listener_count\":3},\"play_queue\":{\"songs\":[#{songs}]}}";
   end
 
   def current_to_s() 

@@ -70,7 +70,7 @@ h.addPath("/ch", channelList) { |s, req, list|
         elsif(json_obj["action"] == "previous")
           ch.previous();
         end
-        json.refresh(ch.getMids(), ch.getPos(), ch.getLibrary());
+        json.refresh(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp());
         json_str = json.current_to_s();
         rep.setData(json_str);
       else

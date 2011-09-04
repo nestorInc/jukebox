@@ -17,6 +17,7 @@ class Library
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
                        status INTEGER);" );
+    puts "library initialized.";
   end
   
   def get_title(mid)
