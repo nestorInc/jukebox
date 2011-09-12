@@ -159,10 +159,12 @@ class HttpSession < Rev::TCPSocket
 end
 
 class HttpServer < Rev::TCPServer
-  def initialize(port = 8042)
+  @@logfd = nil;
+  def initialize(port = 8080)
     @uri_table  = {};
     @path_table = {};
-
+    
+    log("starting http server")
     super(nil, port, HttpSession, self);
   end
 
@@ -198,5 +200,14 @@ class HttpServer < Rev::TCPServer
       rep.setData("<html><head><title>404 Not found</title></head><body><H1>Page not found</H1></body></head>");
       s.write(rep.to_s);
     end
+  end
+
+  private
+  def log(str)
+    if(@@logfd == nil)
+      @@logfd = File.open("http.log", "a+");
+      @@logfd.sync = true;
+    end
+    @@logfd.write("#{DateTime.now()} #{str}\n");
   end
 end

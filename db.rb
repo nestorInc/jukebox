@@ -2,6 +2,8 @@
 
 require 'sqlite3'
 
+load 'display.rb'
+
 class Library
   FILE_WAIT              = 1;
   FILE_BAD_TAG           = 2;
@@ -17,8 +19,11 @@ class Library
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
                        status INTEGER);" );
-    puts "library initialized.";
+    display("library initialized.");
   end
+
+# searching methods here 
+#SELECT * FROM music ORDER BY mid LIMIT 60,10;
   
   def get_title(mid)
     req = @db.prepare("SELECT title FROM library WHERE mid=? LIMIT 1");
@@ -84,5 +89,3 @@ class Library
   end
 
 end
-
-

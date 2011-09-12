@@ -181,6 +181,7 @@ class Mp3Stream
 
   def flush
     @frames = [];
+    load_file();
   end
 
   def play()
@@ -195,17 +196,7 @@ class Mp3Stream
       if(@frames.size < nb_frame)
         cur.concat(@frames);
         nb_frame -= @frames.size;
-        data = fetchData();
-        data.force_encoding("BINARY");
-        while(data.size >= 4)
-          frame = Mp3Frame.fetch(data);
-          frame = Id3.fetch(data) if(frame == nil);
-          if(frame)
-            @frames.push(frame);
-          else
-            data.replace(data[1, -1]);
-          end
-        end
+        self.next();
       else
         cur.concat(@frames.shift(nb_frame));
         nb_frame = 0;
@@ -214,4 +205,21 @@ class Mp3Stream
 
     cur;
   end
+
+  private
+  def load_file()
+    data = fetchData();
+    data.force_encoding("BINARY");
+    while(data.size >= 4)
+      frame = Mp3Frame.fetch(data);
+      frame = Id3.fetch(data) if(frame == nil);
+      if(frame)
+        @frames.push(frame);
+      else
+        data.replace(data[1, -1]);
+      end
+    end
+  end
+
 end
+

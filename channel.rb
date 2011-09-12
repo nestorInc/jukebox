@@ -3,6 +3,8 @@
 require 'rev'
 require 'time'
 
+load 'display.rb'
+
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
     super(0.2, true);
@@ -11,12 +13,12 @@ class ChannelsCron < Rev::TimerWatcher
 
   def register(ch)
     @channels.push(ch);
-    puts "Cron register channel #{ch.name()} [#{@channels.size()}]"
+    display("Cron register channel #{ch.name()} [#{@channels.size()}]");
   end
 
   def unregister(ch)
     @channels.delete(ch);
-    puts "Cron unregister channel #{ch.name()} [#{@channels.size()}]"
+    display("Cron unregister channel #{ch.name()} [#{@channels.size()}]");
   end
 
   private 
@@ -35,13 +37,13 @@ class Mp3Channel < Mp3Stream
     @name    = name;
     @library = library;
     @scks    = [];
-    @history = []
-    @pos     = 0;
+    @history = [];
+    @pos     = -1;
     @nbPreload = 5;
     @currentEntry = [];
     @timestamp = "";
     super();
-    puts "Create new channel #{name}";
+    display("Creating new channel #{name}");
   end
 
   def name
@@ -63,7 +65,7 @@ class Mp3Channel < Mp3Stream
       start();
     end
     @scks.push(s);
-    puts "Register channel #{@name} [#{@scks.size()}]";
+    display("Registering channel #{@name} [#{@scks.size()} user(s) connected]");
   end
 
   def unregister(s)
@@ -71,17 +73,18 @@ class Mp3Channel < Mp3Stream
     if(@scks.size() == 0)
       $channelsCron.unregister(self);
     end
-    puts "Unregister channel #{@name} [#{@scks.size()}]";
+    display("Unregistering channel #{@name} [#{@scks.size()} user(s) connected]");
   end
 
   def next()
-    puts "Next channel #{@name}";    
+    display("Next on channel #{@name}");
+    @pos += 1;    
     flush();
   end
 
   def previous()
-    puts "Previous channel #{@name}";
-    @pos -=2 if(@pos > 1);
+    display("Previous on channel #{@name}");
+    @pos -=1 if(@pos > 0);
     flush();
   end
 
@@ -104,26 +107,23 @@ class Mp3Channel < Mp3Stream
 
   private
   def fetchData()
-    if(@history[@pos] == nil)
-      # when we are at the history end, preload some files
-      for i in 0..@nbPreload
+     delta = @history.size()-@pos-1;
+     if(delta < @nbPreload)
+      preload = @nbPreload - delta;
+      # this allows to have always at least @nbPreload songs in advance from the current position : preloading some files
+      for i in 1..preload
         # keep a file from being include twice
         begin
           entry = @library.get_file();
         end while @history.include?(entry[0])
         @history.push(entry[0]);
-        @currentEntry = entry if(i == 0); # store the current entry to open the good file (see below)
       end
-      # end of preloading
-    # if we are not at the end, jsut move to the next entry
-    else
-      mid = @history[@pos];
-      @currentEntry = @library.get_file(mid);
     end
-    # refresh the position in the playlist
-    @pos += 1;
+    # move to the next entry
+    mid = @history[@pos];
+    @currentEntry = @library.get_file(mid);
     file = @currentEntry[2];
-    puts "Fetch channel #{@name}: #{file}";
+    display("Fetching on channel #{@name}: #{file}");
     fd = File.open(file);
     data = fd.read();
     fd.close();

@@ -67,11 +67,16 @@ h.addPath("/ch", channelList) { |s, req, list|
         json_obj = json.s_to_obj(query);
         if(json_obj["action"] == "next")
           ch.next();
+          json.on_skip_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp());
+          json_str = json.get_info_reply();
         elsif(json_obj["action"] == "previous")
           ch.previous();
+          json.on_skip_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp());
+          json_str = json.get_info_reply();
+        else
+          json.on_skip_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp());
+          json_str = json.get_info_reply();
         end
-        json.refresh(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp());
-        json_str = json.current_to_s();
         rep.setData(json_str);
       else
         rep.setData("<html><head><title>Error</title></head><body><H1>Unknown action #{action}</H1></body></head>");
