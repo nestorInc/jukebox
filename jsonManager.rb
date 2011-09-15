@@ -18,13 +18,12 @@ class JsonManager
     @channelInfos_s = "";
     @listenerCount_s = "";
     @song_s = "";
-    
   end
 
   # --- refresh functions ---
 
-  def refresh_timestamp(timestamp)
-    @timestamp = timestamp;
+  def refresh_timestamp()
+    @timestamp = Time.now().to_i();
   end
 
   def refresh_currentMid(currentMid)
@@ -61,12 +60,13 @@ class JsonManager
 
   def build_songs_s(playlist, position, library)
     songs = ""
-    for i in position+1..playlist.size()-1
+    playlistSize = playlist.size();
+    for i in position+1..playlistSize-1
       title = library.get_title(playlist[i]);
       artist = library.get_artist(playlist[i]);
-      if(i < playlist.size()-1)
+      if(i < playlistSize-1)
         songs = songs + "{\"artist\":\"#{artist[0]}\",\"title\":\"#{title[0]}\",\"duration\":270}";
-        if(i < (playlist.size()-2))
+        if(i < (playlistSize-2))
           songs = songs + ",";
         end
       end
@@ -80,13 +80,18 @@ class JsonManager
 
   # --- --- --- ---
 
-  # action on events
-
-  def on_skip_request(playlist, position, library, timestamp)
-    refresh_timestamp(timestamp);
-    refresh_currentMid(playlist[position]);
-    refresh_currentSong(library.get_artist(@currentMid), library.get_title(@currentMid));
-    build_songs_s(playlist, position, library);
+ 	 # action on events
+  def on_refresh_request(playlist, position, library, timestamp)
+    if(@timestamp < timestamp)
+      refresh_timestamp();
+      refresh_currentMid(playlist[position]);
+      refresh_currentSong(library.get_artist(@currentMid), library.get_title(@currentMid));
+      build_songs_s(playlist, position, library);
+      build_timestamp_s();
+      build_currentSong_s();
+      build_channelInfos_s();
+      build_playQueue_s();
+    end
   end
 
   # --- --- --- ---
@@ -94,13 +99,7 @@ class JsonManager
   # get reply functions
 
   def get_info_reply()
-    build_timestamp_s();
-    build_currentSong_s();
-    build_channelInfos_s();
-    build_playQueue_s();
-    
     reply = "{#{@timestamp_s},#{@currentSong_s},#{@channelInfos_s},#{@playQueue_s}}"; 
- 
     json_obj = JSON.load(reply);
     json_str = JSON.generate(json_obj);
   

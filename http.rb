@@ -160,7 +160,7 @@ end
 
 class HttpServer < Rev::TCPServer
   @@logfd = nil;
-  def initialize(port = 8080)
+  def initialize(port = 8013)
     @uri_table  = {};
     @path_table = {};
     

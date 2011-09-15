@@ -41,7 +41,7 @@ class Mp3Channel < Mp3Stream
     @pos     = -1;
     @nbPreload = 5;
     @currentEntry = [];
-    @timestamp = "";
+    @timestamp = "0";
     super();
     display("Creating new channel #{name}");
   end
@@ -106,19 +106,28 @@ class Mp3Channel < Mp3Stream
   end
 
   private
-  def fetchData()
+  def fetchData() 
      delta = @history.size()-@pos-1;
      if(delta < @nbPreload)
       preload = @nbPreload - delta;
+      # here, we calculate the left side of the anti double inclusion range
+      # This allows not listening the same music again during the next 30 minutes.
+      if(@pos-10 > 0);
+        antiDoubleBegin = @pos-10;
+      else
+        antiDoubleBegin = 0;
+      end
       # this allows to have always at least @nbPreload songs in advance from the current position : preloading some files
       for i in 1..preload
-        # keep a file from being include twice
+        # keep a file from being include twice in the next 15 songs
+        lastInsertions = @history[antiDoubleBegin..-1];
         begin
           entry = @library.get_file();
-        end while @history.include?(entry[0])
+        end while lastInsertions.include?(entry[0]) # the space we look is (10 + preload) wide (30min) see above
         @history.push(entry[0]);
       end
     end
+    puts @history;
     # move to the next entry
     mid = @history[@pos];
     @currentEntry = @library.get_file(mid);
