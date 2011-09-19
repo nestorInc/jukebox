@@ -105,6 +105,10 @@ class Mp3Channel < Mp3Stream
     return @timestamp.to_i();
   end
 
+  def getConnected()
+    return @scks.size();
+  end
+
   private
   def fetchData() 
      delta = @history.size()-@pos-1;
@@ -127,7 +131,6 @@ class Mp3Channel < Mp3Stream
         @history.push(entry[0]);
       end
     end
-    puts @history;
     # move to the next entry
     mid = @history[@pos];
     @currentEntry = @library.get_file(mid);
