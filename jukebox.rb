@@ -63,6 +63,11 @@ h.addPath("/ch", channelList) { |s, req, list|
         params = req.data.split(/&/);
         options = {
         "Content-type" => "application/json"};
+        p req.data
+        req.data.gsub!(/%23/, '');
+        req.data.gsub!(/%26/, '');
+        req.data.gsub!(/%3B/,'');
+        req.data.gsub!(/%29/, '');
         query = CGI::unescape(req.data);
         json_obj = json.s_to_obj(query);
         if(json_obj["action"] == "next")
