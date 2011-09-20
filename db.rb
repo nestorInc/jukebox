@@ -61,9 +61,10 @@ class Library
   def secure_request(value, field, orderBy, orderByWay, firstResult, resultCount)
     #value = value.gsub(/\\/, '\&\&').gsub(/'/, "''").gsub(/\\"/,'');
     tmp_value = value.gsub(/"/,'').gsub(/'/,'').gsub(/\\/,'');
-    if(tmp_value != value)
-      return [];
-    end
+    #p tmp_value;
+    #if(tmp_value != value)
+    #  return [];
+    #end
     if((field != "artist") and (field != "title") and (field != "album"))
       field = "artist";
     end
@@ -93,7 +94,7 @@ class Library
   def request(value, field, orderBy, orderByWay, firstResult, resultCount)
     request = "SELECT artist,title,mid FROM library ";
     if(field != nil)
-      request += "WHERE #{field} LIKE \"#{value}%\" ";
+      request += "WHERE #{field} LIKE \"%#{value}%\" ";
     end
     if(orderBy != nil)
       request += "ORDER BY #{orderBy} ";
@@ -108,6 +109,7 @@ class Library
         request += "LIMIT #{resultCount}";
       end
     end
+    warning("Querying database : #{request}");
     req = @db.prepare(request);
     res = req.execute!()
     req.close();
