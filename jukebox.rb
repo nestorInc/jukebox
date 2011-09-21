@@ -63,12 +63,12 @@ h.addPath("/ch", channelList) { |s, req, list|
         params = req.data.split(/&/);
         options = {
         "Content-type" => "application/json"};
-        p req.data
         req.data.gsub!(/%23/, '');
         req.data.gsub!(/%26/, '');
         req.data.gsub!(/%3B/,'');
         req.data.gsub!(/%29/, '');
         query = CGI::unescape(req.data);
+        #p query;
         json_obj = json.s_to_obj(query);
         if(json_obj["action"] == "next")
           ch.next();
@@ -87,6 +87,18 @@ h.addPath("/ch", channelList) { |s, req, list|
             json.on_search_request(ch.getLibrary(), json_obj["search"]);
             json_str = json.get_search_reply();
           end
+        elsif(json_obj["action"] = "refresh")
+          if(json_obj["search"] == nil)
+            json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+            json_str = json.get_info_reply();
+          else
+            json.on_search_request(ch.getLibrary(), json_obj["search"]);
+            json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+            json_str = json.get_info_search_reply();
+          end
+        else
+          json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+          json_str = json.get_info_reply();
         end
  
        # puts json_str;

@@ -60,11 +60,9 @@ class Library
 
   def secure_request(value, field, orderBy, orderByWay, firstResult, resultCount)
     #value = value.gsub(/\\/, '\&\&').gsub(/'/, "''").gsub(/\\"/,'');
-    tmp_value = value.gsub(/"/,'').gsub(/'/,'').gsub(/\\/,'');
-    #p tmp_value;
-    #if(tmp_value != value)
-    #  return [];
-    #end
+    value.gsub!(/"/,'')
+    value.gsub!(/'/,'')
+    value.gsub!(/\\/,'');
     if((field != "artist") and (field != "title") and (field != "album"))
       field = "artist";
     end
@@ -88,7 +86,7 @@ class Library
     if((firstResult >= resultCount) or (firstResult < 0))
       firstResult = 0;
     end
-    return request(tmp_value, field, orderBy, orderByWay, firstResult, resultCount); 
+    return request(value, field, orderBy, orderByWay, firstResult, resultCount); 
   end
 
   def request(value, field, orderBy, orderByWay, firstResult, resultCount)

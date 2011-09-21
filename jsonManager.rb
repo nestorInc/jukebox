@@ -11,7 +11,8 @@ class JsonManager
     @currentTitle = [];
     @currentArtist = [];
     @connected = 0;
-     
+    @refreshed = 1;
+ 
     @currentSong_s = ""; 
     @playQueue_s = "";
     @timestamp_s = "";
@@ -146,12 +147,14 @@ class JsonManager
 
   # action on events
   def on_refresh_request(playlist, position, library, timestamp, connected)
+    @refreshed = 0;
     if(@timestamp < timestamp)
       refresh_currentMid(playlist[position]);
       refresh_currentSong(library.get_artist(@currentMid), library.get_title(@currentMid));
       build_songs_s(playlist, position, library);
       build_currentSong_s();
       build_playQueue_s();
+      @refreshed = 1;
     end
     refresh_timestamp();
     refresh_connected(connected);
@@ -192,7 +195,23 @@ class JsonManager
   # get reply functions
 
   def get_info_reply()
-    reply = "{#{@timestamp_s},#{@currentSong_s},#{@channelInfos_s},#{@playQueue_s}}"; 
+    if @refreshed == 1
+      reply = "{#{@timestamp_s},#{@currentSong_s},#{@channelInfos_s},#{@playQueue_s}}"; 
+    else
+      reply = "{#{@timestamp_s},#{@channelInfos_s}}"; 
+    end
+    json_obj = JSON.load(reply);
+    json_str = JSON.generate(json_obj);
+  
+    return json_str;
+  end
+
+  def get_info_search_reply()
+    if @refreshed == 1
+      reply = "{#{@timestamp_s},#{@currentSong_s},#{@channelInfos_s},#{@playQueue_s},#{@searchResult_s}}"; 
+    else
+      reply = "{#{@timestamp_s},#{@channelInfos_s},#{@searchResult_s}}"; 
+    end 
     json_obj = JSON.load(reply);
     json_str = JSON.generate(json_obj);
   
