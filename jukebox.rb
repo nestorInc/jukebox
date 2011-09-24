@@ -63,15 +63,45 @@ h.addPath("/ch", channelList) { |s, req, list|
         params = req.data.split(/&/);
         options = {
         "Content-type" => "application/json"};
+        req.data.gsub!(/%23/, '');
+        req.data.gsub!(/%26/, '');
+        req.data.gsub!(/%3B/,'');
+        req.data.gsub!(/%29/, '');
         query = CGI::unescape(req.data);
+        #p query;
         json_obj = json.s_to_obj(query);
         if(json_obj["action"] == "next")
           ch.next();
+          json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+          json_str = json.get_info_reply();
         elsif(json_obj["action"] == "previous")
           ch.previous();
+          json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+          json_str = json.get_info_reply();
+        # TODO change the action state
+        elsif(json_obj["action"] == nil)
+          if(json_obj["search"] == nil)
+            json.on_search_error();
+            json_str = json.get_search_reply();
+          else
+            json.on_search_request(ch.getLibrary(), json_obj["search"]);
+            json_str = json.get_search_reply();
+          end
+        elsif(json_obj["action"] = "refresh")
+          if(json_obj["search"] == nil)
+            json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+            json_str = json.get_info_reply();
+          else
+            json.on_search_request(ch.getLibrary(), json_obj["search"]);
+            json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+            json_str = json.get_info_search_reply();
+          end
+        else
+          json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+          json_str = json.get_info_reply();
         end
-        json.refresh(ch.getMids(), ch.getPos(), ch.getLibrary());
-        json_str = json.current_to_s();
+ 
+       # puts json_str;
         rep.setData(json_str);
       else
         rep.setData("<html><head><title>Error</title></head><body><H1>Unknown action #{action}</H1></body></head>");

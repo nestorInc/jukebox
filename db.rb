@@ -2,6 +2,8 @@
 
 require 'sqlite3'
 
+load 'display.rb'
+
 class Library
   FILE_WAIT              = 1;
   FILE_BAD_TAG           = 2;
@@ -17,7 +19,11 @@ class Library
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
                        status INTEGER);" );
+    display("library initialized.");
   end
+
+# searching methods here 
+#SELECT * FROM music ORDER BY mid LIMIT 60,10;
   
   def get_title(mid)
     req = @db.prepare("SELECT title FROM library WHERE mid=? LIMIT 1");
@@ -45,6 +51,67 @@ class Library
     end
 
     res[0];
+  end
+
+# search value
+# search field
+# order by order by way
+# first result result count
+
+  def secure_request(value, field, orderBy, orderByWay, firstResult, resultCount)
+    #value = value.gsub(/\\/, '\&\&').gsub(/'/, "''").gsub(/\\"/,'');
+    value.gsub!(/"/,'')
+    value.gsub!(/'/,'')
+    value.gsub!(/\\/,'');
+    if((field != "artist") and (field != "title") and (field != "album"))
+      field = "artist";
+    end
+    if((orderBy != "artist") and (orderBy != "title") and (orderBy != "album"))
+      orderBy = "artist"; 
+    end
+    if(orderByWay == "down")
+      orderByWay = "DESC";
+    else
+      orderByWay = "ASC";
+    end
+    if(!(firstResult.is_a? Integer))
+      firstResult = 0;
+    end
+    if(!(resultCount.is_a? Integer))
+      resultCount = 10;
+    end
+    if((resultCount > 200) or (resultCount < 0))
+      resultCount = 50;
+    end
+    if((firstResult >= resultCount) or (firstResult < 0))
+      firstResult = 0;
+    end
+    return request(value, field, orderBy, orderByWay, firstResult, resultCount); 
+  end
+
+  def request(value, field, orderBy, orderByWay, firstResult, resultCount)
+    request = "SELECT artist,title,mid FROM library ";
+    if(field != nil)
+      request += "WHERE #{field} LIKE \"%#{value}%\" ";
+    end
+    if(orderBy != nil)
+      request += "ORDER BY #{orderBy} ";
+      if(orderByWay != nil)
+        request += "#{orderByWay} ";
+      end
+    end
+    if(firstResult or resultCount)
+      if(firstResult)
+        request += "LIMIT #{firstResult},#{resultCount}";
+      else
+        request += "LIMIT #{resultCount}";
+      end
+    end
+    warning("Querying database : #{request}");
+    req = @db.prepare(request);
+    res = req.execute!()
+    req.close();
+    return res;
   end
 
   def encode_file()
@@ -83,5 +150,3 @@ class Library
   end
 
 end
-
-
