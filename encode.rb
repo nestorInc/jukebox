@@ -5,6 +5,7 @@ require 'thread'
 load 'id3.rb'
 
 ENCODE_DELAY_SCAN = 30; # seconds
+MAX_ENCODE_JOB    = 2;
 
 class EncodingThread < Rev::IO
   def initialize(file, *args, &block)
@@ -56,6 +57,7 @@ class Encode < Rev::TimerWatcher
     @originDir            = originDir;
     @encodedDir           = encodedDir;
     @library              = library;
+    @th                   = [];
     super(ENCODE_DELAY_SCAN, true);
     scan();
   end
@@ -64,21 +66,25 @@ class Encode < Rev::TimerWatcher
     @files;
   end
 
-  def nextEncode()
-    @th = nil;
+  def nextEncode(th)
+    @th.delete(th);
+    puts @th.size
     encode();
   end
 
   def attach(loop)
     @loop = loop;
-    @th.attach(@loop) if(@th != nil);
+    @th.each { |t|
+      t.attach(@loop);
+    }
     super(loop);
   end
 
   private
 
   def encode()
-    return if(@th);
+    puts @th.size
+    return if(@th.size >= MAX_ENCODE_JOB);
 
     file = @library.encode_file()
     return if(file == nil);
@@ -86,15 +92,18 @@ class Encode < Rev::TimerWatcher
     mid = file[0];
 
     @library.change_stat(mid, Library::FILE_ENCODING_PROGRESS);
-    @th = EncodingThread.new(file, self, @library, mid) { |status, obj, lib, mid|
+    enc = EncodingThread.new(file, self, @library, mid) { |status, obj, lib, mid|
       if(status == 0)
         @library.change_stat(mid, Library::FILE_OK)
       else
         @library.change_stat(mid, Library::FILE_ENCODING_FAIL)
       end
-      obj.nextEncode();
+      obj.nextEncode(enc);
     }
-    @th.attach(@loop) if(@loop != nil);
+    enc.attach(@loop) if(@loop != nil);
+    @th.push(enc);
+
+    encode();
   end
 
   def on_timer
