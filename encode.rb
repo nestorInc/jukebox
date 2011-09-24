@@ -15,25 +15,25 @@ class EncodingThread < Rev::IO
     mid, src, dst, title, artist, album, years, status = file;
     puts "Encoding #{src} -> #{dst}"
 
-    extra_lame_param << "--tt \"#{title.sub('"', '\"')}\" "  if(title)
-    extra_lame_param << "--ta \"#{artist.sub('"', '\"')}\" " if(artist)
-    extra_lame_param << "--tl \"#{album.sub('"', '\"')}\" "  if(album)
+#    extra_lame_param << "--tt \"#{title.sub('"', '\"')}\" "  if(title)
+#    extra_lame_param << "--ta \"#{artist.sub('"', '\"')}\" " if(artist)
+#    extra_lame_param << "--tl \"#{album.sub('"', '\"')}\" "  if(album)
 #    extra_lame_param << "--tn \"#{tag.track}\" "  if(tag.track != 0)
-    extra_lame_param << "--ty \"#{years}\" "   if(years != 0)
+#    extra_lame_param << "--ty \"#{years}\" "   if(years != 0)
 
     src = src.sub('"', '\"');
     dst = dst.sub('"', '\"');
 
     src.force_encoding("BINARY");
     dst.force_encoding("BINARY");
-    extra_lame_param.force_encoding("BINARY");
+#     extra_lame_param.force_encoding("BINARY");
 
     rd, wr = IO.pipe
     @pid = fork {
       rd.close()
       STDOUT.reopen(wr)
       wr.close();
-      exec("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -b 192 -t #{extra_lame_param}> /dev/null 2> /dev/null");
+      exec("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -b 192 -t > /dev/null 2> /dev/null");
     }
     wr.close();
     @fd  = rd;
