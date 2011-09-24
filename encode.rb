@@ -68,7 +68,6 @@ class Encode < Rev::TimerWatcher
 
   def nextEncode(th)
     @th.delete(th);
-    puts @th.size
     encode();
   end
 
@@ -83,7 +82,6 @@ class Encode < Rev::TimerWatcher
   private
 
   def encode()
-    puts @th.size
     return if(@th.size >= MAX_ENCODE_JOB);
 
     file = @library.encode_file()
