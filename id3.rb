@@ -79,10 +79,15 @@ private
     size;
   end
 
+  def Id3.getUnsynchronisation(data)
+    data.force_encoding("BINARAY");
+    data.gsub("\xFF\x00", "\xFF");
+  end
+
   def Id3.fetchV2Frame(data)
     # search only on the beginning of the file
     return nil if(data.bytesize() < 10);
-    return nil if (data[0..2] != "ID3");
+    return nil if(data[0..2] != "ID3");
 
     # check version
     version_minor = data[3].ord();
@@ -119,6 +124,8 @@ private
       flag = meta[8..9];
       meta.slice!(0..9);
       data = meta.slice!(0..size-1);
+      data = data[4, -1]                    if(flag & 0x0001);
+      data = Id3.getUnsynchronisation(data) if(flag & 0x0002);
       tag[id] = data;
     end
 
