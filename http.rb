@@ -78,8 +78,8 @@ class HttpResponse
 
   def setData(data, contentType = "text/html")
     @options["Connection"]     = "keep-alive",
-    @options["Content-length"] = data.bytesize();
-    @options["Content-type"]   = contentType;
+    @options["Content-Length"] = data.bytesize();
+    @options["Content-Type"]   = contentType;
 
     @data = data;
   end

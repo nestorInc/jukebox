@@ -34,7 +34,7 @@ h.addPath("/ch", channelList) { |s, req, list|
   if(action == nil)	
     options = {
       "Connection"   => "Close",
-      "Content-type" => "audio/mpeg"};
+      "Content-Type" => "audio/mpeg"};
     rep = HttpResponse.new(req.proto, 200, "OK", options);
     s.write(rep.to_s);
 
@@ -62,7 +62,7 @@ h.addPath("/ch", channelList) { |s, req, list|
       when "control"
         params = req.data.split(/&/);
         options = {
-        "Content-type" => "application/json"};
+        "Content-Type" => "application/json"};
         req.data.gsub!(/%23/, '');
         req.data.gsub!(/%26/, '');
         req.data.gsub!(/%3B/,'');
