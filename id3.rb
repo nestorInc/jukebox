@@ -1,14 +1,14 @@
 #!/usr/bin/env ruby
 
 class Id3
-   attr_reader :title
-   attr_reader :artist
-   attr_reader :album
-   attr_reader :date
-   attr_reader :track
-   attr_reader :genre
+   attr_accessor :title
+   attr_accessor :artist
+   attr_accessor :album
+   attr_accessor :date
+   attr_accessor :track
+   attr_accessor :genre
 
-  def initialize(data)
+  def initialize(data = nil)
     @title  = nil;
     @artist = nil;
     @album  = nil;
@@ -16,9 +16,11 @@ class Id3
     @track  = 0;
     @genre  = 0xFF;
 
-    data.force_encoding("BINARY");
-    decodeV1(data);
-    decodeV2(data);
+    if(data)
+      data.force_encoding("BINARY");
+      decodeV1(data);
+      decodeV2(data);
+    end
   end
 
   def Id3.decode(file)
@@ -32,6 +34,14 @@ class Id3
   def Id3.fetch(data)
     meta, flag = Id3.fetchV2Frame(data);
     meta;
+  end
+
+  def to_s()
+    tags = {}
+    tags["TIT2"] = setV2String(@title);
+    tags["TALB"] = setV2String(@album);
+    tags["TPE1"] = setV2String(@artist);
+    Id3.setV2(tags);
   end
 
 private
@@ -71,6 +81,13 @@ private
     data.encode("UTF-8").strip;
   end
 
+  def setV2String(str)
+    str = str.encode("UTF-8");
+    data = "\x03";
+    data << str;
+    data;
+  end
+
   def Id3.getV2Size(data)
     size = 0;
     data[0..3].each_byte { |d|
@@ -80,9 +97,40 @@ private
     size;
   end
 
+  def Id3.setV2Size(size)
+    4.times.map { |d|
+      v = size % 128;
+      size /= 128;
+      v
+    }.reverse.pack("C4"); 
+  end
+
+  def Id3.setV2Header(major, minus, data)
+    header = "ID3";
+    header << major.chr;
+    header << minus.chr;
+    header << "\x00";
+    header << Id3.setV2Size(data.bytesize());
+  end
+
   def Id3.getUnsynchronisation(data)
     data.force_encoding("BINARY");
     data.gsub("\xFF\x00", "\xFF");
+  end
+
+  def Id3.setV2(tags)
+    data = tags.map { |t, v|
+      v = "" if(v == nil);
+      tlv = t;                               # T
+      tlv += Id3.setV2Size(v.bytesize());    # L
+      tlv << "\x00\x00"                      # Flags
+      tlv << v;                              # V
+      tlv;
+    }.join();
+
+    header = Id3.setV2Header(4, 0, data);
+    Id3.new(header + data);
+    header + data;
   end
 
   def Id3.fetchV2Frame(data)
