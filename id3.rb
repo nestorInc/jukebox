@@ -51,6 +51,7 @@ private
   end
 
   def getV2String(data)
+    return "" if(data.bytesize() == 0);
     enc = data.slice!(0).ord();
     case(enc)
     when 0x01
@@ -80,7 +81,7 @@ private
   end
 
   def Id3.getUnsynchronisation(data)
-    data.force_encoding("BINARAY");
+    data.force_encoding("BINARY");
     data.gsub("\xFF\x00", "\xFF");
   end
 
@@ -121,33 +122,25 @@ private
       id   = meta[0..3];
       size = Id3.getV2Size(meta[4..7]);
       break if(id == "\x00\x00\x00\x00");
-      flag = meta[8..9];
+      flag = meta[8..9].unpack("n").first;
       meta.slice!(0..9);
       data = meta.slice!(0..size-1);
-      data = data[4, -1]                    if(flag & 0x0001);
-      data = Id3.getUnsynchronisation(data) if(flag & 0x0002);
+      data = data[4..-1]                    if(flag & 0x0001 == 0x0001);
+      data = Id3.getUnsynchronisation(data) if(flag & 0x0002 == 0x0002);
       tag[id] = data;
     end
 
     v = tag["TIT2"];
-    if(v)
-      @title = getV2String(v);
-    end
+    @title = getV2String(v) if(v);
 
     v = tag["TALB"];
-    if(v)
-      @album = getV2String(v);
-    end
+    @album = getV2String(v) if(v);
 
     v = tag["TRCK"];
-    if(v)
-      @track = getV2String(v);
-    end
+    @track = getV2String(v) if(v);
 
     v = tag["TPE1"];
-    if(v)
-      @artist = getV2String(v);
-    end
+    @artist = getV2String(v) if(v);
 
     return true;
   end
