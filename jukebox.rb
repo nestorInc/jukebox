@@ -23,7 +23,7 @@ channelList = {};
 
 h = HttpServer.new();
 
-h.addPath("/ch", channelList) { |s, req, list|
+h.addPath("/ch", channelList, library) { |s, req, list, lib|
   uri = req.uri[4 .. -1];
   uri = "" if(uri == nil)
   channelName, action = uri.split("/", 2);
@@ -39,7 +39,7 @@ h.addPath("/ch", channelList) { |s, req, list|
     s.write(rep.to_s);
 
     if(ch == nil)
-      ch = Mp3Channel.new(channelName, library);
+      ch = Channel.new(channelName, lib);
       channelList[channelName] = ch;
     end
     ch.register(s);
@@ -72,11 +72,11 @@ h.addPath("/ch", channelList) { |s, req, list|
         json_obj = json.s_to_obj(query);
         if(json_obj["action"] == "next")
           ch.next();
-          json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, ch.getConnected());
           json_str = json.get_info_reply();
         elsif(json_obj["action"] == "previous")
           ch.previous();
-          json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, ch.getConnected());
           json_str = json.get_info_reply();
         # TODO change the action state
         elsif(json_obj["action"] == nil)
@@ -84,20 +84,20 @@ h.addPath("/ch", channelList) { |s, req, list|
             json.on_search_error();
             json_str = json.get_search_reply();
           else
-            json.on_search_request(ch.getLibrary(), json_obj["search"]);
+            json.on_search_request(lib, json_obj["search"]);
             json_str = json.get_search_reply();
           end
         elsif(json_obj["action"] = "refresh")
           if(json_obj["search"] == nil)
-            json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, ch.getConnected());
             json_str = json.get_info_reply();
           else
-            json.on_search_request(ch.getLibrary(), json_obj["search"]);
-            json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+            json.on_search_request(lib, json_obj["search"]);
+            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, ch.getConnected());
             json_str = json.get_info_search_reply();
           end
         else
-          json.on_refresh_request(ch.getMids(), ch.getPos(), ch.getLibrary(), ch.getTimestamp(), ch.getConnected());
+          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, ch.getConnected());
           json_str = json.get_info_reply();
         end
  

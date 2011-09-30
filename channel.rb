@@ -33,6 +33,10 @@ $channelsCron = ChannelsCron.new();
 $channelsCron.attach(Rev::Loop.default)
 
 class Mp3Channel < Mp3Stream
+  attr_reader :name
+  attr_reader :pos
+  attr_reader :timestamp
+
   def initialize(name, library)
     @name    = name;
     @library = library;
@@ -41,13 +45,10 @@ class Mp3Channel < Mp3Stream
     @pos     = -1;
     @nbPreload = 5;
     @currentEntry = [];
-    @timestamp = "0";
+    @timestamp    = 0;
     super();
     display("Creating new channel #{name}");
-  end
 
-  def name
-    @name
   end
 
   def cron()
@@ -88,21 +89,8 @@ class Mp3Channel < Mp3Stream
     flush();
   end
 
-  def getMids()
+  def mids()
     return @history;
-  end
-
-  def getPos()
-    return @pos;
-  end
-
-  def getLibrary()
-    return @library;
-  end
-  
-  # return the timestamp of the last modification in the playlist as an integer in seconds since epoch
-  def getTimestamp()
-    return @timestamp.to_i();
   end
 
   def getConnected()
@@ -140,7 +128,7 @@ class Mp3Channel < Mp3Stream
     fd = File.open(file);
     data = fd.read();
     fd.close();
-    @timestamp = Time.now();
+    @timestamp = Time.now().to_i();
     data;    
   end
 end
