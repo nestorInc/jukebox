@@ -97,12 +97,13 @@ class HttpResponse
   end
 end
 
-class HttpSession < Rev::TCPSocket
+class HttpSession < Rev::SSLSocket
   @@logfd = nil;
-  def initialize(socket, server)
+  def initialize(socket, server, ssl = nil)
     @server = server;
     @data   = "";
     @length = 0;
+    @ssl    = ssl;
     super(socket);
   end
 
@@ -120,10 +121,23 @@ class HttpSession < Rev::TCPSocket
     @@logfd.write("#{DateTime.now()} #{remote_addr}:#{remote_port} #{str}\n");
   end
 
-  def on_connect()
-    log("connected");
+  def ssl_context
+    @_ssl_context = OpenSSL::SSL::SSLContext.new();
+    @_ssl_context.set_params;
+    @_ssl_context.cert = OpenSSL::X509::Certificate.new(File.open("serv.crt"));
+    @_ssl_context.key  = OpenSSL::PKey::RSA.new(File.open("serv.key"));
+    @_ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE;
+    @_ssl_context;
   end
-      
+
+  def on_connect
+    log("connected");
+    if(@ssl)
+      extend Rev::SSL
+      @_connecting ? ssl_client_start : ssl_server_start
+    end
+  end
+
   def on_close()
     log("disconnected");
     if(@close_block)
@@ -159,13 +173,22 @@ class HttpSession < Rev::TCPSocket
 end
 
 class HttpServer < Rev::TCPServer
+class HttpServer
   @@logfd = nil;
-  def initialize(port = 8082)
+  def initialize(port = 8080, sport = 8082)
     @uri_table  = {};
     @path_table = {};
-    
+    @srv        = [];
+
     log("starting http server")
-    super(nil, port, HttpSession, self);
+    @srv << Rev::TCPServer.new(nil, port, HttpSession, self);
+    @srv << Rev::TCPServer.new(nil, sport, HttpSession, self, true) if(sport);
+  end
+
+  def attach(loop)
+    @srv.each { |s|
+      s.attach(loop)
+    }
   end
 
   def addFile(uri, *data, &block)
