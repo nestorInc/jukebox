@@ -13,10 +13,7 @@ class Mp3Frame
   attr_reader :copyright
   attr_reader :original
   attr_reader :emphasis
-
-  def size
-    @size;
-  end
+  attr_reader :duration
 
   def to_s()
     @frame;
@@ -97,7 +94,6 @@ class Mp3Frame
                  copyright,
                  original,
                  emphasis,
-                 size,
                  frame);
   end
 
@@ -131,94 +127,74 @@ private
      [      0,      0,      0,      0,      0,      0 ]];
 
   def initialize(version,
-                layer,
-                protection,
-                bitrate,
-                samplerate,
-                padding,
-                hprivate,
-                channel,
-                extension,
-                copyright,
-                original,
-                emphasis,
-                size,
-                data)
-                @version    = version;
-                @layer      = layer;
-                @protection = protection;
-                @bitrate    = bitrate;
-                @samplerate = samplerate;
-                @padding    = padding;
-                @private    = hprivate;
-                @channel    = channel;
-                @extension  = extension;
-                @copyright  = copyright;
-                @original   = original;
-                @emphasis   = emphasis;
-                @size       = size;
-                @frame      = data;
+                 layer,
+                 protection,
+                 bitrate,
+                 samplerate,
+                 padding,
+                 hprivate,
+                 channel,
+                 extension,
+                 copyright,
+                 original,
+                 emphasis,
+                 data)
+    @version    = version;
+    @layer      = layer;
+    @protection = protection;
+    @bitrate    = bitrate;
+    @samplerate = samplerate;
+    @padding    = padding;
+    @private    = hprivate;
+    @channel    = channel;
+    @extension  = extension;
+    @copyright  = copyright;
+    @original   = original;
+    @emphasis   = emphasis;
+    @frame      = data;
+    @duration   = data.bytesize().to_f * 8 / bitrate;
   end
 end
 
-class Mp3Stream
-  def initialize()
-    @frames    = [];
-  end
+class Mp3File
+  def initialize(file)
+    @frames         = [];
+    @total_duration = 0.0;
+    @time           = 0.0;
 
-  def start(t = nil)
-    if(t)
-      @time = t;
-    else
-      @time = Time.now();
-    end
-    @nbSamples = 0;
-  end
-
-  def time
-    @time;
-  end
-
-  def flush
-    @frames = [];
-    load_file();
-  end
-
-  def play()
-    cur = [];
-
-    t = Time.now();
-    samples     = (t - @time) * 44100;
-    delta       = samples - @nbSamples;
-    nb_frame    = (delta / 1152).round; 
-    @nbSamples += nb_frame * 1152;
-    while(nb_frame != 0)
-      if(@frames.size < nb_frame)
-        cur.concat(@frames);
-        nb_frame -= @frames.size;
-        self.next();
-      else
-        cur.concat(@frames.shift(nb_frame));
-        nb_frame = 0;
-      end
-    end
-
-    cur;
-  end
-
-  private
-  def load_file()
-    data = fetchData();
+    data = File.open(file) { |fd|
+      fd.read();
+    }
     data.force_encoding("BINARY");
     while(data.size >= 4)
       frame = Mp3Frame.fetch(data);
-      frame = Id3.fetch(data) if(frame == nil);
+      if(frame)
+        @total_duration += frame.duration;
+      else
+        frame = Id3.fetch(data) if(frame == nil);
+      end
       if(frame)
         @frames.push(frame);
       else
+        p data.class
         data.replace(data[1, -1]);
       end
     end
+  end
+
+  def play(delta)
+    cur  = [];
+    time = 0.0;
+
+    while(time < delta)
+      f     = @frames.shift();
+      break if(f == nil);
+      time += f.duration;
+      cur.push(f);
+    end
+
+    @time += time;
+    [cur, time];
   end
 end
 
