@@ -32,27 +32,29 @@ end
 $channelsCron = ChannelsCron.new();
 $channelsCron.attach(Rev::Loop.default)
 
-class Mp3Channel < Mp3Stream
+class Channel
   attr_reader :name
   attr_reader :pos
   attr_reader :timestamp
 
   def initialize(name, library)
-    @name    = name;
-    @library = library;
-    @scks    = [];
-    @history = [];
-    @pos     = -1;
-    @nbPreload = 5;
+    @name         = name;
+    @library      = library;
+    @scks         = [];
+    @history      = [];
+    @cur          = nil;
+    @pos          = 0;
+    @nbPreload    = 1;
     @currentEntry = [];
     @timestamp    = 0;
-    super();
-    display("Creating new channel #{name}");
+    @time         = 0;
 
+    display("Creating new channel #{name}");
+    fetchData();
   end
 
   def cron()
-    frames = play();
+    frames = sync();
     frames.each { |t|
       @scks.each { |s|
         s.write(t.to_s());
@@ -63,7 +65,6 @@ class Mp3Channel < Mp3Stream
   def register(s)
     if(@scks.size() == 0)
       $channelsCron.register(self);
-      start();
     end
     @scks.push(s);
     display("Registering channel #{@name} [#{@scks.size()} user(s) connected]");
@@ -73,6 +74,7 @@ class Mp3Channel < Mp3Stream
     @scks.delete(s);
     if(@scks.size() == 0)
       $channelsCron.unregister(self);
+      @time = 0;
     end
     display("Unregistering channel #{@name} [#{@scks.size()} user(s) connected]");
   end
@@ -80,13 +82,13 @@ class Mp3Channel < Mp3Stream
   def next()
     display("Next on channel #{@name}");
     @pos += 1;    
-    flush();
+    fetchData();
   end
 
   def previous()
     display("Previous on channel #{@name}");
     @pos -=1 if(@pos > 0);
-    flush();
+    fetchData();
   end
 
   def mids()
@@ -125,10 +127,37 @@ class Mp3Channel < Mp3Stream
     @currentEntry = @library.get_file(mid);
     file = @currentEntry[2];
     display("Fetching on channel #{@name}: #{file}");
-    fd = File.open(file);
-    data = fd.read();
-    fd.close();
+    @cur = Mp3File.new(file);
+    tag = Id3.new();
+    tag.artist = @currentEntry[3];
+    tag.album  = @currentEntry[4];
+    tag.title  = @currentEntry[5];
+    @tag = tag.to_s();
     @timestamp = Time.now().to_i();
-    data;    
+  end
+
+  def sync()
+    frames = [];
+
+    now = Time.now();
+    if(@time == 0)
+      delta = 0.2;
+      @time = now - delta;
+    end
+
+    if(@tag)
+      frames << @tag;
+      @tag = nil;
+    end
+
+    begin
+      delta = now - @time;
+      new_frames, delta = @cur.play(delta);
+      frames += new_frames;
+      @time  += delta;
+      self.next() if(@time < now);
+    end while(@time < now)
+
+    frames;
   end
 end
