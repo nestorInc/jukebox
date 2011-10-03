@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'date'
+require 'rev/ssl'
 
 class HttpRequest
   attr_reader :method;
@@ -172,7 +173,6 @@ class HttpSession < Rev::SSLSocket
   end
 end
 
-class HttpServer < Rev::TCPServer
 class HttpServer
   @@logfd = nil;
   def initialize(port = 8080, sport = 8082)
