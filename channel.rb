@@ -68,6 +68,11 @@ class Channel
     end
     @scks.push(s);
     display("Registering channel #{@name} [#{@scks.size()} user(s) connected]");
+    tag = Id3.new();
+    tag.title  = @currentEntry[3];
+    tag.artist = @currentEntry[4];
+    tag.album  = @currentEntry[5];
+    s.write(tag.to_s());
   end
 
   def unregister(s)
