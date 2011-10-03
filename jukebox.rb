@@ -70,13 +70,14 @@ h.addPath("/ch", channelList, library) { |s, req, list, lib|
         query = CGI::unescape(req.data);
         #p query;
         json_obj = json.s_to_obj(query);
+	client_timestamp = json_obj["timestamp"];
         if(json_obj["action"] == "next")
           ch.next();
-          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, ch.getConnected());
+          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
           json_str = json.get_info_reply();
         elsif(json_obj["action"] == "previous")
           ch.previous();
-          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, ch.getConnected());
+          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
           json_str = json.get_info_reply();
         # TODO change the action state
         elsif(json_obj["action"] == nil)
@@ -89,15 +90,15 @@ h.addPath("/ch", channelList, library) { |s, req, list, lib|
           end
         elsif(json_obj["action"] = "refresh")
           if(json_obj["search"] == nil)
-            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, ch.getConnected());
+            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
             json_str = json.get_info_reply();
           else
             json.on_search_request(lib, json_obj["search"]);
-            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, ch.getConnected());
+            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
             json_str = json.get_info_search_reply();
           end
         else
-          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, ch.getConnected());
+          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
           json_str = json.get_info_reply();
         end
  
