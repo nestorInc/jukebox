@@ -129,9 +129,9 @@ class Channel
     display("Fetching on channel #{@name}: #{file}");
     @cur = Mp3File.new(file);
     tag = Id3.new();
-    tag.artist = @currentEntry[3];
-    tag.album  = @currentEntry[4];
-    tag.title  = @currentEntry[5];
+    tag.title  = @currentEntry[3];
+    tag.artist = @currentEntry[4];
+    tag.album  = @currentEntry[5];
     @tag = tag.to_s();
     @timestamp = Time.now().to_i();
   end
