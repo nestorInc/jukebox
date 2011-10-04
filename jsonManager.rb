@@ -146,9 +146,9 @@ class JsonManager
   # --- --- --- ---
 
   # action on events
-  def on_refresh_request(playlist, position, library, timestamp, connected)
+  def on_refresh_request(playlist, position, library, timestamp, client_timestamp, connected)
     @refreshed = 0;
-    if(@timestamp < timestamp)
+    if(client_timestamp < timestamp)
       refresh_currentMid(playlist[position]);
       refresh_currentSong(library.get_artist(@currentMid), library.get_title(@currentMid));
       build_songs_s(playlist, position, library);
