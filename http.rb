@@ -3,6 +3,9 @@
 require 'date'
 require 'rev/ssl'
 
+require 'rev/ssl'
+require 'openssl'
+
 class HttpRequest
   attr_reader :method;
   attr_reader :options;
@@ -141,6 +144,7 @@ class HttpSession < Rev::SSLSocket
 
   def on_close()
     log("disconnected");
+    display("disconnected");
     if(@close_block)
       @close_block.call(self, *@close_args);
     end

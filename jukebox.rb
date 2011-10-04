@@ -60,6 +60,7 @@ h.addPath("/ch", channelList, library) { |s, req, list, lib|
         rep.setData("<html><head><title>next</title></head><body><H1>Next</H1></body></head>");
         ch.next()
       when "control"
+        p req.data
         params = req.data.split(/&/);
         options = {
         "Content-Type" => "application/json"};
@@ -133,5 +134,3 @@ rescue => e
   fd.write(data);
   fd.close();
 end
-
-
