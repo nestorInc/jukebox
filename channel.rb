@@ -45,12 +45,16 @@ class Channel
     @cur          = nil;
     @pos          = 0;
     @nbPreload    = 1;
-    @currentEntry = [];
+    @currentEntry = nil;
     @timestamp    = 0;
     @time         = 0;
 
     display("Creating new channel #{name}");
     fetchData();
+  end
+
+  def meta()
+    @currentEntry;
   end
 
   def cron()
@@ -68,11 +72,13 @@ class Channel
     end
     @scks.push(s);
     display("Registering channel #{@name} [#{@scks.size()} user(s) connected]");
-    tag = Id3.new();
-    tag.title  = @currentEntry[3];
-    tag.artist = @currentEntry[4];
-    tag.album  = @currentEntry[5];
-    s.write(tag.to_s());
+    if(@currentEntry)
+      tag = Id3.new();
+      tag.title  = @currentEntry[3];
+      tag.artist = @currentEntry[4];
+      tag.album  = @currentEntry[5];
+      s.write(tag.to_s());
+    end
   end
 
   def unregister(s)

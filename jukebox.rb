@@ -6,6 +6,7 @@ require 'cgi'
 require 'yaml.rb'
 require 'json'
 
+load 'connection.rb'
 load 'http.rb'
 load 'mp3.rb'
 load 'channel.rb'
@@ -35,17 +36,20 @@ h.addPath("/ch", channelList, library) { |s, req, list, lib|
     options = {
       "Connection"   => "Close",
       "Content-Type" => "audio/mpeg"};
-    rep = HttpResponse.new(req.proto, 200, "OK", options);
-    s.write(rep.to_s);
 
     if(ch == nil)
       ch = Channel.new(channelName, lib);
       channelList[channelName] = ch;
     end
-    ch.register(s);
+    c = Connection.new(s, ch, req.options["Icy-MetaData"]);
+    metaint = c.metaint();
+    options["icy-metaint"] = metaint.to_s() if(metaint != 0);
+    rep = HttpResponse.new(req.proto, 200, "OK", options);
+    s.write(rep.to_s);
+    ch.register(c);
 
-    s.on_disconnect(ch) { |s, ch|
-      ch.unregister(s);
+    s.on_disconnect(ch, c) { |s, ch, c|
+      ch.unregister(c);
     }    
   else
     rep = HttpResponse.new(req.proto, 200, "OK");
