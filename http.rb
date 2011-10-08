@@ -24,9 +24,7 @@ class HttpRequest
     options = {}
     lines.each { |l|
       name, val = l.split(":", 2)
-      val.strip();
-
-      options[name] = val;
+      options[name] = val.strip();
     }
     HttpRequest.new(method, uri, proto, options);
   end
