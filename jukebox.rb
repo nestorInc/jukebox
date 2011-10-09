@@ -75,16 +75,17 @@ h.addPath("/ch", channelList, library) { |s, req, list, lib|
         #p query;
         json_obj = json.s_to_obj(query);
 	client_timestamp = json_obj["timestamp"];
-        if(json_obj["action"] == "next")
+        case(json_obj["action"])
+        when "next"
           ch.next();
           json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
           json_str = json.get_info_reply();
-        elsif(json_obj["action"] == "previous")
+        when "previous"
           ch.previous();
           json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
           json_str = json.get_info_reply();
         # TODO change the action state
-        elsif(json_obj["action"] == nil)
+        when nil
           if(json_obj["search"] == nil)
             json.on_search_error();
             json_str = json.get_search_reply();
@@ -92,7 +93,7 @@ h.addPath("/ch", channelList, library) { |s, req, list, lib|
             json.on_search_request(lib, json_obj["search"]);
             json_str = json.get_search_reply();
           end
-        elsif(json_obj["action"] = "refresh")
+        when "refresh"
           if(json_obj["search"] == nil)
             json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
             json_str = json.get_info_reply();
