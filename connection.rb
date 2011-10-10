@@ -38,7 +38,7 @@ class Connection
     meta = @ch.meta();
 
     if(meta && @meta != meta)
-      str = "StreamTitle='#{meta[3].gsub("\'", " ")} - #{meta[4].gsub("\'", " ")} - #{meta[5].gsub("\'", " ")}'"
+      str = "StreamTitle='#{meta[3].gsub("\'", " ")} - #{meta[4].gsub("\'", " ")} - #{meta[5].gsub("\'", " ")}';"
       @meta = meta;
     end
     
