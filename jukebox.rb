@@ -72,40 +72,43 @@ h.addPath("/ch", channelList, library) { |s, req, list, lib|
         req.data.gsub!(/%3B/,'');
         req.data.gsub!(/%29/, '');
         query = CGI::unescape(req.data);
-        #p query;
         json_obj = json.s_to_obj(query);
-	client_timestamp = json_obj["timestamp"];
-        if(json_obj["action"] == "next")
-          ch.next();
-          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
-          json_str = json.get_info_reply();
-        elsif(json_obj["action"] == "previous")
-          ch.previous();
-          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
-          json_str = json.get_info_reply();
+        client_timestamp = json_obj.delete("timestamp");
         # TODO change the action state
-        elsif(json_obj["action"] == nil)
-          if(json_obj["search"] == nil)
-            json.on_search_error();
-            json_str = json.get_search_reply();
-          else
-            json.on_search_request(lib, json_obj["search"]);
-            json_str = json.get_search_reply();
-          end
-        elsif(json_obj["action"] = "refresh")
-          if(json_obj["search"] == nil)
-            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
-            json_str = json.get_info_reply();
-          else
-            json.on_search_request(lib, json_obj["search"]);
-            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
-            json_str = json.get_info_search_reply();
-          end
-        else
+        if(json_obj.size == 0)
           json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
           json_str = json.get_info_reply();
         end
- 
+        json_obj.each { |type, value|
+          case(type)
+          when "search"
+            json.on_search_request(lib, value);
+            json_str = json.get_search_reply();
+          when "action"
+            case(value["name"])
+            when "next"
+              ch.next();
+              json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
+              json_str = json.get_info_reply();
+            when "previous"
+              ch.previous();
+              json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
+              json_str = json.get_info_reply();
+            when "add_to_play_queue"
+              ch.playlist_add(value["play_queue_index"], value["mid"])
+              json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, 0, ch.getConnected());
+              json_str = json.get_info_reply();
+            when "remove_from_play_queue"
+              ch.playlist_rem(value["play_queue_index"])
+              json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, 0, ch.getConnected());
+              json_str = json.get_info_reply();
+            when "move_in_play_queue"
+              ch.playlist_move(value["play_queue_index"], value["new_play_queue_index"])
+              json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, 0, ch.getConnected());
+              json_str = json.get_info_reply();
+            end
+          end
+        }
        # puts json_str;
         rep.setData(json_str);
       else
