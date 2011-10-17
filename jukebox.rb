@@ -60,7 +60,7 @@ h.addPath("/ch", channelList, library) { |s, req, list, lib|
         rep.setData("<html><head><title>next</title></head><body><H1>Next</H1></body></head>");
         ch.next()
       when "control"
-        p req.data
+        #p req.data
         params = req.data.split(/&/);
         options = {
         "Content-Type" => "application/json"};
@@ -72,37 +72,45 @@ h.addPath("/ch", channelList, library) { |s, req, list, lib|
         #p query;
         json_obj = json.s_to_obj(query);
 	client_timestamp = json_obj["timestamp"];
-        if(json_obj["action"] == "next")
-          ch.next();
-          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
-          json_str = json.get_info_reply();
-        elsif(json_obj["action"] == "previous")
-          ch.previous();
-          json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
-          json_str = json.get_info_reply();
         # TODO change the action state
-        elsif(json_obj["action"] == nil)
-          if(json_obj["search"] == nil)
-            json.on_search_error();
-            json_str = json.get_search_reply();
-          else
-            json.on_search_request(lib, json_obj["search"]);
-            json_str = json.get_search_reply();
-          end
-        elsif(json_obj["action"] = "refresh")
+        if(json_obj["action"] == nil)
           if(json_obj["search"] == nil)
             json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
             json_str = json.get_info_reply();
           else
             json.on_search_request(lib, json_obj["search"]);
+            json_str = json.get_search_reply();
+          end
+        elsif(json_obj["action"] != nil)
+          action = json_obj["action"]
+          if(action["name"] == "next")
+            ch.next();
             json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
-            json_str = json.get_info_search_reply();
+            json_str = json.get_info_reply();
+          elsif(action["name"] == "previous")
+            ch.previous();
+            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
+            json_str = json.get_info_reply();
+          #elsif(action["name"] == "get_channels")
+           # json.on_channels_request(channelList.keys)
+            #json_str - json.get_channels_reply
+          elsif(action["name"] == "add_to_play_queue")
+            ch.playlist_add(action["play_queue_index"], action["mid"])
+            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, 0, ch.getConnected());
+            json_str = json.get_info_reply();
+          elsif(action["name"] == "remove_from_play_queue")
+            ch.playlist_rem(action["play_queue_index"])
+            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, 0, ch.getConnected());
+            json_str = json.get_info_reply();
+          elsif(action["name"] == "move_in_play_queue")
+            ch.playlist_move(action["play_queue_index"], action["new_play_queue_index"])
+            json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, 0, ch.getConnected());
+            json_str = json.get_info_reply();
           end
         else
           json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
           json_str = json.get_info_reply();
         end
- 
        # puts json_str;
         rep.setData(json_str);
       else

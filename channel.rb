@@ -103,6 +103,25 @@ class Channel
   def getConnected()
     return @scks.size();
   end
+ 
+  def playlist_add(pos, mid)
+    @history.insert(@pos+pos+1, mid)
+  end
+
+  def playlist_rem(pos)
+    @history.delete_at(@pos+pos+1)
+  end
+
+  def playlist_move(old_index, new_index)
+    mid = @history[@pos+old_index+1]
+    if(old_index > new_index) # meaning the song is going up
+      playlist_add(new_index, mid)
+      playlist_rem(old_index+1)
+    else # going down
+      playlist_add(new_index+1, mid)
+      playlist_rem(old_index)
+    end
+  end
 
   private
   def fetchData() 

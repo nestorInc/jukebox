@@ -90,7 +90,7 @@ class JsonManager
   end
 
   def build_currentSong_s()
-    @currentSong_s = "\"current_song\":{\"id\":#{@currentMid},\"title\":\"#{@currentTitle[0]}\",\"artist\":\"#{@currentArtist[0]}\",\"total_time\":203,\"elapsed_time\":70}";
+    @currentSong_s = "\"current_song\":{\"mid\":#{@currentMid},\"title\":\"#{@currentTitle[0]}\",\"artist\":\"#{@currentArtist[0]}\",\"total_time\":203,\"elapsed_time\":70}";
   end
 
   def build_channelInfos_s()
@@ -109,7 +109,7 @@ class JsonManager
       title = library.get_title(playlist[i]);
       artist = library.get_artist(playlist[i]);
       if(i < playlistSize-1)
-        songs = songs + "{\"artist\":\"#{artist[0]}\",\"title\":\"#{title[0]}\",\"duration\":270}";
+        songs = songs + "{\"mid\":#{playlist[i]},\"artist\":\"#{artist[0]}\",\"title\":\"#{title[0]}\",\"duration\":270}";
         if(i < (playlistSize-2))
           songs = songs + ",";
         end
@@ -122,7 +122,7 @@ class JsonManager
     songs = "";
     size = 0;
     resultTable.each do |row|
-      songs = songs + "{\"artist\":\"#{row[0]}\",\"title\":\"#{row[1]}\",\"duration\":270}";
+      songs = songs + "{\"mid\":#{row[2]},\"artist\":\"#{row[0]}\",\"title\":\"#{row[1]}\",\"duration\":270}";
       if(size != resultTable.size()-1)
         songs = songs + ",";
       end
@@ -168,7 +168,7 @@ class JsonManager
     refresh_orderBy(json_obj["order_by"]);
     refresh_orderByWay(json_obj["order_by_way"]);
     refresh_firstResult(json_obj["first_result"]);
-    if json_obj["result_count"] == nil
+    if (json_obj["result_count"] == nil) or (json_obj["result_count"] > result.size())
       refresh_resultCount(result.size());
     else
       refresh_resultCount(json_obj["result_count"]);

@@ -166,21 +166,28 @@ class Mp3File
       fd.read();
     }
     data.force_encoding("BINARY");
+  #  mutex = Mutex.new
     while(data.size >= 4)
-      frame = Mp3Frame.fetch(data);
-      if(frame)
-        @total_duration += frame.duration;
-      else
-        frame = Id3.fetch(data) if(frame == nil);
-      end
-      if(frame)
-        @frames.push(frame);
-      else
-        p data.class
-        data.replace(data[1, -1]);
-      end
-    end
-  end
+#       Thread.new {
+ #         mutex.synchronize do
+
+            frame = Mp3Frame.fetch(data);
+            if(frame)
+              @total_duration += frame.duration;
+            else
+              frame = Id3.fetch(data) if(frame == nil);
+            end
+            if(frame)
+	      # TODO : push new gen to stream baby !
+	      @frames.push(frame);
+            else
+              p data.class
+              data.replace(data[1, -1]);
+            end
+         end
+      # }
+   end
+#end
 
   def play(delta)
     cur  = [];
