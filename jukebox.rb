@@ -23,14 +23,17 @@ e.attach(Rev::Loop.default);
 channelList = {};
 
 h = HttpServer.new();
+n = HttpNode.new();
+h.addNode("/ch", n);
 
-h.addPath("/ch", channelList, library) { |s, req, list, lib|
-  uri = req.uri[4 .. -1];
-  uri = "" if(uri == nil)
-  channelName, action = uri.split("/", 2);
-  if(channelName == "")
-    channelName = "general";
-  end
+n.addAuth() { |s, user, pass|
+  next user if(user == pass);
+  nil;
+}
+
+n.addRequest(channelList, library) { |s, req, list, lib|
+  action = req.remaining;
+  channelName = s.user;
   ch = channelList[channelName];
   if(action == nil)	
     options = {
