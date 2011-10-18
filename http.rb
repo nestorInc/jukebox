@@ -116,6 +116,8 @@ class HttpSession < Rev::SSLSocket
     @data   = "";
     @length = 0;
     @ssl    = ssl;
+    @user   = nil;
+
     super(socket);
   end
 
@@ -178,13 +180,134 @@ class HttpSession < Rev::SSLSocket
       if(@data.bytesize() >= @length)
         @req.addData(@data.slice!(0 .. @length - 1)) if(@length != 0);
         log(@req);
-        @server.findUri(self, @req);
+        root    = @server.root();
+        auth    = nil;
+        request = nil;
+
+        uri  = @req.uri.split("/");
+        uri.delete_if {|n| n == "" };
+
+        nodes = root.scan(uri);
+
+        depth = nodes.size();
+        # find auth methode
+        depth.downto(0) { |i|
+          begin
+            auth = nodes[i].method(:auth)
+          rescue NameError => e
+          else
+            break;
+          end
+        }
+        v = @req.options["Authorization"];
+        if(v != nil && auth != nil)
+          method, code = v.split(" ", 2);
+          if(method == "Basic" && code != nil)
+            @user, pass = code.unpack("m").first.split(":", 2);
+            @uid = auth.call(self, @user, pass);
+          end
+        end
+        if(@uid == nil and auth != nil)
+          rsp = HttpResponse.generate401(@req)
+          write(rsp.to_s);
+          return
+        end
+
+        pos = 0;
+        depth.downto(0) { |i|
+          begin
+            request = nodes[i].method(:request)
+          rescue NameError => e
+          else
+            pos = i;
+            break;
+          end 
+        }
+        if(request == nil)
+          rsp = HttpResponse.generate404(@req)
+          write(rsp.to_s);
+          return;
+        end
+        if(pos == 0)
+          prefix = "/";
+        else
+          prefix = uri[0..pos-1].join("/");
+        end
+        request.call(self, @req);
       end
     end
+  end
+  private
+end
+
+class HttpNode
+  attr_accessor :child
+
+  def initialize(child = {})
+    @child = child;
+  end
+
+  def addAuth(*args, &block)
+    @authArgs   = args;
+    @authBlock  = block;
+
+    def self.auth(s, user, pass)
+      @authBlock.call(s, user, pass, *@authArgs);
+    end
+  end
+
+  def addRequest(*args, &block)
+    @requestArgs   = args;
+    @requestBlock  = block;
+
+    def self.request(s, req)
+      @requestBlock.call(s, req, *@requestArgs);
+    end
+  end
+
+  def scan(path)
+    depth   = 0;
+    n       = self;
+    nodes   = [ self ];
+
+    while(path[depth] != nil)
+      n = n.child[path[depth]];
+      break if(n == nil);
+      nodes.push(n)
+      depth += 1;
+    end
+
+    nodes;
+  end
+
+  def add(path, node)
+    n       = self;
+    
+    if(path.size == 0)
+      node.child = @child;
+      return node;
+    end
+
+    path.each { |v|
+      e = n.child[v];
+      if(path.last.__id__ == v.__id__)
+        node.child = n.child[v].child if(e != nil);
+        n.child[v] = node;
+      else
+        if(e == nil)
+          e = HttpNode.new();
+          n.child[v] = e;
+        end
+      end
+      n = e;
+    }
+    self;
   end
 end
 
 class HttpServer
+  attr_reader :root
+
   @@logfd = nil;
   def initialize(port = 8080, sport = 8082)
     @uri_table  = {};
@@ -202,38 +325,13 @@ class HttpServer
     }
   end
 
-  def addFile(uri, *data, &block)
-    @uri_table[uri] = [ block, data ];
-  end
+  def addNode(path, node)
+    uri  = path.split("/");
+    uri.delete_if {|n| n == "" };
 
-  def addPath(path, *data, &block)
-    if (path[-1] == "/")
-      path = path[0 .. -2];
-    end
-    @path_table[path] = [ block, data ];
-  end
 
-  def findUri(s, req)
-    uri  = req.uri;
-    page = @uri_table[uri];
-    while(page == nil && uri != "")
-      page = @path_table[uri];
-      uri  = uri.scan(/(.*)\/(.*)/)[0];
-      if(uri)
-        uri  = uri[0];
-      else
-        uri  = "";
-      end
-    end
-
-    if(page)
-      page[0].call(s, req, *page[1]);
-    else
-      rep = HttpResponse.new(req.proto, 404, "Not found");
-
-      rep.setData("<html><head><title>404 Not found</title></head><body><H1>Page not found</H1></body></head>");
-      s.write(rep.to_s);
-    end
+    @root = HttpNode.new() if(@root == nil);
+    @root = @root.add(uri, node);
   end
 
   private
