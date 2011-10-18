@@ -112,6 +112,8 @@ class HttpResponse
 end
 
 class HttpSession < Rev::SSLSocket
+  attr_reader :user;
+
   @@logfd = nil;
   def initialize(socket, server, ssl = nil)
     @server = server;
@@ -250,8 +252,10 @@ end
 class HttpNode
   attr_accessor :child
 
-  def initialize(child = {})
+  def initialize(child = {}, *args, &block)
     @child = child;
+
+    addRequest(*args, block) if(block);
   end
 
   def addAuth(*args, &block)
