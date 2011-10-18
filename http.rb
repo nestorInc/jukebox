@@ -4,11 +4,13 @@ require 'date'
 require 'rev/ssl'
 
 class HttpRequest
-  attr_reader :method;
-  attr_reader :options;
-  attr_reader :proto;
-  attr_reader :uri;
-  attr_reader :data;
+  attr_reader   :method;
+  attr_reader   :options;
+  attr_reader   :proto;
+  attr_reader   :uri;
+  attr_reader   :data;
+  attr_accessor :prefix;
+  attr_accessor :remaining;
 
   def initialize(method, uri, proto, options = {})
     @options = options;
@@ -228,11 +230,16 @@ class HttpSession < Rev::SSLSocket
           write(rsp.to_s);
           return;
         end
-        if(pos == 0)
-          prefix = "/";
-        else
-          prefix = uri[0..pos-1].join("/");
+        prefix = "/";
+        if(pos != 0)
+          prefix += uri[0..pos-1].join("/");
         end
+        remaining = nil
+        remaining = uri[pos..-1].join("/") if(pos != uri.size);
+
+        @req.remaining = remaining;
+        @req.prefix    = prefix;
+
         request.call(self, @req);
       end
     end
