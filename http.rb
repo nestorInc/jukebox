@@ -75,6 +75,19 @@ class HttpResponse
     HttpResponse.new(proto, status, reason, options);
   end
 
+  def HttpResponse.generate404(req)
+    rsp = HttpResponse.new(req.proto, 404, "Not found");
+    rsp.setData("<html><head><title>404 Not found</title></head><body><H1>Page not found</H1></body></head>");
+    rsp;
+  end
+
+  def HttpResponse.generate401(req, realm = "")
+    rsp = HttpResponse.new(req.proto, 401, "Unauthorized");
+    rsp.options["WWW-Authenticate"] = "Basic realm=\"#{realm}\"";
+    rsp.setData("<html><head><title>401 Unauthorized</title></head><body><H1>Unauthorized</H1></body></head>");
+    rsp;
+  end
+
   def setData(data, contentType = "text/html")
     @options["Connection"]     = "keep-alive",
     @options["Content-Length"] = data.bytesize();
