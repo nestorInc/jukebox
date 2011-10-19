@@ -316,6 +316,36 @@ class HttpNode
   end
 end
 
+class HttpNodeMapping < HttpNode
+  def initialize(dir)
+    @dir = dir;
+    st   = File.stat(@dir);
+    raise "Not directory" if(st.directory? != true);
+  end
+
+  def request(s, req)
+    path = @dir + "/";
+    path += req.remaining if(req.remaining != nil)
+
+    begin
+      st   = File.stat(path);
+      if(st.directory? == true)
+        path += "/index.html"
+        st   = File.stat(path);
+      end
+    rescue Errno::ENOENT
+      rsp = HttpResponse.generate404(req)
+      s.write(rsp.to_s);
+      return;
+    end
+    rsp  = HttpResponse.new(req.proto, 200, "OK");
+    p path
+    data = File.read(path)
+    rsp.setData(data);
+    s.write(rsp.to_s);
+  end
+end
+
 class HttpServer
   attr_reader :root
 
