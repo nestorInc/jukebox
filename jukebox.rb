@@ -24,7 +24,9 @@ channelList = {};
 
 h = HttpServer.new();
 n = HttpNode.new();
+f = HttpNodeMapping.new("html");
 h.addNode("/ch", n);
+h.addNode("/", f);
 
 n.addAuth() { |s, user, pass|
   next user if(user == pass);
