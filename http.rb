@@ -215,7 +215,8 @@ class HttpSession < Rev::SSLSocket
       if(@uid == nil and auth != nil)
         rsp = HttpResponse.generate401(@req)
         write(rsp.to_s);
-        return
+        @length = nil;
+        next
       end
 
       pos = 0;
