@@ -38,6 +38,13 @@ class Library
     req.close();
     res[0];
   end
+
+  def get_nb_songs()
+    req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=5");
+    res = req.execute!();
+    req.close();
+    res[0].at(0);
+  end
   
   def get_file(mid = nil)
     if(mid == nil)
@@ -59,7 +66,6 @@ class Library
 # first result result count
 
   def secure_request(value, field, orderBy, orderByWay, firstResult, resultCount)
-    #value = value.gsub(/\\/, '\&\&').gsub(/'/, "''").gsub(/\\"/,'');
     value.gsub!(/"/,'')
     value.gsub!(/'/,'')
     value.gsub!(/\\/,'');

@@ -173,7 +173,7 @@ end
 
 class HttpServer
   @@logfd = nil;
-  def initialize(port = 8080, sport = 8082)
+  def initialize(port = 8042, sport = 8043)
     @uri_table  = {};
     @path_table = {};
     @srv        = [];
