@@ -318,6 +318,17 @@ class HttpNode
 end
 
 class HttpNodeMapping < HttpNode
+  ContentTypeTab = {
+    "css"  => "text/css",
+    "html" => "text/html",
+    "htm"  => "text/html",
+    "js"   => "text/javascript",
+    "png"  => "image/png",
+    "jpg"  => "image/jpeg",
+    "gif"  => "image/gif",
+    "txt"  => "text/plain",
+  }
+
   def initialize(dir)
     @dir = dir;
     st   = File.stat(@dir);
@@ -339,10 +350,14 @@ class HttpNodeMapping < HttpNode
       s.write(rsp.to_s);
       return;
     end
+    ext  = path.scan(/.*\.(.*)/).first;
+    contentType = nil;
+    contentType = ContentTypeTab[ext.first]   if(ext);
+    contentType = "application/octect-stream" if(contentType == nil);
+
     rsp  = HttpResponse.new(req.proto, 200, "OK");
-    p path
     data = File.read(path)
-    rsp.setData(data);
+    rsp.setData(data, contentType);
     s.write(rsp.to_s);
   end
 end
