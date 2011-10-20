@@ -118,7 +118,7 @@ class HttpSession < Rev::SSLSocket
   def initialize(socket, server, ssl = nil)
     @server = server;
     @data   = "";
-    @length = 0;
+    @length = nil;
     @ssl    = ssl;
     @user   = nil;
 
@@ -167,7 +167,7 @@ class HttpSession < Rev::SSLSocket
     @data << data;
     while(@data.bytesize != 0)
       # Decode header
-      if(@length == 0)
+      if(@length == nil)
         header, body = @data.split("\r\n\r\n", 2);        
         break if(body == nil);
 
@@ -181,69 +181,70 @@ class HttpSession < Rev::SSLSocket
         @data = body;
       end
 
-      if(@data.bytesize() >= @length)
-        @req.addData(@data.slice!(0 .. @length - 1)) if(@length != 0);
-        log(@req);
-        root    = @server.root();
-        auth    = nil;
-        request = nil;
+      break if(@data.bytesize() < @length);
 
-        uri  = @req.uri.split("/");
-        uri.delete_if {|n| n == "" };
+      @req.addData(@data.slice!(0 .. @length - 1)) if(@length != 0);
+      log(@req);
+      root    = @server.root();
+      auth    = nil;
+      request = nil;
 
-        nodes = root.scan(uri);
+      uri  = @req.uri.split("/");
+      uri.delete_if {|n| n == "" };
 
-        depth = nodes.size();
-        # find auth methode
-        depth.downto(0) { |i|
-          begin
-            auth = nodes[i].method(:auth)
-          rescue NameError => e
-          else
-            break;
-          end
-        }
-        v = @req.options["Authorization"];
-        if(v != nil && auth != nil)
-          method, code = v.split(" ", 2);
-          if(method == "Basic" && code != nil)
-            @user, pass = code.unpack("m").first.split(":", 2);
-            @uid = auth.call(self, @user, pass);
-          end
+      nodes = root.scan(uri);
+
+      depth = nodes.size();
+      # find auth methode
+      depth.downto(0) { |i|
+        begin
+          auth = nodes[i].method(:auth)
+        rescue NameError => e
+        else
+          break;
         end
-        if(@uid == nil and auth != nil)
-          rsp = HttpResponse.generate401(@req)
-          write(rsp.to_s);
-          return
+      }
+      v = @req.options["Authorization"];
+      if(v != nil && auth != nil)
+        method, code = v.split(" ", 2);
+        if(method == "Basic" && code != nil)
+          @user, pass = code.unpack("m").first.split(":", 2);
+          @uid = auth.call(self, @user, pass);
         end
-
-        pos = 0;
-        depth.downto(0) { |i|
-          begin
-            request = nodes[i].method(:request)
-          rescue NameError => e
-          else
-            pos = i;
-            break;
-          end 
-        }
-        if(request == nil)
-          rsp = HttpResponse.generate404(@req)
-          write(rsp.to_s);
-          return;
-        end
-        prefix = "/";
-        if(pos != 0)
-          prefix += uri[0..pos-1].join("/");
-        end
-        remaining = nil
-        remaining = uri[pos..-1].join("/") if(pos != uri.size);
-
-        @req.remaining = remaining;
-        @req.prefix    = prefix;
-
-        request.call(self, @req);
       end
+      if(@uid == nil and auth != nil)
+        rsp = HttpResponse.generate401(@req)
+        write(rsp.to_s);
+        return
+      end
+
+      pos = 0;
+      depth.downto(0) { |i|
+        begin
+          request = nodes[i].method(:request)
+        rescue NameError => e
+        else
+          pos = i;
+          break;
+        end 
+      }
+      if(request == nil)
+        rsp = HttpResponse.generate404(@req)
+        write(rsp.to_s);
+        next;
+      end
+      prefix = "/";
+      if(pos != 0)
+        prefix += uri[0..pos-1].join("/");
+      end
+      remaining = nil
+      remaining = uri[pos..-1].join("/") if(pos != uri.size);
+      
+      @req.remaining = remaining;
+      @req.prefix    = prefix;
+
+      request.call(self, @req);
+      @length = nil;
     end
   end
   private
