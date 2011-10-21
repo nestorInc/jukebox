@@ -4,7 +4,7 @@ require 'rev'
 
 class Connection
   def initialize(s, ch, icy)
-    @sck         = s;
+    @socket      = s;
     @icyInterval = 0;
     @ch          = ch;
     if(icy == "1")
@@ -16,11 +16,11 @@ class Connection
   def write(data)
     while(data.bytesize() != 0)
       if(@icyRemaining > data.bytesize())
-        @sck.write(data);
+        @socket.write(data);
         @icyRemaining -= data.bytesize();
         data     = "";
       else
-        @sck.write(data[0..@icyRemaining-1]);
+        @socket.write(data[0..@icyRemaining-1]);
         data     = data[@icyRemaining..-1];
         generateIcyMetaData();
         @icyRemaining = @icyInterval;
@@ -45,7 +45,7 @@ class Connection
     padding = str.bytesize() % 16;
     padding = 16 - padding  if(padding != 0)
     str += "\x00" * padding;
-    @sck.write((str.bytesize()/16).chr);
-    @sck.write(str);
+    @socket.write((str.bytesize()/16).chr);
+    @socket.write(str);
   end
 end

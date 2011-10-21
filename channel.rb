@@ -40,7 +40,7 @@ class Channel
   def initialize(name, library)
     @name         = name;
     @library      = library;
-    @scks         = [];
+    @connections  = [];
     @history      = [];
     @cur          = nil;
     @pos          = 0;
@@ -60,18 +60,18 @@ class Channel
   def cron()
     frames = sync();
     frames.each { |t|
-      @scks.each { |s|
+      @connections.each { |s|
         s.write(t.to_s());
       }
     }
   end
 
   def register(s)
-    if(@scks.size() == 0)
+    if(@connections.size() == 0)
       $channelsCron.register(self);
     end
-    @scks.push(s);
-    display("Registering channel #{@name} [#{@scks.size()} user(s) connected]");
+    @connections.push(s);
+    display("Registering channel #{@name} [#{@connections.size()} user(s) connected]");
     if(@currentEntry)
       tag = Id3.new();
       tag.title  = @currentEntry[3];
@@ -82,12 +82,12 @@ class Channel
   end
 
   def unregister(s)
-    @scks.delete(s);
-    if(@scks.size() == 0)
+    @connections.delete(s);
+    if(@connections.size() == 0)
       $channelsCron.unregister(self);
       @time = 0;
     end
-    display("Unregistering channel #{@name} [#{@scks.size()} user(s) connected]");
+    display("Unregistering channel #{@name} [#{@connections.size()} user(s) connected]");
   end
 
   def next()
@@ -107,7 +107,7 @@ class Channel
   end
 
   def getConnected()
-    return @scks.size();
+    return @connections.size();
   end
  
   def playlist_add(pos, mid)
