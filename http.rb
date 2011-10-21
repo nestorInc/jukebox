@@ -2,6 +2,7 @@
 
 require 'date'
 require 'rev/ssl'
+require 'uri'
 
 class HttpRequest
   attr_reader   :method;
@@ -22,12 +23,13 @@ class HttpRequest
   def HttpRequest.parse(header)
     lines = header.split("\r\n");
     request_line = lines.shift(1)[0];
-    method, uri, proto = request_line.split(/[ \t]/);
+    method, page, proto = request_line.split(/[ \t]/);
     options = {}
     lines.each { |l|
       name, val = l.split(":", 2)
       options[name] = val.strip();
     }
+    uri = URI.parse(page);
     HttpRequest.new(method, uri, proto, options);
   end
 
@@ -38,7 +40,7 @@ class HttpRequest
 
   def to_s()
     # Header
-    data = "#{@method} #{@uri} #{@proto}\r\n";
+    data = "#{@method} #{@uri.path} #{@proto}\r\n";
     @options.each { |name, val|
       data << "#{name}: #{val}\r\n";
     }
@@ -189,7 +191,7 @@ class HttpSession < Rev::SSLSocket
       auth    = nil;
       request = nil;
 
-      uri  = @req.uri.split("/");
+      uri  = @req.uri.path.split("/");
       uri.delete_if {|n| n == "" };
 
       nodes = root.scan(uri);
