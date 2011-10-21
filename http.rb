@@ -370,8 +370,6 @@ class HttpServer
 
   @@logfd = nil;
   def initialize(port = 8080, sport = 8082)
-    @uri_table  = {};
-    @path_table = {};
     @srv        = [];
 
     log("starting http server")
