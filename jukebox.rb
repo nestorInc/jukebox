@@ -128,6 +128,10 @@ h.attach(Rev::Loop.default)
 
 begin
   Rev::Loop.default.run();
+rescue Errno::ETIMEDOUT
+  retry;
+rescue Errno::EHOSTUNREACH
+  retry;
 rescue => e
   fd = File.open("exception_stat", File::RDONLY | File::CREAT, 0600);
   data = fd.read();
@@ -135,7 +139,7 @@ rescue => e
   stat = {} if(stat == false);
   fd.close();
 
-  detail = ([ e.class ] + e.backtrace).join("\n")
+  detail = ([ e.to_s ] + e.backtrace).join("\n")
   puts detail;
   stat[detail]  = 0 if(stat[detail] == nil);
   stat[detail] += 1;
