@@ -39,6 +39,15 @@ function initJukebox () {
     updateJukebox();
 }
 
+function joinChannel () {
+    var action = new Object();
+    action.name = 'join_channel';
+    action.channel = $('channel').value;
+    query.action = action;
+
+    updateJukebox();
+}
+
 function nextSong () {
     var action = new Object();
     action.name = 'next';
