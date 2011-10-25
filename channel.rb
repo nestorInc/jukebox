@@ -36,6 +36,7 @@ class Channel
   attr_reader :name
   attr_reader :pos
   attr_reader :timestamp
+  attr_accessor :plugin_name
 
   def initialize(name, library)
     @name         = name;
@@ -44,12 +45,14 @@ class Channel
     @history      = [];
     @cur          = nil;
     @pos          = 0;
-    @nbPreload    = 1;
     @currentEntry = nil;
     @timestamp    = 0;
     @time         = 0;
+    @nb_songs	  = 0;
 
     display("Creating new channel #{name}");
+    set_default_plugin()
+    set_nb_songs();
     fetchData();
   end
 
@@ -129,29 +132,19 @@ class Channel
     end
   end
 
+  def set_default_plugin()
+    @plugin_name = "default"
+    load "plugins/default.rb"
+    extend Plugin
+  end
+ 
+  def set_nb_songs()
+    @nb_songs = @library.get_nb_songs;
+  end
+ 
   private
-  def fetchData() 
-     delta = @history.size()-@pos-1;
-     if(delta < @nbPreload)
-      preload = @nbPreload - delta;
-      # here, we calculate the left side of the anti double inclusion range
-      # This allows not listening the same music again during the next 30 minutes.
-      if(@pos-10 > 0);
-        antiDoubleBegin = @pos-10;
-      else
-        antiDoubleBegin = 0;
-      end
-      # this allows to have always at least @nbPreload songs in advance from the current position : preloading some files
-      for i in 1..preload
-        # keep a file from being include twice in the next 15 songs
-        lastInsertions = @history[antiDoubleBegin..-1];
-        begin
-          entry = @library.get_file();
-        end while lastInsertions.include?(entry[0]) # the space we look is (10 + preload) wide (30min) see above
-        @history.push(entry[0]);
-        @currentEntry = entry if(i == 0); # store the current entry to open the good file (see below)
-      end
-    end
+  def fetchData()
+    send(@plugin_name)
     # move to the next entry
     mid = @history[@pos];
     @currentEntry = @library.get_file(mid);
