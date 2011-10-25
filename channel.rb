@@ -70,9 +70,7 @@ class Channel
   end
 
   def register(s)
-    if(@connections.size() == 0)
-      $channelsCron.register(self);
-    end
+    $channelsCron.register(self) if(@connections.size() == 0);
     @connections.push(s);
     display("Registering channel #{@name} [#{@connections.size()} user(s) connected]");
     if(@currentEntry)
