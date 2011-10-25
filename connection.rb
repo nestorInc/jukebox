@@ -14,20 +14,23 @@ class Connection
   end
 
   def write(data)
-    while(data.bytesize() != 0)
-      if(@icyRemaining > data.bytesize())
-        @socket.write(data);
-        @icyRemaining -= data.bytesize();
-        data     = "";
-      else
-        @socket.write(data[0..@icyRemaining-1]);
-        data     = data[@icyRemaining..-1];
-        generateIcyMetaData();
-        @icyRemaining = @icyInterval;
+    if(@icyRemaining == 0)
+      @socket.write(data);
+    else
+      while(data.bytesize() != 0)
+        if(@icyRemaining > data.bytesize())
+          @socket.write(data);
+          @icyRemaining -= data.bytesize();
+          data     = "";
+        else
+          @socket.write(data[0..@icyRemaining-1]);
+          data     = data[@icyRemaining..-1];
+          generateIcyMetaData();
+          @icyRemaining = @icyInterval;
+        end
       end
     end
   end
-
   def metaint()
     @icyInterval;
   end
