@@ -135,10 +135,6 @@ h.attach(Rev::Loop.default)
 
 begin
   Rev::Loop.default.run();
-rescue Errno::ETIMEDOUT
-  retry;
-rescue Errno::EHOSTUNREACH
-  retry;
 rescue => e
   fd = File.open("exception_stat", File::RDONLY | File::CREAT, 0600);
   data = fd.read();
