@@ -111,6 +111,13 @@ n.addRequest(channelList, library) { |s, req, list, lib|
               ch.playlist_move(value["play_queue_index"], value["new_play_queue_index"])
               json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, 0, ch.getConnected());
               json_str = json.get_info_reply();
+            when "select_plugin"
+              # TODO handle exception, check file existence ...
+              load "plugins/" + value["plugin_name"] + ".rb"
+              ch.extend Plugin
+              ch.plugin_name = value["plugin_name"]
+              json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
+              json_str = json.get_info_reply();
             end
           end
         }
