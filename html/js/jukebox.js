@@ -39,6 +39,17 @@ function initJukebox () {
     updateJukebox();
 }
 
+function setSongSelectionPlugin () {
+    var action = new Object();
+    action.name = 'select_plugin';
+    // TODO : get rid of channel. Server should know in which channel client is.
+    action.channel = $('channel').value;
+    action.plugin_name = $('music_selection_plugin').value;
+    query.action = action;
+
+    updateJukebox();
+}
+
 function joinChannel () {
     var action = new Object();
     action.name = 'join_channel';
