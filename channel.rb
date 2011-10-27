@@ -141,6 +141,7 @@ class Channel
     @plugin_name = "default"
     load "plugins/default.rb"
     extend Plugin
+    display("Loading default plugin for songs selection")
   end
  
   def set_nb_songs()

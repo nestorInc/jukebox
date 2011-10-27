@@ -1,6 +1,5 @@
 module Plugin
   def default()
-    display("Using <<default>> plugin loader on channel #{@name}")
     if(@nb_songs > 15) # first we check the number of songs in the database leading to left_side (playlist : <s> s s s *c* s s s)
       nb_preload = 11
     else
@@ -30,22 +29,22 @@ module Plugin
   end
 
   def default_next_callback
-    p "next callback"
+    #p "next callback"
   end
   
   def default_previous_callback
-    p "previous callback"
+    #p "previous callback"
   end
 
   def default_add_callback
-    p "add callback"
+    #p "add callback"
   end
 
   def default_rem_callback
-    p "remove callback"
+    #p "remove callback"
   end
 
   def default_move_callback
-    p "move callback"
+    #p "move callback"
   end
 end
