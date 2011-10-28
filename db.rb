@@ -60,6 +60,15 @@ class Library
     res[0];
   end
 
+  def get_random_from_artist(artist)
+    if(artist != nil)
+      req = @db.prepare("SELECT * FROM library WHERE artist LIKE \"%#{artist}%\" AND status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
+      res = req.execute!();
+      req.close();
+    end
+    res[0]
+  end
+
 # search value
 # search field
 # order by order by way
