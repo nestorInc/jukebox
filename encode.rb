@@ -24,8 +24,8 @@ class EncodingThread < Rev::IO
     src = src.sub('"', '\"');
     dst = dst.sub('"', '\"');
 
-    src.force_encoding("BINARY");
-    dst.force_encoding("BINARY");
+#    src.force_encoding("BINARY");
+#    dst.force_encoding("BINARY");
 #     extra_lame_param.force_encoding("BINARY");
 
     rd, wr = IO.pipe

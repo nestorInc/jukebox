@@ -57,7 +57,11 @@ class Library
       req.close();
     end
 
-    res[0];
+    return nil if(res[0] == nil)
+    res = res.first;
+    res[1] = res[1].encode(Encoding.locale_charmap);
+    res[2] = res[2].encode(Encoding.locale_charmap);
+    res;
   end
 
 # search value
@@ -124,8 +128,11 @@ class Library
     req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_WAIT} LIMIT 1");
     res = req.execute!();
     req.close();
-    return nil if(res.size == 0);
-    return res[0];
+    return nil if(res[0] == nil)
+    res = res.first;
+    res[1] = res[1].encode(Encoding.locale_charmap);
+    res[2] = res[2].encode(Encoding.locale_charmap);
+    res;
   end
 
   def change_stat(mid, state)
