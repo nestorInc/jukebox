@@ -46,6 +46,13 @@ class Library
     res[0].at(0);
   end
   
+  def get_total(field, value)
+    req = @db.prepare("SELECT COUNT (*) FROM library WHERE #{field} LIKE \"%#{value}%\"");
+    res = req.execute!();
+    req.close();
+    res[0].at(0);
+  end
+  
   def get_file(mid = nil)
     if(mid == nil)
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
