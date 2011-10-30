@@ -95,12 +95,14 @@ class Channel
     display("Next on channel #{@name}");
     @pos += 1;    
     fetchData();
+    send(@plugin_name + "_next_callback")
   end
 
   def previous()
     display("Previous on channel #{@name}");
     @pos -=1 if(@pos > 0);
     fetchData();
+    send(@plugin_name + "_previous_callback")
   end
 
   def mids()
@@ -113,10 +115,12 @@ class Channel
  
   def playlist_add(pos, mid)
     @history.insert(@pos+pos+1, mid)
+    send(@plugin_name + "_add_callback") 
   end
 
   def playlist_rem(pos)
     @history.delete_at(@pos+pos+1)
+    send(@plugin_name + "_rem_callback") 
   end
 
   def playlist_move(old_index, new_index)
@@ -128,12 +132,14 @@ class Channel
       playlist_add(new_index+1, mid)
       playlist_rem(old_index)
     end
+    send(@plugin_name + "_move_callback") 
   end
 
   def set_default_plugin()
     @plugin_name = "default"
     load "plugins/default.rb"
     extend Plugin
+    display("Loading default plugin for songs selection")
   end
  
   def set_nb_songs()

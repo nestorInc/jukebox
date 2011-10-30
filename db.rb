@@ -46,6 +46,13 @@ class Library
     res[0].at(0);
   end
   
+  def get_total(field, value)
+    req = @db.prepare("SELECT COUNT (*) FROM library WHERE #{field} LIKE \"%#{value}%\"");
+    res = req.execute!();
+    req.close();
+    res[0].at(0);
+  end
+  
   def get_file(mid = nil)
     if(mid == nil)
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
@@ -62,6 +69,15 @@ class Library
     res[1] = res[1].encode(Encoding.locale_charmap);
     res[2] = res[2].encode(Encoding.locale_charmap);
     res;
+  end
+
+  def get_random_from_artist(artist)
+    if(artist != nil)
+      req = @db.prepare("SELECT * FROM library WHERE artist LIKE \"%#{artist}%\" AND status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
+      res = req.execute!();
+      req.close();
+    end
+    res[0]
   end
 
 # search value
