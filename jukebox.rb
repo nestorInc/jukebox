@@ -20,6 +20,8 @@ json = JsonManager.new(library);
 e = Encode.new(library, ARGV[0], ARGV[1]);
 e.attach(Rev::Loop.default);
 
+$error_file = File.open("error.log", "a+");
+
 channelList = {};
 
 h = HttpServer.new();
