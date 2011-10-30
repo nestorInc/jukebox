@@ -113,6 +113,7 @@ h.addPath("/ch", channelList, library) { |s, req, list, lib|
               ch.plugin_name = value["plugin_name"]
               json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
               json_str = json.get_info_reply();
+              display("Loading #{value["plugin_name"]} plugin for songs selection")
             end
           end
         }
