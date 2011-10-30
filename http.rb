@@ -138,7 +138,7 @@ class HttpSession < Rev::SSLSocket
       @@logfd = File.open("http.log", "a+");
       @@logfd.sync = true;
     end
-    @@logfd.write("#{DateTime.now()} #{remote_addr}:#{remote_port} #{str}\n");
+    super(str, false, @@logfd);
   end
 
   def ssl_context
@@ -176,6 +176,7 @@ class HttpSession < Rev::SSLSocket
   end
       
   def on_read(data)
+    debug("HTTP data\n" + data);
     @data << data;
     while(@data.bytesize != 0)
       # Decode header
@@ -408,6 +409,6 @@ class HttpServer
       @@logfd = File.open("http.log", "a+");
       @@logfd.sync = true;
     end
-    @@logfd.write("#{DateTime.now()} #{str}\n");
+    super(str, false, @@logfd);
   end
 end

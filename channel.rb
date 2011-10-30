@@ -13,12 +13,12 @@ class ChannelsCron < Rev::TimerWatcher
 
   def register(ch)
     @channels.push(ch);
-    display("Cron register channel #{ch.name()} [#{@channels.size()}]");
+    log("Cron register channel #{ch.name()} [#{@channels.size()}]");
   end
 
   def unregister(ch)
     @channels.delete(ch);
-    display("Cron unregister channel #{ch.name()} [#{@channels.size()}]");
+    log("Cron unregister channel #{ch.name()} [#{@channels.size()}]");
   end
 
   private 
@@ -50,7 +50,7 @@ class Channel
     @time         = 0;
     @nb_songs	  = 0;
 
-    display("Creating new channel #{name}");
+    log("Creating new channel #{name}");
     set_default_plugin()
     set_nb_songs();
     fetchData();
@@ -72,7 +72,7 @@ class Channel
   def register(s)
     $channelsCron.register(self) if(@connections.size() == 0);
     @connections.push(s);
-    display("Registering channel #{@name} [#{@connections.size()} user(s) connected]");
+    log("Registering channel #{@name} [#{@connections.size()} user(s) connected]");
     if(@currentEntry)
       tag = Id3.new();
       tag.title  = @currentEntry[3];
@@ -88,18 +88,18 @@ class Channel
       $channelsCron.unregister(self);
       @time = 0;
     end
-    display("Unregistering channel #{@name} [#{@connections.size()} user(s) connected]");
+    log("Unregistering channel #{@name} [#{@connections.size()} user(s) connected]");
   end
 
   def next()
-    display("Next on channel #{@name}");
+    log("Next on channel #{@name}");
     @pos += 1;    
     fetchData();
     send(@plugin_name + "_next_callback")
   end
 
   def previous()
-    display("Previous on channel #{@name}");
+    log("Previous on channel #{@name}");
     @pos -=1 if(@pos > 0);
     fetchData();
     send(@plugin_name + "_previous_callback")
@@ -139,7 +139,7 @@ class Channel
     @plugin_name = "default"
     load "plugins/default.rb"
     extend Plugin
-    display("Loading default plugin for songs selection")
+    log("Loading default plugin for songs selection")
   end
  
   def set_nb_songs()
@@ -153,7 +153,7 @@ class Channel
     mid = @history[@pos];
     @currentEntry = @library.get_file(mid);
     file = @currentEntry[2];
-    display("Fetching on channel #{@name}: #{file}");
+    log("Fetching on channel #{@name}: #{file}");
     @cur = Mp3File.new(file);
     tag = Id3.new();
     tag.title  = @currentEntry[3];

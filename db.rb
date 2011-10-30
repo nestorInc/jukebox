@@ -19,7 +19,7 @@ class Library
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
                        status INTEGER);" );
-    display("library initialized.");
+    log("library initialized.");
   end
 
 # searching methods here 
