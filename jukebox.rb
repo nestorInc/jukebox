@@ -152,6 +152,12 @@ rescue => e
   data = YAML::dump(stat);
   fd.write(data);
   fd.close();
+
+  File.open("crash#{Time.now.to_i}", "w") { |fd|
+    fd.puts(detail);
+    fd.puts("----- Last events -----");
+    fd.puts(dump_events);
+  }
 end
 
 
