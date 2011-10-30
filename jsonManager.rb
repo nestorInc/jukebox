@@ -173,7 +173,7 @@ class JsonManager
     else
       refresh_resultCount(json_obj["result_count"]);
     end
-    total_result = get_total(json_obj["search_field"], json_obj["search_value"])
+    total_result = library.get_total(json_obj["search_field"], json_obj["search_value"])
     refresh_totalResult(total_result);
     build_orderBy_s();
     build_orderByWay_s();
