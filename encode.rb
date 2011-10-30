@@ -11,22 +11,12 @@ class EncodingThread < Rev::IO
   def initialize(file, *args, &block)
     @block = block;
     @args  = args;
-    extra_lame_param = "--id3v2-only ";
-    mid, src, dst, title, artist, album, years, status = file;
-    puts "Encoding #{src} -> #{dst}"
 
-#    extra_lame_param << "--tt \"#{title.sub('"', '\"')}\" "  if(title)
-#    extra_lame_param << "--ta \"#{artist.sub('"', '\"')}\" " if(artist)
-#    extra_lame_param << "--tl \"#{album.sub('"', '\"')}\" "  if(album)
-#    extra_lame_param << "--tn \"#{tag.track}\" "  if(tag.track != 0)
-#    extra_lame_param << "--ty \"#{years}\" "   if(years != 0)
+    mid, src, dst, title, artist, album, years, status = file;
+    log("Encoding #{src} -> #{dst}");
 
     src = src.sub('"', '\"');
     dst = dst.sub('"', '\"');
-
-#    src.force_encoding("BINARY");
-#    dst.force_encoding("BINARY");
-#     extra_lame_param.force_encoding("BINARY");
 
     rd, wr = IO.pipe
     @pid = fork {
