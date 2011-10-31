@@ -19,28 +19,35 @@ class Library
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
                        status INTEGER);" );
-    display("library initialized.");
+    log("library initialized.");
   end
 
 # searching methods here 
 #SELECT * FROM music ORDER BY mid LIMIT 60,10;
   
   def get_title(mid)
-    req = @db.prepare("SELECT title FROM library WHERE mid=? LIMIT 1");
+    req = @db.prepare("SELECT title FROM library WHERE mid=? AND status=#{FILE_OK} LIMIT 1");
     res = req.execute!(mid);
     req.close();
     res[0];
   end
 
   def get_artist(mid)
-    req = @db.prepare("SELECT artist FROM library WHERE mid=? LIMIT 1");
+    req = @db.prepare("SELECT artist FROM library WHERE mid=? AND status=#{FILE_OK} LIMIT 1");
     res = req.execute!(mid);
     req.close();
     res[0];
   end
 
   def get_nb_songs()
-    req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=5");
+    req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK}");
+    res = req.execute!();
+    req.close();
+    res[0].at(0);
+  end
+  
+  def get_total(field, value)
+    req = @db.prepare("SELECT COUNT (*) FROM library WHERE #{field} LIKE \"%#{value}%\"");
     res = req.execute!();
     req.close();
     res[0].at(0);
@@ -57,7 +64,20 @@ class Library
       req.close();
     end
 
-    res[0];
+    return nil if(res[0] == nil)
+    res = res.first;
+    res[1] = res[1].encode(Encoding.locale_charmap);
+    res[2] = res[2].encode(Encoding.locale_charmap);
+    res;
+  end
+
+  def get_random_from_artist(artist)
+    if(artist != nil)
+      req = @db.prepare("SELECT * FROM library WHERE artist LIKE \"%#{artist}%\" AND status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
+      res = req.execute!();
+      req.close();
+    end
+    res[0]
   end
 
 # search value
@@ -89,7 +109,7 @@ class Library
     if((resultCount > 200) or (resultCount < 0))
       resultCount = 50;
     end
-    if((firstResult >= resultCount) or (firstResult < 0))
+    if(firstResult < 0)
       firstResult = 0;
     end
     return request(value, field, orderBy, orderByWay, firstResult, resultCount); 
@@ -124,8 +144,11 @@ class Library
     req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_WAIT} LIMIT 1");
     res = req.execute!();
     req.close();
-    return nil if(res.size == 0);
-    return res[0];
+    return nil if(res[0] == nil)
+    res = res.first;
+    res[1] = res[1].encode(Encoding.locale_charmap);
+    res[2] = res[2].encode(Encoding.locale_charmap);
+    res;
   end
 
   def change_stat(mid, state)

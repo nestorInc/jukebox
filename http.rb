@@ -138,7 +138,7 @@ class HttpSession < Rev::SSLSocket
       @@logfd = File.open("http.log", "a+");
       @@logfd.sync = true;
     end
-    @@logfd.write("#{DateTime.now()} #{remote_addr}:#{remote_port} #{str}\n");
+    super(str, false, @@logfd);
   end
 
   def ssl_context
@@ -164,8 +164,19 @@ class HttpSession < Rev::SSLSocket
       @close_block.call(self, *@close_args);
     end
   end
+
+  #durty fix for catch exception
+  def on_readable
+    begin
+      on_read @_io.read_nonblock(INPUT_SIZE)
+    rescue Errno::EAGAIN
+    rescue Errno::ECONNRESET, EOFError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH
+      close
+    end
+  end
       
   def on_read(data)
+    debug("HTTP data\n" + data);
     @data << data;
     while(@data.bytesize != 0)
       # Decode header
@@ -398,6 +409,6 @@ class HttpServer
       @@logfd = File.open("http.log", "a+");
       @@logfd.sync = true;
     end
-    @@logfd.write("#{DateTime.now()} #{str}\n");
+    super(str, false, @@logfd);
   end
 end

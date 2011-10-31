@@ -5,6 +5,7 @@ require 'socket'
 require 'cgi'
 require 'yaml.rb'
 require 'json'
+require 'yaml'
 
 load 'connection.rb'
 load 'http.rb'
@@ -14,11 +15,24 @@ load 'encode.rb'
 load 'db.rb'
 load 'jsonManager.rb'
 
+
+config = {}
+begin
+  fd = File.open("jukebox.cfg");
+  data = fd.read();
+  config = YAML.load(data);
+  fd.close;
+rescue => e
+  error("Config file error: #{e.to_s}");
+end
+
 library = Library.new();
 json = JsonManager.new(library);
 
-e = Encode.new(library, ARGV[0], ARGV[1]);
+e = Encode.new(library, config["encode"]);
 e.attach(Rev::Loop.default);
+
+$error_file = File.open("error.log", "a+");
 
 channelList = {};
 
@@ -118,6 +132,7 @@ n.addRequest(channelList, library) { |s, req, list, lib|
               ch.plugin_name = value["plugin_name"]
               json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
               json_str = json.get_info_reply();
+              log("Loading #{value["plugin_name"]} plugin for songs selection")
             end
           end
         }
@@ -135,10 +150,6 @@ h.attach(Rev::Loop.default)
 
 begin
   Rev::Loop.default.run();
-rescue Errno::ETIMEDOUT
-  retry;
-rescue Errno::EHOSTUNREACH
-  retry;
 rescue => e
   fd = File.open("exception_stat", File::RDONLY | File::CREAT, 0600);
   data = fd.read();
@@ -155,6 +166,12 @@ rescue => e
   data = YAML::dump(stat);
   fd.write(data);
   fd.close();
+
+  File.open("crash#{Time.now.to_i}", "w") { |fd|
+    fd.puts(detail);
+    fd.puts("----- Last events -----");
+    fd.puts(dump_events);
+  }
 end
 
 

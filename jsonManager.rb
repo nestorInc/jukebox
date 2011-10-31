@@ -122,6 +122,8 @@ class JsonManager
     songs = "";
     size = 0;
     resultTable.each do |row|
+      row[0].gsub!(/"/, '')
+      row[1].gsub!(/"/, '')
       songs = songs + "{\"mid\":#{row[2]},\"artist\":\"#{row[0]}\",\"title\":\"#{row[1]}\",\"duration\":270}";
       if(size != resultTable.size()-1)
         songs = songs + ",";
@@ -173,7 +175,8 @@ class JsonManager
     else
       refresh_resultCount(json_obj["result_count"]);
     end
-    refresh_totalResult(result.size());
+    total_result = library.get_total(json_obj["search_field"], json_obj["search_value"])
+    refresh_totalResult(total_result);
     build_orderBy_s();
     build_orderByWay_s();
     build_resultCount_s();
