@@ -122,6 +122,8 @@ class JsonManager
     songs = "";
     size = 0;
     resultTable.each do |row|
+      row[0].gsub!(/"/, '')
+      row[1].gsub!(/"/, '')
       songs = songs + "{\"mid\":#{row[2]},\"artist\":\"#{row[0]}\",\"title\":\"#{row[1]}\",\"duration\":270}";
       if(size != resultTable.size()-1)
         songs = songs + ",";
