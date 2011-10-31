@@ -6,9 +6,10 @@ load 'id3.rb'
 
 ENCODE_DELAY_SCAN = 30; # seconds
 MAX_ENCODE_JOB    = 2;
+DEFAULT_BITRATE   = 192;
 
 class EncodingThread < Rev::IO
-  def initialize(file, *args, &block)
+  def initialize(file, bitrate, *args, &block)
     @block = block;
     @args  = args;
 
@@ -24,7 +25,7 @@ class EncodingThread < Rev::IO
         rd.close()
         STDOUT.reopen(wr)
         wr.close();
-        exec("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -b 192 -t > /dev/null 2> /dev/null");
+        exec("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -b #{bitrate} -t > /dev/null 2> /dev/null");
       }
       debug("Process encoding PID=#{@pid}");
       wr.close();
@@ -49,12 +50,22 @@ class EncodingThread < Rev::IO
 end
 
 class Encode < Rev::TimerWatcher
-  def initialize(library, originDir, encodedDir)
-    @originDir            = originDir;
-    @encodedDir           = encodedDir;
+  def initialize(library, conf)
     @library              = library;
     @th                   = [];
-    super(ENCODE_DELAY_SCAN, true);
+
+    @originDir   = conf["source_dir"]  if(conf && conf["source_dir"]);
+    raise "Config: encode::source_dir not found" if(@originDir == nil);
+    @encodedDir  = conf["encoded_dir"] if(conf && conf["encoded_dir"]);
+    raise "Config: encode::encoded_dir not found" if(@encodedDir == nil);
+    @delay_scan   = ENCODE_DELAY_SCAN;
+    @delay_scan   = conf["delay_scan"] if(conf && conf["delay_scan"]);
+    @max_job      = MAX_ENCODE_JOB;
+    @max_job      = conf["max_job"]    if(conf && conf["max_job"]);
+    @bitrate      = DEFAULT_BITRATE;
+    @bitrate      = conf["bitrate"]    if(conf && conf["bitrate"]);
+
+    super(@delay_scan, true);
     scan();
   end
 
@@ -86,7 +97,7 @@ class Encode < Rev::TimerWatcher
     mid = file[0];
 
     @library.change_stat(mid, Library::FILE_ENCODING_PROGRESS);
-    enc = EncodingThread.new(file, self, @library, mid) { |status, obj, lib, mid|
+    enc = EncodingThread.new(file, @bitrate, self, @library, mid) { |status, obj, lib, mid|
       if(status == 0)
         @library.change_stat(mid, Library::FILE_OK)
       else

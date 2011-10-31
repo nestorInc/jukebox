@@ -5,6 +5,7 @@ require 'socket'
 require 'cgi'
 require 'yaml.rb'
 require 'json'
+require 'yaml'
 
 load 'connection.rb'
 load 'http.rb'
@@ -14,10 +15,21 @@ load 'encode.rb'
 load 'db.rb'
 load 'jsonManager.rb'
 
+
+config = {}
+begin
+  fd = File.open("jukebox.cfg");
+  data = fd.read();
+  config = YAML.load(data);
+  fd.close;
+rescue => e
+  error("Config file error: #{e.to_s}");
+end
+
 library = Library.new();
 json = JsonManager.new(library);
 
-e = Encode.new(library, ARGV[0], ARGV[1]);
+e = Encode.new(library, config["encode"]);
 e.attach(Rev::Loop.default);
 
 $error_file = File.open("error.log", "a+");
