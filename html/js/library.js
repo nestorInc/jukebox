@@ -86,15 +86,20 @@ function displaySearchResults (server_results) {
     var i = 0;
     
     librarySongs = server_results.results;
-
+    var grey_bg = false;
     server_results.results.each(function(s) {
+    var style = '';
+    if (grey_bg == true) {
+        style = 'background-color: #DEDEDE;';
+    }
 	songlist_html += '<li id="library_li_' + i + '">';
-	songlist_html += '<div id="library_song_' + i + '" style="position:relative;" class="library_draggable">';
+	songlist_html += '<div id="library_song_' + i + '" style="position:relative;' + style + '" class="library_draggable">';
 	songlist_html += '<a href="#" onclick="addToPlayQueue(' + s.mid + ',0);return false;"><span class="add_to_play_queue_top"></span></a>';
 	songlist_html += '<a href="#" onclick="addToPlayQueueBottom(' + s.mid + ');return false;"><span class="add_to_play_queue_bottom"></span></a>';
 	songlist_html += '<div id="library_handle_' + i + '">' + s.artist + ' - ' + s.title + '</div>';
 	songlist_html += '</div></li>';
 	i++;
+    grey_bg = !grey_bg;
     });
     songlist_html += '</ul>';
     $('collection_content').update(songlist_html);

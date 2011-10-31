@@ -33,6 +33,8 @@ function setActivityMonitor(status) {
 }
 
 function initJukebox () {
+    ShowDebug(false);
+    CollapseCollection();
     setActivityMonitor(false);
     last_time = new Date().getTime() / 1000;
     
@@ -216,13 +218,24 @@ function UpdateCurrentSong (delta_time) {
     }
 }
 
+function ShowDebug(show) {
+    if (show == true) {
+        $('debug_wrapper').show();
+        $('show_debug').hide();
+        $('hide_debug').show();
+    } else {
+        $('debug_wrapper').hide();
+        $('show_debug').show();
+        $('hide_debug').hide();
+    }
+}
 
 function ExpandCollection () {
     $('music_collection_wrapper').show();
     $('expand_collection_button').hide();
     $('collapse_collection_button').show();
     $('page_wrapper').setStyle({
-	width: '960px'
+	width: '681px'
     });
 }
 
@@ -274,7 +287,7 @@ function DisplayPlayQueue () {
 	html += '<li id="play_queue_li_' + currentPQSongIndex + '" class="droppable">';
 	html += '<div id="play_queue_song_' + currentPQSongIndex + '" class="play_queue_draggable">';
 
-	html += '<div id="play_queue_handle_' + currentPQSongIndex + '">' + song.artist + ' - ' + song.title + ' (' + FormatTime(song.duration) + ')</div>';
+	html += '<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">' + song.artist + ' - ' + song.title + ' (' + FormatTime(song.duration) + ')</div>';
 	html += '<a href="#" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', 0);return false;"><span class="play_queue_move_top"></span></a>';
 	html += '<a href="#" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', ' + lastPQIndex + ');return false;"><span class="play_queue_move_bottom"></span></a>';
 	html += '<a href="#" onclick="PlayQueueDelete(1,' + currentPQSongIndex + ');return false;"><span class="play_queue_delete"></span></a></span></a>';

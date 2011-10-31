@@ -41,7 +41,7 @@
 				<div id="player_controls">
 					<a href="#" onclick="previousSong(); return false;"><span id="previous_button">&lt;</span></a>
 					<a href="#" onclick="nextSong(); return false;"><span id="next_button">&gt;</span></a>
-					<p id="player_song_title">Superbe artiste - Magnifique chanson</p>
+					<p id="player_song_title"></p>
 					
 					<div id="progressbar_wrapper">
 						<div id="progressbar">
@@ -52,15 +52,6 @@
 				</div>
 				<div id="player_playlist">
 					<div id="play_queue_content">
-						<ul>
-							<li>Artiste 1 - Chanson 1 <a href="#"><span class="play_queue_delete"></span></a><a href="#"><span class="play_queue_move_bottom"></span></a><a href="#"><span class="play_queue_move_top"></span></a></li>
-							<li>Artiste 1 - Chanson 1 <a href="#"><span class="play_queue_delete"></span></a><a href="#"><span class="play_queue_move_bottom"></span></a><a href="#"><span class="play_queue_move_top"></span></a></li>
-							<li>Artiste 1 - Chanson 1 <a href="#"><span class="play_queue_delete"></span></a><a href="#"><span class="play_queue_move_bottom"></span></a><a href="#"><span class="play_queue_move_top"></span></a></li>
-							<li>Artiste 1 - Chanson 1 <a href="#"><span class="play_queue_delete"></span></a><a href="#"><span class="play_queue_move_bottom"></span></a><a href="#"><span class="play_queue_move_top"></span></a></li>
-							<li>Artiste 1 - Chanson 1 <a href="#"><span class="play_queue_delete"></span></a><a href="#"><span class="play_queue_move_bottom"></span></a><a href="#"><span class="play_queue_move_top"></span></a></li>
-							<li>Artiste 1 - Chanson 1 <a href="#"><span class="play_queue_delete"></span></a><a href="#"><span class="play_queue_move_bottom"></span></a><a href="#"><span class="play_queue_move_top"></span></a></li>
-							<li>Artiste 1 - Chanson 1 <a href="#"><span class="play_queue_delete"></span></a><a href="#"><span class="play_queue_move_bottom"></span></a><a href="#"><span class="play_queue_move_top"></span></a></li>
-						</ul>
 					</div>
 				</div>
 			</div>
@@ -78,29 +69,30 @@
 				</div>
 				<div class="collection_pagelist"></div>
 				<div id="collection_content">
-					Music collection <br />
-					Music collection <br />
-					Music collection <br />
-					Music collection <br />
-					Music collection <br />
-					Music collection <br />
-					Music collection <br />
-					Music collection <br />
-					Music collection <br />
 				</div>
 				<div class="collection_pagelist"></div>
 			</div>
 			
 			<div id="footer">
-		<input type="button" value="Force update (timestamp = 0)" onclick="timestamp=0;updateJukebox();" />
+		<input type="button" value="Refresh" onclick="timestamp=0;updateJukebox();" />
 		<input type="checkbox" value="autorefresh" id="cb_autorefresh" checked/> autorefresh
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;plugin de selection : <input type="text" id="music_selection_plugin" value="default" style="width: 70px;" />
+		<br />
+		<br />
+		Plugin :<input type="text" id="music_selection_plugin" value="default" style="width: 70px;" />
 		<input type="button" value="Appliquer" onclick="setSongSelectionPlugin();" />
 			</div>
 		
 		
 		</div>
-
+		
+		<div id="show_debug">
+			<a href="#" onclick="ShowDebug(true); return false;">Show debug</a>
+		</div>
+		
+		<div id="hide_debug">
+			<a href="#" onclick="ShowDebug(false); return false;">Hide debug</a>
+		</div>
+		
 		<div id="debug_wrapper">
 		  <h1>Debug console</h1>
 		  <table width="100%"><tr><td width="50%">
