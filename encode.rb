@@ -12,22 +12,28 @@ class EncodingThread < Rev::IO
     @block = block;
     @args  = args;
 
-    mid, src, dst, title, artist, album, years, status = file;
-    log("Encoding #{src} -> #{dst}");
+    begin 
+      mid, src, dst, title, artist, album, years, status = file;
+      log("Encoding #{src} -> #{dst}");
 
-    src = src.sub('"', '\"');
-    dst = dst.sub('"', '\"');
+      src = src.sub('"', '\"');
+      dst = dst.sub('"', '\"');
 
-    rd, wr = IO.pipe
-    @pid = fork {
-      rd.close()
-      STDOUT.reopen(wr)
+      rd, wr = IO.pipe
+      @pid = fork {
+        rd.close()
+        STDOUT.reopen(wr)
+        wr.close();
+        exec("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -b 192 -t > /dev/null 2> /dev/null");
+      }
+      debug("Process encoding PID=#{@pid}");
       wr.close();
-      exec("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -b 192 -t > /dev/null 2> /dev/null");
-    }
-    wr.close();
-    @fd  = rd;
-    super(@fd);
+      @fd  = rd;
+      super(@fd);
+    rescue => e
+      error("Encode execution error on file #{src}: #{e.to_s}", true, $error_file);
+      @block.call(255, *@args);
+    end
   end
 
 
