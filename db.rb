@@ -109,7 +109,7 @@ class Library
     if((resultCount > 200) or (resultCount < 0))
       resultCount = 50;
     end
-    if((firstResult >= resultCount) or (firstResult < 0))
+    if(firstResult < 0)
       firstResult = 0;
     end
     return request(value, field, orderBy, orderByWay, firstResult, resultCount); 
