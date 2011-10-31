@@ -1,10 +1,12 @@
+var results_per_page = 10;
+
 var search = new Object();
 search.order_by = 'artist';
 search.order_by_way = 'down';
 search.search_value = '';
 search.search_field = '';
 search.first_result = 0;
-search.result_count = 10;
+search.result_count = results_per_page;
 
 var search_results = new Object();
 search_results.total_results = 0;
@@ -15,7 +17,7 @@ var librarySongs = new Array();
 function doSearch () {
     search.search_value = $('search_input').value;
     search.search_field = $('search_field').value;
-    search.result_count = 10;
+    search.result_count = results_per_page;
     query.search = search;
     updateJukebox();
 }
@@ -36,7 +38,7 @@ function addToPlayQueue(mid, play_queue_index) {
 
 
 function goToPage (page) {
-    search.first_result = (page - 1) * search.result_count;
+    search.first_result = (page - 1) * results_per_page;
     doSearch();
 }
 
@@ -54,12 +56,13 @@ function displaySearchResults (server_results) {
     search.result_count = server_results.result_count;
     
     
-    var page_count = Math.floor(server_results.total_results / server_results.result_count);
-    if (server_results.total_results % server_results.result_count > 0) {
+    var page_count = Math.floor(server_results.total_results / results_per_page);
+ 
+    if (server_results.total_results % results_per_page > 0) {
 	page_count++;
     }
     
-    var current_page = Math.floor(server_results.first_result / server_results.result_count) + 1;
+    var current_page = Math.floor(server_results.first_result / results_per_page) + 1;
 
     var pagelist_html = '<p>';
     
