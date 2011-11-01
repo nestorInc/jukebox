@@ -275,7 +275,7 @@ class HttpNode
   def initialize(child = {}, *args, &block)
     @child = child;
 
-    addRequest(*args, block) if(block);
+    addRequest(*args, &block) if(block);
   end
 
   def addAuth(*args, &block)
