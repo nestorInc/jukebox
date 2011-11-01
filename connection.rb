@@ -3,6 +3,9 @@
 require 'rev'
 
 class Connection
+  attr_reader :socket;
+  attr_reader :ch;
+
   def initialize(s, ch, icy)
     @socket      = s;
     @icyInterval = 0;

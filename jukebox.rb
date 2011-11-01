@@ -47,6 +47,38 @@ n.addAuth() { |s, user, pass|
   nil;
 }
 
+st = HttpNode.new() { |s, req|
+  obj_kind = {}
+  ObjectSpace.each_object { |obj|
+    obj_kind[obj.class] = [] if(obj_kind[obj.class] == nil)
+    obj_kind[obj.class].push(obj);
+  }
+  rep = HttpResponse.new(req.proto, 200, "OK");
+  page = "<html><head><title>status</title></head><body>";
+  if(obj_kind[Connection])
+    page << "<table>";
+    page << "<tr><th>Peer</th><th>SSL</th><th>User</th><th>Song</th><th>Sock out queue</th><tr>";
+    obj_kind[Connection].each { |c|
+      meta = c.ch.meta();
+      page << "<tr>"
+      page << "<td>#{c.socket.remote_address.inspect_sockaddr}</td>"
+      page << "<td>#{c.socket.ssl != nil}</td>"
+      page << "<td>#{c.socket.user}</td>"
+      page << "<td>#{meta[3].gsub("\'", " ")} - #{meta[4].gsub("\'", " ")} - #{meta[5].gsub("\'", " ")}</td>"
+      page << "<td>#{c.socket.output_buffer_size}</td>"
+      page << "<tr>";
+    }
+    
+    page << "</table>";
+  end
+  page << "</body></head>";
+  rep.setData(page);
+
+  s.write(rep.to_s);  
+}
+
+h.addNode("/status", st)
+
 n.addRequest(channelList, library) { |s, req, list, lib|
   action = req.remaining;
   channelName = s.user;

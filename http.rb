@@ -115,6 +115,7 @@ end
 
 class HttpSession < Rev::SSLSocket
   attr_reader :user;
+  attr_reader :ssl;
 
   @@logfd = nil;
   def initialize(socket, server, ssl = nil)
@@ -130,6 +131,10 @@ class HttpSession < Rev::SSLSocket
   def on_disconnect(*args, &block)
     @close_block = block;
     @close_args  = args;
+  end
+
+  def remote_address()
+    @_io.remote_address();
   end
 
   private
