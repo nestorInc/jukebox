@@ -9,9 +9,15 @@ MAX_ENCODE_JOB    = 2;
 DEFAULT_BITRATE   = 192;
 
 class EncodingThread < Rev::IO
+  attr_reader :pid;
+  attr_reader :file;
+  attr_reader :bitrate;
+
   def initialize(file, bitrate, *args, &block)
-    @block = block;
-    @args  = args;
+    @block    = block;
+    @args     = args;
+    @file     = file;
+    @bitrate  = bitrate;
 
     begin 
       mid, src, dst, title, artist, album, years, status = file;

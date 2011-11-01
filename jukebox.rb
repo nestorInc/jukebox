@@ -68,6 +68,20 @@ st = HttpNode.new() { |s, req|
       page << "<td>#{c.socket.output_buffer_size}</td>"
       page << "<tr>";
     }
+  end
+
+  if(obj_kind[EncodingThread])
+    page << "<table>";
+    page << "<tr><th>PID</th><th>File</th><th>Song</th><th>Bitrate</th></tr>";
+    obj_kind[EncodingThread].each { |e|
+      page << "<tr>"
+      page << "<td>#{e.pid}</td>"
+      page << "<td>#{e.file[1]}</td>"
+      page << "<td>#{e.file[3].gsub("\'", " ")} - #{e.file[4].gsub("\'", " ")} - #{e.file[5].gsub("\'", " ")}</td>"
+      page << "<td>#{e.file}</td>"
+      page << "<td>#{e.bitrate}</td>"
+      page << "<tr>";
+    }
     
     page << "</table>";
   end
