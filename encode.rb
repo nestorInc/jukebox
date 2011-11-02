@@ -95,7 +95,7 @@ class Encode < Rev::TimerWatcher
   private
 
   def encode()
-    return if(@th.size >= MAX_ENCODE_JOB);
+    return if(@th.size >= @max_job);
 
     file = @library.encode_file()
     return if(file == nil);
