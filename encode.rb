@@ -72,7 +72,6 @@ class Encode < Rev::TimerWatcher
     @bitrate      = conf["bitrate"]    if(conf && conf["bitrate"]);
 
     super(@delay_scan, true);
-    scan();
   end
 
   def files()
@@ -124,11 +123,14 @@ class Encode < Rev::TimerWatcher
   def scan()
     files  = Dir.glob(@originDir + "/*.mp3");
     signal = false;
+    nb_new_file = 0;
 
     files.each { | f |
       name = f.scan(/.*\/(.*)/);
       name = name[0][0];
       if(@library.check_file(f))
+        nb_new_file += 1;
+        break if(nb_new_file >= 50);
         tag = Id3.decode(f);
         if(tag.title == nil || tag.artist == nil || tag.album == nil)
           @library.add(f, @encodedDir,
@@ -139,10 +141,9 @@ class Encode < Rev::TimerWatcher
                        tag.title, tag.artist, tag.album,
                        tag.date, Library::FILE_WAIT);
         end
+        encode();
       end
     }
-
-    encode();
   end
 
 end

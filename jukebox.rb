@@ -29,8 +29,11 @@ end
 library = Library.new();
 json = JsonManager.new(library);
 
-e = Encode.new(library, config["encode"]);
-e.attach(Rev::Loop.default);
+Thread.new() {
+  e = Encode.new(library, config["encode"]);
+  e.attach(Rev::Loop.default);
+  Rev::Loop.default.run();
+}
 
 $error_file = File.open("error.log", "a+");
 
