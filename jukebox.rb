@@ -53,6 +53,7 @@ n.addAuth() { |s, user, pass|
 
 st = HttpNode.new() { |s, req|
   obj_kind = {}
+  GC.start
   ObjectSpace.each_object { |obj|
     obj_kind[obj.class] = [] if(obj_kind[obj.class] == nil)
     obj_kind[obj.class].push(obj);
