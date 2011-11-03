@@ -17,6 +17,8 @@ load 'jsonManager.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
+$error_file = File.open("error.log", "a+");
+
 config = {}
 begin
   fd = File.open("jukebox.cfg");
@@ -24,19 +26,21 @@ begin
   config = YAML.load(data);
   fd.close;
 rescue => e
-  error("Config file error: #{e.to_s}");
+  error("Config file error: #{e.to_s}", true, $error_file);
 end
 
 library = Library.new();
 json = JsonManager.new(library);
 
 Thread.new() {
-  e = Encode.new(library, config["encode"]);
-  e.attach(Rev::Loop.default);
-  Rev::Loop.default.run();
+  begin
+    e = Encode.new(library, config["encode"]);
+    e.attach(Rev::Loop.default);
+    Rev::Loop.default.run();
+  rescue => e
+    error(e, true, $error_file);
+  end
 }
-
-$error_file = File.open("error.log", "a+");
 
 channelList = {};
 
