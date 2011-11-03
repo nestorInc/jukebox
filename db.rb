@@ -118,7 +118,7 @@ class Library
   def request(value, field, orderBy, orderByWay, firstResult, resultCount)
     request = "SELECT artist,title,mid FROM library ";
     if(field != nil)
-      request += "WHERE #{field} LIKE \"%#{value}%\" ";
+      request += "WHERE #{field} LIKE \"%#{value}%\" AND status=5 ";
     end
     if(orderBy != nil)
       request += "ORDER BY #{orderBy} ";
