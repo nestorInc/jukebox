@@ -146,8 +146,14 @@ class Library
     req.close();
     return nil if(res[0] == nil)
     res = res.first;
-    res[1] = res[1].encode(Encoding.locale_charmap);
-    res[2] = res[2].encode(Encoding.locale_charmap);
+    begin
+      res[1] = res[1].encode(Encoding.locale_charmap);
+      res[2] = res[2].encode(Encoding.locale_charmap);
+    rescue => e
+      error(e.to_s + res.to_s, true, $error_file);
+      change_stat(res[0], FILE_ENCODING_FAIL);
+      res = encode_file();
+    end
     res;
   end
 
