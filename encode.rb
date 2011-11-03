@@ -62,14 +62,20 @@ class Encode < Rev::TimerWatcher
 
     @originDir   = conf["source_dir"]  if(conf && conf["source_dir"]);
     raise "Config: encode::source_dir not found" if(@originDir == nil);
+    @originDir.force_encoding(Encoding.locale_charmap)
+
     @encodedDir  = conf["encoded_dir"] if(conf && conf["encoded_dir"]);
     raise "Config: encode::encoded_dir not found" if(@encodedDir == nil);
-    @delay_scan   = ENCODE_DELAY_SCAN;
+    @encodedDir.force_encoding(Encoding.locale_charmap)
+
     @delay_scan   = conf["delay_scan"] if(conf && conf["delay_scan"]);
-    @max_job      = MAX_ENCODE_JOB;
+    @delay_scan ||= ENCODE_DELAY_SCAN;
+
     @max_job      = conf["max_job"]    if(conf && conf["max_job"]);
-    @bitrate      = DEFAULT_BITRATE;
+    @max_job    ||= MAX_ENCODE_JOB;
+
     @bitrate      = conf["bitrate"]    if(conf && conf["bitrate"]);
+    @bitrate    ||= DEFAULT_BITRATE;
 
     super(@delay_scan, true);
   end
