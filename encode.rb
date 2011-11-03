@@ -144,6 +144,7 @@ class Encode < Rev::TimerWatcher
         encode();
       end
     }
+    encode();
   end
 
 end
