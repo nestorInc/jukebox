@@ -188,7 +188,13 @@ n.addRequest(channelList, library) { |s, req, list, lib|
               json.on_refresh_request(ch.mids, ch.pos, lib, ch.timestamp, client_timestamp, ch.getConnected());
               json_str = json.get_info_reply();
               log("Loading #{value["plugin_name"]} plugin for songs selection")
+            else
+              error("Unknown action #{value["name"]}", true, $error_file);
+              json_str = json.get_info_reply();
             end
+          else
+            error("Unknown command #{type}", true, $error_file);
+            json_str = json.get_info_reply();
           end
         }
        # puts json_str;
