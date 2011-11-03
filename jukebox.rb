@@ -6,6 +6,8 @@ require 'cgi'
 require 'yaml.rb'
 require 'json'
 require 'yaml'
+require 'rpam'
+include Rpam
 
 load 'connection.rb'
 load 'http.rb'
@@ -51,7 +53,8 @@ h.addNode("/ch", n);
 h.addNode("/", f);
 
 n.addAuth() { |s, user, pass|
-  next user if(user == pass);
+  next user if(user == "guest");
+  next user if(authpam(user, pass) == true);
   nil;
 }
 
