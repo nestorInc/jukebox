@@ -130,11 +130,13 @@ class Encode < Rev::TimerWatcher
     files  = Dir.glob(@originDir + "/*.mp3");
     signal = false;
     nb_new_file = 0;
-
+    now = Time.now;
     files.each { | f |
       name = f.scan(/.*\/(.*)/);
       name = name[0][0];
       if(@library.check_file(f))
+        # Check file is not used actualy
+        next if(now - File::Stat.new(f) < @delay_scan * 2);
         nb_new_file += 1;
         break if(nb_new_file >= 50);
         tag = Id3.decode(f);
