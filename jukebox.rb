@@ -150,6 +150,10 @@ n.addRequest(channelList, library) { |s, req, list, lib|
         req.data.gsub!(/%29/, '');
         query = CGI::unescape(req.data);
         json_obj = json.s_to_obj(query);
+        if(json_obj == nil)
+          json_str = json.handle_message(4, "1", "json", "fail to parse request")
+          break
+        end
         client_timestamp = json_obj.delete("timestamp");
         # TODO change the action state
         if(json_obj.size == 0)

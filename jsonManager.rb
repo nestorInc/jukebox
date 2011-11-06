@@ -3,6 +3,8 @@
 require 'json'
 require 'rev'
 
+load 'display.rb'
+
 class JsonManager
   
   def initialize(library)
@@ -109,6 +111,10 @@ class JsonManager
       title = library.get_title(playlist[i]);
       artist = library.get_artist(playlist[i]);
       if(i < playlistSize-1)
+        artist[0].gsub!(/"/, '')
+        title[0].gsub!(/"/, '')
+        artist[0].gsub!(/'/, '')
+        title[0].gsub!(/'/, '')
         songs = songs + "{\"mid\":#{playlist[i]},\"artist\":\"#{artist[0]}\",\"title\":\"#{title[0]}\",\"duration\":270}";
         if(i < (playlistSize-2))
           songs = songs + ",";
@@ -124,6 +130,8 @@ class JsonManager
     resultTable.each do |row|
       row[0].gsub!(/"/, '')
       row[1].gsub!(/"/, '')
+      row[0].gsub!(/'/, '')
+      row[1].gsub!(/'/, '')
       songs = songs + "{\"mid\":#{row[2]},\"artist\":\"#{row[0]}\",\"title\":\"#{row[1]}\",\"duration\":270}";
       if(size != resultTable.size()-1)
         songs = songs + ",";
@@ -231,8 +239,21 @@ class JsonManager
 
   def s_to_obj(s)
     req_table = s.split(/([^=]*)=([^&]*)&?/);
-    json_struct = JSON.parse(req_table[2]);
-    return json_struct;
+    begin 
+      json_struct = JSON.parse(req_table[2]);
+      return json_struct;
+    rescue JSON::ParserError => e
+      warning("Exception when parsing request, #{e}")
+      return nil;
+    end
+  end
+ 
+  def handle_message(level, code, short, long)
+    reply = "{#{@timestamp_s}, \"messages\":[{\"level\":#{level}, \"code\":\"#{code}\", \"message\":\"#{short}#{long}\"}]}";
+    json_obj = JSON.load(reply);
+    json_str = JSON.generate(json_obj);
+    
+    return json_str;
   end
 end
 
