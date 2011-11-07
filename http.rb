@@ -4,6 +4,43 @@ require 'date'
 require 'rev/ssl'
 require 'uri'
 
+# HttpServer create new HttpSession for each HTTP connection
+# Http server have HttpRootNode. this object represent the hierarchie
+# of ressource
+#
+# HttpNode have two blocks:
+#  * For authentification
+#  * For data
+# If block is not present we search on top level
+# Special case:
+#  * Authentification is not found, the server not require authentification
+#  * Ressource is not found, the server response 404 Not found error
+#
+# On HTTP Request we have two fields:
+#  * prefix is containt path for used node
+#  * remaining is containt extra path after node
+#
+# Structure of HTTP node
+# HttpRootNode
+# |-HttpNode (root) (No Auth)
+#  |- HttpNode ("toto") (No Auth)
+#  |- HttpNode ("titi") (No Ressource, Auth)
+#   |- HttpNode ("42") (No Auth)
+#   |- HttpNode ("666") (No Auth)
+# Example
+#  request "/toto"
+#   * check authentification on toto (not found)
+#   * check authentification on root (not found)
+#   * no authentification require
+#   * get ressource on toto
+#   * HttpRequest prefix=/toto, remaining=nil
+#  request "/titi/42/33"
+#   * check authentification on 42 (not found)
+#   * check authentification on titi (found)
+#   * check http authentification
+#   * get ressource on titi
+#   * HttpRequest prefix=/titi/42, remaining=33
+
 class HttpRequest
   attr_reader   :method;
   attr_reader   :options;
@@ -22,8 +59,10 @@ class HttpRequest
 
   def HttpRequest.parse(header)
     lines = header.split("\r\n");
+    # parse response line
     request_line = lines.shift(1)[0];
     method, page, proto = request_line.split(/[ \t]/);
+    # decode header options
     options = {}
     lines.each { |l|
       name, val = l.split(":", 2)
@@ -67,8 +106,10 @@ class HttpResponse
 
   def HttpResponse.parse(header)
     lines = header.split("\r\n");
-    request_line = lines.shift(1)[0];
-    proto, status, reason = request_line.split(/[ \t]/);
+    # parse response line
+    response_line = lines.shift(1)[0];
+    proto, status, reason = response_line.split(/[ \t]/);
+    # decode header options
     options = {}
     lines.each { |l|
       name, val = l.split(":", 2)
@@ -188,6 +229,7 @@ class HttpSession < Rev::SSLSocket
       # Decode header
       if(@length == nil)
         header, body = @data.split("\r\n\r\n", 2);        
+        # Header incomplete
         break if(body == nil);
 
         @req = HttpRequest.parse(header);
@@ -200,6 +242,7 @@ class HttpSession < Rev::SSLSocket
         @data = body;
       end
 
+      # Body incomplete
       break if(@data.bytesize() < @length);
 
       @req.addData(@data.slice!(0 .. @length - 1)) if(@length != 0);
@@ -231,12 +274,14 @@ class HttpSession < Rev::SSLSocket
         end
       end
       if(@uid == nil and auth != nil)
+        # Authentification error
         rsp = HttpResponse.generate401(@req)
         write(rsp.to_s);
         @length = nil;
         next
       end
 
+      # Find ressource data
       pos = 0;
       depth.downto(0) { |i|
         begin
@@ -248,10 +293,13 @@ class HttpSession < Rev::SSLSocket
         end 
       }
       if(request == nil)
+        # No ressource found
         rsp = HttpResponse.generate404(@req)
         write(rsp.to_s);
         next;
       end
+
+      # Generate prefix and remaining fields
       prefix = "/";
       if(pos != 0)
         prefix += uri[0..pos-1].join("/");
@@ -336,6 +384,7 @@ class HttpNode
   end
 end
 
+# Map file directory on http directory
 class HttpNodeMapping < HttpNode
   ContentTypeTab = {
     "css"  => "text/css",
@@ -362,6 +411,7 @@ class HttpNodeMapping < HttpNode
     begin
       st   = File.stat(path);
       if(st.directory? == true)
+        # Try index.html
         path += "/index.html"
         st   = File.stat(path);
       end
@@ -404,6 +454,12 @@ class HttpServer < Rev::TCPServer
   attr_reader :root
 
   @@logfd = nil;
+
+  # options
+  #  * port (default 8080)
+  #  * ssl (default false)
+  #  * key (default nil, only use with ssl)
+  #  * certificate (default nil, only use with ssl)
   def initialize(root = nil, options = {})
     port = options[:port.to_s] || 8080;
 
