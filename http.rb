@@ -118,13 +118,14 @@ class HttpSession < Rev::SSLSocket
   attr_reader :ssl;
 
   @@logfd = nil;
-  def initialize(socket, server, ssl = nil)
-    @server = server;
-    @data   = "";
-    @length = nil;
-    @ssl    = ssl;
-    @user   = nil;
-
+  def initialize(socket, root, options = {})
+    @root        = root;
+    @data        = "";
+    @length      = nil;
+    @ssl         = options[:ssl.to_s] || false;
+    @certificate = options[:certificate.to_s];
+    @key         = options[:key.to_s];
+    @user        = nil;
     super(socket);
   end
 
@@ -149,8 +150,8 @@ class HttpSession < Rev::SSLSocket
   def ssl_context
     @_ssl_context = OpenSSL::SSL::SSLContext.new();
     @_ssl_context.set_params;
-    @_ssl_context.cert = OpenSSL::X509::Certificate.new(File.open("serv.crt"));
-    @_ssl_context.key  = OpenSSL::PKey::RSA.new(File.open("serv.key"));
+    @_ssl_context.cert = OpenSSL::X509::Certificate.new(File.open(@certificate)) if(@certificate);
+    @_ssl_context.key  = OpenSSL::PKey::RSA.new(File.open(@key)) if(@key);
     @_ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE;
     @_ssl_context;
   end
@@ -203,14 +204,13 @@ class HttpSession < Rev::SSLSocket
 
       @req.addData(@data.slice!(0 .. @length - 1)) if(@length != 0);
       log(@req);
-      root    = @server.root();
       auth    = nil;
       request = nil;
 
       uri  = @req.uri.path.split("/");
       uri.delete_if {|n| n == "" };
 
-      nodes = root.scan(uri);
+      nodes = @root.scan(uri);
 
       depth = nodes.size();
       # find auth methode
@@ -346,6 +346,7 @@ class HttpNodeMapping < HttpNode
     "jpg"  => "image/jpeg",
     "gif"  => "image/gif",
     "txt"  => "text/plain",
+    nil    => "application/octet-stream"
   }
 
   def initialize(dir)
@@ -371,8 +372,8 @@ class HttpNodeMapping < HttpNode
     end
     ext  = path.scan(/.*\.(.*)/).first;
     contentType = nil;
-    contentType = ContentTypeTab[ext.first]   if(ext);
-    contentType = "application/octect-stream" if(contentType == nil);
+    contentType = ContentTypeTab[ext.first]  if(ext);
+    contentType = ContentTypeTab[nil]        if(contentType == nil);
 
     rsp  = HttpResponse.new(req.proto, 200, "OK");
     data = File.read(path)
@@ -381,31 +382,36 @@ class HttpNodeMapping < HttpNode
   end
 end
 
-class HttpServer
-  attr_reader :root
-
-  @@logfd = nil;
-  def initialize(port = 8080, sport = 8082)
-    @srv        = [];
-
-    log("starting http server")
-    @srv << Rev::TCPServer.new(nil, port, HttpSession, self);
-    @srv << Rev::TCPServer.new(nil, sport, HttpSession, self, true) if(sport);
-  end
-
-  def attach(loop)
-    @srv.each { |s|
-      s.attach(loop)
-    }
+class HttpRootNode
+  def initialize()
+    @root = HttpNode.new();
   end
 
   def addNode(path, node)
     uri  = path.split("/");
     uri.delete_if {|n| n == "" };
 
-
     @root = HttpNode.new() if(@root == nil);
     @root = @root.add(uri, node);
+  end
+
+  def scan(path)
+    @root.scan(path)
+  end
+end
+
+class HttpServer < Rev::TCPServer
+  attr_reader :root
+
+  @@logfd = nil;
+  def initialize(root = nil, options = {})
+    port = options[:port.to_s] || 8080;
+
+    @root   = root
+    @root ||= HttpRootNode.new();
+
+    log("starting http server")
+    super(nil, port, HttpSession, @root, options);
   end
 
   private

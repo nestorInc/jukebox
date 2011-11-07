@@ -5,5 +5,10 @@ encode:
   max_job: 3
   bitrate: 192
 server:
-  http_port: 8080
-  https_port: 8082
+  -
+    port: 8080
+  -
+    port: 8082
+    ssl: true
+    certificate: ca.crt
+    key: ca.key

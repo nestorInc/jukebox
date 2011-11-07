@@ -36,7 +36,7 @@ json = JsonManager.new(library);
 
 Thread.new() {
   begin
-    e = Encode.new(library, config["encode"]);
+    e = Encode.new(library, config[:encode.to_s]);
     e.attach(Rev::Loop.default);
     Rev::Loop.default.run();
   rescue => e
@@ -46,11 +46,11 @@ Thread.new() {
 
 channelList = {};
 
-h = HttpServer.new();
+root = HttpRootNode.new();
 n = HttpNode.new();
 f = HttpNodeMapping.new("html");
-h.addNode("/ch", n);
-h.addNode("/", f);
+root.addNode("/ch", n);
+root.addNode("/", f);
 
 n.addAuth() { |s, user, pass|
   next user if(user == "guest");
@@ -103,7 +103,7 @@ st = HttpNode.new() { |s, req|
   s.write(rep.to_s);  
 }
 
-h.addNode("/status", st)
+root.addNode("/status", st)
 
 n.addRequest(channelList, library) { |s, req, list, lib|
   action = req.remaining;
@@ -214,7 +214,14 @@ n.addRequest(channelList, library) { |s, req, list, lib|
   end
 }
 
-h.attach(Rev::Loop.default)
+if(config[:server.to_s] == nil)
+  error("Config file error: no server section", true, $error_file);
+  exit(1);
+end
+config[:server.to_s].each { |server_config|
+  h = HttpServer.new(root, server_config);
+  h.attach(Rev::Loop.default)
+}
 
 begin
   Rev::Loop.default.run();
