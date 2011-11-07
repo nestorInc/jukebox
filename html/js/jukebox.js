@@ -37,6 +37,7 @@ function initJukebox () {
     CollapseCollection();
     setActivityMonitor(false);
     last_time = new Date().getTime() / 1000;
+    $('stop_stream').hide();
     
     updateJukebox();
 }
