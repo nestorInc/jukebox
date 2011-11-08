@@ -2,6 +2,7 @@
 
 require 'rev'
 require 'thread'
+require 'date'
 load 'id3.rb'
 
 ENCODE_DELAY_SCAN = 30; # seconds
@@ -136,7 +137,7 @@ class Encode < Rev::TimerWatcher
       name = name[0][0];
       if(@library.check_file(f))
         # Check file is not used actualy
-        next if(now - File::Stat.new(f) < @delay_scan * 2);
+        next if(now - File::Stat.new(f).mtime < @delay_scan * 2);
         nb_new_file += 1;
         break if(nb_new_file >= 50);
         tag = Id3.decode(f);
