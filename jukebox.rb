@@ -74,7 +74,7 @@ st = HttpNode.new() { |s, req|
       meta = c.ch.meta();
       page << "<tr>"
       page << "<td>#{c.socket.remote_address.inspect_sockaddr}</td>"
-      page << "<td>#{c.socket.ssl != nil}</td>"
+      page << "<td>#{c.socket.ssl == true}</td>"
       page << "<td>#{c.socket.user}</td>"
       page << "<td>#{meta[3].gsub("\'", " ")} - #{meta[4].gsub("\'", " ")} - #{meta[5].gsub("\'", " ")}</td>"
       page << "<td>#{c.socket.output_buffer_size}</td>"
