@@ -163,8 +163,7 @@ n.addRequest(channelList, library) { |s, req, list, lib|
         json_obj.each { |type, value|
           case(type)
           when "search"
-            json.on_search_request(lib, value);
-            json_str = json.get_search_reply();
+            json_str = json.on_search_request(lib, value);
           when "action"
             case(value["name"])
             when "next"

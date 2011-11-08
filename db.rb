@@ -100,37 +100,26 @@ class Library
     else
       orderByWay = "ASC";
     end
-    if(!(firstResult.is_a? Integer))
-      firstResult = 0;
-    end
-    if(!(resultCount.is_a? Integer))
-      resultCount = 10;
-    end
-    if((resultCount > 200) or (resultCount < 0))
-      resultCount = 50;
-    end
-    if(firstResult < 0)
-      firstResult = 0;
-    end
+    firstResult = 0  if(!(firstResult.is_a? Integer))
+    resultCount = 10 if(!(resultCount.is_a? Integer))
+    resultCount = 50 if((resultCount > 200) or (resultCount < 0))
+    firstResult = 0  if(firstResult < 0)
+
     return request(value, field, orderBy, orderByWay, firstResult, resultCount); 
   end
 
   def request(value, field, orderBy, orderByWay, firstResult, resultCount)
-    request = "SELECT artist,title,mid FROM library ";
-    if(field != nil)
-      request += "WHERE #{field} LIKE \"%#{value}%\" AND status=5 ";
-    end
+    request  = "SELECT artist,title,mid FROM library WHERE status=5 ";
+    request << "AND #{field} LIKE \"%#{value}%\" " if(field != nil);
     if(orderBy != nil)
-      request += "ORDER BY #{orderBy} ";
-      if(orderByWay != nil)
-        request += "#{orderByWay} ";
-      end
+      request << "ORDER BY #{orderBy} ";
+      request << "#{orderByWay} " if(orderByWay != nil);
     end
     if(firstResult or resultCount)
       if(firstResult)
-        request += "LIMIT #{firstResult},#{resultCount}";
+        request << "LIMIT #{firstResult},#{resultCount}";
       else
-        request += "LIMIT #{resultCount}";
+        request << "LIMIT #{resultCount}";
       end
     end
     warning("Querying database : #{request}");

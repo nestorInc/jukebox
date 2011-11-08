@@ -105,48 +105,42 @@ class JsonManager
   end
 
   def build_songs_s(playlist, position, library)
-    songs = ""
-    playlistSize = playlist.size();
-    for i in position+1..playlistSize-1
-      title = library.get_title(playlist[i]);
-      artist = library.get_artist(playlist[i]);
-      if(i < playlistSize-1)
-        artist[0].gsub!(/"/, '')
-        title[0].gsub!(/"/, '')
-        artist[0].gsub!(/'/, '')
-        title[0].gsub!(/'/, '')
-        songs = songs + "{\"mid\":#{playlist[i]},\"artist\":\"#{artist[0]}\",\"title\":\"#{title[0]}\",\"duration\":270}";
-        if(i < (playlistSize-2))
-          songs = songs + ",";
-        end
-      end
-    end
-    @songs_s = "\"songs\":[#{songs}]"
+    @songs = playlist[position+1..-1].map { |mid|
+      title  = library.get_title(mid).first;
+      artist = library.get_artist(mid).first;
+      {
+        "mid"      => mid,
+        "artist"   => artist,
+        "title"    => title,
+        "duration" => 270
+      }
+    }
   end
 
   def build_requestSongs_s(resultTable)
-    songs = "";
-    size = 0;
-    resultTable.each do |row|
-      row[0].gsub!(/"/, '')
-      row[1].gsub!(/"/, '')
-      row[0].gsub!(/'/, '')
-      row[1].gsub!(/'/, '')
-      songs = songs + "{\"mid\":#{row[2]},\"artist\":\"#{row[0]}\",\"title\":\"#{row[1]}\",\"duration\":270}";
-      if(size != resultTable.size()-1)
-        songs = songs + ",";
-      end
-      size = size+1;
-      end
-    @songs_s = "\"results\":[#{songs}]"
+    @songs = resultTable.map { |row|
+      { 
+        "mid"      => row[2],
+        "artist"   => row[0],
+        "title"    => row[1],
+        "duration" => 270
+      }
+    }
   end
 
-  def build_playQueue_s()
-    @playQueue_s = "\"play_queue\":{#{@songs_s}}"
+  def build_playQueue_s()    
+    @playQueue_s = {"songs" => @songs};
   end
 
-  def build_searchResult_s
-   @searchResult_s = "\"search_results\":{#{@orderBy_s},#{@orderByWay_s},#{@firstResult_s},#{@resultCount_s},#{@totalResult_s},#{@songs_s}}"
+  def build_searchResult
+    @searchResult = {
+      "order_by"      => @orderBy,
+      "order_by_way"  => @orderByWay,
+      "first_result"  => @firstResult,
+      "result_count"  => @resultCount,
+      "total_results" => @totalResult,
+      "results"       => @songs
+    };
   end
 
   def build_defaultSearchResult_s
@@ -185,14 +179,12 @@ class JsonManager
     end
     total_result = library.get_total(json_obj["search_field"], json_obj["search_value"])
     refresh_totalResult(total_result);
-    build_orderBy_s();
-    build_orderByWay_s();
-    build_resultCount_s();
-    build_totalResult_s();
-    build_firstResult_s();
-    build_searchResult_s();
-    refresh_timestamp();
-    build_timestamp_s();
+
+    resp = {
+      "timestamp"      => Time.now().to_i(),
+      "search_results" => build_searchResult()
+    }
+    JSON.generate(resp);
   end
   
   def on_search_error()
@@ -226,14 +218,6 @@ class JsonManager
     json_obj = JSON.load(reply);
     json_str = JSON.generate(json_obj);
   
-    return json_str;
-  end
-
-  def get_search_reply()
-    reply = "{#{@timestamp_s},#{@searchResult_s}}"; 
-    json_obj = JSON.load(reply);
-    json_str = JSON.generate(json_obj);
-    
     return json_str;
   end
 
