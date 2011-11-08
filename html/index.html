@@ -15,8 +15,8 @@
 		<meta name="description" content="" />
 		
 				
-		<link href='favicon.ico' rel='shortcut icon' type='image/x-icon'/>
-		<link href='favicon.ico' rel='icon' type='image/x-icon'/>
+		<link href='/favicon.ico' rel='shortcut icon' type='image/x-icon'/>
+		<link href='/favicon.ico' rel='icon' type='image/x-icon'/>
 		
 		<link rel="stylesheet" type="text/css" href="css/style.css" />
 		
@@ -24,9 +24,16 @@
 		<script type="text/javascript" src="js/lib/prototype.js"></script>
 		<script type="text/javascript" src="js/lib/scriptaculous.js?load=effects,dragdrop"></script>
 		<script type="text/javascript" src="js/jukebox.js"></script>
-                <script type="text/javascript" src="js/library.js"></script>
+        <script type="text/javascript" src="js/Sound.js"></script>
+        <script type="text/javascript" src="js/StreamPlayer.js"></script>
+        <script type="text/javascript" src="js/library.js"></script>
 	</head>
 	<body onload="ExpandCollection();initJukebox();">
+
+<!-- for some reason the sound object **HAS** to be instantiated inside the html page. Whatever..... -->
+<script type="text/javascript">
+    var streamPlayer = new Sound(); 
+</script>
 		<div id="page_wrapper">
 			<div id="header">
 <!--				port : <input type="text" id="server_port" value="8080" style="width: 40px;" /> -->
@@ -83,6 +90,15 @@
 			</div>
 		
 		
+		<div id="play_stream">
+			<a href="#" onclick="PlayStream(); return false;">Play stream</a>
+		</div>
+        
+        
+		<div id="stop_stream">
+			<a href="#" onclick="StopStream(); return false;">Stop stream</a>
+		</div>
+        
 		</div>
 		
 		<div id="show_debug">
