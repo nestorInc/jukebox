@@ -155,13 +155,13 @@ class JsonManager
       }
     }
     resp [:search_results] = {
-      :order_by     => req["order_by"],
-      :order_by_way => req["order_by_way"],
-      :first_result => req["first_result"],
-      :result_count => result.size(),
-      :total_count  => library.get_total(req["search_field"],
-                                         req["search_value"]),
-      :results      => songs
+      :order_by       => req["order_by"],
+      :order_by_way   => req["order_by_way"],
+      :first_result   => req["first_result"],
+      :result_count   => result.size(),
+      :total_results  => library.get_total(req["search_field"],
+                                           req["search_value"]),
+      :results        => songs
     };
   end
 end
