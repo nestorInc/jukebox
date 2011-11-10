@@ -86,15 +86,8 @@ class Library
 # first result result count
 
   def secure_request(value, field, orderBy, orderByWay, firstResult, resultCount)
-    value.gsub!(/"/,'')
-    value.gsub!(/'/,'')
-    value.gsub!(/\\/,'');
-    if((field != "artist") and (field != "title") and (field != "album"))
-      field = "artist";
-    end
-    if((orderBy != "artist") and (orderBy != "title") and (orderBy != "album"))
-      orderBy = "artist"; 
-    end
+    field   = "artist" if(field   != "title" && field   != "album");
+    orderBy = "artist" if(orderBy != "title" && orderBy != "album");
     if(orderByWay == "down")
       orderByWay = "DESC";
     else
@@ -110,7 +103,7 @@ class Library
 
   def request(value, field, orderBy, orderByWay, firstResult, resultCount)
     request  = "SELECT artist,title,mid FROM library WHERE status=5 ";
-    request << "AND #{field} LIKE \"%#{value}%\" " if(field != nil);
+    request << "AND #{field} LIKE \"%\" || :name || \"%\" " if(field != nil);
     if(orderBy != nil)
       request << "ORDER BY #{orderBy} ";
       request << "#{orderByWay} " if(orderByWay != nil);
@@ -124,7 +117,7 @@ class Library
     end
     warning("Querying database : #{request}");
     req = @db.prepare(request);
-    res = req.execute!()
+    res = req.execute!(:name => value);
     req.close();
     return res;
   end
