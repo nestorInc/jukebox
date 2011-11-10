@@ -12,15 +12,19 @@ class JsonManager
   MSG_LVL_ERROR   = 4
   MSG_LVL_FATAL   = 5
 
-  def self.messages(resp, lvl, code, msg)
+  def self.create_message(lvl, code, msg)
+    resp = {};
     msg = {
       :level   => lvl,
       :message => msg
     };
     msg[:code] = code if(code);
 
-    resp[:messages] ||= [];
-    resp[:messages].push(msg);
+    resp[:messages] = [ msg ];
+
+    str = JSON.generate(resp);
+    debug(str);
+    str;
   end
 
   def self.parse(req, library, ch)
@@ -61,6 +65,17 @@ class JsonManager
   end
   
   private
+  def self.messages(resp, lvl, code, msg)
+    msg = {
+      :level   => lvl,
+      :message => msg
+    };
+    msg[:code] = code if(code);
+
+    resp[:messages] ||= [];
+    resp[:messages].push(msg);
+  end
+
   def self.add_channel_infos(resp, ch)
     resp[:channel_infos] = {
       :listener_count => ch.getConnected()
@@ -107,11 +122,11 @@ class JsonManager
       ch.previous();
     when "add_to_play_queue"
       ch.playlist_add(req["play_queue_index"], req["mid"])
-    when :remove_from_play_queue
+    when "remove_from_play_queue"
       ch.playlist_rem(req["play_queue_index"])
-    when :move_in_play_queue
+    when "move_in_play_queue"
       ch.playlist_move(req["play_queue_index"], req["new_play_queue_index"])
-    when :select_plugin
+    when "select_plugin"
       # TODO handle exception, check file existence ...
       load "plugins/" + req["plugin_name"] + ".rb"
       ch.extend Plugin
@@ -131,9 +146,7 @@ class JsonManager
                                     req["first_result"],
                                     req["result_count"]);
 
-    p result;
     songs = result.map { |row|
-      p row
       { 
         :mid      => row[2],
         :artist   => row[0],
