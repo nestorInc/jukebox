@@ -114,16 +114,19 @@ class Channel
   end
  
   def playlist_add(pos, mid)
+    @timestamp = Time.now().to_i();
     @history.insert(@pos+pos+1, mid)
     send(@plugin_name + "_add_callback") 
   end
 
   def playlist_rem(pos)
+    @timestamp = Time.now().to_i();
     @history.delete_at(@pos+pos+1)
     send(@plugin_name + "_rem_callback") 
   end
 
   def playlist_move(old_index, new_index)
+    @timestamp = Time.now().to_i();
     mid = @history[@pos+old_index+1]
     if(old_index > new_index) # meaning the song is going up
       playlist_add(new_index, mid)
