@@ -6,238 +6,150 @@ require 'rev'
 load 'display.rb'
 
 class JsonManager
+  MSG_LVL_DEBUG   = 1
+  MSG_LVL_INFO    = 2
+  MSG_LVL_WARNING = 3
+  MSG_LVL_ERROR   = 4
+  MSG_LVL_FATAL   = 5
+
+  def self.messages(resp, lvl, code, msg)
+    msg = {
+      :level   => lvl,
+      :message => msg
+    };
+    msg[:code] = code if(code);
+
+    resp[:messages] ||= [];
+    resp[:messages].push(msg);
+  end
+
+  def self.parse(req, library, ch)
+    resp = { :timestamp => Time.now.to_i() };
+    if(req == nil)
+        self.message(resp, MSG_LVL_ERROR, nil, "JSON request not found");      
+    else
+      begin
+        json      = JSON.parse(req);
+        timestamp = json.delete("timestamp") || 0;
+        json.each { |type, value|
+          case(type)
+          when "search"
+            self.parse_search(resp, library, value);
+          when "action"
+            self.parse_action(resp, ch, value);
+          else
+            self.message(resp, MSG_LVL_ERROR, nil, "unknown command #{type}");
+            error("Unknown command #{type}", true, $error_file);
+          end
+        }
+        # refresh
+        self.add_channel_infos(resp, ch);
+        if(timestamp <= ch.timestamp)
+          self.add_current_song(resp, library, ch);
+          self.add_play_queue(resp, library, ch);
+        end
+      rescue JSON::ParserError => e
+        self.message(resp, MSG_LVL_ERROR, nil, "fail to parse request");
+        error("Exception when parsing json request, #{e}")
+        debug(req);
+      end
+    end
+
+    str = JSON.generate(resp);
+    debug(str);
+    str;
+  end
   
-  def initialize(library)
-    @timestamp = 0;
-    @currentMid = 0;
-    @currentTitle = [];
-    @currentArtist = [];
-    @connected = 0;
-    @refreshed = 1;
- 
-    @currentSong_s = ""; 
-    @playQueue_s = "";
-    @timestamp_s = "";
-    @channelInfos_s = "";
-    @listenerCount_s = "";
-    @song_s = "";
-    @searchResult_s = "";
-  end
-
-  # --- refresh functions ---
-
-  def refresh_timestamp()
-    @timestamp = Time.now().to_i();
-  end
-
-  def refresh_currentMid(currentMid)
-    @currentMid = currentMid;
-  end
-
-  def refresh_connected(connected)
-    @connected = connected;
-  end
-  
-  def refresh_currentSong(currentArtist, currentTitle)
-    @currentArtist = currentArtist;
-    @currentTitle = currentTitle;
-  end
-
-  def refresh_nbUsers(nbUsers)
-    @nbUsers = nbUsers;
-  end
-
-  def refresh_orderBy(orderBy)
-    @orderBy = orderBy;
-  end
- 
-  def refresh_orderByWay(orderByWay)
-    @orderByWay = orderByWay;
-  end
-
-  def refresh_firstResult(firstResult)
-    @firstResult = firstResult;
-  end
- 
-  def refresh_resultCount(resultCount)
-    @resultCount = resultCount;
-  end
-
-  def refresh_totalResult(totalResult)
-    @totalResult = totalResult;
-  end
-
-  # --- string builders ---
-
-  def build_orderBy_s()
-    @orderBy_s = "\"order_by\":\"#{@orderBy}\"";
-  end
- 
-  def build_orderByWay_s()
-    @orderByWay_s = "\"order_by_way\":\"#{@orderByWay}\"";
-  end
-
-  def build_firstResult_s()
-    @firstResult_s = "\"first_result\":#{@firstResult}" 
-  end
-  def build_resultCount_s()
-    @resultCount_s = "\"result_count\":#{@resultCount}" 
-  end
-  def build_totalResult_s()
-    @totalResult_s = "\"total_results\":#{@totalResult}" 
-  end
-
-  def build_timestamp_s()
-    @timestamp_s = "\"timestamp\":#{@timestamp}";
-  end
-
-  def build_currentSong_s()
-    @currentSong_s = "\"current_song\":{\"mid\":#{@currentMid},\"title\":\"#{@currentTitle[0]}\",\"artist\":\"#{@currentArtist[0]}\",\"total_time\":203,\"elapsed_time\":70}";
-  end
-
-  def build_channelInfos_s()
-    build_listenerCount_s();
-    @channelInfos_s = "\"channel_infos\":{#{@listenerCount_s}}";
-  end
-
-  def build_listenerCount_s()
-    @listenerCount_s = "\"listener_count\":#{@connected}"
-  end
-
-  def build_songs_s(playlist, position, library)
-    @songs = playlist[position+1..-1].map { |mid|
-      title  = library.get_title(mid).first;
-      artist = library.get_artist(mid).first;
-      {
-        "mid"      => mid,
-        "artist"   => artist,
-        "title"    => title,
-        "duration" => 270
-      }
-    }
-  end
-
-  def build_requestSongs_s(resultTable)
-    @songs = resultTable.map { |row|
-      { 
-        "mid"      => row[2],
-        "artist"   => row[0],
-        "title"    => row[1],
-        "duration" => 270
-      }
-    }
-  end
-
-  def build_playQueue_s()    
-    @playQueue_s = {"songs" => @songs};
-  end
-
-  def build_searchResult
-    @searchResult = {
-      "order_by"      => @orderBy,
-      "order_by_way"  => @orderByWay,
-      "first_result"  => @firstResult,
-      "result_count"  => @resultCount,
-      "total_results" => @totalResult,
-      "results"       => @songs
+  private
+  def self.add_channel_infos(resp, ch)
+    resp[:channel_infos] = {
+      :listener_count => ch.getConnected()
     };
   end
 
-  def build_defaultSearchResult_s
-   @searchResult_s = "\"search_results\":\"null\""
+  def self.add_current_song(resp, library, ch)
+    mid    = ch.mids[ch.pos];
+    artist = library.get_artist(mid);
+    title  = library.get_title(mid);
+    resp[:current_song] = {
+      :mid          => mid,
+      :title        => title,
+      :artist       => artist,
+      :total_time   => 203,
+      :elapsed_time => 70
+    };
   end
 
-  # --- --- --- ---
-
-  # action on events
-  def on_refresh_request(playlist, position, library, timestamp, client_timestamp, connected)
-    @refreshed = 0;
-    if(client_timestamp <= timestamp)
-      refresh_currentMid(playlist[position]);
-      refresh_currentSong(library.get_artist(@currentMid), library.get_title(@currentMid));
-      build_songs_s(playlist, position, library);
-      build_currentSong_s();
-      build_playQueue_s();
-      @refreshed = 1;
-    end
-    refresh_timestamp();
-    refresh_connected(connected);
-    build_timestamp_s();
-    build_channelInfos_s();
-  end
-
-  def on_search_request(library, json_obj)
-    result = library.secure_request(json_obj["search_value"], json_obj["search_field"], json_obj["order_by"], json_obj["order_by_way"], json_obj["first_result"], json_obj["result_count"]);
-    build_requestSongs_s(result);
-    refresh_orderBy(json_obj["order_by"]);
-    refresh_orderByWay(json_obj["order_by_way"]);
-    refresh_firstResult(json_obj["first_result"]);
-    if (json_obj["result_count"] == nil) or (json_obj["result_count"] > result.size())
-      refresh_resultCount(result.size());
-    else
-      refresh_resultCount(json_obj["result_count"]);
-    end
-    total_result = library.get_total(json_obj["search_field"], json_obj["search_value"])
-    refresh_totalResult(total_result);
-
-    resp = {
-      "timestamp"      => Time.now().to_i(),
-      "search_results" => build_searchResult()
+  def self.add_play_queue(resp, library, ch)
+    queue = ch.mids[ch.pos+1..-1].map { |mid|
+      title  = library.get_title(mid).first;
+      artist = library.get_artist(mid).first;
+      {
+        :mid       => mid,
+        :artist    => artist,
+        :title     => title,
+        :duration  => 270
+      }
     }
-    JSON.generate(resp);
-  end
-  
-  def on_search_error()
-    refresh_timestamp();
-    build_timestamp_s();
-    build_defaultSearchResult_s();
-  end
 
-  # --- --- --- ---
-  
-  # get reply functions
-
-  def get_info_reply()
-    if @refreshed == 1
-      reply = "{#{@timestamp_s},#{@currentSong_s},#{@channelInfos_s},#{@playQueue_s}}"; 
-    else
-      reply = "{#{@timestamp_s},#{@channelInfos_s}}"; 
-    end
-    json_obj = JSON.load(reply);
-    json_str = JSON.generate(json_obj);
-  
-    return json_str;
-  end
-
-  def get_info_search_reply()
-    if @refreshed == 1
-      reply = "{#{@timestamp_s},#{@currentSong_s},#{@channelInfos_s},#{@playQueue_s},#{@searchResult_s}}"; 
-    else
-      reply = "{#{@timestamp_s},#{@channelInfos_s},#{@searchResult_s}}"; 
-    end 
-    json_obj = JSON.load(reply);
-    json_str = JSON.generate(json_obj);
-  
-    return json_str;
-  end
-
-  def s_to_obj(s)
-    req_table = s.split(/([^=]*)=([^&]*)&?/);
-    begin 
-      json_struct = JSON.parse(req_table[2]);
-      return json_struct;
-    rescue JSON::ParserError => e
-      warning("Exception when parsing request, #{e}")
-      return nil;
+    if(queue)
+      resp[:play_queue] = {
+        :songs => queue
+      }
     end
   end
- 
-  def handle_message(level, code, short, long)
-    reply = "{#{@timestamp_s}, \"messages\":[{\"level\":#{level}, \"code\":\"#{code}\", \"message\":\"#{short}#{long}\"}]}";
-    json_obj = JSON.load(reply);
-    json_str = JSON.generate(json_obj);
-    
-    return json_str;
+
+  def self.parse_action(resp, ch, req)
+    case(req["name"])
+    when "next"
+      ch.next();
+    when "previous"
+      ch.previous();
+    when "add_to_play_queue"
+      ch.playlist_add(req["play_queue_index"], req["mid"])
+    when :remove_from_play_queue
+      ch.playlist_rem(req["play_queue_index"])
+    when :move_in_play_queue
+      ch.playlist_move(req["play_queue_index"], req["new_play_queue_index"])
+    when :select_plugin
+      # TODO handle exception, check file existence ...
+      load "plugins/" + req["plugin_name"] + ".rb"
+      ch.extend Plugin
+      ch.plugin_name = req["plugin_name"]
+      log("Loading #{req["plugin_name"]} plugin for songs selection")
+    else
+      error("Unknown action #{req["name"]}", true, $error_file);
+      self.message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
+    end
+  end
+
+  def self.parse_search(resp, library, req)
+    result = library.secure_request(req["search_value"],
+                                    req["search_field"],
+                                    req["order_by"],
+                                    req["order_by_way"],
+                                    req["first_result"],
+                                    req["result_count"]);
+
+    p result;
+    songs = result.map { |row|
+      p row
+      { 
+        :mid      => row[2],
+        :artist   => row[0],
+        :title    => row[1],
+        :duration => 270
+      }
+    }
+    resp [:search_results] = {
+      :order_by     => req["order_by"],
+      :order_by_way => req["order_by_way"],
+      :first_result => req["first_result"],
+      :result_count => result.size(),
+      :total_count  => library.get_total(req["search_field"],
+                                         req["search_value"]),
+      :results      => songs
+    };
   end
 end
 
