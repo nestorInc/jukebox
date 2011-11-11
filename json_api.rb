@@ -41,7 +41,7 @@ class JsonManager < HttpNode
   end
 
   private
-  def self.create_message(lvl, code = nil, msg)
+  def create_message(lvl, code = nil, msg)
     resp = {};
     msg = {
       :level   => lvl,
@@ -56,10 +56,10 @@ class JsonManager < HttpNode
     str;
   end
 
-  def self.parse(req, library, ch)
+  def parse(req, library, ch)
     resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
-        self.add_message(resp, MSG_LVL_ERROR, "JSON request not found");      
+        add_message(resp, MSG_LVL_ERROR, "JSON request not found");      
     else
       begin
         json      = JSON.parse(req);
@@ -67,22 +67,22 @@ class JsonManager < HttpNode
         json.each { |type, value|
           case(type)
           when "search"
-            self.parse_search(resp, library, value);
+            parse_search(resp, library, value);
           when "action"
-            self.parse_action(resp, ch, value);
+            parse_action(resp, ch, value);
           else
-            self.add_message(resp, MSG_LVL_ERROR, "unknown command #{type}");
+            add_message(resp, MSG_LVL_ERROR, "unknown command #{type}");
             error("Unknown command #{type}", true, $error_file);
           end
         }
         # refresh
-        self.add_channel_infos(resp, ch);
+        add_channel_infos(resp, ch);
         if(timestamp <= ch.timestamp)
-          self.add_current_song(resp, library, ch);
-          self.add_play_queue(resp, library, ch);
+          add_current_song(resp, library, ch);
+          add_play_queue(resp, library, ch);
         end
       rescue JSON::ParserError => e
-        self.add_message(resp, MSG_LVL_ERROR, "fail to parse request");
+        add_message(resp, MSG_LVL_ERROR, "fail to parse request");
         error("Exception when parsing json request, #{e}")
         debug(req);
       end
@@ -93,8 +93,7 @@ class JsonManager < HttpNode
     str;
   end
   
-  private
-  def self.add_message(resp, lvl, code, msg)
+  def add_message(resp, lvl, code, msg)
     msg = {
       :level   => lvl,
       :message => msg
@@ -105,13 +104,13 @@ class JsonManager < HttpNode
     resp[:messages].push(msg);
   end
 
-  def self.add_channel_infos(resp, ch)
+  def add_channel_infos(resp, ch)
     resp[:channel_infos] = {
       :listener_count => ch.getConnected()
     };
   end
 
-  def self.add_current_song(resp, library, ch)
+  def add_current_song(resp, library, ch)
     mid    = ch.mids[ch.pos];
     song   = library.get_file(mid).first;
     resp[:current_song] = {
@@ -124,7 +123,7 @@ class JsonManager < HttpNode
     };
   end
 
-  def self.add_play_queue(resp, library, ch)
+  def add_play_queue(resp, library, ch)
     queue = library.get_file(*ch.mids[ch.pos+1..-1]).map { |song|
       {
         :mid       => song.mid,
@@ -142,7 +141,7 @@ class JsonManager < HttpNode
     end
   end
 
-  def self.parse_action(resp, ch, req)
+  def parse_action(resp, ch, req)
     case(req["name"])
     when "next"
       ch.next();
@@ -162,11 +161,11 @@ class JsonManager < HttpNode
       log("Loading #{req["plugin_name"]} plugin for songs selection")
     else
       error("Unknown action #{req["name"]}", true, $error_file);
-      self.add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
+      add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
     end
   end
 
-  def self.parse_search(resp, library, req)
+  def parse_search(resp, library, req)
     result = library.secure_request(req["search_value"],
                                     req["search_field"],
                                     req["order_by"],
