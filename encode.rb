@@ -14,18 +14,17 @@ class EncodingThread < Rev::IO
   attr_reader :file;
   attr_reader :bitrate;
 
-  def initialize(file, bitrate, *args, &block)
+  def initialize(song, bitrate, *args, &block)
     @block    = block;
     @args     = args;
     @file     = file;
     @bitrate  = bitrate;
 
     begin 
-      mid, src, dst, title, artist, album, years, status = file;
-      log("Encoding #{src} -> #{dst}");
+      log("Encoding #{song.src} -> #{song.dst}");
 
-      src = src.sub('"', '\"');
-      dst = dst.sub('"', '\"');
+      src = song.src.sub('"', '\"');
+      dst = song.dst.sub('"', '\"');
 
       rd, wr = IO.pipe
       @pid = fork {
@@ -103,13 +102,13 @@ class Encode < Rev::TimerWatcher
   def encode()
     return if(@th.size >= @max_job);
 
-    file = @library.encode_file()
-    return if(file == nil);
+    song = @library.encode_file()
+    return if(song == nil);
 
-    mid = file[0];
+    mid = song.mid;
 
     @library.change_stat(mid, Library::FILE_ENCODING_PROGRESS);
-    enc = EncodingThread.new(file, @bitrate, self, @library, mid) { |status, obj, lib, mid|
+    enc = EncodingThread.new(song, @bitrate, self, @library, mid) { |status, obj, lib, mid|
       if(status == 0)
         @library.change_stat(mid, Library::FILE_OK)
       else
@@ -141,15 +140,20 @@ class Encode < Rev::TimerWatcher
         nb_new_file += 1;
         break if(nb_new_file >= 50);
         tag = Id3.decode(f);
+        song = Song.new({
+                          "src"    => f,
+                          "dst"    => @encodedDir + "/" + name,
+                          "album"  => tag.album,
+                          "artist" => tag.artist,
+                          "title"  => tag.title,
+                          "years"  => tag.date,
+                        })
         if(tag.title == nil || tag.artist == nil || tag.album == nil)
-          @library.add(f, @encodedDir,
-                       tag.title, tag.artist, tag.album, tag.date,
-                       Library::FILE_BAD_TAG);
+          song.status = Library::FILE_BAD_TAG;
         else
-          @library.add(f, @encodedDir + "/" + name,
-                       tag.title, tag.artist, tag.album,
-                       tag.date, Library::FILE_WAIT);
+          song.status = Library::FILE_WAIT;
         end
+        @library.add(song);
         encode();
       end
     }

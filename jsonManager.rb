@@ -84,25 +84,24 @@ class JsonManager
 
   def self.add_current_song(resp, library, ch)
     mid    = ch.mids[ch.pos];
-    artist = library.get_artist(mid);
-    title  = library.get_title(mid);
+    song   = library.get_file(mid).first;
     resp[:current_song] = {
       :mid          => mid,
-      :title        => title,
-      :artist       => artist,
+      :title        => song.title,
+      :artist       => song.artist,
+      :album        => song.album,
       :total_time   => 203,
       :elapsed_time => 70
     };
   end
 
   def self.add_play_queue(resp, library, ch)
-    queue = ch.mids[ch.pos+1..-1].map { |mid|
-      title  = library.get_title(mid).first;
-      artist = library.get_artist(mid).first;
+    queue = library.get_file(*ch.mids[ch.pos+1..-1]).map { |song|
       {
-        :mid       => mid,
-        :artist    => artist,
-        :title     => title,
+        :mid       => song.mid,
+        :artist    => song.artist,
+        :title     => song.title,
+        :album     => song.album,
         :duration  => 270
       }
     }
@@ -134,7 +133,7 @@ class JsonManager
       log("Loading #{req["plugin_name"]} plugin for songs selection")
     else
       error("Unknown action #{req["name"]}", true, $error_file);
-      self.message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
+      self.add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
     end
   end
 
@@ -146,11 +145,12 @@ class JsonManager
                                     req["first_result"],
                                     req["result_count"]);
 
-    songs = result.map { |row|
+    songs = result.map { |song|
       { 
-        :mid      => row[2],
-        :artist   => row[0],
-        :title    => row[1],
+        :mid      => song.mid,
+        :artist   => song.artist,
+        :title    => song.title,
+        :album    => song.album,
         :duration => 270
       }
     }

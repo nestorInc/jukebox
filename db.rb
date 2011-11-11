@@ -4,6 +4,40 @@ require 'sqlite3'
 
 load 'display.rb'
 
+class Song
+  attr_accessor :mid
+  attr_accessor :src
+  attr_accessor :dst
+  attr_accessor :title
+  attr_accessor :artist
+  attr_accessor :album
+  attr_accessor :years
+  attr_accessor :status
+
+  def initialize(params = {})
+    @mid    = params["mid"];
+    @src    = params["src"] && params["src"].encode(Encoding.locale_charmap);
+    @dst    = params["dst"] && params["dst"].encode(Encoding.locale_charmap);
+    @title  = params["title"];
+    @artist = params["artist"];
+    @album  = params["album"];
+    @years  = params["years"];
+    @status = params["status"];
+  end
+
+  def to_hash()
+    { :mid    => @mid,
+      :src    => @src,
+      :dst    => @dst,
+      :title  => @title,
+      :artist => @artist,
+      :album  => @album,
+      :years  => @years,
+      :status => @status
+    }
+  end
+end
+
 class Library
   FILE_WAIT              = 1;
   FILE_BAD_TAG           = 2;
@@ -13,13 +47,17 @@ class Library
 
   def initialize()
     @db = SQLite3::Database.new("jukebox.db")
- 
+    @db.results_as_hash = true 
     @db.execute( "create table if not exists library (
                        mid INTEGER PRIMARY KEY,
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
                        status INTEGER);" );
     log("library initialized.");
+
+    @translate_song = Proc.new { |row|
+      Song.new(row);
+    }
   end
 
 # searching methods here 
@@ -47,37 +85,35 @@ class Library
   end
   
   def get_total(field, value)
-    req = @db.prepare("SELECT COUNT (*) FROM library WHERE #{field} LIKE \"%#{value}%\"");
-    res = req.execute!();
+    req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK} AND #{field} LIKE \"%\" || :name || \"%\"");
+    res = req.execute!(:name => value);
     req.close();
     res[0].at(0);
   end
   
-  def get_file(mid = nil)
-    if(mid == nil)
+  def get_file(*mids)
+    if(mids.size == 0)
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
-      res = req.execute!();
+      res = req.execute().map(&@translate_song).first;
       req.close();
     else
       req = @db.prepare("SELECT * FROM library WHERE mid=? AND status=#{FILE_OK} LIMIT 1");
-      res = req.execute!(mid);
+      res = mids.map { |mid|
+        req.execute(mid).map(&@translate_song).first;
+      }
       req.close();
     end
 
-    return nil if(res[0] == nil)
-    res = res.first;
-    res[1] = res[1].encode(Encoding.locale_charmap);
-    res[2] = res[2].encode(Encoding.locale_charmap);
     res;
   end
 
   def get_random_from_artist(artist)
     if(artist != nil)
       req = @db.prepare("SELECT * FROM library WHERE artist LIKE \"%#{artist}%\" AND status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
-      res = req.execute!();
+      res = req.execute();
       req.close();
     end
-    res[0]
+    res.map(&@translate_song).first
   end
 
 # search value
@@ -102,7 +138,7 @@ class Library
   end
 
   def request(value, field, orderBy, orderByWay, firstResult, resultCount)
-    request  = "SELECT artist,title,mid FROM library WHERE status=5 ";
+    request  = "SELECT * FROM library WHERE status=#{FILE_OK} ";
     request << "AND #{field} LIKE \"%\" || :name || \"%\" " if(field != nil);
     if(orderBy != nil)
       request << "ORDER BY #{orderBy} ";
@@ -117,20 +153,18 @@ class Library
     end
     warning("Querying database : #{request}");
     req = @db.prepare(request);
-    res = req.execute!(:name => value);
+    res = req.execute(:name => value).map(&@translate_song);
     req.close();
     return res;
   end
 
   def encode_file()
-    req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_WAIT} LIMIT 1");
-    res = req.execute!();
-    req.close();
-    return nil if(res[0] == nil)
-    res = res.first;
     begin
-      res[1] = res[1].encode(Encoding.locale_charmap);
-      res[2] = res[2].encode(Encoding.locale_charmap);
+      req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_WAIT} LIMIT 1");
+      res = req.execute().map(&@translate_song);
+      req.close();
+      return nil if(res[0] == nil)
+      res = res.first;
     rescue => e
       error(e.to_s + res.to_s, true, $error_file);
       change_stat(res[0], FILE_ENCODING_FAIL);
@@ -146,13 +180,6 @@ class Library
     res;
   end
 
-  def all_file()
-    req = @db.prepare("SELECT * from library");  
-    res = req.execute!();
-    req.close();
-    res;
-  end
-
   def check_file(src)
     req = @db.prepare("SELECT * from library where src=?");  
     res = req.execute!(src);
@@ -160,10 +187,9 @@ class Library
     res.size == 0;
   end
 
-  def add(src, dst, title, artist, album, years, status)
-    req = @db.prepare("INSERT INTO library (mid, src, dst, title, artist, album, years, status) VALUES(?,?,?,?,?,?,?,?)");
-    req.execute(nil, src, dst, title, artist, album, years, status);
+  def add(song)
+    req = @db.prepare("INSERT INTO library (mid, src, dst, title, artist, album, years, status) VALUES(:mid, :src, :dst, :title, :artist, :album, :years, :status)");
+    req.execute(song.to_hash);
     req.close();
   end
-
 end

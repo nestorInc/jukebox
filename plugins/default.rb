@@ -21,8 +21,8 @@ module Plugin
         last_insert = @history[left_side..-1];
         begin
          entry = @library.get_file();
-        end while last_insert.include?(entry[0]) # the space we look is (10 + preload) wide (30min) see above
-        @history.push(entry[0]);
+        end while last_insert.include?(entry.mid) # the space we look is (10 + preload) wide (30min) see above
+        @history.push(entry.mid);
         @currentEntry = entry if(i == 0); # store the current entry to open the good file (see below)
       end 
     end 

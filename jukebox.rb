@@ -76,7 +76,7 @@ st = HttpNode.new() { |s, req|
       page << "<td>#{c.socket.remote_address.inspect_sockaddr}</td>"
       page << "<td>#{c.socket.ssl == true}</td>"
       page << "<td>#{c.socket.user}</td>"
-      page << "<td>#{meta[3].gsub("\'", " ")} - #{meta[4].gsub("\'", " ")} - #{meta[5].gsub("\'", " ")}</td>"
+      page << "<td>#{meta.title.gsub("\'", " ")} - #{meta.artist.gsub("\'", " ")} - #{meta.album.gsub("\'", " ")}</td>"
       page << "<td>#{c.socket.output_buffer_size}</td>"
       page << "<tr>";
     }
@@ -89,7 +89,7 @@ st = HttpNode.new() { |s, req|
       page << "<tr>"
       page << "<td>#{e.pid}</td>"
       page << "<td>#{e.file[1]}</td>"
-      page << "<td>#{e.file[3].gsub("\'", " ")} - #{e.file[4].gsub("\'", " ")} - #{e.file[5].gsub("\'", " ")}</td>"
+      page << "<td>#{meta.title.gsub("\'", " ")} - #{meta.artist.gsub("\'", " ")} - #{meta.album.gsub("\'", " ")}</td>"
       page << "<td>#{e.file}</td>"
       page << "<td>#{e.bitrate}</td>"
       page << "<tr>";

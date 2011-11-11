@@ -75,9 +75,9 @@ class Channel
     log("Registering channel #{@name} [#{@connections.size()} user(s) connected]");
     if(@currentEntry)
       tag = Id3.new();
-      tag.title  = @currentEntry[3];
-      tag.artist = @currentEntry[4];
-      tag.album  = @currentEntry[5];
+      tag.title  = @currentEntry.title;
+      tag.artist = @currentEntry.artist;
+      tag.album  = @currentEntry.album;
       s.write(tag.to_s());
     end
   end
@@ -155,19 +155,19 @@ class Channel
       send(@plugin_name)
       # move to the next entry
       mid = @history[@pos];
-      @currentEntry = @library.get_file(mid);
-      file = @currentEntry[2];
+      @currentEntry = @library.get_file(mid).first;
+      file = @currentEntry.dst;
       log("Fetching on channel #{@name}: #{file}");
       @cur = Mp3File.new(file);
       tag = Id3.new();
-      tag.title  = @currentEntry[3];
-      tag.artist = @currentEntry[4];
-      tag.album  = @currentEntry[5];
+      tag.title  = @currentEntry.title;
+      tag.artist = @currentEntry.artist;
+      tag.album  = @currentEntry.album;
       @tag = tag.to_s();
       @timestamp = Time.now().to_i();
     rescue => e
       @pos += 1 if(@history[@pos]);
-      error("Can't load mid=#{mid}: #{e.to_s()}", true, $error_file);
+      error("Can't load mid=#{mid}: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
       retry;
     end
   end
