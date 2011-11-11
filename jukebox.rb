@@ -15,7 +15,7 @@ load 'mp3.rb'
 load 'channel.rb'
 load 'encode.rb'
 load 'db.rb'
-load 'jsonManager.rb'
+load 'json_api.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
