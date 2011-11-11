@@ -248,8 +248,8 @@ class HttpSession < Rev::SSLSocket
 
       @req.addData(@data.slice!(0 .. @length - 1)) if(@length != 0);
       log(@req);
-      auth    = nil;
-      request = nil;
+      on_auth    = nil;
+      on_request = nil;
 
       uri  = @req.uri.path.split("/");
       uri.delete_if {|n| n == "" };
@@ -260,7 +260,7 @@ class HttpSession < Rev::SSLSocket
       # find auth methode
       depth.downto(0) { |i|
         begin
-          auth = nodes[i].method(:auth)
+          auth = nodes[i].method(:on_auth)
         rescue NameError => e
         else
           break;
@@ -286,7 +286,7 @@ class HttpSession < Rev::SSLSocket
       pos = 0;
       depth.downto(0) { |i|
         begin
-          request = nodes[i].method(:request)
+          request = nodes[i].method(:on_request)
         rescue NameError => e
         else
           pos = i;
@@ -331,7 +331,7 @@ class HttpNode
     @authArgs   = args;
     @authBlock  = block;
 
-    def self.auth(s, user, pass)
+    def self.on_auth(s, user, pass)
       @authBlock.call(s, user, pass, *@authArgs);
     end
   end
@@ -340,7 +340,7 @@ class HttpNode
     @requestArgs   = args;
     @requestBlock  = block;
 
-    def self.request(s, req)
+    def self.on_request(s, req)
       @requestBlock.call(s, req, *@requestArgs);
     end
   end
@@ -405,7 +405,7 @@ class HttpNodeMapping < HttpNode
     raise "Not directory" if(st.directory? != true);
   end
 
-  def request(s, req)
+  def on_request(s, req)
     path = @dir + "/";
     path += req.remaining if(req.remaining != nil)
 
