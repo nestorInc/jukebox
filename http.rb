@@ -444,8 +444,11 @@ class HttpNodeMapping < HttpNode
 end
 
 class HttpRootNode
-  def initialize()
+  def initialize(node = {})
     @root = HttpNode.new();
+    node.each { |path, node|
+      addNode(path, node)
+    }
   end
 
   def addNode(path, node)
