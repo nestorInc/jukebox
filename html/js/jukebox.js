@@ -38,6 +38,13 @@ function initJukebox () {
     setActivityMonitor(false);
     last_time = new Date().getTime() / 1000;
     $('stop_stream').hide();
+
+    $('search_input').observe('keypress', function(event){
+	if(event.keyCode == Event.KEY_RETURN) {
+	    doSearch();
+            Event.stop(event);
+	}
+    });
     
     updateJukebox();
     initNotifications();
