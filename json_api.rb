@@ -26,7 +26,7 @@ class JsonManager < HttpNode
                            "Content-Type" => "application/json");
     res = "";
     if(ch == nil)
-      res = JsonManager.create_message(JsonManager::MSG_LVL_WARNING,
+      res = create_message(JsonManager::MSG_LVL_WARNING,
                                 "Unknown channel #{s.user}");
     else
       query = CGI::unescape(req.data);
@@ -34,7 +34,7 @@ class JsonManager < HttpNode
         v.split(/\=/);
       };
       argv = Hash[argv];
-      res = JsonManager.parse(argv["query"], @library, ch);
+      res = parse(argv["query"], @library, ch);
     end
     rep.setData(res);
     s.write(rep.to_s);
