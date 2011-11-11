@@ -248,8 +248,8 @@ class HttpSession < Rev::SSLSocket
 
       @req.addData(@data.slice!(0 .. @length - 1)) if(@length != 0);
       log(@req);
-      on_auth    = nil;
-      on_request = nil;
+      auth    = nil;
+      request = nil;
 
       uri  = @req.uri.path.split("/");
       uri.delete_if {|n| n == "" };
