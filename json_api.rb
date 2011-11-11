@@ -3,15 +3,44 @@
 require 'json'
 require 'rev'
 
+load 'http.rb'
 load 'display.rb'
 
-class JsonManager
+class JsonManager < HttpNode
   MSG_LVL_DEBUG   = 1
   MSG_LVL_INFO    = 2
   MSG_LVL_WARNING = 3
   MSG_LVL_ERROR   = 4
   MSG_LVL_FATAL   = 5
 
+  def initialize(list, library)
+    @list     = list;
+    @library  = library;
+
+    super();
+  end
+
+  def on_request(s, req)
+    ch  = @list[s.user];
+    rep = HttpResponse.new(req.proto, 200, "OK",
+                           "Content-Type" => "application/json");
+    res = "";
+    if(ch == nil)
+      res = JsonManager.create_message(JsonManager::MSG_LVL_WARNING,
+                                "Unknown channel #{s.user}");
+    else
+      query = CGI::unescape(req.data);
+      argv = query.split(/&/).map { |v|
+        v.split(/\=/);
+      };
+      argv = Hash[argv];
+      res = JsonManager.parse(argv["query"], @library, ch);
+    end
+    rep.setData(res);
+    s.write(rep.to_s);
+  end
+
+  private
   def self.create_message(lvl, code = nil, msg)
     resp = {};
     msg = {
