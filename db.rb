@@ -53,6 +53,11 @@ class Library
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
                        status INTEGER);" );
+    req = @db.prepare("UPDATE library SET status=#{FILE_WAIT} WHERE status=#{FILE_ENCODING_PROGRESS}");
+    res = req.execute!();
+    req.close();
+    res;
+
     log("library initialized.");
 
     @translate_song = Proc.new { |row|
@@ -160,14 +165,14 @@ class Library
   end
 
   def change_stat(mid, state)
-    req = @db.prepare("UPDATE library SET status=? where mid=?");  
+    req = @db.prepare("UPDATE library SET status=? WHERE mid=?");
     res = req.execute!(state, mid);
     req.close();
     res;
   end
 
   def check_file(src)
-    req = @db.prepare("SELECT * from library where src=?");  
+    req = @db.prepare("SELECT * FROM library WHERE src=?");
     res = req.execute!(src);
     req.close();
     res.size == 0;
