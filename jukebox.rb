@@ -7,6 +7,7 @@ require 'yaml.rb'
 require 'json'
 require 'yaml'
 require 'rpam'
+
 include Rpam
 
 load 'connection.rb'
@@ -16,6 +17,8 @@ load 'channel.rb'
 load 'encode.rb'
 load 'db.rb'
 load 'json_api.rb'
+load 'basic_api.rb'
+load 'web_debug.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
@@ -32,7 +35,6 @@ rescue => e
 end
 
 library = Library.new();
-json = JsonManager.new(library);
 
 Thread.new() {
   begin
@@ -46,119 +48,46 @@ Thread.new() {
 
 channelList = {};
 
-root = HttpRootNode.new();
-n = HttpNode.new();
-f = HttpNodeMapping.new("html");
-root.addNode("/ch", n);
-root.addNode("/", f);
+json   = JsonManager.new(channelList, library);
+basic  = BasicApi.new(channelList);
+debug  = DebugPage.new();
+main   = HttpNodeMapping.new("html");
+stream = HttpNode.new();
 
-n.addAuth() { |s, user, pass|
+main.addAuth() { |s, user, pass|
   next user if(user == "guest");
   next user if(authpam(user, pass) == true);
   nil;
 }
 
-st = HttpNode.new() { |s, req|
-  obj_kind = {}
-  GC.start
-  ObjectSpace.each_object { |obj|
-    obj_kind[obj.class] = [] if(obj_kind[obj.class] == nil)
-    obj_kind[obj.class].push(obj);
-  }
-  rep = HttpResponse.new(req.proto, 200, "OK");
-  page = "<html><head><title>status</title></head><body>";
-  if(obj_kind[Connection])
-    page << "<table>";
-    page << "<tr><th>Peer</th><th>SSL</th><th>User</th><th>Song</th><th>Sock out queue</th><tr>";
-    obj_kind[Connection].each { |c|
-      meta = c.ch.meta();
-      page << "<tr>"
-      page << "<td>#{c.socket.remote_address.inspect_sockaddr}</td>"
-      page << "<td>#{c.socket.ssl == true}</td>"
-      page << "<td>#{c.socket.user}</td>"
-      page << "<td>#{meta.title.gsub("\'", " ")} - #{meta.artist.gsub("\'", " ")} - #{meta.album.gsub("\'", " ")}</td>"
-      page << "<td>#{c.socket.output_buffer_size}</td>"
-      page << "<tr>";
-    }
-  end
+root = HttpRootNode.new({ "/api/json" => json,
+                          "/api"      => basic,
+                          "/debug"    => debug,
+                          "/"         => main,
+                          "/stream"   => stream});
 
-  if(obj_kind[EncodingThread])
-    page << "<table>";
-    page << "<tr><th>PID</th><th>File</th><th>Song</th><th>Bitrate</th></tr>";
-    obj_kind[EncodingThread].each { |e|
-      page << "<tr>"
-      page << "<td>#{e.pid}</td>"
-      page << "<td>#{e.file[1]}</td>"
-      page << "<td>#{meta.title.gsub("\'", " ")} - #{meta.artist.gsub("\'", " ")} - #{meta.album.gsub("\'", " ")}</td>"
-      page << "<td>#{e.file}</td>"
-      page << "<td>#{e.bitrate}</td>"
-      page << "<tr>";
-    }
-    
-    page << "</table>";
-  end
-  page << "</body></head>";
-  rep.setData(page);
-
-  s.write(rep.to_s);  
-}
-
-root.addNode("/status", st)
-
-n.addRequest(channelList, library) { |s, req, list, lib|
+stream.addRequest(channelList, library) { |s, req, list, lib|
   action = req.remaining;
   channelName = s.user;
   ch = channelList[channelName];
-  if(action == nil)	
-    options = {
-      "Connection"   => "Close",
-      "Content-Type" => "audio/mpeg"};
-
-    if(ch == nil)
-      ch = Channel.new(channelName, lib);
-      channelList[channelName] = ch;
-    end
-    c = Connection.new(s, ch, req.options["Icy-MetaData"]);
-    metaint = c.metaint();
-    options["icy-metaint"] = metaint.to_s() if(metaint != 0);
-    rep = HttpResponse.new(req.proto, 200, "OK", options);
-    s.write(rep.to_s);
-    ch.register(c);
-
-    s.on_disconnect(ch, c) { |s, ch, c|
-      ch.unregister(c);
-    }    
-  else
-    rep = HttpResponse.new(req.proto, 200, "OK");
-    if(ch == nil)
-      rep.options["Content-Type"] = "application/json";
-      msg = JsonManager.create_message(JsonManager::MSG_LVL_WARNING,
-                                       "Unknown channel #{channelName}");
-      rep.setData(msg);
-    else
-      case(action)
-      when "previous"
-        rep.setData("<html><head><title>Previous</title></head><body><H1>Previous</H1></body></head>");
-        ch.previous()
-      when "next"
-        rep.setData("<html><head><title>next</title></head><body><H1>Next</H1></body></head>");
-        ch.next()
-      when "control"
-        options = {
-        "Content-Type" => "application/json"};
-        query = CGI::unescape(req.data);
-        argv = query.split(/&/).map { |v|
-          v.split(/\=/);
-        };
-        argv = Hash[argv];
-        res = JsonManager.parse(argv["query"], library, ch);
-        rep.setData(res);
-      else
-        rep.setData("<html><head><title>Error</title></head><body><H1>Unknown action #{action}</H1></body></head>");
-      end
-    end
-    s.write(rep.to_s);
+  
+  if(ch == nil)
+    ch = Channel.new(channelName, lib);
+    channelList[channelName] = ch;
   end
+  c = Connection.new(s, ch, req.options["Icy-MetaData"]);
+  metaint = c.metaint();
+  rep = HttpResponse.new(req.proto, 200, "OK",
+                         "Connection"   => "Close",
+                         "Content-Type" => "audio/mpeg");
+  rep.options["icy-metaint"] = metaint.to_s() if(metaint != 0);
+
+  s.write(rep.to_s);
+  ch.register(c);
+
+  s.on_disconnect(ch, c) { |s, ch, c|
+    ch.unregister(c);
+  }    
 }
 
 if(config[:server.to_s] == nil)

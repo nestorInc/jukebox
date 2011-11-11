@@ -10,7 +10,7 @@ var last_time = 0;
 var time = 0;
 
 var query = new Object();
-var url = '/ch/control';
+var url = '/api/json';
 
 var playQueueSongs = new Array();
 
