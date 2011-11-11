@@ -11,11 +11,7 @@ function updateNotifications () {
 	notification.remainingTime -= 1;
 	if (notification.remainingTime <= 0) {
 	    removeNotificationFromIndex(i);
-//	    notification.remove();
-//	    activeNotifications.splice(i, 1);
 	    i--;
-	} else {
-	    notification.update();
 	}
     }
     setTimeout(updateNotifications, 1000);
@@ -52,18 +48,23 @@ function Notification (level, message) {
     switch(level) {
     case 1:
 	this.style += "debug";
+	this.remainingTime = 3;
 	break;
     case 2:
 	this.style += "info";
+	this.remainingTime = 4;
 	break;
     case 3:
 	this.style += "warning";
+	this.remainingTime = 4;
 	break;
     case 4:
 	this.style += "error";
+	this.remainingTime = 20;
 	break;
     case 5:
 	this.style += "fatal";
+	this.remainingTime = 20;
 	break;
     default:
 	this.style += "default";
@@ -84,7 +85,7 @@ function Notification (level, message) {
 
 Notification.prototype.update = function()
 {
-    $('notification_content'+this.id).update('<p>' + this.message + ' (' + this.remainingTime + ')</p>');
+    $('notification_content'+this.id).update('<p>' + this.message + ' </p>');
 };
 
 Notification.prototype.remove = function()
