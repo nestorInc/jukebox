@@ -30,7 +30,7 @@ class JsonManager
   def self.parse(req, library, ch)
     resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
-        self.message(resp, MSG_LVL_ERROR, nil, "JSON request not found");      
+        self.add_message(resp, MSG_LVL_ERROR, "JSON request not found");      
     else
       begin
         json      = JSON.parse(req);
@@ -42,7 +42,7 @@ class JsonManager
           when "action"
             self.parse_action(resp, ch, value);
           else
-            self.message(resp, MSG_LVL_ERROR, nil, "unknown command #{type}");
+            self.add_message(resp, MSG_LVL_ERROR, "unknown command #{type}");
             error("Unknown command #{type}", true, $error_file);
           end
         }
@@ -53,7 +53,7 @@ class JsonManager
           self.add_play_queue(resp, library, ch);
         end
       rescue JSON::ParserError => e
-        self.message(resp, MSG_LVL_ERROR, nil, "fail to parse request");
+        self.add_message(resp, MSG_LVL_ERROR, "fail to parse request");
         error("Exception when parsing json request, #{e}")
         debug(req);
       end
@@ -65,7 +65,7 @@ class JsonManager
   end
   
   private
-  def self.messages(resp, lvl, code, msg)
+  def self.add_message(resp, lvl, code, msg)
     msg = {
       :level   => lvl,
       :message => msg
