@@ -12,7 +12,7 @@ class JsonManager
   MSG_LVL_ERROR   = 4
   MSG_LVL_FATAL   = 5
 
-  def self.create_message(lvl, code, msg)
+  def self.create_message(lvl, code = nil, msg)
     resp = {};
     msg = {
       :level   => lvl,

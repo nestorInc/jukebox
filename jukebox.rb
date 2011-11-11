@@ -131,7 +131,10 @@ n.addRequest(channelList, library) { |s, req, list, lib|
   else
     rep = HttpResponse.new(req.proto, 200, "OK");
     if(ch == nil)
-      rep.setData("<html><head><title>Error</title></head><body><H1>Unknown channel #{channelName}</H1></body></head>");
+      rep.options["Content-Type"] = "application/json";
+      msg = JsonManager.create_message(JsonManager::MSG_LVL_WARNING,
+                                       "Unknown channel #{channelName}");
+      rep.setData(msg);
     else
       case(action)
       when "previous"
