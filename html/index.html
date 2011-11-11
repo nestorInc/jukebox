@@ -23,6 +23,10 @@
 		<script type="text/javascript" src="js/lib/json2.js"></script>
 		<script type="text/javascript" src="js/lib/prototype.js"></script>
 		<script type="text/javascript" src="js/lib/scriptaculous.js?load=effects,dragdrop"></script>
+
+        <script type="text/javascript" src="js/Notification.js"></script>
+
+
 		<script type="text/javascript" src="js/jukebox.js"></script>
         <script type="text/javascript" src="js/Sound.js"></script>
         <script type="text/javascript" src="js/StreamPlayer.js"></script>
@@ -111,6 +115,12 @@
 		
 		<div id="debug_wrapper">
 		  <h1>Debug console</h1>
+		<input type="button" value="test notification debug" onclick="showNotification(1,'Notification notification notification');" />
+		<input type="button" value="test notification info" onclick="showNotification(2,'Notification notification notification');" />
+		<input type="button" value="test notification warning" onclick="showNotification(3,'Notification notification notification');" />
+		<input type="button" value="test notification error" onclick="showNotification(4,'Notification notification notification');" />
+		<input type="button" value="test notification fatal" onclick="showNotification(5,'Notification notification notification');" />
+
 		  <table width="100%"><tr><td width="50%">
 		  <div id="debug1">
 		
@@ -121,5 +131,7 @@
 		  </div>
 		  </td></tr></table>
 		</div>
+<div id="notifications">
+</div>
 	</body>
 </html>

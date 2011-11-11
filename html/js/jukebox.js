@@ -40,6 +40,7 @@ function initJukebox () {
     $('stop_stream').hide();
     
     updateJukebox();
+    initNotifications();
 }
 
 function setSongSelectionPlugin () {
@@ -174,7 +175,12 @@ function updateJukebox () {
 		//	alert(json.search_results);
 		displaySearchResults(json.search_results);
 	    }
-	    
+
+	    if (json.messages != null && json.messages != 'null') {
+		json.messages.each(function(message) {
+		    showNotification(message.level, message.message);
+		});
+	    }
 	    /*		
 			setActivityMonitor(false);
 			sending_query = false;

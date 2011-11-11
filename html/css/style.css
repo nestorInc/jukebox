@@ -355,3 +355,55 @@ li.being_dragged div {
 div#play_queue_content li.being_dragged {
     border-top: none;
 }
+
+div.notification_wrapper
+{
+    position: relative;
+}
+
+div.notification_wrapper_debug, div.notification_wrapper_info, div.notification_wrapper_warning, div.notification_wrapper_error, div.notification_wrapper_fatal {
+    position: relative;
+    border-style: solid;
+    border-width: 2px;
+    border-top: 0;
+    padding-top: 5px;
+    padding-bottom: 2px;
+    font-size: 100%;
+    font-weight: bold;
+    color: white;
+}
+
+div.notification_wrapper_debug {
+    background-color: grey;
+    border-color: grey;
+}
+
+div.notification_wrapper_info {
+    background-color: #4EA5CD;
+    border-color: #3B8EB5;
+}
+
+div.notification_wrapper_warning {
+    background-color: #EAAF51;
+    border-color: #D99A36;
+}
+
+div.notification_wrapper_error {
+    background-color: #DE4343;
+    border-color: #C43D3D;
+}
+
+div.notification_wrapper_fatal {
+    background-color: #660000;
+    border-color: black;
+}
+
+
+
+div#notifications {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 100%;
+}
