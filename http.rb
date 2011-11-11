@@ -383,6 +383,16 @@ class HttpNode
     }
     self;
   end
+
+  def to_s(depth = 1)
+    buf = ""
+    @child.each { |name, node|
+      buf << " " * depth;
+      buf << name + "\n";
+      buf << node.to_s(depth + 1)
+    }
+    buf
+  end
 end
 
 # Map file directory on http directory
@@ -448,6 +458,12 @@ class HttpRootNode
 
   def scan(path)
     @root.scan(path)
+  end
+
+  def to_s()
+    buf = "HTTP root tree\n"
+    buf << @root.to_s();
+    buf
   end
 end
 
