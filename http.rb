@@ -155,9 +155,9 @@ class HttpResponse
 end
 
 class HttpSession < Rev::SSLSocket
-  attr_reader :user;
-  attr_reader :ssl;
-
+  attr_reader   :user;
+  attr_reader   :ssl;
+  attr_accessor :data;
   @@logfd = nil;
   def initialize(socket, root, options = {})
     @root        = root;
