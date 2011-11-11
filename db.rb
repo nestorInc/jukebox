@@ -63,20 +63,6 @@ class Library
 # searching methods here 
 #SELECT * FROM music ORDER BY mid LIMIT 60,10;
   
-  def get_title(mid)
-    req = @db.prepare("SELECT title FROM library WHERE mid=? AND status=#{FILE_OK} LIMIT 1");
-    res = req.execute!(mid);
-    req.close();
-    res[0];
-  end
-
-  def get_artist(mid)
-    req = @db.prepare("SELECT artist FROM library WHERE mid=? AND status=#{FILE_OK} LIMIT 1");
-    res = req.execute!(mid);
-    req.close();
-    res[0];
-  end
-
   def get_nb_songs()
     req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK}");
     res = req.execute!();
