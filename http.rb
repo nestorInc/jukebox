@@ -168,6 +168,7 @@ class HttpSession < Rev::SSLSocket
     @key         = options[:key.to_s];
     @user        = nil;
     super(socket);
+    sync         = true;
   end
 
   def on_disconnect(*args, &block)
