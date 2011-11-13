@@ -67,6 +67,62 @@ root = HttpRootNode.new({ "/api/json" => json,
                           "/stream"   => stream});
 
 stream.addRequest(channelList, library) { |s, req, list, lib|
+  module Stream
+    def on_close()
+      ch = @data;
+      ch.unregister(self);
+      super();
+    end
+
+    def write(data, low = false)
+      if(@icyRemaining == 0 || low)
+        super(data);
+        return;
+      end
+      while(data.bytesize() != 0)
+        if(@icyRemaining > data.bytesize())
+          super(data);
+          @icyRemaining -= data.bytesize();
+          data     = "";
+        else
+          super(data[0..@icyRemaining-1]);
+          data     = data[@icyRemaining..-1];
+          generateIcyMetaData();
+          @icyRemaining = @icyInterval;
+        end
+      end
+
+      super(data)
+    end
+
+    def metaint()
+      @icyInterval;
+    end
+
+    def stream_init(icy_meta)
+      @icyInterval  = icy_meta == "1" && 4096 || 0;
+      @icyRemaining = @icyInterval;
+    end
+
+    private
+    def generateIcyMetaData()
+      str  = "";
+      ch   = @data;
+      meta = ch.meta();
+
+      if(meta && @meta != meta)
+        str = "StreamTitle='#{meta.to_s().gsub("\'", " ")}';"
+        @meta = meta;
+      end
+    
+      padding = str.bytesize() % 16;
+      padding = 16 - padding  if(padding != 0)
+      str += "\x00" * padding;
+      write((str.bytesize()/16).chr, true);
+      write(str, true);
+    end
+  end
+
   action = req.remaining;
   channelName = s.user;
   ch = channelList[channelName];
@@ -75,19 +131,19 @@ stream.addRequest(channelList, library) { |s, req, list, lib|
     ch = Channel.new(channelName, lib);
     channelList[channelName] = ch;
   end
-  c = Connection.new(s, ch, req.options["Icy-MetaData"]);
-  metaint = c.metaint();
+
+  s.extend(Stream);
+  s.stream_init(req.options["Icy-MetaData"]);
+  s.data = ch;
+  metaint = s.metaint();
   rep = HttpResponse.new(req.proto, 200, "OK",
                          "Connection"   => "Close",
                          "Content-Type" => "audio/mpeg");
   rep.options["icy-metaint"] = metaint.to_s() if(metaint != 0);
 
-  s.write(rep.to_s);
-  ch.register(c);
+  s.write(rep.to_s, true);
+  ch.register(s);
 
-  s.on_disconnect(ch, c) { |s, ch, c|
-    ch.unregister(c);
-  }    
 }
 
 if(config[:server.to_s] == nil)
