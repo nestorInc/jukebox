@@ -10,7 +10,7 @@ require 'rpam'
 
 include Rpam
 
-load 'connection.rb'
+load 'stream.rb'
 load 'http.rb'
 load 'mp3.rb'
 load 'channel.rb'
@@ -52,7 +52,7 @@ json   = JsonManager.new(channelList, library);
 basic  = BasicApi.new(channelList);
 debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
-stream = HttpNode.new();
+stream = Stream.new(channelList, library);
 
 main.addAuth() { |s, user, pass|
   next user if(user == "guest");
@@ -65,86 +65,6 @@ root = HttpRootNode.new({ "/api/json" => json,
                           "/debug"    => debug,
                           "/"         => main,
                           "/stream"   => stream});
-
-stream.addRequest(channelList, library) { |s, req, list, lib|
-  module Stream
-    def on_close()
-      ch = @data;
-      ch.unregister(self);
-      super();
-    end
-
-    def write(data, low = false)
-      if(@icyRemaining == 0 || low)
-        super(data);
-        return;
-      end
-      while(data.bytesize() != 0)
-        if(@icyRemaining > data.bytesize())
-          super(data);
-          @icyRemaining -= data.bytesize();
-          data     = "";
-        else
-          super(data[0..@icyRemaining-1]);
-          data     = data[@icyRemaining..-1];
-          generateIcyMetaData();
-          @icyRemaining = @icyInterval;
-        end
-      end
-
-      super(data)
-    end
-
-    def metaint()
-      @icyInterval;
-    end
-
-    def stream_init(icy_meta)
-      @icyInterval  = icy_meta == "1" && 4096 || 0;
-      @icyRemaining = @icyInterval;
-    end
-
-    private
-    def generateIcyMetaData()
-      str  = "";
-      ch   = @data;
-      meta = ch.meta();
-
-      if(meta && @meta != meta)
-        str = "StreamTitle='#{meta.to_s().gsub("\'", " ")}';"
-        @meta = meta;
-      end
-    
-      padding = str.bytesize() % 16;
-      padding = 16 - padding  if(padding != 0)
-      str += "\x00" * padding;
-      write((str.bytesize()/16).chr, true);
-      write(str, true);
-    end
-  end
-
-  action = req.remaining;
-  channelName = s.user;
-  ch = channelList[channelName];
-  
-  if(ch == nil)
-    ch = Channel.new(channelName, lib);
-    channelList[channelName] = ch;
-  end
-
-  s.extend(Stream);
-  s.stream_init(req.options["Icy-MetaData"]);
-  s.data = ch;
-  metaint = s.metaint();
-  rep = HttpResponse.new(req.proto, 200, "OK",
-                         "Connection"   => "Close",
-                         "Content-Type" => "audio/mpeg");
-  rep.options["icy-metaint"] = metaint.to_s() if(metaint != 0);
-
-  s.write(rep.to_s, true);
-  ch.register(s);
-
-}
 
 if(config[:server.to_s] == nil)
   error("Config file error: no server section", true, $error_file);
