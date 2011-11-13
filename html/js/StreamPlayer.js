@@ -1,5 +1,5 @@
 function PlayStream () {
-	streamPlayer.loadSound('/ch', true);
+    streamPlayer.loadSound('/stream', true);
     $('play_stream').hide();
     $('stop_stream').show();
 }
