@@ -263,7 +263,7 @@ class HttpSession < Rev::SSLSocket
         method, code = v.split(" ", 2);
         if(method == "Basic" && code != nil)
           @user, pass = code.unpack("m").first.split(":", 2);
-          @auth = m_auth.call(self, @user, pass);
+          @auth = m_auth.call(self, @req, @user, pass);
         end
         if(@auth == nil)
           # Authentification error

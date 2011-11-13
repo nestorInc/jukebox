@@ -54,9 +54,9 @@ debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
 stream = Stream.new(channelList, library);
 
-main.addAuth() { |s, user, pass|
-  next user if(user == "guest");
-  next user if(authpam(user, pass) == true);
+#  next nil if(s.ssl != true);
+  next "guest" if(user == "guest");
+  next "PAM"   if(authpam(user, pass) == true);
   nil;
 }
 
