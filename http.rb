@@ -158,6 +158,7 @@ class HttpSession < Rev::SSLSocket
   attr_reader   :user;
   attr_reader   :ssl;
   attr_accessor :data;
+  attr_accessor :auth;
   @@logfd = nil;
 
   def initialize(socket, root, options = {})
@@ -241,8 +242,8 @@ class HttpSession < Rev::SSLSocket
 
       @req.addData(@sck_data.slice!(0 .. @length - 1)) if(@length != 0);
       log(@req);
-      auth    = nil;
-      request = nil;
+      m_auth    = nil;
+      m_request = nil;
 
       uri  = @req.uri.path.split("/");
       uri.delete_if {|n| n == "" };
@@ -252,41 +253,35 @@ class HttpSession < Rev::SSLSocket
       depth = nodes.size();
       # find auth methode
       depth.downto(0) { |i|
-        begin
-          auth = nodes[i].method(:on_auth)
-        rescue NameError => e
-        else
-          break;
+        if(nodes[i].respond_to?(:on_auth));
+          m_auth = nodes[i].method(:on_auth)
+          break i;
         end
       }
       v = @req.options["Authorization"];
-      if(v != nil && auth != nil)
+      if(v != nil && m_auth != nil)
         method, code = v.split(" ", 2);
         if(method == "Basic" && code != nil)
           @user, pass = code.unpack("m").first.split(":", 2);
-          @uid = auth.call(self, @user, pass);
+          @auth = m_auth.call(self, @user, pass);
         end
-      end
-      if(@uid == nil and auth != nil)
-        # Authentification error
-        rsp = HttpResponse.generate401(@req)
-        write(rsp.to_s);
-        @length = nil;
-        next
+        if(@auth == nil)
+          # Authentification error
+          rsp = HttpResponse.generate401(@req)
+          write(rsp.to_s);
+          @length = nil;
+          next
+        end
       end
 
       # Find ressource data
-      pos = 0;
-      depth.downto(0) { |i|
-        begin
-          request = nodes[i].method(:on_request)
-        rescue NameError => e
-        else
-          pos = i;
-          break;
-        end 
+      pos = depth.downto(0) { |i|
+        if(nodes[i].respond_to?(:on_request));
+          m_request = nodes[i].method(:on_request)
+          break i;
+        end
       }
-      if(request == nil)
+      if(m_request == nil)
         # No ressource found
         rsp = HttpResponse.generate404(@req)
         write(rsp.to_s);
@@ -294,17 +289,15 @@ class HttpSession < Rev::SSLSocket
       end
 
       # Generate prefix and remaining fields
-      prefix = "/";
-      if(pos != 0)
-        prefix += uri[0..pos-1].join("/");
-      end
-      remaining = nil
-      remaining = uri[pos..-1].join("/") if(pos != uri.size);
+      prefix     = "/";
+      prefix    += uri[0..pos-1].join("/") if(pos != 0);
+      remaining  = nil
+      remaining  = uri[pos..-1].join("/")  if(pos != uri.size);
       
       @req.remaining = remaining;
       @req.prefix    = prefix;
 
-      request.call(self, @req);
+      m_request.call(self, @req);
       @length = nil;
     end
   end
