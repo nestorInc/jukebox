@@ -24,6 +24,11 @@ raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
 $error_file = File.open("error.log", "a+");
 
+library = Library.new();
+channelList = {};
+
+# Config
+
 config = {}
 begin
   fd = File.open("jukebox.cfg");
@@ -34,7 +39,7 @@ rescue => e
   error("Config file error: #{e.to_s}", true, $error_file);
 end
 
-library = Library.new();
+# Encode
 
 Thread.new() {
   begin
@@ -46,7 +51,8 @@ Thread.new() {
   end
 }
 
-channelList = {};
+
+# Create HTTP server
 
 json   = JsonManager.new(channelList, library);
 basic  = BasicApi.new(channelList);
@@ -54,6 +60,7 @@ debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
 stream = Stream.new(channelList, library);
 
+main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
   next "guest" if(user == "guest");
   next "PAM"   if(authpam(user, pass) == true);
@@ -75,6 +82,7 @@ config[:server.to_s].each { |server_config|
   h.attach(Rev::Loop.default)
 }
 
+# Main loop
 begin
   Rev::Loop.default.run();
 rescue => e
