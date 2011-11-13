@@ -172,11 +172,6 @@ class HttpSession < Rev::SSLSocket
     sync         = true;
   end
 
-  def on_disconnect(*args, &block)
-    @close_block = block;
-    @close_args  = args;
-  end
-
   def remote_address()
     @_io.remote_address();
   end
@@ -209,9 +204,6 @@ class HttpSession < Rev::SSLSocket
 
   def on_close()
     log("disconnected");
-    if(@close_block)
-      @close_block.call(self, *@close_args);
-    end
   end
 
   #durty fix for catch exception
