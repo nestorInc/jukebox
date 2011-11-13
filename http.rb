@@ -317,8 +317,8 @@ class HttpNode
     @authArgs   = args;
     @authBlock  = block;
 
-    def self.on_auth(s, user, pass)
-      @authBlock.call(s, user, pass, *@authArgs);
+    def self.on_auth(s, req, user, pass)
+      @authBlock.call(s, req, user, pass, *@authArgs);
     end
   end
 

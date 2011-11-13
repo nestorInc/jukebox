@@ -32,12 +32,12 @@ class Stream < HttpNode
       super(data)
     end
 
-    def stream_init(icy_meta, ch)
+    def stream_init(icy_meta, ch, proto)
       @icyInterval  = icy_meta == "1" && 4096 || 0;
       @icyRemaining = @icyInterval;
       @data         = ch;
       metaint       = @icyInterval;
-      rep = HttpResponse.new("GET", 200, "OK",
+      rep = HttpResponse.new(proto, 200, "OK",
                              "Connection"   => "Close",
                              "Content-Type" => "audio/mpeg");
       rep.options["icy-metaint"] = @icyInterval if(@icyInterval != 0);
@@ -83,6 +83,6 @@ class Stream < HttpNode
     end
 
     s.extend(StreamSession);
-    s.stream_init(req.options["Icy-MetaData"], ch);
+    s.stream_init(req.options["Icy-MetaData"], ch, req.proto);
   end
 end
