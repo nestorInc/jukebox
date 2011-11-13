@@ -159,9 +159,10 @@ class HttpSession < Rev::SSLSocket
   attr_reader   :ssl;
   attr_accessor :data;
   @@logfd = nil;
+
   def initialize(socket, root, options = {})
     @root        = root;
-    @data        = "";
+    @sck_data    = "";
     @length      = nil;
     @ssl         = options[:ssl.to_s] || false;
     @certificate = options[:certificate.to_s];
@@ -225,11 +226,11 @@ class HttpSession < Rev::SSLSocket
       
   def on_read(data)
     debug("HTTP data\n" + data);
-    @data << data;
-    while(@data.bytesize != 0)
+    @sck_data << data;
+    while(@sck_data.bytesize != 0)
       # Decode header
       if(@length == nil)
-        header, body = @data.split("\r\n\r\n", 2);        
+        header, body = @sck_data.split("\r\n\r\n", 2);
         # Header incomplete
         break if(body == nil);
 
@@ -240,13 +241,13 @@ class HttpSession < Rev::SSLSocket
         else
           @length = length.to_i();
         end
-        @data = body;
+        @sck_data = body;
       end
 
       # Body incomplete
-      break if(@data.bytesize() < @length);
+      break if(@sck_data.bytesize() < @length);
 
-      @req.addData(@data.slice!(0 .. @length - 1)) if(@length != 0);
+      @req.addData(@sck_data.slice!(0 .. @length - 1)) if(@length != 0);
       log(@req);
       auth    = nil;
       request = nil;
