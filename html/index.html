@@ -1,137 +1,135 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<meta http-equiv="Content-Style-Type" content="text/css" />
-		<meta http-equiv="Content-Language" content="fr" />
-		
-		<title>Jukebox Reloaded</title>		
-		
-		<meta name="robots" content="index, follow" />
-		<meta name="revisit-after" content="2 days" />
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Language" content="fr" />
+    
+    <title>Jukebox Reloaded</title>		
+    
+    <meta name="robots" content="index, follow" />
+    <meta name="revisit-after" content="2 days" />
 
-		<meta name="keywords" content="" />
-		<meta name="Copyright" content="" />
-		<meta name="description" content="" />
-		
-				
-		<link href='/favicon.ico' rel='shortcut icon' type='image/x-icon'/>
-		<link href='/favicon.ico' rel='icon' type='image/x-icon'/>
-		
-		<link rel="stylesheet" type="text/css" href="css/style.css" />
-		
-		<script type="text/javascript" src="js/lib/json2.js"></script>
-		<script type="text/javascript" src="js/lib/prototype.js"></script>
-		<script type="text/javascript" src="js/lib/scriptaculous.js?load=effects,dragdrop"></script>
+    <meta name="keywords" content="" />
+    <meta name="Copyright" content="" />
+    <meta name="description" content="" />
+    
+    
+    <link href='/favicon.ico' rel='shortcut icon' type='image/x-icon'/>
+    <link href='/favicon.ico' rel='icon' type='image/x-icon'/>
+    
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    
+    <script type="text/javascript" src="js/lib/json2.js"></script>
+    <script type="text/javascript" src="js/lib/prototype.js"></script>
+    <script type="text/javascript" src="js/lib/scriptaculous.js?load=effects,dragdrop"></script>
 
-        <script type="text/javascript" src="js/Notification.js"></script>
+    <script type="text/javascript" src="js/library.js"></script>
+    <script type="text/javascript" src="js/Sound.js"></script>
+    <script type="text/javascript" src="js/StreamPlayer.js"></script>
+    <script type="text/javascript" src="js/Notification.js"></script>
 
+    <script type="text/javascript" src="js/jukebox.js"></script>
+  </head>
+  <body onload="ExpandCollection();initJukebox();">
 
-		<script type="text/javascript" src="js/jukebox.js"></script>
-        <script type="text/javascript" src="js/Sound.js"></script>
-        <script type="text/javascript" src="js/StreamPlayer.js"></script>
-        <script type="text/javascript" src="js/library.js"></script>
-	</head>
-	<body onload="ExpandCollection();initJukebox();">
+    <!-- for some reason the sound object **HAS** to be instantiated inside the html page. Whatever..... -->
+    <script type="text/javascript">
+      var streamPlayer = new Sound(); 
+    </script>
+    <div id="page_wrapper">
+      <div id="header">
+        canal : <input type="text" id="channel" value="beuiot" style="width: 70px;" />
+        <button onclick="joinChannel();">Rejoindre</button>
+ 	<a href="#" onclick="ExpandCollection(); return false;"><span id="expand_collection_button">&gt;</span></a>
+	<a href="#" onclick="CollapseCollection(); return false;"><span id="collapse_collection_button">&lt;</span></a>
+	<span id="activity_monitor"></span>
+      </div>
+      
+      <div id="player">
+	<div id="player_controls">
+	  <a href="#" onclick="previousSong(); return false;"><span id="previous_button">&lt;</span></a>
+	  <a href="#" onclick="nextSong(); return false;"><span id="next_button">&gt;</span></a>
+	  <p id="player_song_title"></p>
+	  
+	  <div id="progressbar_wrapper">
+	    <div id="progressbar">
+	    </div>
+	    <div id="progressbar_foreground">
+	    </div>
+	  </div>
+	</div>
+	<div id="player_playlist">
+	  <div id="play_queue_content">
+	  </div>
+	</div>
+      </div>
+      
+      <div id="music_collection_wrapper">
+	<div id="collection_header">
+	  Rechercher : 
+	  <input type="text" id="search_input" />
+	  <select id="search_field">
+	    <option value="artist">artiste</option>
+	    <option value="title">title</option>
+	    <option value="album">album</option>
+	  </select>
+	  <button onclick="doSearch();">Rechercher</button>
+	</div>
+	<div class="collection_pagelist"></div>
+	<div id="collection_content">
+	</div>
+	<div class="collection_pagelist"></div>
+      </div>
+      
+      <div id="footer">
+	<input type="button" value="Refresh" onclick="timestamp=0;updateJukebox();" />
+	<input type="checkbox" value="autorefresh" id="cb_autorefresh" checked/> autorefresh
+	<br />
+	<br />
+	Plugin :<input type="text" id="music_selection_plugin" value="default" style="width: 70px;" />
+	<input type="button" value="Appliquer" onclick="setSongSelectionPlugin();" />
+      </div>
+      
+      
+      <div id="play_stream">
+	<a href="#" onclick="PlayStream(); return false;">Play stream</a>
+      </div>
+      
+      
+      <div id="stop_stream">
+	<a href="#" onclick="StopStream(); return false;">Stop stream</a>
+      </div>
+      
+    </div>
+    
+    <div id="show_debug">
+      <a href="#" onclick="ShowDebug(true); return false;">Show debug</a>
+    </div>
+    
+    <div id="hide_debug">
+      <a href="#" onclick="ShowDebug(false); return false;">Hide debug</a>
+    </div>
+    
+    <div id="debug_wrapper">
+      <h1>Debug console</h1>
+      <input type="button" value="test notification debug" onclick="showNotification(1,'Notification notification notification');" />
+      <input type="button" value="test notification info" onclick="showNotification(2,'Notification notification notification');" />
+      <input type="button" value="test notification warning" onclick="showNotification(3,'Notification notification notification');" />
+      <input type="button" value="test notification error" onclick="showNotification(4,'Notification notification notification');" />
+      <input type="button" value="test notification fatal" onclick="showNotification(5,'Notification notification notification');" />
 
-<!-- for some reason the sound object **HAS** to be instantiated inside the html page. Whatever..... -->
-<script type="text/javascript">
-    var streamPlayer = new Sound(); 
-</script>
-		<div id="page_wrapper">
-			<div id="header">
-<!--				port : <input type="text" id="server_port" value="8080" style="width: 40px;" /> -->
-                                canal : <input type="text" id="channel" value="beuiot" style="width: 70px;" />
-                                <button onclick="joinChannel();">Rejoindre</button>
- 				<a href="#" onclick="ExpandCollection(); return false;"><span id="expand_collection_button">&gt;</span></a>
-				<a href="#" onclick="CollapseCollection(); return false;"><span id="collapse_collection_button">&lt;</span></a>
-				<span id="activity_monitor"></span>
-			</div>
-			
-			<div id="player">
-				<div id="player_controls">
-					<a href="#" onclick="previousSong(); return false;"><span id="previous_button">&lt;</span></a>
-					<a href="#" onclick="nextSong(); return false;"><span id="next_button">&gt;</span></a>
-					<p id="player_song_title"></p>
-					
-					<div id="progressbar_wrapper">
-						<div id="progressbar">
-						</div>
-						<div id="progressbar_foreground">
-						</div>
-					</div>
-				</div>
-				<div id="player_playlist">
-					<div id="play_queue_content">
-					</div>
-				</div>
-			</div>
-			
-			<div id="music_collection_wrapper">
-				<div id="collection_header">
-					Rechercher : 
-					<input type="text" id="search_input" />
-					<select id="search_field">
-						<option value="artist">artiste</option>
-						<option value="title">title</option>
-						<option value="album">album</option>
-					</select>
-					<button onclick="doSearch();">Rechercher</button>
-				</div>
-				<div class="collection_pagelist"></div>
-				<div id="collection_content">
-				</div>
-				<div class="collection_pagelist"></div>
-			</div>
-			
-			<div id="footer">
-		<input type="button" value="Refresh" onclick="timestamp=0;updateJukebox();" />
-		<input type="checkbox" value="autorefresh" id="cb_autorefresh" checked/> autorefresh
-		<br />
-		<br />
-		Plugin :<input type="text" id="music_selection_plugin" value="default" style="width: 70px;" />
-		<input type="button" value="Appliquer" onclick="setSongSelectionPlugin();" />
-			</div>
-		
-		
-		<div id="play_stream">
-			<a href="#" onclick="PlayStream(); return false;">Play stream</a>
-		</div>
-        
-        
-		<div id="stop_stream">
-			<a href="#" onclick="StopStream(); return false;">Stop stream</a>
-		</div>
-        
-		</div>
-		
-		<div id="show_debug">
-			<a href="#" onclick="ShowDebug(true); return false;">Show debug</a>
-		</div>
-		
-		<div id="hide_debug">
-			<a href="#" onclick="ShowDebug(false); return false;">Hide debug</a>
-		</div>
-		
-		<div id="debug_wrapper">
-		  <h1>Debug console</h1>
-		<input type="button" value="test notification debug" onclick="showNotification(1,'Notification notification notification');" />
-		<input type="button" value="test notification info" onclick="showNotification(2,'Notification notification notification');" />
-		<input type="button" value="test notification warning" onclick="showNotification(3,'Notification notification notification');" />
-		<input type="button" value="test notification error" onclick="showNotification(4,'Notification notification notification');" />
-		<input type="button" value="test notification fatal" onclick="showNotification(5,'Notification notification notification');" />
-
-		  <table width="100%"><tr><td width="50%">
-		  <div id="debug1">
-		
-		  </div>
-		      </td><td width="50%">
-		  <div id="debug2">
-		
-		  </div>
-		  </td></tr></table>
-		</div>
-<div id="notifications">
-</div>
-	</body>
+      <table width="100%"><tr><td width="50%">
+	    <div id="debug1">
+	      
+	    </div>
+	  </td><td width="50%">
+	    <div id="debug2">
+	      
+	    </div>
+      </td></tr></table>
+    </div>
+    <div id="notifications">
+    </div>
+  </body>
 </html>
