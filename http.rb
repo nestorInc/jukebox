@@ -265,13 +265,14 @@ class HttpSession < Rev::SSLSocket
           @user, pass = code.unpack("m").first.split(":", 2);
           @auth = m_auth.call(self, @req, @user, pass);
         end
-        if(@auth == nil)
-          # Authentification error
-          rsp = HttpResponse.generate401(@req)
-          write(rsp.to_s);
-          @length = nil;
-          next
-        end
+      end
+
+      if(m_auth != nil && @auth == nil)
+        # Authentification error
+        rsp = HttpResponse.generate401(@req)
+        write(rsp.to_s);
+        @length = nil;
+        next
       end
 
       # Find ressource data
