@@ -374,8 +374,8 @@ div.notification_wrapper_debug, div.notification_wrapper_info, div.notification_
 }
 
 div.notification_wrapper_debug {
-    background-color: grey;
-    border-color: grey;
+    background-color: #999999;
+    border-color: #444444;
 }
 
 div.notification_wrapper_info {
@@ -401,7 +401,7 @@ div.notification_wrapper_fatal {
 
 
 div#notifications {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     z-index: 1000;

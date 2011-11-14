@@ -95,7 +95,7 @@ function Notification (level, message) {
     // Hide notification, then make it appear
     $('notification'+this.id).hide();
     Effect.SlideDown('notification'+this.id,
-		     { duration: 0.6 , afterFinish: function(effect) {
+		     { duration: 0.6, restoreAfterFinish: false, afterFinish: function(effect) {
 			 // Once the notification appeared, make the click on its wrapper close it.
 			 Event.observe(effect.element, 'click', function(event) {
 			     var element_id = $(Event.element(event)).up('.notification_wrapper').id.substring(12);
