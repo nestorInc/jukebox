@@ -69,9 +69,9 @@ main.addAuth() { |s, req, user, pass|
 
 root = HttpRootNode.new({ "/api/json" => json,
                           "/api"      => basic,
-                          "/debug"    => debug,
                           "/"         => main,
                           "/stream"   => stream});
+#                          "/debug"    => debug,
 
 if(config[:server.to_s] == nil)
   error("Config file error: no server section", true, $error_file);
