@@ -36,6 +36,10 @@ class Song
       :status => @status
     }
   end
+
+  def to_s()
+    str = "#{@title} - #{@artist} - #{@album}';"
+  end
 end
 
 class Library
@@ -85,7 +89,7 @@ class Library
   def get_file(*mids)
     if(mids.size == 0)
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
-      res = req.execute().map(&@translate_song).first;
+      res = req.execute().map(&@translate_song);
       req.close();
     else
       req = @db.prepare("SELECT * FROM library WHERE mid=? AND status=#{FILE_OK} LIMIT 1");

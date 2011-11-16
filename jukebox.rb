@@ -10,7 +10,7 @@ require 'rpam'
 
 include Rpam
 
-load 'connection.rb'
+load 'stream.rb'
 load 'http.rb'
 load 'mp3.rb'
 load 'channel.rb'
@@ -24,6 +24,11 @@ raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
 $error_file = File.open("error.log", "a+");
 
+library = Library.new();
+channelList = {};
+
+# Config
+
 config = {}
 begin
   fd = File.open("jukebox.cfg");
@@ -34,7 +39,7 @@ rescue => e
   error("Config file error: #{e.to_s}", true, $error_file);
 end
 
-library = Library.new();
+# Encode
 
 Thread.new() {
   begin
@@ -46,49 +51,27 @@ Thread.new() {
   end
 }
 
-channelList = {};
+
+# Create HTTP server
 
 json   = JsonManager.new(channelList, library);
 basic  = BasicApi.new(channelList);
 debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
-stream = HttpNode.new();
+stream = Stream.new(channelList, library);
 
-main.addAuth() { |s, user, pass|
-  next user if(user == "guest");
-  next user if(authpam(user, pass) == true);
+main.addAuth() { |s, req, user, pass|
+#  next nil if(s.ssl != true);
+  next "guest" if(user == "guest");
+  next "PAM"   if(authpam(user, pass) == true);
   nil;
 }
 
 root = HttpRootNode.new({ "/api/json" => json,
                           "/api"      => basic,
-                          "/debug"    => debug,
                           "/"         => main,
                           "/stream"   => stream});
-
-stream.addRequest(channelList, library) { |s, req, list, lib|
-  action = req.remaining;
-  channelName = s.user;
-  ch = channelList[channelName];
-  
-  if(ch == nil)
-    ch = Channel.new(channelName, lib);
-    channelList[channelName] = ch;
-  end
-  c = Connection.new(s, ch, req.options["Icy-MetaData"]);
-  metaint = c.metaint();
-  rep = HttpResponse.new(req.proto, 200, "OK",
-                         "Connection"   => "Close",
-                         "Content-Type" => "audio/mpeg");
-  rep.options["icy-metaint"] = metaint.to_s() if(metaint != 0);
-
-  s.write(rep.to_s);
-  ch.register(c);
-
-  s.on_disconnect(ch, c) { |s, ch, c|
-    ch.unregister(c);
-  }    
-}
+#                          "/debug"    => debug,
 
 if(config[:server.to_s] == nil)
   error("Config file error: no server section", true, $error_file);
@@ -99,6 +82,7 @@ config[:server.to_s].each { |server_config|
   h.attach(Rev::Loop.default)
 }
 
+# Main loop
 begin
   Rev::Loop.default.run();
 rescue => e

@@ -20,7 +20,7 @@ module Plugin
         # keep a file from being include twice in the next x songs
         last_insert = @history[left_side..-1];
         begin
-         entry = @library.get_file();
+         entry = @library.get_file().first;
         end while last_insert.include?(entry.mid) # the space we look is (10 + preload) wide (30min) see above
         @history.push(entry.mid);
         @currentEntry = entry if(i == 0); # store the current entry to open the good file (see below)
