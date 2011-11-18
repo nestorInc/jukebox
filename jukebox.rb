@@ -7,7 +7,6 @@ require 'yaml.rb'
 require 'json'
 require 'yaml'
 require 'rpam'
-require 'redmine_client'
 
 include Rpam
 
@@ -107,6 +106,7 @@ rescue => e
 
   #create redmine ticket
   if(config["redmine"])
+    require 'redmine_client'
     cfg = config["redmine"];
     RedmineClient::Base.configure do
       self.site     = cfg["site"];
