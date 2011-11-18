@@ -227,7 +227,7 @@ function UpdateCurrentSongTime (delta_time) {
 
 function UpdateCurrentSong (delta_time) {
     if (current_song != null) {
-	$('player_song_title').update(current_song.artist + ' - ' + current_song.title);
+	$('player_song_title').update(current_song.artist + ' - ' + current_song.album + ' - ' + current_song.title);
 	UpdateCurrentSongTime (0);
     }
 }
@@ -249,7 +249,7 @@ function ExpandCollection () {
     $('expand_collection_button').hide();
     $('collapse_collection_button').show();
     $('page_wrapper').setStyle({
-	width: '681px'
+	width: '881px'
     });
 }
 
@@ -301,7 +301,7 @@ function DisplayPlayQueue () {
 	html += '<li id="play_queue_li_' + currentPQSongIndex + '" class="droppable">';
 	html += '<div id="play_queue_song_' + currentPQSongIndex + '" class="play_queue_draggable">';
 
-	html += '<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">' + song.artist + ' - ' + song.title + ' (' + FormatTime(song.duration) + ')</div>';
+	html += '<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">' + song.artist + ' - ' + song.album + ' - '  + song.title + ' (' + FormatTime(song.duration) + ')</div>';
 	html += '<a href="#" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', 0);return false;"><span class="play_queue_move_top"></span></a>';
 	html += '<a href="#" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', ' + lastPQIndex + ');return false;"><span class="play_queue_move_bottom"></span></a>';
 	html += '<a href="#" onclick="PlayQueueDelete(1,' + currentPQSongIndex + ');return false;"><span class="play_queue_delete"></span></a></span></a>';

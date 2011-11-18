@@ -96,7 +96,7 @@ function displaySearchResults (server_results) {
 	songlist_html += '<div id="library_song_' + i + '" style="position:relative;' + style + '" class="library_draggable">';
 	songlist_html += '<a href="#" onclick="addToPlayQueue(' + s.mid + ',0);return false;"><span class="add_to_play_queue_top"></span></a>';
 	songlist_html += '<a href="#" onclick="addToPlayQueueBottom(' + s.mid + ');return false;"><span class="add_to_play_queue_bottom"></span></a>';
-	songlist_html += '<div id="library_handle_' + i + '">' + s.artist + ' - ' + s.title + '</div>';
+	songlist_html += '<div id="library_handle_' + i + '">' + s.artist + ' - ' + s.album + ' - '  + s.title + '</div>';
 	songlist_html += '</div></li>';
 	i++;
     grey_bg = !grey_bg;

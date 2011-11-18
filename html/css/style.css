@@ -288,7 +288,7 @@ span#expand_collection_button, span#collapse_collection_button
 
 div#music_collection_wrapper
 {
-	width: 400px;
+	width: 600px;
 	float: left;
 	display: inline;
 	border-left: 1px solid black;
