@@ -3,7 +3,7 @@
 require 'rev'
 require 'time'
 
-load 'display.rb'
+require 'display.rb'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()

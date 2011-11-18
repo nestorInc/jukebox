@@ -1,4 +1,4 @@
-load 'http.rb'
+require 'http.rb'
 
 class BasicApi < HttpNode
 

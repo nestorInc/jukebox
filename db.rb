@@ -2,7 +2,7 @@
 
 require 'sqlite3'
 
-load 'display.rb'
+require 'display.rb'
 
 class Song
   attr_accessor :mid

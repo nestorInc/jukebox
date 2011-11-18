@@ -3,7 +3,8 @@
 require 'rev'
 require 'thread'
 require 'date'
-load 'id3.rb'
+
+require 'id3.rb'
 
 ENCODE_DELAY_SCAN = 30; # seconds
 MAX_ENCODE_JOB    = 2;

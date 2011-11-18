@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+$:.unshift File.dirname($0)
 
 require 'rev'
 require 'socket'
@@ -10,15 +11,15 @@ require 'rpam'
 
 include Rpam
 
-load 'stream.rb'
-load 'http.rb'
-load 'mp3.rb'
-load 'channel.rb'
-load 'encode.rb'
-load 'db.rb'
-load 'json_api.rb'
-load 'basic_api.rb'
-load 'web_debug.rb'
+require 'stream.rb'
+require 'http.rb'
+require 'mp3.rb'
+require 'channel.rb'
+require 'encode.rb'
+require 'db.rb'
+require 'json_api.rb'
+require 'basic_api.rb'
+require 'web_debug.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 

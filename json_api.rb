@@ -3,8 +3,8 @@
 require 'json'
 require 'rev'
 
-load 'http.rb'
-load 'display.rb'
+require 'http.rb'
+require 'display.rb'
 
 class JsonManager < HttpNode
   MSG_LVL_DEBUG   = 1
