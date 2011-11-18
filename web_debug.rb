@@ -1,4 +1,4 @@
-load 'http.rb'
+require 'http.rb'
 
 class DebugPage < HttpNode
   def on_request(s, req)

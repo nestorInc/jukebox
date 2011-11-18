@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+$:.unshift File.dirname($0)
 
 require 'rev'
 require 'socket'
@@ -10,15 +11,15 @@ require 'rpam'
 
 include Rpam
 
-load 'stream.rb'
-load 'http.rb'
-load 'mp3.rb'
-load 'channel.rb'
-load 'encode.rb'
-load 'db.rb'
-load 'json_api.rb'
-load 'basic_api.rb'
-load 'web_debug.rb'
+require 'stream.rb'
+require 'http.rb'
+require 'mp3.rb'
+require 'channel.rb'
+require 'encode.rb'
+require 'db.rb'
+require 'json_api.rb'
+require 'basic_api.rb'
+require 'web_debug.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
@@ -82,31 +83,67 @@ config[:server.to_s].each { |server_config|
   h.attach(Rev::Loop.default)
 }
 
+class BugInfo
+  attr_accessor :issue
+  attr_accessor :frequency
+
+  def initialize()
+    @frequency = 0;
+  end
+end
+
 # Main loop
 begin
   Rev::Loop.default.run();
 rescue => e
-  fd = File.open("exception_stat", File::RDONLY | File::CREAT, 0600);
-  data = fd.read();
-  stat = YAML::load(data);
+  stat = YAML::load(File.open("exception_stat", File::RDONLY | File::CREAT, 0600));
   stat = {} if(stat == false);
-  fd.close();
 
   detail = ([ e.to_s ] + e.backtrace).join("\n")
   puts detail;
-  stat[detail]  = 0 if(stat[detail] == nil);
-  stat[detail] += 1;
+  stat[detail]  = BugInfo.new() if(stat[detail] == nil);
+  info = stat[detail];
+  info.frequency += 1;
 
-  fd = File.open("exception_stat", "w");
-  data = YAML::dump(stat);
-  fd.write(data);
-  fd.close();
+  #create redmine ticket
+  if(config["redmine"])
+    require 'redmine_client'
+    cfg = config["redmine"];
+    RedmineClient::Base.configure do
+      self.site     = cfg["site"];
+      self.user     = cfg["user"];
+      self.password = cfg["password"];
+    end
+
+    # New bug
+    if(info.issue == nil)
+      issue = RedmineClient::Issue.new(:subject     => e.to_s,
+                                       :project_id  => cfg["project_id"],
+                                       :description => detail);
+      
+      if(issue.save)
+        info.issue = issue.id
+      else
+        puts issue.errors.full_messages
+      end
+    end
+    # Add comment
+    if(info.issue)
+      issue = RedmineClient::Issue.find(info.issue);
+      issue.notes = dump_events() + "\n";
+      issue.save
+    end
+  end
+
+  File.open("exception_stat", "w") { |fd| fd.write(YAML::dump(stat)); }
+
+  report = detail;
+  report << "\n"
+  report << "----- Last events -----\n"
+  report << dump_events();
+  report << "\n"
 
   File.open("crash#{Time.now.to_i}", "w") { |fd|
-    fd.puts(detail);
-    fd.puts("----- Last events -----");
-    fd.puts(dump_events);
+    fd.write(report)
   }
 end
-
-

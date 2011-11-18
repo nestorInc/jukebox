@@ -12,3 +12,8 @@ server:
     ssl: true
     certificate: ca.crt
     key: ca.key
+redmine:
+  site: "http://monsite:port"
+  user: user
+  password: pass
+  project_id: 1

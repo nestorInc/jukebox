@@ -3,7 +3,8 @@
 require 'rev'
 require 'time'
 
-load 'display.rb'
+require 'display.rb'
+require 'playlist.rb'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
@@ -33,16 +34,15 @@ $channelsCron = ChannelsCron.new();
 $channelsCron.attach(Rev::Loop.default)
 
 class Channel
-  attr_reader :name
-  attr_reader :pos
-  attr_reader :timestamp
+  attr_reader   :name
+  attr_reader   :timestamp
   attr_accessor :plugin_name
 
   def initialize(name, library)
     @name         = name;
     @library      = library;
     @connections  = [];
-    @history      = [];
+    @history      = Playlist.new();
     @cur          = nil;
     @pos          = 0;
     @currentEntry = nil;
@@ -106,35 +106,28 @@ class Channel
   end
 
   def mids()
-    return @history;
+    @history[@pos..-1];
   end
 
   def getConnected()
-    return @connections.size();
+    @connections.size();
   end
  
-  def playlist_add(pos, mid)
+  def add_song(pos, mid)
     @timestamp = Time.now().to_i();
-    @history.insert(@pos+pos+1, mid)
+    @history.add(@pos + pos + 1, mid)
     send(@plugin_name + "_add_callback") 
   end
 
-  def playlist_rem(pos)
+  def del_song(pos)
     @timestamp = Time.now().to_i();
-    @history.delete_at(@pos+pos+1)
+    @history.del(@pos + pos + 1);
     send(@plugin_name + "_rem_callback") 
   end
 
-  def playlist_move(old_index, new_index)
+  def move_song(old_index, new_index)
     @timestamp = Time.now().to_i();
-    mid = @history[@pos+old_index+1]
-    if(old_index > new_index) # meaning the song is going up
-      playlist_add(new_index, mid)
-      playlist_rem(old_index+1)
-    else # going down
-      playlist_add(new_index+1, mid)
-      playlist_rem(old_index)
-    end
+    @history.move(@pos + old_index + 1, @pos + new_index + 1);
     send(@plugin_name + "_move_callback") 
   end
 

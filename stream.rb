@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-load 'http.rb'
-load 'channel.rb'
+require 'http.rb'
+require 'channel.rb'
 
 class Stream < HttpNode
   module StreamSession
