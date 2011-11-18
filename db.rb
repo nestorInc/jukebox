@@ -38,7 +38,7 @@ class Song
   end
 
   def to_s()
-    str = "#{@title} - #{@artist} - #{@album}';"
+    str = "#{@title} - #{@artist} - #{@album}"
   end
 end
 
