@@ -13,7 +13,6 @@ include Rpam
 
 require 'stream.rb'
 require 'http.rb'
-require 'mp3.rb'
 require 'channel.rb'
 require 'encode.rb'
 require 'db.rb'

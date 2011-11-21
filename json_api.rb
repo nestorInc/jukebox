@@ -156,13 +156,7 @@ class JsonManager < HttpNode
     when "move_in_play_queue"
       ch.move_song(req["play_queue_index"], req["new_play_queue_index"])
     when "select_plugin"
-      # TODO handle exception, check file existence ...
-      load "plugins/" + req["plugin_name"] + ".rb"
-      ch.extend Plugin
-      ch.plugin_name = req["plugin_name"]
-      log("Loading #{req["plugin_name"]} plugin for songs selection")
-    when "join_channel"
-      @list
+      ch.set_plugin(req["plugin_name"]);
     else
       error("Unknown action #{req["name"]}", true, $error_file);
       add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");

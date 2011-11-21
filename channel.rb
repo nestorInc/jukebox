@@ -5,6 +5,7 @@ require 'time'
 
 require 'display.rb'
 require 'playlist.rb'
+require 'mp3.rb'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
@@ -36,7 +37,6 @@ $channelsCron.attach(Rev::Loop.default)
 class Channel
   attr_reader   :name
   attr_reader   :timestamp
-  attr_accessor :plugin_name
 
   def initialize(name, library)
     @name         = name;
@@ -51,7 +51,7 @@ class Channel
     @nb_songs	  = 0;
 
     log("Creating new channel #{name}");
-    set_default_plugin()
+    set_plugin()
     set_nb_songs();
     fetchData();
   end
@@ -95,14 +95,12 @@ class Channel
     log("Next on channel #{@name}");
     @pos += 1;    
     fetchData();
-    send(@plugin_name + "_next_callback")
   end
 
   def previous()
     log("Previous on channel #{@name}");
     @pos -=1 if(@pos > 0);
     fetchData();
-    send(@plugin_name + "_previous_callback")
   end
 
   def mids()
@@ -116,26 +114,28 @@ class Channel
   def add_song(pos, mid)
     @timestamp = Time.now().to_i();
     @history.add(@pos + pos + 1, mid)
-    send(@plugin_name + "_add_callback") 
   end
 
   def del_song(pos)
     @timestamp = Time.now().to_i();
     @history.del(@pos + pos + 1);
-    send(@plugin_name + "_rem_callback") 
   end
 
   def move_song(old_index, new_index)
     @timestamp = Time.now().to_i();
     @history.move(@pos + old_index + 1, @pos + new_index + 1);
-    send(@plugin_name + "_move_callback") 
   end
 
-  def set_default_plugin()
-    @plugin_name = "default"
-    load "plugins/default.rb"
-    extend Plugin
-    log("Loading default plugin for songs selection")
+  def set_plugin(name = "default")
+    begin
+      load "plugins/#{name}.rb"
+      extend Plugin
+      log("Loading default plugin for songs selection")
+      true;
+    rescue => e
+      error("Error to load plugin #{name}", true, $error_file);
+      false;
+    end
   end
  
   def set_nb_songs()
@@ -145,7 +145,6 @@ class Channel
   private
   def fetchData()
     begin
-      send(@plugin_name)
       # move to the next entry
       mid = @history[@pos];
       @currentEntry = @library.get_file(mid).first;
