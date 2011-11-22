@@ -14,10 +14,15 @@ search_results.results = null;
 
 var librarySongs = new Array();
 
-function doSearch () {
+function doSearch ( page ) {
     search.search_value = $('search_input').value;
     search.search_field = $('search_field').value;
     search.result_count = results_per_page;
+    if( undefined == page || null == page ) { 
+         search.first_result = 1;
+    } else {
+        search.first_result = page;
+    }
     query.search = search;
     updateJukebox();
 }
@@ -38,8 +43,7 @@ function addToPlayQueue(mid, play_queue_index) {
 
 
 function goToPage (page) {
-    search.first_result = (page - 1) * results_per_page;
-    doSearch();
+    doSearch((page - 1) * results_per_page);
 }
 
 
@@ -63,6 +67,10 @@ function displaySearchResults (server_results) {
     }
     
     var current_page = Math.floor(server_results.first_result / results_per_page) + 1;
+
+    if( current_page > page_count ) {
+        current_page = 1;
+    }
 
     var pagelist_html = '<p>';
     
