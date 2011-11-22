@@ -2,7 +2,7 @@
 
 require 'sqlite3'
 
-load 'display.rb'
+require 'display.rb'
 
 class Song
   attr_accessor :mid
@@ -25,7 +25,7 @@ class Song
     @status = params["status"];
   end
 
-  def to_hash()
+  def to_db()
     { :mid    => @mid,
       :src    => @src,
       :dst    => @dst,
@@ -35,6 +35,17 @@ class Song
       :years  => @years,
       :status => @status
     }
+  end
+
+  def self.from_db()
+    Proc.new { |row|
+      next if(row == nil);
+      self.new(row);
+    }
+  end
+
+  def to_s()
+    str = "#{@title} - #{@artist} - #{@album}"
   end
 end
 
@@ -59,10 +70,6 @@ class Library
     res;
 
     log("library initialized.");
-
-    @translate_song = Proc.new { |row|
-      Song.new(row);
-    }
   end
 
 # searching methods here 
@@ -85,12 +92,12 @@ class Library
   def get_file(*mids)
     if(mids.size == 0)
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
-      res = req.execute().map(&@translate_song).first;
+      res = req.execute().map(&Song.from_db);
       req.close();
     else
       req = @db.prepare("SELECT * FROM library WHERE mid=? AND status=#{FILE_OK} LIMIT 1");
       res = mids.map { |mid|
-        req.execute(mid).map(&@translate_song).first;
+        req.execute(mid).map(&Song.from_db).first;
       }
       req.close();
     end
@@ -104,7 +111,7 @@ class Library
       res = req.execute();
       req.close();
     end
-    res.map(&@translate_song).first
+    res.map(&Song.from_db).first
   end
 
 # search value
@@ -144,7 +151,7 @@ class Library
     end
     warning("Querying database : #{request}");
     req = @db.prepare(request);
-    res = req.execute(:name => value).map(&@translate_song);
+    res = req.execute(:name => value).map(&Song.from_db);
     req.close();
     return res;
   end
@@ -152,7 +159,7 @@ class Library
   def encode_file()
     begin
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_WAIT} LIMIT 1");
-      res = req.execute().map(&@translate_song);
+      res = req.execute().map(&Song.from_db);
       req.close();
       return nil if(res[0] == nil)
       res = res.first;
@@ -180,7 +187,7 @@ class Library
 
   def add(song)
     req = @db.prepare("INSERT INTO library (mid, src, dst, title, artist, album, years, status) VALUES(:mid, :src, :dst, :title, :artist, :album, :years, :status)");
-    req.execute(song.to_hash);
+    req.execute(song.to_db);
     req.close();
   end
 end

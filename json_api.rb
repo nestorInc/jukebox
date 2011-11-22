@@ -3,8 +3,8 @@
 require 'json'
 require 'rev'
 
-load 'http.rb'
-load 'display.rb'
+require 'http.rb'
+require 'display.rb'
 
 class JsonManager < HttpNode
   MSG_LVL_DEBUG   = 1
@@ -34,7 +34,7 @@ class JsonManager < HttpNode
         v.split(/\=/);
       };
       argv = Hash[argv];
-      res = parse(argv["query"], @library, ch);
+      res = parse(argv["query"], ch);
     end
     rep.setData(res);
     s.write(rep.to_s);
@@ -56,7 +56,7 @@ class JsonManager < HttpNode
     str;
   end
 
-  def parse(req, library, ch)
+  def parse(req, ch)
     resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
         add_message(resp, MSG_LVL_ERROR, "JSON request not found");      
@@ -67,7 +67,7 @@ class JsonManager < HttpNode
         json.each { |type, value|
           case(type)
           when "search"
-            parse_search(resp, library, value);
+            parse_search(resp, value);
           when "action"
             parse_action(resp, ch, value);
           else
@@ -78,8 +78,8 @@ class JsonManager < HttpNode
         # refresh
         add_channel_infos(resp, ch);
         if(timestamp <= ch.timestamp)
-          add_current_song(resp, library, ch);
-          add_play_queue(resp, library, ch);
+          add_current_song(resp, ch);
+          add_play_queue(resp, ch);
         end
       rescue JSON::ParserError => e
         add_message(resp, MSG_LVL_ERROR, "fail to parse request");
@@ -110,11 +110,10 @@ class JsonManager < HttpNode
     };
   end
 
-  def add_current_song(resp, library, ch)
-    mid    = ch.mids[ch.pos];
-    song   = library.get_file(mid).first;
+  def add_current_song(resp, ch)
+    song   = ch.meta;
     resp[:current_song] = {
-      :mid          => mid,
+      :mid          => song.mid,
       :title        => song.title,
       :artist       => song.artist,
       :album        => song.album,
@@ -123,16 +122,19 @@ class JsonManager < HttpNode
     };
   end
 
-  def add_play_queue(resp, library, ch)
-    queue = library.get_file(*ch.mids[ch.pos+1..-1]).map { |song|
-      {
-        :mid       => song.mid,
-        :artist    => song.artist,
-        :title     => song.title,
-        :album     => song.album,
-        :duration  => 270
+  def add_play_queue(resp, ch)
+    queue = ch.mids[1..-1];
+    if(queue.size() != 0)
+      queue = @library.get_file(*queue).map { |song|
+        {
+          :mid       => song.mid,
+          :artist    => song.artist,
+          :title     => song.title,
+          :album     => song.album,
+          :duration  => 270
+        }
       }
-    }
+    end
 
     if(queue)
       resp[:play_queue] = {
@@ -148,25 +150,21 @@ class JsonManager < HttpNode
     when "previous"
       ch.previous();
     when "add_to_play_queue"
-      ch.playlist_add(req["play_queue_index"], req["mid"])
+      ch.add_song(req["play_queue_index"], req["mid"])
     when "remove_from_play_queue"
-      ch.playlist_rem(req["play_queue_index"])
+      ch.del_song(req["play_queue_index"])
     when "move_in_play_queue"
-      ch.playlist_move(req["play_queue_index"], req["new_play_queue_index"])
+      ch.move_song(req["play_queue_index"], req["new_play_queue_index"])
     when "select_plugin"
-      # TODO handle exception, check file existence ...
-      load "plugins/" + req["plugin_name"] + ".rb"
-      ch.extend Plugin
-      ch.plugin_name = req["plugin_name"]
-      log("Loading #{req["plugin_name"]} plugin for songs selection")
+      ch.set_plugin(req["plugin_name"]);
     else
       error("Unknown action #{req["name"]}", true, $error_file);
       add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
     end
   end
 
-  def parse_search(resp, library, req)
-    result = library.secure_request(req["search_value"],
+  def parse_search(resp, req)
+    result = @library.secure_request(req["search_value"],
                                     req["search_field"],
                                     req["order_by"],
                                     req["order_by_way"],
@@ -187,7 +185,7 @@ class JsonManager < HttpNode
       :order_by_way   => req["order_by_way"],
       :first_result   => req["first_result"],
       :result_count   => result.size(),
-      :total_results  => library.get_total(req["search_field"],
+      :total_results  => @library.get_total(req["search_field"],
                                            req["search_value"]),
       :results        => songs
     };

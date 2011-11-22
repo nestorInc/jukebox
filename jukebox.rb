@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+$:.unshift File.dirname($0)
 
 require 'rev'
 require 'socket'
@@ -10,19 +11,23 @@ require 'rpam'
 
 include Rpam
 
-load 'connection.rb'
-load 'http.rb'
-load 'mp3.rb'
-load 'channel.rb'
-load 'encode.rb'
-load 'db.rb'
-load 'json_api.rb'
-load 'basic_api.rb'
-load 'web_debug.rb'
+require 'stream.rb'
+require 'http.rb'
+require 'channel.rb'
+require 'encode.rb'
+require 'db.rb'
+require 'json_api.rb'
+require 'basic_api.rb'
+require 'web_debug.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
 $error_file = File.open("error.log", "a+");
+
+library = Library.new();
+channelList = {};
+
+# Config
 
 config = {}
 begin
@@ -34,7 +39,7 @@ rescue => e
   error("Config file error: #{e.to_s}", true, $error_file);
 end
 
-library = Library.new();
+# Encode
 
 Thread.new() {
   begin
@@ -46,49 +51,27 @@ Thread.new() {
   end
 }
 
-channelList = {};
+
+# Create HTTP server
 
 json   = JsonManager.new(channelList, library);
 basic  = BasicApi.new(channelList);
 debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
-stream = HttpNode.new();
+stream = Stream.new(channelList, library);
 
-main.addAuth() { |s, user, pass|
-  next user if(user == "guest");
-  next user if(authpam(user, pass) == true);
+main.addAuth() { |s, req, user, pass|
+#  next nil if(s.ssl != true);
+  next "guest" if(user == "guest");
+  next "PAM"   if(authpam(user, pass) == true);
   nil;
 }
 
 root = HttpRootNode.new({ "/api/json" => json,
                           "/api"      => basic,
-                          "/debug"    => debug,
                           "/"         => main,
                           "/stream"   => stream});
-
-stream.addRequest(channelList, library) { |s, req, list, lib|
-  action = req.remaining;
-  channelName = s.user;
-  ch = channelList[channelName];
-  
-  if(ch == nil)
-    ch = Channel.new(channelName, lib);
-    channelList[channelName] = ch;
-  end
-  c = Connection.new(s, ch, req.options["Icy-MetaData"]);
-  metaint = c.metaint();
-  rep = HttpResponse.new(req.proto, 200, "OK",
-                         "Connection"   => "Close",
-                         "Content-Type" => "audio/mpeg");
-  rep.options["icy-metaint"] = metaint.to_s() if(metaint != 0);
-
-  s.write(rep.to_s);
-  ch.register(c);
-
-  s.on_disconnect(ch, c) { |s, ch, c|
-    ch.unregister(c);
-  }    
-}
+#                          "/debug"    => debug,
 
 if(config[:server.to_s] == nil)
   error("Config file error: no server section", true, $error_file);
@@ -99,30 +82,67 @@ config[:server.to_s].each { |server_config|
   h.attach(Rev::Loop.default)
 }
 
+class BugInfo
+  attr_accessor :issue
+  attr_accessor :frequency
+
+  def initialize()
+    @frequency = 0;
+  end
+end
+
+# Main loop
 begin
   Rev::Loop.default.run();
 rescue => e
-  fd = File.open("exception_stat", File::RDONLY | File::CREAT, 0600);
-  data = fd.read();
-  stat = YAML::load(data);
+  stat = YAML::load(File.open("exception_stat", File::RDONLY | File::CREAT, 0600));
   stat = {} if(stat == false);
-  fd.close();
 
   detail = ([ e.to_s ] + e.backtrace).join("\n")
   puts detail;
-  stat[detail]  = 0 if(stat[detail] == nil);
-  stat[detail] += 1;
+  stat[detail]  = BugInfo.new() if(stat[detail] == nil);
+  info = stat[detail];
+  info.frequency += 1;
 
-  fd = File.open("exception_stat", "w");
-  data = YAML::dump(stat);
-  fd.write(data);
-  fd.close();
+  #create redmine ticket
+  if(config["redmine"])
+    require 'redmine_client'
+    cfg = config["redmine"];
+    RedmineClient::Base.configure do
+      self.site     = cfg["site"];
+      self.user     = cfg["user"];
+      self.password = cfg["password"];
+    end
+
+    # New bug
+    if(info.issue == nil)
+      issue = RedmineClient::Issue.new(:subject     => e.to_s,
+                                       :project_id  => cfg["project_id"],
+                                       :description => detail);
+      
+      if(issue.save)
+        info.issue = issue.id
+      else
+        puts issue.errors.full_messages
+      end
+    end
+    # Add comment
+    if(info.issue)
+      issue = RedmineClient::Issue.find(info.issue);
+      issue.notes = dump_events() + "\n";
+      issue.save
+    end
+  end
+
+  File.open("exception_stat", "w") { |fd| fd.write(YAML::dump(stat)); }
+
+  report = detail;
+  report << "\n"
+  report << "----- Last events -----\n"
+  report << dump_events();
+  report << "\n"
 
   File.open("crash#{Time.now.to_i}", "w") { |fd|
-    fd.puts(detail);
-    fd.puts("----- Last events -----");
-    fd.puts(dump_events);
+    fd.write(report)
   }
 end
-
-

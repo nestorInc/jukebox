@@ -158,10 +158,12 @@ class HttpSession < Rev::SSLSocket
   attr_reader   :user;
   attr_reader   :ssl;
   attr_accessor :data;
+  attr_accessor :auth;
   @@logfd = nil;
+
   def initialize(socket, root, options = {})
     @root        = root;
-    @data        = "";
+    @sck_data    = "";
     @length      = nil;
     @ssl         = options[:ssl.to_s] || false;
     @certificate = options[:certificate.to_s];
@@ -169,11 +171,6 @@ class HttpSession < Rev::SSLSocket
     @user        = nil;
     super(socket);
     sync         = true;
-  end
-
-  def on_disconnect(*args, &block)
-    @close_block = block;
-    @close_args  = args;
   end
 
   def remote_address()
@@ -208,9 +205,6 @@ class HttpSession < Rev::SSLSocket
 
   def on_close()
     log("disconnected");
-    if(@close_block)
-      @close_block.call(self, *@close_args);
-    end
   end
 
   #durty fix for catch exception
@@ -225,11 +219,11 @@ class HttpSession < Rev::SSLSocket
       
   def on_read(data)
     debug("HTTP data\n" + data);
-    @data << data;
-    while(@data.bytesize != 0)
+    @sck_data << data;
+    while(@sck_data.bytesize != 0)
       # Decode header
       if(@length == nil)
-        header, body = @data.split("\r\n\r\n", 2);        
+        header, body = @sck_data.split("\r\n\r\n", 2);
         # Header incomplete
         break if(body == nil);
 
@@ -240,16 +234,16 @@ class HttpSession < Rev::SSLSocket
         else
           @length = length.to_i();
         end
-        @data = body;
+        @sck_data = body;
       end
 
       # Body incomplete
-      break if(@data.bytesize() < @length);
+      break if(@sck_data.bytesize() < @length);
 
-      @req.addData(@data.slice!(0 .. @length - 1)) if(@length != 0);
+      @req.addData(@sck_data.slice!(0 .. @length - 1)) if(@length != 0);
       log(@req);
-      auth    = nil;
-      request = nil;
+      m_auth    = nil;
+      m_request = nil;
 
       uri  = @req.uri.path.split("/");
       uri.delete_if {|n| n == "" };
@@ -259,22 +253,21 @@ class HttpSession < Rev::SSLSocket
       depth = nodes.size();
       # find auth methode
       depth.downto(0) { |i|
-        begin
-          auth = nodes[i].method(:on_auth)
-        rescue NameError => e
-        else
-          break;
+        if(nodes[i].respond_to?(:on_auth));
+          m_auth = nodes[i].method(:on_auth)
+          break i;
         end
       }
       v = @req.options["Authorization"];
-      if(v != nil && auth != nil)
+      if(v != nil && m_auth != nil)
         method, code = v.split(" ", 2);
         if(method == "Basic" && code != nil)
           @user, pass = code.unpack("m").first.split(":", 2);
-          @uid = auth.call(self, @user, pass);
+          @auth = m_auth.call(self, @req, @user, pass);
         end
       end
-      if(@uid == nil and auth != nil)
+
+      if(m_auth != nil && @auth == nil)
         # Authentification error
         rsp = HttpResponse.generate401(@req)
         write(rsp.to_s);
@@ -283,17 +276,13 @@ class HttpSession < Rev::SSLSocket
       end
 
       # Find ressource data
-      pos = 0;
-      depth.downto(0) { |i|
-        begin
-          request = nodes[i].method(:on_request)
-        rescue NameError => e
-        else
-          pos = i;
-          break;
-        end 
+      pos = depth.downto(0) { |i|
+        if(nodes[i].respond_to?(:on_request));
+          m_request = nodes[i].method(:on_request)
+          break i;
+        end
       }
-      if(request == nil)
+      if(m_request == nil)
         # No ressource found
         rsp = HttpResponse.generate404(@req)
         write(rsp.to_s);
@@ -301,17 +290,15 @@ class HttpSession < Rev::SSLSocket
       end
 
       # Generate prefix and remaining fields
-      prefix = "/";
-      if(pos != 0)
-        prefix += uri[0..pos-1].join("/");
-      end
-      remaining = nil
-      remaining = uri[pos..-1].join("/") if(pos != uri.size);
+      prefix     = "/";
+      prefix    += uri[0..pos-1].join("/") if(pos != 0);
+      remaining  = nil
+      remaining  = uri[pos..-1].join("/")  if(pos != uri.size);
       
       @req.remaining = remaining;
       @req.prefix    = prefix;
 
-      request.call(self, @req);
+      m_request.call(self, @req);
       @length = nil;
     end
   end
@@ -331,8 +318,8 @@ class HttpNode
     @authArgs   = args;
     @authBlock  = block;
 
-    def self.on_auth(s, user, pass)
-      @authBlock.call(s, user, pass, *@authArgs);
+    def self.on_auth(s, req, user, pass)
+      @authBlock.call(s, req, user, pass, *@authArgs);
     end
   end
 
