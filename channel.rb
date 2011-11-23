@@ -126,6 +126,10 @@ class Channel
     @history.move(@pos + old_index + 1, @pos + new_index + 1);
   end
 
+  def song_pos()
+    @currentEntry.duration * @frame / @cur.size;
+  end
+
   def set_plugin(name = "default")
     begin
       load "plugins/#{name}.rb"

@@ -77,8 +77,8 @@ class JsonManager < HttpNode
         }
         # refresh
         add_channel_infos(resp, ch);
+        add_current_song(resp, ch);
         if(timestamp <= ch.timestamp)
-          add_current_song(resp, ch);
           add_play_queue(resp, ch);
         end
       rescue JSON::ParserError => e
@@ -111,14 +111,15 @@ class JsonManager < HttpNode
   end
 
   def add_current_song(resp, ch)
-    song   = ch.meta;
+    song    = ch.meta;
+    elapsed = ch.song_pos();
     resp[:current_song] = {
       :mid          => song.mid,
       :title        => song.title,
       :artist       => song.artist,
       :album        => song.album,
-      :total_time   => 203,
-      :elapsed_time => 70
+      :total_time   => song.duration,
+      :elapsed_time => elapsed
     };
   end
 
@@ -131,7 +132,7 @@ class JsonManager < HttpNode
           :artist    => song.artist,
           :title     => song.title,
           :album     => song.album,
-          :duration  => 270
+          :duration  => song.duration
         }
       }
     end
