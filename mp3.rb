@@ -157,44 +157,21 @@ private
 end
 
 class Mp3File
-  def initialize(file)
-    @frames         = [];
-    @total_duration = 0.0;
-    @time           = 0.0;
+  def self.open(file)
+    frames          = [];
 
-    data = File.open(file) { |fd|
-      fd.read();
-    }
+    data = File.open(file) { |fd| fd.read(); }
     data.force_encoding("BINARY");
+    
     while(data.size >= 4)
       frame = Mp3Frame.fetch(data);
       if(frame)
-        @total_duration += frame.duration;
+        frames.push(frame.to_s.bytesize);
       else
-        frame = Id3.fetch(data) if(frame == nil);
-      end
-      if(frame)
-        @frames.push(frame);
-      else
-        p data.class
         data.replace(data[1, -1]);
       end
     end
-  end
-
-  def play(delta)
-    cur  = [];
-    time = 0.0;
-
-    while(time < delta)
-      f     = @frames.shift();
-      break if(f == nil);
-      time += f.duration;
-      cur.push(f);
-    end
-
-    @time += time;
-    [cur, time];
+    frames;
   end
 end
 

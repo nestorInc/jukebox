@@ -3,7 +3,7 @@
 require 'rev'
 require 'thread'
 require 'date'
-
+require 'mp3.rb'
 require 'id3.rb'
 
 ENCODE_DELAY_SCAN = 30; # seconds
@@ -26,7 +26,8 @@ class EncodingThread < Rev::IO
 
       src = song.src.sub('"', '\"');
       dst = song.dst.sub('"', '\"');
-
+      song.bitrate = bitrate;
+      @song = song;
       rd, wr = IO.pipe
       @pid = fork {
         rd.close()
@@ -47,12 +48,21 @@ class EncodingThread < Rev::IO
 
   private
   def on_read(data)
-    puts data;
   end
 
   def on_close()
+    frames = Mp3File.open(@song.dst);
+    @song.frames   = frames;
+    
+    @song.duration = frames.inject(&:+) * 8 / (@song.bitrate * 1000);
     pid, status = Process.waitpid2(@pid);
-    @block.call(status.exitstatus(), *@args);
+    if(status.exitstatus() == 0)
+      @song.status = Library::FILE_OK;
+    else
+      @song.status = Library::FILE_ENCODING_FAIL;
+    end
+
+    @block.call(@song, *@args);
   end
 end
 
@@ -109,12 +119,8 @@ class Encode < Rev::TimerWatcher
     mid = song.mid;
 
     @library.change_stat(mid, Library::FILE_ENCODING_PROGRESS);
-    enc = EncodingThread.new(song, @bitrate, self, @library, mid) { |status, obj, lib, mid|
-      if(status == 0)
-        @library.change_stat(mid, Library::FILE_OK)
-      else
-        @library.change_stat(mid, Library::FILE_ENCODING_FAIL)
-      end
+    enc = EncodingThread.new(song, @bitrate, self, @library) { |song, obj, lib|
+      lib.update(song);
       obj.nextEncode(enc);
     }
     enc.attach(@loop) if(@loop != nil);

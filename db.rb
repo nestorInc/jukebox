@@ -13,27 +13,41 @@ class Song
   attr_accessor :album
   attr_accessor :years
   attr_accessor :status
+  attr_accessor :bitrate
+  attr_accessor :frames
+  attr_accessor :duration
 
   def initialize(params = {})
-    @mid    = params["mid"];
-    @src    = params["src"] && params["src"].encode(Encoding.locale_charmap);
-    @dst    = params["dst"] && params["dst"].encode(Encoding.locale_charmap);
-    @title  = params["title"];
-    @artist = params["artist"];
-    @album  = params["album"];
-    @years  = params["years"];
-    @status = params["status"];
+    @mid      = params["mid"];
+    @src      = params["src"] && params["src"].encode(Encoding.locale_charmap);
+    @dst      = params["dst"] && params["dst"].encode(Encoding.locale_charmap);
+    @title    = params["title"];
+    @artist   = params["artist"];
+    @album    = params["album"];
+    @years    = params["years"];
+    @status   = params["status"].to_i;
+    @duration = params["duration"].to_i;
+    @bitrate  = params["bitrate"].to_i;
+    @frames   = params["frames"];
+    if(@frames == nil)
+      @frames = [];
+    else
+      @frames = @frames.split(",").map { |v| v.to_i(); }
+    end
   end
 
   def to_db()
-    { :mid    => @mid,
-      :src    => @src,
-      :dst    => @dst,
-      :title  => @title,
-      :artist => @artist,
-      :album  => @album,
-      :years  => @years,
-      :status => @status
+    { :mid      => @mid,
+      :src      => @src,
+      :dst      => @dst,
+      :title    => @title,
+      :artist   => @artist,
+      :album    => @album,
+      :years    => @years,
+      :status   => @status,
+      :bitrate  => @bitrate,
+      :duration => @duration,
+      :frames   => @frames.map { |v| v.to_s(); }.join(",")
     }
   end
 
@@ -63,7 +77,7 @@ class Library
                        mid INTEGER PRIMARY KEY,
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
-                       status INTEGER);" );
+                       status INTEGER, frames TEXT, bitrate INTEGER, duration INTEGER);" );
     req = @db.prepare("UPDATE library SET status=#{FILE_WAIT} WHERE status=#{FILE_ENCODING_PROGRESS}");
     res = req.execute!();
     req.close();
@@ -90,7 +104,7 @@ class Library
   end
   
   def get_file(*mids)
-    if(mids.size == 0)
+    if(mids.size == 0 || mids[0] == nil)
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
       res = req.execute().map(&Song.from_db);
       req.close();
@@ -186,7 +200,13 @@ class Library
   end
 
   def add(song)
-    req = @db.prepare("INSERT INTO library (mid, src, dst, title, artist, album, years, status) VALUES(:mid, :src, :dst, :title, :artist, :album, :years, :status)");
+    req = @db.prepare("INSERT INTO library (mid, src, dst, title, artist, album, years, status, frames, bitrate, duration) VALUES(:mid, :src, :dst, :title, :artist, :album, :years, :status, :frames, :bitrate, :duration)");
+    req.execute(song.to_db);
+    req.close();
+  end
+
+  def update(song)
+    req = @db.prepare("UPDATE library SET src=:src, dst=:dst, title=:title, artist=:artist, album=:album, years=:years, status=:status, frames=:frames, bitrate=:bitrate, duration=:duration WHERE mid=:mid");
     req.execute(song.to_db);
     req.close();
   end
