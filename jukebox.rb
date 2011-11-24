@@ -46,6 +46,7 @@ Thread.new() {
     Rev::Loop.default.run();
   rescue => e
     error(([ e.to_s ] + e.backtrace).join("\n"), true, $error_file);
+    retry;
   end
 }
 
