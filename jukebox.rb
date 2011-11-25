@@ -31,12 +31,10 @@ channelList = {};
 
 config = {}
 begin
-  fd = File.open("jukebox.cfg");
-  data = fd.read();
+  data   = File.open("jukebox.cfg", &:read);
   config = YAML.load(data);
-  fd.close;
 rescue => e
-  error("Config file error: #{e.to_s}", true, $error_file);
+  error("Config file error: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
 end
 
 # Encode
@@ -47,7 +45,8 @@ Thread.new() {
     e.attach(Rev::Loop.default);
     Rev::Loop.default.run();
   rescue => e
-    error(e, true, $error_file);
+    error(([ e.to_s ] + e.backtrace).join("\n"), true, $error_file);
+    retry;
   end
 }
 

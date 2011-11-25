@@ -5,7 +5,6 @@ require 'time'
 
 require 'display.rb'
 require 'playlist.rb'
-require 'mp3.rb'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
@@ -49,6 +48,7 @@ class Channel
     @timestamp    = 0;
     @time         = 0;
     @nb_songs	  = 0;
+    @remaining    = 0;
 
     log("Creating new channel #{name}");
     set_plugin()
@@ -126,6 +126,10 @@ class Channel
     @history.move(@pos + old_index + 1, @pos + new_index + 1);
   end
 
+  def song_pos()
+    @currentEntry.duration * @frame / @cur.size;
+  end
+
   def set_plugin(name = "default")
     begin
       load "plugins/#{name}.rb"
@@ -150,7 +154,12 @@ class Channel
       @currentEntry = @library.get_file(mid).first;
       file = @currentEntry.dst;
       log("Fetching on channel #{@name}: #{file}");
-      @cur = Mp3File.new(file);
+      File.open(file) { |fd|
+        @cur = @currentEntry.frames.map { |b|
+          fd.read(b);
+        }
+      }
+      @frame = 0;
       tag = Id3.new();
       tag.title  = @currentEntry.title;
       tag.artist = @currentEntry.artist;
@@ -165,7 +174,7 @@ class Channel
   end
 
   def sync()
-    frames = [];
+    data = [];
 
     now = Time.now();
     if(@time == 0)
@@ -174,18 +183,23 @@ class Channel
     end
 
     if(@tag)
-      frames << @tag;
+      data << @tag;
       @tag = nil;
     end
 
+    delta = now - @time;
+    @remaining += delta * @currentEntry.bitrate * 1000 / 8;
     begin
-      delta = now - @time;
-      new_frames, delta = @cur.play(delta);
-      frames += new_frames;
-      @time  += delta;
-      self.next() if(@time < now);
-    end while(@time < now)
+      @cur[@frame..-1].each { |f|
+        data << f;
+        @remaining -= f.bytesize();
+        @frame     += 1;
+        break if(@remaining <= 0)
+      }
 
-    frames;
+      self.next() if(@remaining > 0);
+    end while(@remaining > 0)
+    @time  = now;
+    data;
   end
 end
