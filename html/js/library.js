@@ -124,3 +124,54 @@ function displaySearchResults (server_results) {
 	});
     }
 }
+
+function checkAndSendJson () {
+
+    // Check if the textarea is filled
+    if( '' == $('custom_json_query').value ){
+        alert('please fill the textarea');
+    }
+
+    // Check if the textarea contains a valid json query
+    var action = null;
+    action = JSON.parse( $('custom_json_query').value );
+
+    if ( null != action ) {
+        sendCustomJsonQuery( action );
+    }
+
+    return false;
+}
+
+function fillCustomJsonQuery () {
+
+    var value = $('custom_json_template_list').options[$('custom_json_template_list').selectedIndex].value ;
+    var jsonQuery = null;
+
+
+    if( "clear_form" == value ) {
+        jsonQuery='';
+    } else if ( "next" == value ) { 
+        jsonQuery='{"action": {"name":"next"},"timestamp":1317674887}';
+    } else if ( "previous" == value ) { 
+        jsonQuery='{"action": {"name":"previous"},"timestamp":1317674887}';
+    } else if ( "add_to_play_queue" == value ) { 
+        jsonQuery='{"action": {"name":"add_to_play_queue","mid":123,"play_queue_index":1},"timestamp":1317674887}';
+    } else if ( "remove_to_play_queue" == value ) { 
+        jsonQuery='{"action": {"name":"remove_from_play_queue","mid":123,"play_queue_index":2},"timestamp":1317674887}';
+    } else if ( "move_in_play_queue" == value ) { 
+        jsonQuery='{"action": {"name":"move_in_play_queue","mid":123,"play_queue_index":2,"new_play_queue_index":0},"timestamp":1317674887}';
+    } else if ( "join_channel" == value ) { 
+        jsonQuery='{"action": {"name":"join_channel","channel_name":"trashman"},"timestamp":1317674887}';
+    } else if ( "get_news" == value ) { 
+        jsonQuery='{"action": {"name":"get_news","first_result":0,"result_count":5},"timestamp":1317674887}';
+    } else if ( "search" == value ) { 
+        jsonQuery='{"timestamp":1317675258,"search": {"order_by":"artist","order_by_way":"down","search_value":"muse","search_field":"artist","first_result":0,"result_count":10 }}';
+    }
+    
+    $('custom_json_query').value=jsonQuery;
+
+    return false;
+
+}
+
