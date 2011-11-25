@@ -7,7 +7,6 @@ search.search_value = '';
 search.search_field = '';
 search.first_result = 0;
 search.result_count = results_per_page;
-
 var search_results = new Object();
 search_results.total_results = 0;
 search_results.results = null;
@@ -146,31 +145,61 @@ function checkAndSendJson () {
 function fillCustomJsonQuery () {
 
     var value = $('custom_json_template_list').options[$('custom_json_template_list').selectedIndex].value ;
-    var jsonQuery = null;
+    var query = new Object();
+    var subelt = new Object();
 
+    if( "dummy" == value ) {
+        return false;
+    }
 
     if( "clear_form" == value ) {
-        jsonQuery='';
-    } else if ( "next" == value ) { 
-        jsonQuery='{"action": {"name":"next"},"timestamp":1317674887}';
-    } else if ( "previous" == value ) { 
-        jsonQuery='{"action": {"name":"previous"},"timestamp":1317674887}';
-    } else if ( "add_to_play_queue" == value ) { 
-        jsonQuery='{"action": {"name":"add_to_play_queue","mid":123,"play_queue_index":1},"timestamp":1317674887}';
-    } else if ( "remove_to_play_queue" == value ) { 
-        jsonQuery='{"action": {"name":"remove_from_play_queue","mid":123,"play_queue_index":2},"timestamp":1317674887}';
-    } else if ( "move_in_play_queue" == value ) { 
-        jsonQuery='{"action": {"name":"move_in_play_queue","mid":123,"play_queue_index":2,"new_play_queue_index":0},"timestamp":1317674887}';
-    } else if ( "join_channel" == value ) { 
-        jsonQuery='{"action": {"name":"join_channel","channel_name":"trashman"},"timestamp":1317674887}';
-    } else if ( "get_news" == value ) { 
-        jsonQuery='{"action": {"name":"get_news","first_result":0,"result_count":5},"timestamp":1317674887}';
-    } else if ( "search" == value ) { 
-        jsonQuery='{"timestamp":1317675258,"search": {"order_by":"artist","order_by_way":"down","search_value":"muse","search_field":"artist","first_result":0,"result_count":10 }}';
+        $('custom_json_query').value = '';
+        $('custom_json_template_list').selectedIndex = 1;
+        return false;
     }
-    
-    $('custom_json_query').value=jsonQuery;
 
+    if ( "next" == value ) { 
+        subelt.name='next';
+    } else if ( "previous" == value ) { 
+        subelt.name='previous';
+    } else if ( "add_to_play_queue" == value ) { 
+        subelt.name="add_to_play_queue";
+        subelt.mid=123;
+        subelt.play_queue_index=1;
+    } else if ( "remove_to_play_queue" == value ) { 
+        subelt.name="add_to_play_queue";
+        subelt.mid=123;
+        subelt.play_queue_index=1;
+    } else if ( "move_in_play_queue" == value ) { 
+        subelt.name="move_in_play_queue";
+        subelt.mid=123;
+        subelt.play_queue_index=2;
+        subelt.new_play_queue_index=0;
+    } else if ( "join_channel" == value ) { 
+        subelt.name="join_channel";
+        subelt.channel_name="trashman";
+    } else if ( "get_news" == value ) {
+        subelt.name="get_news";
+        subelt.first_result=0;
+        subelt.result_count=5;
+    } else if ( "search" == value ) { 
+        subelt.order_by="artist";
+        subelt.order_by_way="down";
+        subelt.search_value="muse";
+        subelt.search_field="artist";
+        subelt.first_result=0;
+        subelt.result_count=10;
+    }
+
+    query.timestamp = 1317675258;
+    if ( "search" == value ){
+        query.search=subelt;
+    } else {
+        query.action=subelt;
+    }
+
+    $('custom_json_query').value=JSON.stringify(query , null, "\t");
+    $('custom_json_template_list').selectedIndex=1;
     return false;
 
 }

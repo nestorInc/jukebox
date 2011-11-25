@@ -127,7 +127,7 @@
         <tr>
           <td colspan="2">
             <center>
-              <textarea id="custom_json_query" style="width:95%;height:60px;"></textarea>            
+              <textarea id="custom_json_query" style="width:95%;height:90px;"></textarea>            
             </center>
           </td>
         </tr>
@@ -135,6 +135,8 @@
           <td>
             Query filler : <select id="custom_json_template_list" onchange="fillCustomJsonQuery();">
               <option value="clear_form">clear_form</option>
+              <option value="dummy" selected="selected">--------</option>
+              <option value="">empty</option>
               <option value="next">next</option>
               <option value="previous">previous</option>
               <option value="add_to_play_queue">add_to_play_queue</option>
