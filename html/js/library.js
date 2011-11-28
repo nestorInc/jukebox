@@ -18,7 +18,7 @@ function doSearch ( page ) {
     search.search_field = $('search_field').value;
     search.result_count = results_per_page;
     if( undefined == page || null == page ) { 
-         search.first_result = 1;
+        search.first_result = 0;
     } else {
         search.first_result = page;
     }
