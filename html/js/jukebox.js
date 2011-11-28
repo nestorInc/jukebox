@@ -397,9 +397,9 @@ function MakePlayQueueSongDroppable (droppable_id) {
 }
 
 function FormatTime (t) {
-    var result = '';
-    var minutes = Math.floor(t / 60.0);
-    var seconds = t - (60.0 * minutes);
-    result = minutes + ':' + seconds;
-    return result;
+    t = Number(t);
+    var h = Math.floor(t / 3600);
+    var m = Math.floor(t % 3600 / 60);
+    var s = Math.floor(t % 3600 % 60);
+    return ((h > 0 ? h + ":" : "") + (m > 0 ? (h > 0 && m < 10 ? "0" : "") + m + ":" : "0:") + (s < 10 ? "0" : "") + s);
 }
