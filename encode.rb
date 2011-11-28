@@ -24,8 +24,8 @@ class EncodingThread < Rev::IO
     begin 
       log("Encoding #{song.src} -> #{song.dst}");
 
-      src = song.src.sub('"', '\"');
-      dst = song.dst.sub('"', '\"');
+      src = song.src.sub("'", "\'");
+      dst = song.dst.sub("'", "\'");
       song.bitrate = bitrate;
       @song = song;
       rd, wr = IO.pipe
@@ -33,7 +33,7 @@ class EncodingThread < Rev::IO
         rd.close()
         STDOUT.reopen(wr)
         wr.close();
-        exec("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -b #{bitrate} -t > /dev/null 2> /dev/null");
+        exec("mpg123 --stereo -r 44100 -s \'#{src}\' | lame - \'#{dst}\' -r -b #{bitrate} -t > /dev/null 2> /dev/null");
       }
       debug("Process encoding PID=#{@pid}");
       wr.close();
