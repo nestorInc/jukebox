@@ -8,18 +8,24 @@ class Playlist
     @list ||= [];
   end
 
-  def add(pos = nil, mid)
-    return false if(mid == nil);
+  def add(pos = nil, data)
+    mids =
+      case(data)
+      when Fixnum
+        [ data ];
+      when Playlist
+        data.list;
+      else
+        raise "Playlist::add Invalid mids class";
+      end
     pos = check_pos(pos);
-    @list.insert(pos, mid);
+    @list.insert(pos, *mids);
     pos;
   end
 
   def del(pos)
-    return false if(pos == nil);
-    v = @list.delete_at(pos);
-    v ||= false;
-    v;
+    raise "Playlist::del Invalid position class" if(pos.class != Fixnum);
+    @list.delete_at(pos) || false;
   end
 
   def move(opos, npos)
