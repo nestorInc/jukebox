@@ -25,9 +25,9 @@ class Song
     @artist   = params["artist"];
     @album    = params["album"];
     @years    = params["years"];
-    @status   = params["status"].to_i;
-    @duration = params["duration"].to_i;
-    @bitrate  = params["bitrate"].to_i;
+    @status   = params["status"]   && params["status"].to_i;
+    @duration = params["duration"] && params["duration"].to_i;
+    @bitrate  = params["bitrate"]  && params["bitrate"].to_i;
     @frames   = params["frames"];
     if(@frames == nil)
       @frames = [];
@@ -37,18 +37,19 @@ class Song
   end
 
   def to_db()
-    { :mid      => @mid,
-      :src      => @src,
-      :dst      => @dst,
-      :title    => @title,
-      :artist   => @artist,
-      :album    => @album,
-      :years    => @years,
-      :status   => @status,
-      :bitrate  => @bitrate,
-      :duration => @duration,
-      :frames   => @frames.map { |v| v.to_s(); }.join(",")
-    }
+    res = {}
+    res[:mid     ] = @mid      if(@mid);
+    res[:src     ] = @src      if(@src);
+    res[:dst     ] = @dst      if(@dst);
+    res[:title   ] = @title    if(@title);
+    res[:artist  ] = @artist   if(@artist);
+    res[:album   ] = @album    if(@album);
+    res[:years   ] = @years    if(@years);
+    res[:status  ] = @status   if(@status);
+    res[:bitrate ] = @bitrate  if(@bitrate);
+    res[:duration] = @duration if(@duration);
+    res[:frames  ] = @frames .map { |v| v.to_s(); }.join(",") if(@frames);
+    res;
   end
 
   def self.from_db()
@@ -150,7 +151,7 @@ class Library
   end
 
   def request(value, field, orderBy, orderByWay, firstResult, resultCount)
-    request  = "SELECT * FROM library WHERE status=#{FILE_OK} ";
+    request  = "SELECT mid,title,album,artist,duration FROM library WHERE status=#{FILE_OK} ";
     request << "AND #{field} LIKE \"%\" || :name || \"%\" " if(field != nil);
     if(orderBy != nil)
       request << "ORDER BY #{orderBy} ";
@@ -193,21 +194,38 @@ class Library
   end
 
   def check_file(src)
-    req = @db.prepare("SELECT * FROM library WHERE src=?");
+    req = @db.prepare("SELECT mid FROM library WHERE src=?");
     res = req.execute!(src);
     req.close();
     res.size == 0;
   end
 
   def add(song)
-    req = @db.prepare("INSERT INTO library (mid, src, dst, title, artist, album, years, status, frames, bitrate, duration) VALUES(:mid, :src, :dst, :title, :artist, :album, :years, :status, :frames, :bitrate, :duration)");
-    req.execute(song.to_db);
-    req.close();
+    req = "INSERT INTO library (";
+    v = song.to_db();
+    req << v.map { |k, v|
+      k
+    }.join(", ");
+    req << ") VALUES(";
+    req << v.map { |k, v|
+      ":#{k}";
+    }.join(", ");
+    req << ");";
+    st = @db.prepare(req);
+    st.execute(v);
+    st.close();
   end
 
   def update(song)
-    req = @db.prepare("UPDATE library SET src=:src, dst=:dst, title=:title, artist=:artist, album=:album, years=:years, status=:status, frames=:frames, bitrate=:bitrate, duration=:duration WHERE mid=:mid");
-    req.execute(song.to_db);
-    req.close();
+    req = "UPDATE library SET ";
+    v = song.to_db();
+    req << v.map { |k, v|
+      "#{k}=:#{k}";
+    }.join(", ")
+    req << " WHERE mid=:mid";
+
+    st = @db.prepare(req);
+    st.execute(v);
+    st.close();
   end
 end
