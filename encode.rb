@@ -35,9 +35,9 @@ class EncodingThread < Rev::IO
       raise "Bad tag";
     end
 
-    begin 
-      src = song.src.sub("'", "\'");
-      dst = song.dst.sub("'", "\'");
+    begin
+      src = song.src.gsub(/(["\\$`])/, "\\\\\\1");
+      dst = song.dst.gsub(/(["\\$`])/, "\\\\\\1");
       song.bitrate = bitrate;
 
       @song = song;
@@ -46,7 +46,7 @@ class EncodingThread < Rev::IO
         rd.close()
         STDOUT.reopen(wr)
         wr.close();
-        exec("mpg123 --stereo -r 44100 -s \'#{src}\' | lame - \'#{dst}\' -r -b #{bitrate} -t > /dev/null 2> /dev/null");
+        exec("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -b #{bitrate} -t > /dev/null 2> /dev/null");
       }
       debug("Process encoding PID=#{@pid}");
       wr.close();
