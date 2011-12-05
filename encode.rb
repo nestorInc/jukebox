@@ -85,7 +85,7 @@ class Encode < Rev::TimerWatcher
   def initialize(library, conf)
     @library              = library;
     @th                   = [];
-
+    @cfile                = [];
     @originDir   = conf["source_dir"]  if(conf && conf["source_dir"]);
     raise "Config: encode::source_dir not found" if(@originDir == nil);
     @originDir.force_encoding(Encoding.locale_charmap)
@@ -153,13 +153,18 @@ class Encode < Rev::TimerWatcher
 
   def scan()
     files  = Dir.glob(@originDir + "/*.mp3");
+    new_files = files - @cfile;
+    @cfile = files;
     now = Time.now;
-    files.each { | f |
+    new_files.each { | f |
       name = f.scan(/.*\/(.*)/);
       name = name[0][0];
       if(@library.check_file(f))
         # Check file is not used actualy
-        next if(now - File::Stat.new(f).mtime < @delay_scan * 2);
+        if(now - File::Stat.new(f).mtime < @delay_scan * 2)
+          @cfile.delete(f);
+          next;
+        end
         song = Song.new({
                           "src"    => f,
                           "dst"    => @encodedDir + "/" + name,
