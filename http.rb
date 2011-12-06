@@ -175,7 +175,13 @@ class HttpSession < Rev::SSLSocket
     @certificate = options[:certificate.to_s];
     @key         = options[:key.to_s];
     @user        = nil;
-    super(socket);
+    # fix for quick connect disconnect
+    begin
+      super(socket);
+    rescue
+      def attach(loop)
+      end
+    end
     sync         = true;
   end
 
