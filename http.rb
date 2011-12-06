@@ -66,6 +66,7 @@ class HttpRequest
     options = {}
     lines.each { |l|
       name, val = l.split(":", 2)
+      val ||= "";
       options[name] = val.strip();
     }
     uri = URI.parse(page);
@@ -113,6 +114,7 @@ class HttpResponse
     options = {}
     lines.each { |l|
       name, val = l.split(":", 2)
+      val ||= "";
       val.strip();
 
       options[name] = val;
@@ -263,6 +265,7 @@ class HttpSession < Rev::SSLSocket
         method, code = v.split(" ", 2);
         if(method == "Basic" && code != nil)
           @user, pass = code.unpack("m").first.split(":", 2);
+          pass ||= "";
           @auth = m_auth.call(self, @req, @user, pass);
         end
       end
