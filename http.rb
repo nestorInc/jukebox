@@ -69,7 +69,11 @@ class HttpRequest
       val ||= "";
       options[name] = val.strip();
     }
-    uri = URI.parse(page);
+    begin
+      uri = URI.parse(page);
+    rescue
+      return nil;
+    end
     HttpRequest.new(method, uri, proto, options);
   end
 
@@ -230,6 +234,10 @@ class HttpSession < Rev::SSLSocket
         break if(body == nil);
 
         @req = HttpRequest.parse(header);
+        if(@req == nil)
+          close();
+          return;
+        end
         length = @req.options["Content-Length"];
         if(length == nil)
           @length = 0;
