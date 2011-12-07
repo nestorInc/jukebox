@@ -160,6 +160,18 @@ class HttpResponse
   end
 end
 
+# durty fix for catch exception
+module SocketDurtyFix
+  def on_readable
+    begin
+      super();
+    rescue Errno::EAGAIN
+    rescue Errno::ECONNRESET, EOFError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH
+      close
+    end
+  end
+end
+
 class HttpSession < Rev::SSLSocket
   attr_reader   :user;
   attr_reader   :ssl;
@@ -213,20 +225,11 @@ class HttpSession < Rev::SSLSocket
       extend Rev::SSL
       @_connecting ? ssl_client_start : ssl_server_start
     end
+    extend SocketDurtyFix;
   end
 
   def on_close()
     log("disconnected");
-  end
-
-  #durty fix for catch exception
-  def on_readable
-    begin
-      on_read @_io.read_nonblock(INPUT_SIZE)
-    rescue Errno::EAGAIN
-    rescue Errno::ECONNRESET, EOFError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH
-      close
-    end
   end
       
   def on_read(data)
