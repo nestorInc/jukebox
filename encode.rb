@@ -152,7 +152,7 @@ class Encode < Rev::TimerWatcher
   end
 
   def scan()
-    files  = Dir.glob(@originDir + "/*.mp3");
+    files  = Dir.glob(@originDir + "/**/*.mp3");
     new_files = files - @cfile;
     @cfile = files;
     now = Time.now;
