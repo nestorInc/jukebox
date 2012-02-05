@@ -42,7 +42,7 @@ function addToPlayQueue(mid, play_queue_index) {
 
 
 function goToPage (page) {
-    doSearch((page - 1) * results_per_page);
+    doSearch((page - 1) * $('results_per_page').value);
 }
 
 
@@ -77,12 +77,13 @@ function generatePagesLinks(currentPage, currentSelection, nbPages, maxDisplayed
         }
     }
 
+    /* If we want to add focus on another variable we juste to add an entry in this array*/ 
     focusElements = Array();
     focusElements[0] = currentPage;
-    focusElements[1] = currentSelection;
-
+    /*focusElements[1] = currentSelection;*/
+    pages.push(currentSelection);
     for( var k = 0; k < focusElements.length; ++k){
-
+        
         var currentCount = Math.ceil(threshold/2);
         for( var i = focusElements[k] - Math.ceil(threshold/2)  ; i < focusElements[k] ; ++i ){
             if( i > 0 && i <= nbPages ){
@@ -146,13 +147,13 @@ function displaySearchResults (server_results) {
     search.result_count = server_results.result_count;
     
     
-    var page_count = Math.floor(server_results.total_results / results_per_page);
+    var page_count = Math.floor(server_results.total_results / $('results_per_page').value);
  
-    if (server_results.total_results % results_per_page > 0) {
+    if (server_results.total_results % $('results_per_page').value > 0) {
 	    page_count++;
     }
     
-    var current_page = Math.floor(server_results.first_result / results_per_page) + 1;
+    var current_page = Math.floor(server_results.first_result / $('results_per_page').value) + 1;
 
     if( current_page > page_count ) {
         current_page = 1;
