@@ -54,6 +54,93 @@ function CleanupLibrary () {
 }
 
 
+
+function sort_unique(arr) {
+    arr = arr.sort(function (a, b) { return a*1 - b*1; });
+    var ret = [arr[0]];
+    for (var i = 1; i < arr.length; i++) { 
+        if (arr[i-1] !== arr[i]) {
+            ret.push(arr[i]);
+        }
+    }
+    return ret;
+}
+
+function generatePagesLinks(currentPage, currentSelection, nbPages, maxDisplayedPages ){
+    var pages = Array();
+    var threshold = maxDisplayedPages / 4;
+    var result = '';
+
+    for( var i = 1; i < Math.ceil(threshold); ++i) {
+        if( i > 0 && i <= nbPages ){
+            pages.push(i);
+        }
+    }
+
+    focusElements = Array();
+    focusElements[0] = currentPage;
+    focusElements[1] = currentSelection;
+
+    for( var k = 0; k < focusElements.length; ++k){
+
+        var currentCount = Math.ceil(threshold/2);
+        for( var i = focusElements[k] - Math.ceil(threshold/2)  ; i < focusElements[k] ; ++i ){
+            if( i > 0 && i <= nbPages ){
+                currentCount--;
+                pages.push(i)
+            }
+        }
+
+        pages.push(focusElements[k]);
+        var currentCount2 = Math.ceil(threshold/2);
+        for( var i = focusElements[k] + 1 ; i < focusElements[k] + Math.ceil(threshold/2) +1 ; ++i ){
+            if( i > 0 && i <= nbPages ){
+                currentCount2--;
+                pages.push(i)
+            }
+        }
+        
+        /* Add missed before pages at the end of the array */
+        if( currentCount > 0 ){
+            for(var i = focusElements[k] + Math.ceil(threshold/2); i < focusElements[k] + Math.ceil(threshold); ++i){
+                if( i > 0 && i <= nbPages )
+                    pages.push(i);
+            }
+        } else if( currentCount2 > 0){
+            for(var i = focusElements[k] - Math.ceil(threshold); i < focusElements[k] + Math.ceil(threshold/2); ++i){
+                if( i > 0 && i <= nbPages)
+                    pages.push(i);
+            }
+        } 
+    }
+
+    for(var i = nbPages - Math.ceil(threshold); i <= nbPages; ++i){
+        if( i > 0 && i <= nbPages){
+            pages.push(i);
+        }
+    }
+    pages=sort_unique(pages);
+    var lastdisplayedValue = null;
+    for(var i=0; i < pages.length; ++i){
+                
+        if( lastdisplayedValue != null && lastdisplayedValue != pages[i] - 1){
+            result+= ".....";
+        }
+        result+= "<a href='#' onclick='javascript:goToPage(" + pages[i] + ");' class='";
+        if( pages[i] == currentPage ){
+            result+= "slider_link_current_page" ;
+        } else if( pages[i] == currentSelection ){
+            result+= "slider_link_current_selection" ;
+        } else {
+            result+= "slider_link" ;
+        }
+        result+= "'>" + pages[i] +"</a> ";
+        lastdisplayedValue = pages[i];
+    }
+
+    return result;
+}
+
 function displaySearchResults (server_results) {
     search_results.total_results = server_results.total_results;
     search.result_count = server_results.result_count;
@@ -71,36 +158,47 @@ function displaySearchResults (server_results) {
         current_page = 1;
     }
 
-    var pagelist_html = '<p>';
-	pagelist_html += '<div name="results_slider" class="slider"><div class="handle"><span name="currentPage"></div></div>';
-    pagelist_html += '</p>';
-    
+    var pagelist_html = '';
+    if( server_results.total_results > 0 ){
+        pagelist_html += '<p>'
+	    pagelist_html += '<div name="results_slider" class="slider"><div class="handle"></div></div>';
+	    pagelist_html += '<div class="page_links"></div>';
+        pagelist_html += '</p>';
+    }
+        
+
     $$('div.collection_pagelist').each(function(s) {
-	s.update(pagelist_html);
+	    s.update(pagelist_html);
     });
+
 //    var lastPQIndex = playQueueSongs.length;
  
     var songlist_html = '';
-    songlist_html += '<ul>';
-    var i = 0;
-    
-    librarySongs = server_results.results;
-    var grey_bg = false;
-    server_results.results.each(function(s) {
-    var style = '';
-    if (grey_bg == true) {
-        style = 'background-color: #DEDEDE;';
+
+    if(server_results.total_results > 0) {
+        songlist_html += '<ul>';
+        var i = 0;
+        
+        librarySongs = server_results.results;
+        var grey_bg = false;
+        server_results.results.each(function(s) {
+            var style = '';
+            if (grey_bg == true) {
+                style = 'background-color: #DEDEDE;';
+            }
+	        songlist_html += '<li id="library_li_' + i + '">';
+	        songlist_html += '<div id="library_song_' + i + '" style="position:relative;' + style + '" class="library_draggable">';
+	        songlist_html += '<a href="#" onclick="addToPlayQueue(' + s.mid + ',0);return false;"><span class="add_to_play_queue_top"></span></a>';
+	        songlist_html += '<a href="#" onclick="addToPlayQueueBottom(' + s.mid + ');return false;"><span class="add_to_play_queue_bottom"></span></a>';
+	        songlist_html += '<div id="library_handle_' + i + '">' + s.artist + ' - ' + s.album + ' - '  + s.title + '</div>';
+	        songlist_html += '</div></li>';
+	        i++;
+            grey_bg = !grey_bg;
+        });
+        songlist_html += '</ul>';
+    } else {
+        songlist_html += "no results found";
     }
-	songlist_html += '<li id="library_li_' + i + '">';
-	songlist_html += '<div id="library_song_' + i + '" style="position:relative;' + style + '" class="library_draggable">';
-	songlist_html += '<a href="#" onclick="addToPlayQueue(' + s.mid + ',0);return false;"><span class="add_to_play_queue_top"></span></a>';
-	songlist_html += '<a href="#" onclick="addToPlayQueueBottom(' + s.mid + ');return false;"><span class="add_to_play_queue_bottom"></span></a>';
-	songlist_html += '<div id="library_handle_' + i + '">' + s.artist + ' - ' + s.album + ' - '  + s.title + '</div>';
-	songlist_html += '</div></li>';
-	i++;
-    grey_bg = !grey_bg;
-    });
-    songlist_html += '</ul>';
     $('collection_content').update(songlist_html);
      
     
@@ -123,12 +221,19 @@ function displaySearchResults (server_results) {
         pages.push(i+1);
     }
 
-    /* Init the slider current page label */
-    for(var j in document.getElementsByName("currentPage") )
-    {
-        document.getElementsByName("currentPage")[j].innerHTML = current_page + "/" +  page_count;
-    }
+    /* Init the link list */
+    $$('div.page_links').each(function(s) {
+	    s.update(generatePagesLinks(current_page, current_page, page_count, 20));
+    });
 
+    /* Init the slider current page label */
+    // for(var j in document.getElementsByName("currentPage") ) {
+    //     document.getElementsByName("currentPage")[j].value = current_page.toString() ;
+    // }
+
+    // for(var j in document.getElementsByName("pages_count") ) {
+    //     document.getElementsByName("pages_count")[j].innerHTML = page_count.toString();
+    // }
 
     /* Init each sliders */
     for(var i = 0 ; i <  resultsSlider.length; i++ ){
@@ -138,11 +243,9 @@ function displaySearchResults (server_results) {
             sliderValue: current_page,
             id:i,
             onSlide: function(values){
-                for(var j in document.getElementsByName("currentPage") )
-                {
-                    document.getElementsByName("currentPage")[j].innerHTML = values + "/" +  page_count ;
-                }
-
+                $$('div.page_links').each(function(s) {
+	                s.update(generatePagesLinks(current_page, values, page_count, 20));
+                });
                 for( var k in tab ){
                     if ( k != this.id ){
                         locked[k]=true;
