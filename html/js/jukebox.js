@@ -219,6 +219,40 @@ function updateJukebox ( update_timestamp) {
     });
 }
 
+function formatSecondsToString(secs){
+    var hours = Math.floor(secs / (60 * 60));
+   
+    var divisor_for_minutes = secs % (60 * 60);
+    var minutes = Math.floor(divisor_for_minutes / 60);
+ 
+    var divisor_for_seconds = divisor_for_minutes % 60;
+    var seconds = Math.ceil(divisor_for_seconds);
+
+
+    var result = '';
+    if( hours > 0 ){
+        result += hours.toString() + ":";
+        if(minutes < 10){
+            result += '0';
+        }
+        result += minutes.toString() + ":";
+        if(seconds < 10) {
+            result += '0';
+        }
+        result += seconds.toString();
+    } else if ( minutes > 0 ){
+        result += minutes.toString() + ":";
+        if(seconds < 10) {
+            result += '0';
+        }
+        result += seconds.toString();
+    } else {
+        result += seconds.toString() + "s";
+    }
+    return result;
+}
+
+
 function UpdateCurrentSongTime (delta_time) {
     if (current_song == null) {
         return;
@@ -231,6 +265,8 @@ function UpdateCurrentSongTime (delta_time) {
     $('progressbar').setStyle({
         width: percent + '%'
     });
+
+    $('player_song_time').update(formatSecondsToString(current_song.elapsed_time) + "/" + formatSecondsToString(current_song.total_time));
 }
 
 function UpdateCurrentSong (delta_time) {

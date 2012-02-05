@@ -227,15 +227,6 @@ function displaySearchResults (server_results) {
 	    s.update(generatePagesLinks(current_page, current_page, page_count, 20));
     });
 
-    /* Init the slider current page label */
-    // for(var j in document.getElementsByName("currentPage") ) {
-    //     document.getElementsByName("currentPage")[j].value = current_page.toString() ;
-    // }
-
-    // for(var j in document.getElementsByName("pages_count") ) {
-    //     document.getElementsByName("pages_count")[j].innerHTML = page_count.toString();
-    // }
-
     /* Init each sliders */
     for(var i = 0 ; i <  resultsSlider.length; i++ ){
         tab[i] = new Control.Slider(resultsSlider[i].down('.handle'), resultsSlider[i], {
