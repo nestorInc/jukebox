@@ -159,7 +159,7 @@ p#player_song_title
 
 p#player_song_time
 {
-	font-size: 35%;
+	font-size: 60%;
 	position: absolute;
 	overflow: hidden;
 	
@@ -170,7 +170,7 @@ p#player_song_time
     padding-right: 0;
     text-align: center;
     text-indent: 0;
-    top:32px;
+    top:29px;
     z-index:100;
     color:black;
 }
