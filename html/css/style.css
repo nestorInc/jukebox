@@ -407,3 +407,10 @@ div#notifications {
     z-index: 1000;
     width: 100%;
 }
+
+
+
+/* Sliders */
+div.slider { width:100%; margin:10px 0; background-color:#ccc; height:10px; position: relative; }
+div.slider div.handle { width:10px; height:15px; background-color:#888; cursor:move; position: absolute; }
+dic.slider div.handle span { height:-10px; }

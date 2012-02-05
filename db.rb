@@ -135,15 +135,13 @@ class Library
 
   def secure_request(value, field, orderBy, orderByWay, firstResult, resultCount)
     field   = "artist" if(field   != "title" && field   != "album");
-    orderBy = "artist" if(orderBy != "title" && orderBy != "album");
+    orderBy = "artist, album, title" if(orderBy != "title" && orderBy != "album");
     if(orderByWay == "down")
       orderByWay = "DESC";
     else
       orderByWay = "ASC";
     end
     firstResult = 0  if(!(firstResult.is_a? Integer))
-    resultCount = 10 if(!(resultCount.is_a? Integer))
-    resultCount = 50 if((resultCount > 200) or (resultCount < 0))
     firstResult = 0  if(firstResult < 0)
 
     return request(value, field, orderBy, orderByWay, firstResult, resultCount); 

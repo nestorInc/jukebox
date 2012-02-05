@@ -2,7 +2,7 @@ var results_per_page = 10;
 
 var search = new Object();
 search.order_by = 'artist';
-search.order_by_way = 'down';
+search.order_by_way = 'up';
 search.search_value = '';
 search.search_field = '';
 search.first_result = 0;
@@ -16,7 +16,7 @@ var librarySongs = new Array();
 function doSearch ( page ) {
     search.search_value = $('search_input').value;
     search.search_field = $('search_field').value;
-    search.result_count = results_per_page;
+    search.result_count = $('results_per_page').value;
     if( undefined == page || null == page ) { 
         search.first_result = 0;
     } else {
@@ -62,7 +62,7 @@ function displaySearchResults (server_results) {
     var page_count = Math.floor(server_results.total_results / results_per_page);
  
     if (server_results.total_results % results_per_page > 0) {
-	page_count++;
+	    page_count++;
     }
     
     var current_page = Math.floor(server_results.first_result / results_per_page) + 1;
@@ -72,15 +72,7 @@ function displaySearchResults (server_results) {
     }
 
     var pagelist_html = '<p>';
-    
-    for (var i = 1; i <= page_count; i++) {
-	if (i == current_page) {
-	    pagelist_html += ' ' + i + ' ';
-	} else {
-	    pagelist_html += ' <a href="#" onclick="javascript:goToPage(' + i + ');return false;">' + i + '</a> ';
-	}
-    }
-    
+	pagelist_html += '<div name="results_slider" class="slider"><div class="handle"><span name="currentPage"></div></div>';
     pagelist_html += '</p>';
     
     $$('div.collection_pagelist').each(function(s) {
@@ -110,9 +102,7 @@ function displaySearchResults (server_results) {
     });
     songlist_html += '</ul>';
     $('collection_content').update(songlist_html);
-    
-    
-    
+     
     
     // Create all draggables, once update is done.
     for (var i = 0; i < librarySongs.length; i++) {
@@ -121,6 +111,53 @@ function displaySearchResults (server_results) {
 	    revert: true,
 	    handle: 'library_handle_' + i
 	});
+    }
+
+    var resultsSlider = document.getElementsByName('results_slider');
+    var tab = Array();
+    var locked = Array()
+
+    /* fill the array for the slider range */
+    var pages = Array();
+    for(var i = 0; i < page_count; ++i){
+        pages.push(i+1);
+    }
+
+    /* Init the slider current page label */
+    for(var j in document.getElementsByName("currentPage") )
+    {
+        document.getElementsByName("currentPage")[j].innerHTML = current_page + "/" +  page_count;
+    }
+
+
+    /* Init each sliders */
+    for(var i = 0 ; i <  resultsSlider.length; i++ ){
+        tab[i] = new Control.Slider(resultsSlider[i].down('.handle'), resultsSlider[i], {
+            range: $R(1,pages.length),
+            values: pages,
+            sliderValue: current_page,
+            id:i,
+            onSlide: function(values){
+                for(var j in document.getElementsByName("currentPage") )
+                {
+                    document.getElementsByName("currentPage")[j].innerHTML = values + "/" +  page_count ;
+                }
+
+                for( var k in tab ){
+                    if ( k != this.id ){
+                        locked[k]=true;
+                        if(typeof tab[k].setValue === 'function') {
+                            tab[k].setValue(values);
+                        }
+                        locked[k]=false;
+                    }
+                }
+            },
+            onChange: function(values){
+                if( ! locked[this.id] )
+                    goToPage(values);
+            }
+        });
     }
 }
 
