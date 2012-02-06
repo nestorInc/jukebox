@@ -17,12 +17,14 @@ function doSearch ( page, search_value, search_field, result_count ) {
     if( undefined == search_value || null == search_value ) { 
         search.search_value = $('search_input').value;
     } else {
+        $('search_input').value = search_value;
         search.search_value = search_value;
     }
 
     if( undefined == search_field || null == search_field ) { 
         search.search_field = $('search_field').value;
     } else {
+        $('search_field').value=search_field;
         search.search_field = search_field;
     }
 
