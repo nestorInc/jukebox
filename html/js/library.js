@@ -13,10 +13,25 @@ search_results.results = null;
 
 var librarySongs = new Array();
 
-function doSearch ( page ) {
-    search.search_value = $('search_input').value;
-    search.search_field = $('search_field').value;
-    search.result_count = $('results_per_page').value;
+function doSearch ( page, search_value, search_field, result_count ) {
+    if( undefined == search_value || null == search_value ) { 
+        search.search_value = $('search_input').value;
+    } else {
+        search.search_value = search_value;
+    }
+
+    if( undefined == search_field || null == search_field ) { 
+        search.search_field = $('search_field').value;
+    } else {
+        search.search_field = search_field;
+    }
+
+    if( undefined == result_count || null == result_count ) { 
+        search.result_count = $('results_per_page').value;
+    } else {
+        search.results_count = results_count;
+    }
+
     if( undefined == page || null == page ) { 
         search.first_result = 0;
     } else {
@@ -162,7 +177,9 @@ function displaySearchResults (server_results) {
     var pagelist_html = '';
     if( server_results.total_results > 0 ){
         pagelist_html += '<p>'
-	    pagelist_html += '<div name="results_slider" class="slider"><div class="handle"></div></div>';
+        if( page_count > 1 ){
+	        pagelist_html += '<div name="results_slider" class="slider"><div class="handle"></div></div>';
+        }
 	    pagelist_html += '<div class="page_links"></div>';
         pagelist_html += '</p>';
     }
@@ -191,7 +208,10 @@ function displaySearchResults (server_results) {
 	        songlist_html += '<div id="library_song_' + i + '" style="position:relative;' + style + '" class="library_draggable">';
 	        songlist_html += '<a href="#" onclick="addToPlayQueue(' + s.mid + ',0);return false;"><span class="add_to_play_queue_top"></span></a>';
 	        songlist_html += '<a href="#" onclick="addToPlayQueueBottom(' + s.mid + ');return false;"><span class="add_to_play_queue_bottom"></span></a>';
-	        songlist_html += '<div id="library_handle_' + i + '">' + s.artist + ' - ' + s.album + ' - '  + s.title + '</div>';
+	        songlist_html += '<div id="library_handle_' + i + '">'
+            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.artist +'\', \'artist\' )">' + s.artist + '</a> - '
+            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.album +'\', \'album\' )">' + s.album + '</a> - '
+            songlist_html += '' + s.title + '</div>';
 	        songlist_html += '</div></li>';
 	        i++;
             grey_bg = !grey_bg;
