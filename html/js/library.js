@@ -88,7 +88,7 @@ function generatePagesLinks(currentPage, currentSelection, nbPages, maxDisplayed
     var threshold = maxDisplayedPages / 4;
     var result = '';
 
-    for( var i = 1; i < Math.ceil(threshold); ++i) {
+    for( var i = 1; i < Math.ceil(threshold) + 1; ++i) {
         if( i > 0 && i <= nbPages ){
             pages.push(i);
         }
@@ -132,7 +132,7 @@ function generatePagesLinks(currentPage, currentSelection, nbPages, maxDisplayed
         } 
     }
 
-    for(var i = nbPages - Math.ceil(threshold); i <= nbPages; ++i){
+    for(var i = nbPages - Math.ceil(threshold) + 1; i <= nbPages; ++i){
         if( i > 0 && i <= nbPages){
             pages.push(i);
         }
