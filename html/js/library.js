@@ -211,8 +211,8 @@ function displaySearchResults (server_results) {
 	        songlist_html += '<a href="#" onclick="addToPlayQueue(' + s.mid + ',0);return false;"><span class="add_to_play_queue_top"></span></a>';
 	        songlist_html += '<a href="#" onclick="addToPlayQueueBottom(' + s.mid + ');return false;"><span class="add_to_play_queue_bottom"></span></a>';
 	        songlist_html += '<div id="library_handle_' + i + '">'
-            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.artist +'\', \'artist\' )">' + s.artist + '</a> - '
-            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.album +'\', \'album\' )">' + s.album + '</a> - '
+            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.artist.replace(/'/g,"\\'") +'\', \'artist\' )">' + s.artist + '</a> - '
+            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.album.replace(/'/g,"\\'") +'\', \'album\' )">' + s.album + '</a> - '
             songlist_html += '' + s.title + '</div>';
 	        songlist_html += '</div></li>';
 	        i++;

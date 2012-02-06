@@ -111,7 +111,7 @@ div#header
 {
 	background-color: #6B6B6B;
 	width: 100%;
-	height: 21px;
+	height: 20px;
 }
 
 
@@ -170,7 +170,7 @@ p#player_song_time
     padding-right: 0;
     text-align: center;
     text-indent: 0;
-    top:29px;
+    top:30px;
     z-index:100;
     color:black;
 }
@@ -309,9 +309,8 @@ div#music_collection_wrapper
 {
 	width: 600px;
 	float: left;
+    overflow:hidden;
 	display: inline;
-	border-left: 1px solid black;
-	
 	font-size: 80%;
 }
 
@@ -357,9 +356,7 @@ div#debug1 p, div#debug2 p
 
 li.droppable_hover
 {
-//    height: 20px;
     border-bottom:5px solid blue;
-
 }
 
 li.being_dragged
@@ -433,7 +430,7 @@ div#notifications {
 div.page_links{ text-align:center;}
 div.slider { width:100%; margin:10px 0; background-color:#ccc; height:10px; position: relative; }
 div.slider div.handle { width:10px; height:15px; background-color:#888; cursor:move; position: absolute; }
-div.slider div.handle span { height:-10px; }
+div.slider div.handle span { height:10px; }
 a.slider_link_current_page { color:#ff0000; }
 a.slider_link_current_selection { color:#00ff00; }
 a.slider_link {  }
