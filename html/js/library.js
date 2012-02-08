@@ -34,7 +34,7 @@ function doSearch ( page, search_value, search_field, result_count ) {
         search.results_count = results_count;
     }
 
-    if( undefined == page || null == page ) { 
+    if( undefined == page || null == page || 1 == page ) { 
         search.first_result = 0;
     } else {
         search.first_result = page;
@@ -83,13 +83,19 @@ function sort_unique(arr) {
     return ret;
 }
 
-function generatePagesLinks(currentPage, currentSelection, nbPages, maxDisplayedPages ){
+function generatePagesLinks(currentPage, currentSelection, nbPages){
     var pages = Array();
-    var threshold = maxDisplayedPages / 4;
+    var threshold = 5;
     var result = '';
 
-    for( var i = 1; i < Math.ceil(threshold) + 1; ++i) {
-        if( i > 0 && i <= nbPages ){
+    if( nbPages > 25 ){
+        for( var i = 1; i < Math.ceil(threshold) + 2; ++i) {
+            if( i > 0 && i <= nbPages ){
+                pages.push(i);
+            }
+        }
+    } else {
+        for( var i=1; i<=nbPages ;++i){
             pages.push(i);
         }
     }
@@ -132,7 +138,7 @@ function generatePagesLinks(currentPage, currentSelection, nbPages, maxDisplayed
         } 
     }
 
-    for(var i = nbPages - Math.ceil(threshold) + 1; i <= nbPages; ++i){
+    for(var i = nbPages - Math.ceil(threshold) ; i <= nbPages; ++i){
         if( i > 0 && i <= nbPages){
             pages.push(i);
         }
@@ -240,13 +246,14 @@ function displaySearchResults (server_results) {
 
     /* fill the array for the slider range */
     var pages = Array();
+    var timer;
     for(var i = 0; i < page_count; ++i){
         pages.push(i+1);
     }
 
     /* Init the link list */
     $$('div.page_links').each(function(s) {
-	    s.update(generatePagesLinks(current_page, current_page, page_count, 20));
+	    s.update(generatePagesLinks(current_page, current_page, page_count));
     });
 
     /* Init each sliders */
@@ -256,10 +263,12 @@ function displaySearchResults (server_results) {
             values: pages,
             sliderValue: current_page,
             id:i,
+            timer:null,
             onSlide: function(values){
                 $$('div.page_links').each(function(s) {
-	                s.update(generatePagesLinks(current_page, values, page_count, 20));
+	                s.update(generatePagesLinks(current_page, values, page_count));
                 });
+
                 for( var k in tab ){
                     if ( k != this.id ){
                         locked[k]=true;

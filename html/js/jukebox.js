@@ -271,7 +271,11 @@ function UpdateCurrentSongTime (delta_time) {
 
 function UpdateCurrentSong (delta_time) {
     if (current_song != null) {
-        $('player_song_title').update(current_song.artist + ' - ' + current_song.album + ' - ' + current_song.title);
+        var song = '';
+        song += '<a href="#" onclick="javascript:doSearch( 1, \''+ current_song.artist.replace(/'/g,"\\'") +'\', \'artist\' )">' + current_song.artist + '</a> - ';
+        song += '<a href="#" onclick="javascript:doSearch( 1, \''+ current_song.album.replace(/'/g,"\\'") +'\', \'album\' )">' + current_song.album + '</a> - ';
+        song += current_song.title;
+        $('player_song_title').update( song );
         UpdateCurrentSongTime (0);
     }
 }
@@ -328,7 +332,7 @@ function PlayQueueDelete(mid, play_queue_index) {
 }
 
 function CleanupPlayQueue () {
-    // Create all draggables, once update is done.                                                                                                                                                                                                                       
+    // Create all draggables, once update is done.
     for (var i = 0; i < playQueueSongs.length; i++) {
         Droppables.remove('play_queue_song_' + i);
     }
@@ -344,8 +348,12 @@ function DisplayPlayQueue () {
 
         html += '<li id="play_queue_li_' + currentPQSongIndex + '" class="droppable">';
         html += '<div id="play_queue_song_' + currentPQSongIndex + '" class="play_queue_draggable">';
-
-        html += '<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">' + song.artist + ' - ' + song.album + ' - '  + song.title + ' (' + FormatTime(song.duration) + ')</div>';
+        html += '<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">';
+        html += '<a href="#" onclick="javascript:doSearch( 1, \''+ song.artist.replace(/'/g,"\\'") +'\', \'artist\' )">' + song.artist + '</a>';
+        html +=' - ';
+        html += '<a href="#" onclick="javascript:doSearch( 1, \''+ song.album.replace(/'/g,"\\'") +'\', \'album\' )">' + song.album  + '</a>'
+        html += ' - ';
+        html += song.title + ' (' + FormatTime(song.duration) + ')</div>';
         html += '<a href="#" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', 0);return false;"><span class="play_queue_move_top"></span></a>';
         html += '<a href="#" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', ' + lastPQIndex + ');return false;"><span class="play_queue_move_bottom"></span></a>';
         html += '<a href="#" onclick="PlayQueueDelete(1,' + currentPQSongIndex + ');return false;"><span class="play_queue_delete"></span></a></span></a>';
