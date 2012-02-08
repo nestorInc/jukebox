@@ -126,7 +126,7 @@ class JsonManager < HttpNode
   def add_play_queue(resp, ch)
     queue = ch.mids[1..-1];
     if(queue.size() != 0)
-      queue = @library.get_file(*queue).map { |song|
+      queue = @library.get_file(*queue).reject(&:nil?).map { |song|
         {
           :mid       => song.mid,
           :artist    => song.artist,

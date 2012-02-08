@@ -66,9 +66,14 @@ class HttpRequest
     options = {}
     lines.each { |l|
       name, val = l.split(":", 2)
+      val ||= "";
       options[name] = val.strip();
     }
-    uri = URI.parse(page);
+    begin
+      uri = URI.parse(page);
+    rescue
+      return nil;
+    end
     HttpRequest.new(method, uri, proto, options);
   end
 
@@ -113,6 +118,7 @@ class HttpResponse
     options = {}
     lines.each { |l|
       name, val = l.split(":", 2)
+      val ||= "";
       val.strip();
 
       options[name] = val;
@@ -154,6 +160,18 @@ class HttpResponse
   end
 end
 
+# durty fix for catch exception
+module SocketDurtyFix
+  def on_readable
+    begin
+      super();
+    rescue Errno::EAGAIN
+    rescue Errno::ECONNRESET, EOFError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH
+      close
+    end
+  end
+end
+
 class HttpSession < Rev::SSLSocket
   attr_reader   :user;
   attr_reader   :ssl;
@@ -169,7 +187,13 @@ class HttpSession < Rev::SSLSocket
     @certificate = options[:certificate.to_s];
     @key         = options[:key.to_s];
     @user        = nil;
-    super(socket);
+    # fix for quick connect disconnect
+    begin
+      super(socket);
+    rescue
+      def attach(loop)
+      end
+    end
     sync         = true;
   end
 
@@ -201,20 +225,11 @@ class HttpSession < Rev::SSLSocket
       extend Rev::SSL
       @_connecting ? ssl_client_start : ssl_server_start
     end
+    extend SocketDurtyFix;
   end
 
   def on_close()
     log("disconnected");
-  end
-
-  #durty fix for catch exception
-  def on_readable
-    begin
-      on_read @_io.read_nonblock(INPUT_SIZE)
-    rescue Errno::EAGAIN
-    rescue Errno::ECONNRESET, EOFError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH
-      close
-    end
   end
       
   def on_read(data)
@@ -228,6 +243,10 @@ class HttpSession < Rev::SSLSocket
         break if(body == nil);
 
         @req = HttpRequest.parse(header);
+        if(@req == nil)
+          close();
+          return;
+        end
         length = @req.options["Content-Length"];
         if(length == nil)
           @length = 0;
@@ -263,6 +282,7 @@ class HttpSession < Rev::SSLSocket
         method, code = v.split(" ", 2);
         if(method == "Basic" && code != nil)
           @user, pass = code.unpack("m").first.split(":", 2);
+          pass ||= "";
           @auth = m_auth.call(self, @req, @user, pass);
         end
       end

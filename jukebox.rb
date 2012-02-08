@@ -40,9 +40,9 @@ end
 # Encode
 
 Thread.new() {
+  e = Encode.new(library, config[:encode.to_s]);
+  e.attach(Rev::Loop.default);
   begin
-    e = Encode.new(library, config[:encode.to_s]);
-    e.attach(Rev::Loop.default);
     Rev::Loop.default.run();
   rescue => e
     error(([ e.to_s ] + e.backtrace).join("\n"), true, $error_file);

@@ -20,13 +20,26 @@ class EncodingThread < Rev::IO
     @args     = args;
     @file     = file;
     @bitrate  = bitrate;
+    
+    log("Encoding #{song.src} -> #{song.dst}");
 
-    begin 
-      log("Encoding #{song.src} -> #{song.dst}");
+    tag = Id3.decode(song.src);
+    song.album  = tag.album;
+    song.artist = tag.artist;
+    song.title  = tag.title;
+    song.years  = tag.date;
 
-      src = song.src.sub('"', '\"');
-      dst = song.dst.sub('"', '\"');
+    if(tag.title == nil || tag.artist == nil || tag.album == nil)
+      song.status = Library::FILE_BAD_TAG;
+      @block.call(song, *@args);
+      raise "Bad tag";
+    end
+
+    begin
+      src = song.src.gsub(/(["\\$`])/, "\\\\\\1");
+      dst = song.dst.gsub(/(["\\$`])/, "\\\\\\1");
       song.bitrate = bitrate;
+
       @song = song;
       rd, wr = IO.pipe
       @pid = fork {
@@ -40,8 +53,10 @@ class EncodingThread < Rev::IO
       @fd  = rd;
       super(@fd);
     rescue => e
-      error("Encode execution error on file #{src}: #{e.to_s}", true, $error_file);
-      @block.call(255, *@args);
+      error("Encode execution error on file #{src}: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
+      @song.status = Library::FILE_ENCODING_FAIL;
+      @block.call(song, *@args);
+      raise e;
     end
   end
 
@@ -70,7 +85,7 @@ class Encode < Rev::TimerWatcher
   def initialize(library, conf)
     @library              = library;
     @th                   = [];
-
+    @cfile                = [];
     @originDir   = conf["source_dir"]  if(conf && conf["source_dir"]);
     raise "Config: encode::source_dir not found" if(@originDir == nil);
     @originDir.force_encoding(Encoding.locale_charmap)
@@ -119,12 +134,15 @@ class Encode < Rev::TimerWatcher
     mid = song.mid;
 
     @library.change_stat(mid, Library::FILE_ENCODING_PROGRESS);
-    enc = EncodingThread.new(song, @bitrate, self, @library) { |song, obj, lib|
-      lib.update(song);
-      obj.nextEncode(enc);
-    }
-    enc.attach(@loop) if(@loop != nil);
-    @th.push(enc);
+    begin
+      enc = EncodingThread.new(song, @bitrate, self, @library) { |song, obj, lib|
+        lib.update(song);
+        obj.nextEncode(enc);
+      }
+      enc.attach(@loop) if(@loop != nil);
+      @th.push(enc);
+    rescue
+    end
 
     encode();
   end
@@ -134,32 +152,24 @@ class Encode < Rev::TimerWatcher
   end
 
   def scan()
-    files  = Dir.glob(@originDir + "/*.mp3");
-    signal = false;
-    nb_new_file = 0;
+    files  = Dir.glob(@originDir + "/**/*.mp3");
+    new_files = files - @cfile;
+    @cfile = files;
     now = Time.now;
-    files.each { | f |
+    new_files.each { | f |
       name = f.scan(/.*\/(.*)/);
       name = name[0][0];
       if(@library.check_file(f))
         # Check file is not used actualy
-        next if(now - File::Stat.new(f).mtime < @delay_scan * 2);
-        nb_new_file += 1;
-        break if(nb_new_file >= 50);
-        tag = Id3.decode(f);
+        if(now - File::Stat.new(f).mtime < @delay_scan * 2)
+          @cfile.delete(f);
+          next;
+        end
         song = Song.new({
                           "src"    => f,
                           "dst"    => @encodedDir + "/" + name,
-                          "album"  => tag.album,
-                          "artist" => tag.artist,
-                          "title"  => tag.title,
-                          "years"  => tag.date,
+                          "status" => Library::FILE_WAIT
                         })
-        if(tag.title == nil || tag.artist == nil || tag.album == nil)
-          song.status = Library::FILE_BAD_TAG;
-        else
-          song.status = Library::FILE_WAIT;
-        end
         @library.add(song);
         encode();
       end

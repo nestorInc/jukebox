@@ -154,10 +154,13 @@ class Channel
       @currentEntry = @library.get_file(mid).first;
       file = @currentEntry.dst;
       log("Fetching on channel #{@name}: #{file}");
-      File.open(file) { |fd|
-        @cur = @currentEntry.frames.map { |b|
-          fd.read(b);
-        }
+      data = File.open(file) { |fd| fd.read; }
+      data.force_encoding("BINARY");
+      pos = 0;
+      @cur = @currentEntry.frames.map { |b|
+        f = data[pos, b];
+        pos += b;
+        f;
       }
       @frame = 0;
       tag = Id3.new();
