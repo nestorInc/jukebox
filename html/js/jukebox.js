@@ -14,6 +14,10 @@ var url = '/api/json';
 
 var playQueueSongs = new Array();
 
+var refreshSongTimeFromAjaxRequestDatetime = null;
+var refreshSongTimeTimer = null;
+var refreshFrequency = 100;
+
 function jsonPrettyPrint (input) {
     var json_hr = JSON.stringify(input, null, "\t");
     json_hr = json_hr.replace(/\n/g, '<br />');
@@ -90,16 +94,19 @@ function sendCustomJsonQuery ( action ) {
     updateJukebox( false );
 }
 
+
 /*@parameter update_timestamp is optional */
 function updateJukebox ( update_timestamp) {
     setActivityMonitor(true);
+
     // update graphical stuff
     time = new Date().getTime() / 1000;
     var delta_time = time - last_time;
-    
     UpdateCurrentSongTime(delta_time);
-    
     last_time = time;
+
+    /* TODO change refresher call position must be done in body onLoad()  */
+    updateSongTimeRefresh()
     
     if (sending_query == false) {
         // timeout has ended or new query arrived and timeout still in progress
@@ -160,6 +167,8 @@ function updateJukebox ( update_timestamp) {
             
             if (json.current_song != null) {
                 current_song = json.current_song;
+                /* Get refreshDate*/
+                refreshSongTimeFromAjaxRequestDatetime = new Date().getTime() / 1000;
                 UpdateCurrentSong(0);
             }
             
@@ -253,20 +262,46 @@ function formatSecondsToString(secs){
 }
 
 
-function UpdateCurrentSongTime (delta_time) {
-    if (current_song == null) {
+function updateSongTimeRefresh(){
+    if( refreshSongTimeTimer != null ){
+        clearTimeout(refreshSongTimeTimer);
+    }
+    refreshSongTimeTimer = setTimeout("updateSongTimeRefresh();", refreshFrequency);
+    
+    if(current_song == null){
+        $('progressbar').setStyle({
+            width: 0 + '%'
+        });
+
+        $('player_song_time').update("--- / ---");
         return;
     }
-    current_song.elapsed_time += delta_time;
-    if (current_song.elapsed_time > current_song.total_time) {
-        current_song.elapsed_time = current_song.total_time;
+    
+    
+    var currentSongElapsedTime = new Date().getTime()/1000 - refreshSongTimeFromAjaxRequestDatetime + current_song.elapsed_time;
+    if (currentSongElapsedTime > current_song.total_time) {
+        currentSongElapsedTime = current_song.total_time;
     }
-    var percent = ((current_song.elapsed_time / current_song.total_time) * 100);
+ 
+    var percent = ((currentSongElapsedTime / current_song.total_time) * 100);
     $('progressbar').setStyle({
         width: percent + '%'
     });
 
-    $('player_song_time').update(formatSecondsToString(current_song.elapsed_time) + "/" + formatSecondsToString(current_song.total_time));
+    $('player_song_time').update(formatSecondsToString(currentSongElapsedTime) + "/" + formatSecondsToString(current_song.total_time));
+
+}
+
+function UpdateCurrentSongTime (delta_time) {
+    if (current_song == null) {
+        return;
+    }
+
+    refreshSongTimeFromAjaxRequestDatetime = new Date().getTime()/1000;
+    current_song.elapsed_time += delta_time;
+    if (current_song.elapsed_time > current_song.total_time) {
+        current_song.elapsed_time = current_song.total_time;
+    }
 }
 
 function UpdateCurrentSong (delta_time) {
