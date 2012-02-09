@@ -357,12 +357,34 @@ function PlayQueueMove(mid, play_queue_index, new_play_queue_index) {
 }
 
 function PlayQueueDelete(mid, play_queue_index) {
-    var action = new Object();
-    action.name = "remove_from_play_queue";
-    action.mid = mid;
-    action.play_queue_index = play_queue_index;
-
-    query.action = action;
+    if(undefined == mid || null == mid || undefined == play_queue_index || null == play_queue_index){
+        /* Nothing is passed as argument we want to clear all the playlist */
+        query.action = new Array();
+        for( var i = playQueueSongs.length -1; i >= 0 ; --i){
+            var action = new Object();
+            action.name = "remove_from_play_queue";
+            action.mid = i; /* TODO : Caution this is not the currentSong mid must send the right id*/
+            action.play_queue_index = i;
+            query.action.push( action );
+        }
+    } else if( Object.prototype.toString.call( mid ) === '[object Array]' 
+               && Object.prototype.toString.call( play_queue_index ) === '[object Array]'){
+        /* We delete all song passed as argument */
+        query.action = new Array();
+        for( var i = 0; i < Math.min(mid.length, play_queue_index.length ); ++i){
+            var action = new Object();
+            action.name = "remove_from_play_queue";
+            action.mid = mid[i];
+            action.play_queue_index = play_queue_index[i];
+            query.action.push( action );
+        }        
+    } else {
+        var action = new Object();
+        action.name = "remove_from_play_queue";
+        action.mid = mid;
+        action.play_queue_index = play_queue_index;
+        query.action = action;
+    }
     updateJukebox();
 }
 
@@ -374,8 +396,12 @@ function CleanupPlayQueue () {
 }
 
 function DisplayPlayQueue () {
-    var html = '<ul>';
-    html += '<li id="play_queue_li_first" class="droppable">Play queue</li>';
+    var html = '';
+    html += '<ul>';
+    html += '<li id="play_queue_li_first" class="droppable">Play queue';
+    html += '<a href="#" onclick="PlayQueueDelete();"><span class="play_queue_delete"></span></a>';
+    html += '</li>';
+
     var currentPQSongIndex = 0;
     var lastPQIndex = playQueueSongs.length - 1;
     playQueueSongs.each(function(song) {
@@ -470,8 +496,6 @@ function MakePlayQueueSongDroppable (droppable_id) {
                 DisplayPlayQueue();
             }
         }
-
-
     });
 }
 

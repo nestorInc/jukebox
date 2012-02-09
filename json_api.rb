@@ -69,7 +69,7 @@ class JsonManager < HttpNode
           when "search"
             parse_search(resp, value);
           when "action"
-            parse_action(resp, ch, value);
+              parse_action(resp, ch, value);
           else
             add_message(resp, MSG_LVL_ERROR, "unknown command #{type}");
             error("Unknown command #{type}", true, $error_file);
@@ -144,23 +144,33 @@ class JsonManager < HttpNode
     end
   end
 
+  def forward_action(req, ch)
+      case(req["name"])
+      when "next"
+        ch.next();
+      when "previous"
+        ch.previous();
+      when "add_to_play_queue"
+        ch.add_song(req["play_queue_index"], req["mid"])
+      when "remove_from_play_queue"
+        ch.del_song(req["play_queue_index"])
+      when "move_in_play_queue"
+        ch.move_song(req["play_queue_index"], req["new_play_queue_index"])
+      when "select_plugin"
+        ch.set_plugin(req["plugin_name"]);
+      else
+        error("Unknown action #{req["name"]}", true, $error_file);
+        add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
+      end
+  end
+
   def parse_action(resp, ch, req)
-    case(req["name"])
-    when "next"
-      ch.next();
-    when "previous"
-      ch.previous();
-    when "add_to_play_queue"
-      ch.add_song(req["play_queue_index"], req["mid"])
-    when "remove_from_play_queue"
-      ch.del_song(req["play_queue_index"])
-    when "move_in_play_queue"
-      ch.move_song(req["play_queue_index"], req["new_play_queue_index"])
-    when "select_plugin"
-      ch.set_plugin(req["plugin_name"]);
+    if( req.kind_of?(Array) )
+      req.each { |currentAction| 
+        forward_action(currentAction,ch);
+      }
     else
-      error("Unknown action #{req["name"]}", true, $error_file);
-      add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
+      forward_action(req,ch);
     end
   end
 

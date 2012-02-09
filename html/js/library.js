@@ -48,12 +48,23 @@ function addToPlayQueueBottom(mid) {
 }
 
 function addToPlayQueue(mid, play_queue_index) {
-    var action = new Object();
-    action.name = "add_to_play_queue";
-    action.mid = mid;
-    action.play_queue_index = play_queue_index;
-    
-    query.action = action;
+    if( Object.prototype.toString.call( mid ) === '[object Array]' 
+               && Object.prototype.toString.call( play_queue_index ) === '[object Array]'){
+        query.action = new Array();
+        for( var i = 0; i < Math.min(mid.length, play_queue_index.length ); i++){
+            var action = new Object();
+            action.name = "add_to_play_queue";
+            action.mid = mid[i];
+            action.play_queue_index = play_queue_index[i];
+            query.action.push( action );
+        }   
+    } else {
+        var action = new Object();
+        action.name = "add_to_play_queue";
+        action.mid = mid;
+        action.play_queue_index = play_queue_index;
+        query.action = action;
+    }
     updateJukebox();
 }
 
@@ -201,13 +212,15 @@ function displaySearchResults (server_results) {
  
     var songlist_html = '';
 
+    var addToPlayQueuemids = new Array();
     if(server_results.total_results > 0) {
-        songlist_html += '<ul>';
+        /* songlist_html += '<ul>';*/
         var i = 0;
         
         librarySongs = server_results.results;
         var grey_bg = false;
         server_results.results.each(function(s) {
+            addToPlayQueuemids.push(s.mid);
             var style = '';
             if (grey_bg == true) {
                 style = 'background-color: #DEDEDE;';
@@ -225,6 +238,38 @@ function displaySearchResults (server_results) {
             grey_bg = !grey_bg;
         });
         songlist_html += '</ul>';
+
+        /* Add links to add all research current page songs into playqueue */
+        var add_page_results = '';
+        add_page_results += '<li>';
+        add_page_results += '<div style="position:relative;">';
+        /* Add research to playqueue on tail*/
+        add_page_results += '<a onclick="addToPlayQueue([';
+        var addToPlayQueuepositions = new Array();
+        for( var i = 0; i<addToPlayQueuemids.length ; ++i){
+            addToPlayQueuepositions.push(playQueueSongs.length + i);
+        }
+        add_page_results +=  addToPlayQueuemids.reverse() +'],[' + addToPlayQueuepositions;
+
+        add_page_results += ']);return false;" href="#">';
+        add_page_results += '<span class="add_to_play_queue_bottom"></span>';
+        add_page_results += '</a>';
+
+        /* Add research page song in the head playqueue */
+        add_page_results += '<a onclick="addToPlayQueue([';
+        /* we got to invert addToPlayQueuemids*/
+        var addToPlayQueuepositions = new Array();
+        for( var i = addToPlayQueuemids.length; i>= 0 ; --i){
+            addToPlayQueuepositions.push(0);
+        }
+        add_page_results +=  addToPlayQueuemids +'],[' + addToPlayQueuepositions;
+        add_page_results += ']);return false;" href="#">';
+        add_page_results += '<span class="add_to_play_queue_top"></span>';
+        add_page_results += '</a>';
+        add_page_results += '</div><div style="background-color:#888888;">&nbsp;</div></li>';
+
+        songlist_html = '<ul>' + add_page_results + songlist_html;
+
     } else {
         songlist_html += "no results found";
     }
