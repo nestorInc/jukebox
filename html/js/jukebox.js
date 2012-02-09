@@ -17,6 +17,7 @@ var playQueueSongs = new Array();
 var refreshSongTimeFromAjaxRequestDatetime = null;
 var refreshSongTimeTimer = null;
 var refreshFrequency = 100;
+var lastCurrentSongElapsedTimeUpdate = null;
 
 function jsonPrettyPrint (input) {
     var json_hr = JSON.stringify(input, null, "\t");
@@ -269,6 +270,7 @@ function updateSongTimeRefresh(){
     refreshSongTimeTimer = setTimeout("updateSongTimeRefresh();", refreshFrequency);
     
     if(current_song == null){
+        lastCurrentSongElapsedTime = currentSongElapsedTime;
         $('progressbar').setStyle({
             width: 0 + '%'
         });
@@ -277,19 +279,20 @@ function updateSongTimeRefresh(){
         return;
     }
     
-    
     var currentSongElapsedTime = new Date().getTime()/1000 - refreshSongTimeFromAjaxRequestDatetime + current_song.elapsed_time;
     if (currentSongElapsedTime > current_song.total_time) {
         currentSongElapsedTime = current_song.total_time;
     }
  
-    var percent = ((currentSongElapsedTime / current_song.total_time) * 100);
-    $('progressbar').setStyle({
-        width: percent + '%'
-    });
+    if(null == lastCurrentSongElapsedTime || currentSongElapsedTime > lastCurrentSongElapsedTime){
+        var percent = ((currentSongElapsedTime / current_song.total_time) * 100);
+        $('progressbar').setStyle({
+            width: percent + '%'
+        });
 
-    $('player_song_time').update(formatSecondsToString(currentSongElapsedTime) + "/" + formatSecondsToString(current_song.total_time));
-
+        $('player_song_time').update(formatSecondsToString(currentSongElapsedTime) + "/" + formatSecondsToString(current_song.total_time));
+    }
+    lastCurrentSongElapsedTime = currentSongElapsedTime;
 }
 
 function UpdateCurrentSongTime (delta_time) {

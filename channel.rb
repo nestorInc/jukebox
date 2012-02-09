@@ -116,9 +116,9 @@ class Channel
     @history.add(@pos + pos + 1, mid)
   end
 
-  def del_song(pos)
+  def del_song(pos, mid)
     @timestamp = Time.now().to_i();
-    @history.del(@pos + pos + 1);
+    @history.del(@pos + pos + 1, mid);
   end
 
   def move_song(old_index, new_index)
