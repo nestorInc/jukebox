@@ -153,7 +153,7 @@ class JsonManager < HttpNode
       when "add_to_play_queue"
         ch.add_song(req["play_queue_index"], req["mid"])
       when "remove_from_play_queue"
-        ch.del_song(req["play_queue_index"], req["mid"])
+        ch.del_song(req["play_queue_index"])
       when "move_in_play_queue"
         ch.move_song(req["play_queue_index"], req["new_play_queue_index"])
       when "select_plugin"
