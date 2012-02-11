@@ -1,9 +1,11 @@
 var results_per_page = 10;
 
+var searches = new Array();
 var search = new Object();
 search.order_by = 'artist';
 search.order_by_way = 'up';
 search.search_value = '';
+search.search_comparison = 'like';
 search.search_field = '';
 search.first_result = 0;
 search.result_count = results_per_page;
@@ -13,12 +15,18 @@ search_results.results = null;
 
 var librarySongs = new Array();
 
-function doSearch ( page, search_value, search_field, result_count ) {
+function doSearch ( page, search_value, search_comparison, search_field, result_count ) {
     if( undefined == search_value || null == search_value ) { 
         search.search_value = $('search_input').value;
     } else {
         $('search_input').value = search_value;
         search.search_value = search_value;
+    }
+
+    if( undefined == search_comparison || null == search_comparison ) { 
+        search.search_comparison = 'like';
+    } else {
+        search.search_comparison = search_comparison;
     }
 
     if( undefined == search_field || null == search_field ) { 
@@ -31,7 +39,7 @@ function doSearch ( page, search_value, search_field, result_count ) {
     if( undefined == result_count || null == result_count ) { 
         search.result_count = $('results_per_page').value;
     } else {
-        search.results_count = results_count;
+        search.result_count = result_count;
     }
 
     if( undefined == page || null == page || 1 == page ) { 
@@ -39,6 +47,7 @@ function doSearch ( page, search_value, search_field, result_count ) {
     } else {
         search.first_result = page;
     }
+    search.search_value = search.search_value;
     query.search = search;
     updateJukebox();
 }
@@ -68,9 +77,32 @@ function addToPlayQueue(mid, play_queue_index) {
     updateJukebox();
 }
 
+function addSearchToPlayQueue(play_queue_position, search_value, search_comparison, search_field, order_by, order_by_way, first_result, result_count) {
 
-function goToPage (page) {
-    doSearch((page - 1) * $('results_per_page').value);
+    var action = new Object();
+    action.name = "add_search_to_play_queue";
+    action.play_queue_position = play_queue_position;
+  
+    action.search_value = search_value ;
+    if( null == search_comparison ){
+        action.search_comparison = "like";
+    } else {
+        action.search_comparison = search_comparison
+    }
+
+    action.search_field = search_field ;
+    action.order_by = order_by ;
+    action.order_by_way = order_by_way;
+    action.first_result = first_result;
+    action.result_count = result_count;
+    query.action = action;
+    
+    updateJukebox();
+}
+
+
+function goToPage (page, search_value, search_comparison, search_field, result_count) {
+    doSearch((page - 1) * $('results_per_page').value, search_value, search_comparison, search_field, result_count);
 }
 
 
@@ -161,7 +193,7 @@ function generatePagesLinks(currentPage, currentSelection, nbPages){
         if( lastdisplayedValue != null && lastdisplayedValue != pages[i] - 1){
             result+= ".....";
         }
-        result+= "<a href='#' onclick='javascript:goToPage(" + pages[i] + ");' class='";
+        result+= "<a href='#' onclick=\"javascript:goToPage(" + pages[i] + ", '" + search.search_value + "','" + search.search_comparison + "','" + search.search_field + "'," + search.result_count + " );\" class='";
         if( pages[i] == currentPage ){
             result+= "slider_link_current_page" ;
         } else if( pages[i] == currentSelection ){
@@ -178,8 +210,7 @@ function generatePagesLinks(currentPage, currentSelection, nbPages){
 
 function displaySearchResults (server_results) {
     search_results.total_results = server_results.total_results;
-    search.result_count = server_results.result_count;
-    
+    search_results.result_count = server_results.result_count;
     
     var page_count = Math.floor(server_results.total_results / $('results_per_page').value);
  
@@ -230,45 +261,30 @@ function displaySearchResults (server_results) {
 	        songlist_html += '<a href="#" onclick="addToPlayQueue(' + s.mid + ',0);return false;"><span class="add_to_play_queue_top"></span></a>';
 	        songlist_html += '<a href="#" onclick="addToPlayQueueBottom(' + s.mid + ');return false;"><span class="add_to_play_queue_bottom"></span></a>';
 	        songlist_html += '<div id="library_handle_' + i + '">'
-            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.artist.replace(/'/g,"\\'") +'\', \'artist\' )">' + s.artist + '</a> - '
-            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.album.replace(/'/g,"\\'") +'\', \'album\' )">' + s.album + '</a> - '
+            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.artist.replace(/'/g,"\\'") +'\', \'equal\',\'artist\',' + search.result_count + ' )">' + s.artist + '</a> - '
+            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.album.replace(/'/g,"\\'") +'\', \'equal\',\'album\',' + search.result_count + ' )">' + s.album + '</a> - '
             songlist_html += '' + s.title + '</div>';
 	        songlist_html += '</div></li>';
 	        i++;
             grey_bg = !grey_bg;
         });
-        songlist_html += '</ul>';
 
         /* Add links to add all research current page songs into playqueue */
         var add_page_results = '';
         add_page_results += '<li>';
         add_page_results += '<div style="position:relative;">';
         /* Add research to playqueue on tail*/
-        add_page_results += '<a onclick="addToPlayQueue([';
-        var addToPlayQueuepositions = new Array();
-        for( var i = 0; i<addToPlayQueuemids.length ; ++i){
-            addToPlayQueuepositions.push(playQueueSongs.length + i);
-        }
-        add_page_results +=  addToPlayQueuemids.reverse() +'],[' + addToPlayQueuepositions;
-
-        add_page_results += ']);return false;" href="#">';
-        add_page_results += '<span class="add_to_play_queue_bottom"></span>';
-        add_page_results += '</a>';
+        add_page_results += '<a onclick="addSearchToPlayQueue(\'tail\',\''+ search.search_value + '\',\'' ;
+        add_page_results += search.search_field + '\', \'' + search.order_by;
+        add_page_results += '\',\'up\',null,null,false);return false;" href="#"><span class="add_to_play_queue_bottom"></span></a>';
 
         /* Add research page song in the head playqueue */
-        add_page_results += '<a onclick="addToPlayQueue([';
-        /* we got to invert addToPlayQueuemids*/
-        var addToPlayQueuepositions = new Array();
-        for( var i = addToPlayQueuemids.length; i>= 0 ; --i){
-            addToPlayQueuepositions.push(0);
-        }
-        add_page_results +=  addToPlayQueuemids +'],[' + addToPlayQueuepositions;
-        add_page_results += ']);return false;" href="#">';
-        add_page_results += '<span class="add_to_play_queue_top"></span>';
-        add_page_results += '</a>';
+        add_page_results += '<a onclick="addSearchToPlayQueue(\'head\',\''+ search.search_value + '\',\'';
+        add_page_results += search.search_field + '\', \'' +  search.order_by;
+        add_page_results += '\',\'up\',null,null,false);return false;" href="#"><span class="add_to_play_queue_top"></span></a>';
         add_page_results += '</div><div style="background-color:#888888;">&nbsp;</div></li>';
 
-        songlist_html = '<ul>' + add_page_results + songlist_html;
+        songlist_html = '<ul>' + add_page_results + songlist_html + add_page_results + '</ul>';
 
     } else {
         songlist_html += "no results found";

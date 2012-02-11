@@ -97,8 +97,14 @@ class Library
     res[0].at(0);
   end
   
-  def get_total(field, value)
-    req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK} AND #{field} LIKE \"%\" || :name || \"%\"");
+  def get_total(field, comparison, value)
+    
+    if( "like" == comparison)
+      req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK} AND #{field} LIKE \"%\" || :name || \"%\"");
+    else
+      req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK} AND #{field} LIKE :name");
+    end
+    
     res = req.execute!(:name => value);
     req.close();
     res[0].at(0);
@@ -134,7 +140,7 @@ class Library
 # order by order by way
 # first result result count
 
-  def secure_request(value, field, orderBy, orderByWay, firstResult, resultCount)
+  def secure_request(fieldsSelection, value, comparison, field, orderBy, orderByWay, firstResult, resultCount)
     field   = "artist" if(field   != "title" && field   != "album");
     orderBy = "artist, album, title" if(orderBy != "title" && orderBy != "album");
     if(orderByWay == "down")
@@ -142,26 +148,33 @@ class Library
     else
       orderByWay = "ASC";
     end
-    firstResult = 0  if(!(firstResult.is_a? Integer))
-    firstResult = 0  if(firstResult < 0)
+    if( nil != firstResult && nil != resultCount) 
+      firstResult = 0  if(!(firstResult.is_a? Integer))
+      firstResult = 0  if(firstResult < 0)
+    end
 
-    return request(value, field, orderBy, orderByWay, firstResult, resultCount); 
+    if("like" == comparison)
+      value = '%' + value + '%';
+    end
+    return request(fieldsSelection, value, field, orderBy, orderByWay, firstResult, resultCount); 
   end
 
-  def request(value, field, orderBy, orderByWay, firstResult, resultCount)
-    request  = "SELECT mid,title,album,artist,duration FROM library WHERE status=#{FILE_OK} ";
-    request << "AND #{field} LIKE \"%\" || :name || \"%\" " if(field != nil);
+  def request(fieldsSelection, value, field, orderBy, orderByWay, firstResult, resultCount)
+    request  = "SELECT " + fieldsSelection + " FROM library WHERE status=#{FILE_OK} ";
+    request << "AND #{field} LIKE  :name " if(field != nil);
     if(orderBy != nil)
       request << "ORDER BY #{orderBy} ";
       request << "#{orderByWay} " if(orderByWay != nil);
     end
-    if(firstResult or resultCount)
-      if(firstResult)
-        request << "LIMIT #{firstResult},#{resultCount}";
-      else
-        request << "LIMIT #{resultCount}";
+
+    if(firstResult && resultCount)
+      request << "LIMIT #{firstResult},#{resultCount}";
+    else 
+      if(resultCount)
+           request << "LIMIT #{resultCount}";
       end
     end
+    
     warning("Querying database : #{request}");
     req = @db.prepare(request);
     res = req.execute(:name => value).map(&Song.from_db);

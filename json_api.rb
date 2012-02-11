@@ -152,10 +152,33 @@ class JsonManager < HttpNode
         ch.previous();
       when "add_to_play_queue"
         ch.add_song(req["play_queue_index"], req["mid"])
+      when "add_search_to_play_queue" 
+        result = @library.secure_request("mid",
+                                         req["search_value"],
+                                         req["search_comparison"],
+                                         req["search_field"],
+                                         req["order_by"],
+                                         req["order_by_way"],
+                                         req["first_result"],
+                                         req["result_count"]);
+        if( "head" == req["play_queue_position"] )
+          i = 0;
+        else
+          i= nil;
+        end
+        result.each do |song|
+          if( i != nil )
+            ch.add_song( i,song.mid);
+            i = i + 1;
+          else
+            ch.add_song_tail(song.mid);
+          end
+        end
+
       when "remove_from_play_queue"
-        ch.del_song(req["play_queue_index"])
+        ch.del_song(req["play_queue_index"]);
       when "move_in_play_queue"
-        ch.move_song(req["play_queue_index"], req["new_play_queue_index"])
+        ch.move_song(req["play_queue_index"], req["new_play_queue_index"]);
       when "select_plugin"
         ch.set_plugin(req["plugin_name"]);
       else
@@ -175,12 +198,14 @@ class JsonManager < HttpNode
   end
 
   def parse_search(resp, req)
-    result = @library.secure_request(req["search_value"],
-                                    req["search_field"],
-                                    req["order_by"],
-                                    req["order_by_way"],
-                                    req["first_result"],
-                                    req["result_count"]);
+    result = @library.secure_request("mid,title,album,artist,duration",
+                                     req["search_value"],
+                                     req["search_comparison"],
+                                     req["search_field"],
+                                     req["order_by"],
+                                     req["order_by_way"],
+                                     req["first_result"],
+                                     req["result_count"]);
 
     songs = result.map { |song|
       { 
@@ -188,7 +213,7 @@ class JsonManager < HttpNode
         :artist   => song.artist,
         :title    => song.title,
         :album    => song.album,
-        :duration => 270
+        :duration => song.duration
       }
     }
     resp [:search_results] = {
@@ -197,6 +222,7 @@ class JsonManager < HttpNode
       :first_result   => req["first_result"],
       :result_count   => result.size(),
       :total_results  => @library.get_total(req["search_field"],
+                                       req["search_comparison"],
                                            req["search_value"]),
       :results        => songs
     };
