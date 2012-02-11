@@ -197,6 +197,7 @@ function updateJukebox ( update_timestamp ) {
             if (json.search_results != null && json.search_results != 'null') {
                 //    alert(json.search_results);
                 displaySearchResults(json.search_results);
+                ExpandCollection();
             }
 
             if (json.messages != null && json.messages != 'null') {
