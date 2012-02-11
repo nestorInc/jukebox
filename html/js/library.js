@@ -275,11 +275,13 @@ function displaySearchResults (server_results) {
         add_page_results += '<div style="position:relative;">';
         /* Add research to playqueue on tail*/
         add_page_results += '<a onclick="addSearchToPlayQueue(\'tail\',\''+ search.search_value + '\',\'' ;
+        add_page_results += search.search_comparison + '\', \'';
         add_page_results += search.search_field + '\', \'' + search.order_by;
         add_page_results += '\',\'up\',null,null,false);return false;" href="#"><span class="add_to_play_queue_bottom"></span></a>';
 
         /* Add research page song in the head playqueue */
         add_page_results += '<a onclick="addSearchToPlayQueue(\'head\',\''+ search.search_value + '\',\'';
+        add_page_results += search.search_comparison + '\', \'';
         add_page_results += search.search_field + '\', \'' +  search.order_by;
         add_page_results += '\',\'up\',null,null,false);return false;" href="#"><span class="add_to_play_queue_top"></span></a>';
         add_page_results += '</div><div style="background-color:#888888;">&nbsp;</div></li>';
