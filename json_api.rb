@@ -59,7 +59,7 @@ class JsonManager < HttpNode
   def parse(req, ch)
     resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
-        add_message(resp, MSG_LVL_ERROR, "JSON request not found");      
+        add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");      
     else
       begin
         json      = JSON.parse(req);
@@ -71,8 +71,7 @@ class JsonManager < HttpNode
           when "action"
               parse_action(resp, ch, value);
           else
-            add_message(resp, MSG_LVL_ERROR, "unknown command #{type}");
-            error("Unknown command #{type}", true, $error_file);
+            add_message(resp, MSG_LVL_ERROR, "unknown command #{type}", "Unknown command #{type}");
           end
         }
         # refresh
@@ -82,8 +81,7 @@ class JsonManager < HttpNode
           add_play_queue(resp, ch);
         end
       rescue JSON::ParserError => e
-        add_message(resp, MSG_LVL_ERROR, "fail to parse request");
-        error("Exception when parsing json request, #{e}")
+        add_message(resp, MSG_LVL_ERROR, "fail to parse request", "Exception when parsing json request, #{e}");
         debug(req);
       end
     end
