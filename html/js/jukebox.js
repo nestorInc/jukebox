@@ -310,10 +310,10 @@ function UpdateCurrentSong (delta_time) {
     if (current_song != null) {
         var song = '';
         song += '<a href="#" onclick="javascript:doSearch( 1, \'';
-        song += current_song.artist.replace(/'/g,"\\'").replace(/&/g,"\\&");
+        song += current_song.artist.replace(/'/g,"\\'");
         song += '\',\'equal\', \'artist\',' + search.result_count + ' )">' + current_song.artist + '</a> - ';
         song += '<a href="#" onclick="javascript:doSearch( 1, \'';
-        song +=  current_song.album.replace(/'/g,"\\'").replace(/&/g,"\\&");
+        song +=  current_song.album.replace(/'/g,"\\'");
         song += '\',\'equal\', \'album\',' + search.result_count + ' )">' + current_song.album + '</a> - ';
         song += current_song.title;
         $('player_song_title').update( song );
@@ -417,12 +417,12 @@ function DisplayPlayQueue () {
         html += '<div id="play_queue_song_' + currentPQSongIndex + '" class="play_queue_draggable">';
         html += '<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">';
         html += '<a href="#" onclick="javascript:doSearch( 1, \'';
-        html += song.artist.replace(/'/g,"\\'").replace(/&/g,"\\&");
+        html += song.artist.replace(/'/g,"\\'");
         html += '\',\'equal\', \'artist\',' + search.result_count + ' )">' + song.artist + '</a>';
         html +=' - ';
         html += '<a href="#" onclick="javascript:doSearch( 1, \'';
-        html += song.album.replace(/'/g,"\\'").replace(/&/g,"\\&");
-        html += +'\',\'equal\', \'album\',' + search.result_count + ' )">' + song.album  + '</a>';
+        html += song.album.replace(/'/g,"\\'");
+        html += '\',\'equal\', \'album\',' + search.result_count + ' )">' + song.album  + '</a>';
         html += ' - ';
         html += song.title + ' (' + FormatTime(song.duration) + ')</div>';
         html += '<a href="#" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', 0);return false;"><span class="play_queue_move_top"></span></a>';
