@@ -28,10 +28,11 @@ class JsonManager < HttpNode
       res = create_message(JsonManager::MSG_LVL_WARNING,
                                 "Unknown channel #{s.user}");
     else
-      query = CGI::unescape(req.data);
-      argv = query.split(/&/).map { |v|
-        v.split(/\=/);
-      };
+      argv = req.date.split("&").map() { |v|
+        v.split("=").map() { |v|
+          CGI.unescape(v);
+        }
+      }
       argv = Hash[argv];
       error(argv["query"]);
       res = parse(argv["query"], ch);
