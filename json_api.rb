@@ -2,7 +2,6 @@
 
 require 'json'
 require 'rev'
-
 require 'http.rb'
 require 'display.rb'
 
@@ -34,6 +33,7 @@ class JsonManager < HttpNode
         v.split(/\=/);
       };
       argv = Hash[argv];
+      error(argv["query"]);
       res = parse(argv["query"], ch);
     end
     rep.setData(res);
@@ -82,7 +82,7 @@ class JsonManager < HttpNode
         end
       rescue JSON::ParserError => e
         add_message(resp, MSG_LVL_ERROR, "fail to parse request", "Exception when parsing json request, #{e}");
-        debug(req);
+        error("Exception when parsing json request, #{e}");
       end
     end
 
@@ -152,7 +152,7 @@ class JsonManager < HttpNode
         ch.add_song(req["play_queue_index"], req["mid"])
       when "add_search_to_play_queue" 
         result = @library.secure_request("mid",
-                                         req["search_value"],
+                                         CGI::unescape(req["search_value"]),
                                          req["search_comparison"],
                                          req["search_field"],
                                          req["order_by"],
@@ -164,9 +164,10 @@ class JsonManager < HttpNode
         else
           i= nil;
         end
+
         result.each do |song|
           if( i != nil )
-            ch.add_song( i,song.mid);
+            ch.add_song(i, song.mid);
             i = i + 1;
           else
             ch.add_song_tail(song.mid);
@@ -196,8 +197,8 @@ class JsonManager < HttpNode
   end
 
   def parse_search(resp, req)
-    result = @library.secure_request("mid,title,album,artist,duration",
-                                     req["search_value"],
+    result = @library.secure_request(req["select_fields"],
+                                     CGI::unescapeHTML(req["search_value"]),
                                      req["search_comparison"],
                                      req["search_field"],
                                      req["order_by"],
@@ -215,10 +216,15 @@ class JsonManager < HttpNode
       }
     }
     resp [:search_results] = {
+      :identifier     => req["identifier"],
+      :select_fields  => req["select_fields"],
+      :search_value	  => CGI::unescapeHTML(req["search_value"]),
+      :search_comparison  => req["search_comparison"],
+      :search_field   => req["search_field"],
+      :result_count   => req["result_count"],
       :order_by       => req["order_by"],
       :order_by_way   => req["order_by_way"],
       :first_result   => req["first_result"],
-      :result_count   => result.size(),
       :total_results  => @library.get_total(req["search_field"],
                                        req["search_comparison"],
                                            req["search_value"]),

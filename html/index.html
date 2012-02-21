@@ -23,9 +23,10 @@
     <script type="text/javascript" src="js/lib/json2.js"></script>
     <script type="text/javascript" src="js/lib/prototype.js"></script>
     <script type="text/javascript" src="js/lib/scriptaculous.js?load=effects,dragdrop,slider"></script>
-
+    <script type="text/javascript" src="js/tabs.js"></script>
     <script type="text/javascript" src="js/library.js"></script>
     <script type="text/javascript" src="js/Sound.js"></script>
+    <script type="text/javascript" src="js/search.js"></script>
     <script type="text/javascript" src="js/StreamPlayer.js"></script>
     <script type="text/javascript" src="js/Notification.js"></script>
     <script type="text/javascript" src="js/jukebox.js"></script>
@@ -42,88 +43,86 @@
       <div id="header">
         canal : <input type="text" id="channel" value="beuiot" style="width: 70px;" />
         <button onclick="joinChannel();">Rejoindre</button>
- 	<a href="#" onclick="ExpandCollection(); return false;"><span id="expand_collection_button">&gt;</span></a>
-	<a href="#" onclick="CollapseCollection(); return false;"><span id="collapse_collection_button">&lt;</span></a>
-	<span id="activity_monitor"></span>
+        <a href="javascript:void(0);" onclick="ExpandCollection(); return false;"><span id="expand_collection_button">&gt;</span></a>
+        <a href="javascript:void(0);" onclick="CollapseCollection(); return false;"><span id="collapse_collection_button">&lt;</span></a>
+        <span id="activity_monitor"></span>
       </div>
       
       <div id="player">
-	<div id="player_controls">
-	  <a href="#" onclick="previousSong(); return false;"><span id="previous_button">&lt;</span></a>
-	  <a href="#" onclick="nextSong(); return false;"><span id="next_button">&gt;</span></a>
-	  <p id="player_song_title"></p>
+        <div id="player_controls">
+          <a href="javascript:void(0);" onclick="previousSong(); return false;"><span id="previous_button">&lt;</span></a>
+          <a href="javascript:void(0);" onclick="nextSong(); return false;"><span id="next_button">&gt;</span></a>
+          <p id="player_song_title"></p>
 
-	  <div id="progressbar_wrapper">
-	    <div id="progressbar">
-	    </div>
-	    <div id="progressbar_foreground">
-	    </div>
-	  </div>
-	  <p id="player_song_time"></p>
-	</div>
-	<div id="player_playlist">
-	  <div id="play_queue_content">
-	  </div>
-	</div>
+          <div id="progressbar_wrapper">
+            <div id="progressbar">
+            </div>
+            <div id="progressbar_foreground">
+            </div>
+          </div>
+          <p id="player_song_time"></p>
+        </div>
+        <div id="player_playlist">
+          <div id="play_queue_content">
+          </div>
+        </div>
       </div>
-      
       <div id="music_collection_wrapper">
-	<div id="collection_header">
-	  Rechercher : 
-	  <input type="text" id="search_input" />
- 	  <select id="search_field">
-	    <option value="artist">artiste</option>
-	    <option value="title">title</option>
-	    <option value="album">album</option>
-	  </select> 
- 	  <select id="results_per_page">
-	    <option value="10">10</option>
-	    <option value="20" SELECTED >20</option>
-	    <option value="30">30</option>
-	    <option value="40">40</option>
-	    <option value="50">50</option>
-	    <option value="60">60</option>
-	    <option value="70">70</option>
-	    <option value="80">80</option>
-	    <option value="90">90</option>
-	    <option value="100">100</option>
-	  </select> 
-
-	  <button onclick="doSearch();">Rechercher</button>
-	</div>
-	<div class="collection_pagelist"></div>
-	<div id="collection_content">
-	</div>
-	<div class="collection_pagelist"></div>
-      </div>
+        <div id="collection_header">
+          Rechercher : 
+          <input type="text" id="search_input" />
+          <select id="search_field">
+            <option value="artist">artiste</option>
+          <option value="title">title</option>
+          <option value="album">album</option>
+        </select> 
+        <select id="results_per_page">
+          <option value="10">10</option>
+          <option value="20" SELECTED >20</option>
+          <option value="30">30</option>
+          <option value="40">40</option>
+          <option value="50">50</option>
+          <option value="60">60</option>
+          <option value="70">70</option>
+          <option value="80">80</option>
+          <option value="90">90</option>
+          <option value="100">100</option>
+        </select> 
+        
+        <button onclick="doSearch();">Rechercher</button>
+        </div>
+        <div id="tabs">
+        </div>
+        <div id="tabscontent">
+        </div><!--End of tabscontent-->
+      </div><!--End of tabs-->
       
       <div id="footer">
-	<input type="button" value="Refresh" onclick="timestamp=0;updateJukebox();" />
-	<input type="checkbox" value="autorefresh" id="cb_autorefresh" checked/> autorefresh
-	<br />
-	<br />
-	Plugin :<input type="text" id="music_selection_plugin" value="default" style="width: 70px;" />
-	<input type="button" value="Appliquer" onclick="setSongSelectionPlugin();" />
+        <input type="button" value="Refresh" onclick="timestamp=0;updateJukebox();" />
+        <input type="checkbox" value="autorefresh" id="cb_autorefresh" checked/> autorefresh
+        <br />
+        <br />
+        Plugin :<input type="text" id="music_selection_plugin" value="default" style="width: 70px;" />
+        <input type="button" value="Appliquer" onclick="setSongSelectionPlugin();" />
       </div>
       
       
       <div id="play_stream">
-	    <a href="#" onclick="PlayStream(); return false;">Play stream</a>
+	    <a href="javascript:void(0);" onclick="PlayStream(); return false;">Play stream</a>
       </div>
       
       
       <div id="stop_stream">
-	    <a href="#" onclick="StopStream(); return false;">Stop stream</a>
+	    <a href="javascript:void(0);" onclick="StopStream(); return false;">Stop stream</a>
       </div>
-      
     </div>
     
     <div id="show_debug">
-      <a href="#" onclick="ShowDebug(true); return false;">Show debug</a>
+      <a href="javascript:void(0);" onclick="ShowDebug(true); return false;">Show debug</a>
     </div>
     
     <div id="hide_debug">
-      <a href="#" onclick="ShowDebug(false); return false;">Hide debug</a>
+      <a href="javascript:void(0);" onclick="ShowDebug(false); return false;">Hide debug</a>
     </div>
     
     <div id="debug_wrapper">
@@ -147,18 +146,18 @@
         <tr>
           <td>
             Query filler : <select id="custom_json_template_list" onchange="fillCustomJsonQuery();">
-              <option value="clear_form">clear_form</option>
-              <option value="dummy" selected="selected">--------</option>
-              <option value="">empty</option>
-              <option value="next">next</option>
-              <option value="previous">previous</option>
-              <option value="add_to_play_queue">add_to_play_queue</option>
-              <option value="remove_to_play_queue">remove_from_play_queue</option>
-              <option value="move_in_play_queue">move_in_play_queue</option>
-              <option value="join_channel">join_channel</option>
-              <option value="get_news">get_news</option>
-              <option value="search">search</option>
-            </select>
+            <option value="clear_form">clear_form</option>
+            <option value="dummy" selected="selected">--------</option>
+            <option value="">empty</option>
+            <option value="next">next</option>
+            <option value="previous">previous</option>
+            <option value="add_to_play_queue">add_to_play_queue</option>
+            <option value="remove_to_play_queue">remove_from_play_queue</option>
+            <option value="move_in_play_queue">move_in_play_queue</option>
+            <option value="join_channel">join_channel</option>
+            <option value="get_news">get_news</option>
+            <option value="search">search</option>
+          </select>
           </td>
           <td><input type="submit" onclick="checkAndSendJson();" value="send custom query"/></td>
         </tr>
@@ -169,7 +168,7 @@
 	    <div id="debug1">
 	      
 	    </div>
-	  </td><td width="50%">
+        </td><td width="50%">
 	    <div id="debug2">
 	      
 	    </div>

@@ -13,13 +13,25 @@ var search_results = new Object();
 search_results.total_results = 0;
 search_results.results = null;
 
+var default_search_fields = "artist, album, title, duration";
 var librarySongs = new Array();
 
-function doSearch ( page, search_value, search_comparison, search_field, result_count ) {
+function doSearch( page, identifier, select_fields,
+                   search_value, search_comparison, 
+                   search_field, order_by, order_by_way, result_count ) {
+    if( undefined == identifier || null == identifier || '' == identifier )
+        search.identifier = null;
+    else
+        search.identifier = identifier;
+
+    if( undefined == select_fields || null == select_fields || '' == select_fields )
+        search.select_fields="mid,title,album,artist,duration";
+    else
+        search.select_fields = select_fields;
+
     if( undefined == search_value || null == search_value ) { 
         search.search_value = $('search_input').value;
     } else {
-        $('search_input').value = search_value;
         search.search_value = search_value;
     }
 
@@ -32,7 +44,6 @@ function doSearch ( page, search_value, search_comparison, search_field, result_
     if( undefined == search_field || null == search_field ) { 
         search.search_field = $('search_field').value;
     } else {
-        $('search_field').value=search_field;
         search.search_field = search_field;
     }
 
@@ -47,8 +58,22 @@ function doSearch ( page, search_value, search_comparison, search_field, result_
     } else {
         search.first_result = page;
     }
+
+    if( undefined == order_by || null == order_by ) {
+        search.order_by="artist,album,title";
+    } else {
+        search.order_by = order_by;
+    }
+
+    if( undefined == order_by_way || null == order_by_way ) {
+        search.order_by_way="up";
+    } else {
+        search.order_by_way = order_by_way;
+    }
+
     search.search_value = search.search_value;
     query.search = search;
+
     updateJukebox();
 }
 
@@ -77,35 +102,6 @@ function addToPlayQueue(mid, play_queue_index) {
     updateJukebox();
 }
 
-function addSearchToPlayQueue(play_queue_position, search_value, search_comparison, search_field, order_by, order_by_way, first_result, result_count) {
-
-    var action = new Object();
-    action.name = "add_search_to_play_queue";
-    action.play_queue_position = play_queue_position;
-  
-    action.search_value = search_value ;
-    if( null == search_comparison ){
-        action.search_comparison = "like";
-    } else {
-        action.search_comparison = search_comparison
-    }
-
-    action.search_field = search_field ;
-    action.order_by = order_by ;
-    action.order_by_way = order_by_way;
-    action.first_result = first_result;
-    action.result_count = result_count;
-    query.action = action;
-    
-    updateJukebox();
-}
-
-
-function goToPage (page, search_value, search_comparison, search_field, result_count) {
-    doSearch((page - 1) * $('results_per_page').value, search_value, search_comparison, search_field, result_count);
-}
-
-
 function CleanupLibrary () {
     // Create all draggables, once update is done.                                                                           
     for (var i = 0; i < librarySongs.length; i++) {
@@ -113,242 +109,6 @@ function CleanupLibrary () {
     }
 }
 
-
-
-function sort_unique(arr) {
-    arr = arr.sort(function (a, b) { return a*1 - b*1; });
-    var ret = [arr[0]];
-    for (var i = 1; i < arr.length; i++) { 
-        if (arr[i-1] !== arr[i]) {
-            ret.push(arr[i]);
-        }
-    }
-    return ret;
-}
-
-function generatePagesLinks(currentPage, currentSelection, nbPages){
-    var pages = Array();
-    var threshold = 5;
-    var result = '';
-
-    if( nbPages > 25 ){
-        for( var i = 1; i < Math.ceil(threshold) + 2; ++i) {
-            if( i > 0 && i <= nbPages ){
-                pages.push(i);
-            }
-        }
-    } else {
-        for( var i=1; i<=nbPages ;++i){
-            pages.push(i);
-        }
-    }
-
-    /* If we want to add focus on another variable we juste to add an entry in this array*/ 
-    focusElements = Array();
-    focusElements[0] = currentPage;
-    /*focusElements[1] = currentSelection;*/
-    pages.push(currentSelection);
-    for( var k = 0; k < focusElements.length; ++k){
-        
-        var currentCount = Math.ceil(threshold/2);
-        for( var i = focusElements[k] - Math.ceil(threshold/2)  ; i < focusElements[k] ; ++i ){
-            if( i > 0 && i <= nbPages ){
-                currentCount--;
-                pages.push(i)
-            }
-        }
-
-        pages.push(focusElements[k]);
-        var currentCount2 = Math.ceil(threshold/2);
-        for( var i = focusElements[k] + 1 ; i < focusElements[k] + Math.ceil(threshold/2) +1 ; ++i ){
-            if( i > 0 && i <= nbPages ){
-                currentCount2--;
-                pages.push(i)
-            }
-        }
-        
-        /* Add missed before pages at the end of the array */
-        if( currentCount > 0 ){
-            for(var i = focusElements[k] + Math.ceil(threshold/2); i < focusElements[k] + Math.ceil(threshold); ++i){
-                if( i > 0 && i <= nbPages )
-                    pages.push(i);
-            }
-        } else if( currentCount2 > 0){
-            for(var i = focusElements[k] - Math.ceil(threshold); i < focusElements[k] + Math.ceil(threshold/2); ++i){
-                if( i > 0 && i <= nbPages)
-                    pages.push(i);
-            }
-        } 
-    }
-
-    for(var i = nbPages - Math.ceil(threshold) ; i <= nbPages; ++i){
-        if( i > 0 && i <= nbPages){
-            pages.push(i);
-        }
-    }
-    pages=sort_unique(pages);
-    var lastdisplayedValue = null;
-    for(var i=0; i < pages.length; ++i){
-                
-        if( lastdisplayedValue != null && lastdisplayedValue != pages[i] - 1){
-            result+= ".....";
-        }
-        result+= "<a href='#' onclick=\"javascript:goToPage(" + pages[i] + ", '" + search.search_value + "','" + search.search_comparison + "','" + search.search_field + "'," + search.result_count + " );\" class='";
-        if( pages[i] == currentPage ){
-            result+= "slider_link_current_page" ;
-        } else if( pages[i] == currentSelection ){
-            result+= "slider_link_current_selection" ;
-        } else {
-            result+= "slider_link" ;
-        }
-        result+= "'>" + pages[i] +"</a> ";
-        lastdisplayedValue = pages[i];
-    }
-
-    return result;
-}
-
-function displaySearchResults (server_results) {
-    search_results.total_results = server_results.total_results;
-    search_results.result_count = server_results.result_count;
-    
-    var page_count = Math.floor(server_results.total_results / $('results_per_page').value);
- 
-    if (server_results.total_results % $('results_per_page').value > 0) {
-	    page_count++;
-    }
-    
-    var current_page = Math.floor(server_results.first_result / $('results_per_page').value) + 1;
-
-    if( current_page > page_count ) {
-        current_page = 1;
-    }
-
-    var pagelist_html = '';
-    if( server_results.total_results > 0 ){
-        pagelist_html += '<p>'
-        if( page_count > 1 ){
-	        pagelist_html += '<div name="results_slider" class="slider"><div class="handle"></div></div>';
-        }
-	    pagelist_html += '<div class="page_links"></div>';
-        pagelist_html += '</p>';
-    }
-        
-
-    $$('div.collection_pagelist').each(function(s) {
-	    s.update(pagelist_html);
-    });
-
-//    var lastPQIndex = playQueueSongs.length;
- 
-    var songlist_html = '';
-
-    var addToPlayQueuemids = new Array();
-    if(server_results.total_results > 0) {
-        /* songlist_html += '<ul>';*/
-        var i = 0;
-        
-        librarySongs = server_results.results;
-        var grey_bg = false;
-        server_results.results.each(function(s) {
-            addToPlayQueuemids.push(s.mid);
-            var style = '';
-            if (grey_bg == true) {
-                style = 'background-color: #DEDEDE;';
-            }
-	        songlist_html += '<li id="library_li_' + i + '">';
-	        songlist_html += '<div id="library_song_' + i + '" style="position:relative;' + style + '" class="library_draggable">';
-	        songlist_html += '<a href="#" onclick="addToPlayQueue(' + s.mid + ',0);return false;"><span class="add_to_play_queue_top"></span></a>';
-	        songlist_html += '<a href="#" onclick="addToPlayQueueBottom(' + s.mid + ');return false;"><span class="add_to_play_queue_bottom"></span></a>';
-	        songlist_html += '<div id="library_handle_' + i + '">'
-            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.artist.replace(/'/g,"\\'") +'\', \'equal\',\'artist\',' + search.result_count + ' )">' + s.artist + '</a> - '
-            songlist_html += '<a href="#" onclick="javascript:doSearch( 1, \''+ s.album.replace(/'/g,"\\'") +'\', \'equal\',\'album\',' + search.result_count + ' )">' + s.album + '</a> - '
-            songlist_html += '' + s.title + '</div>';
-	        songlist_html += '</div></li>';
-	        i++;
-            grey_bg = !grey_bg;
-        });
-
-        /* Add links to add all research current page songs into playqueue */
-        var add_page_results = '';
-        add_page_results += '<li>';
-        add_page_results += '<div style="position:relative;">';
-        /* Add research to playqueue on tail*/
-        add_page_results += '<a onclick="addSearchToPlayQueue(\'tail\',\''+ search.search_value + '\',\'' ;
-        add_page_results += search.search_comparison + '\', \'';
-        add_page_results += search.search_field + '\', \'' + search.order_by;
-        add_page_results += '\',\'up\',null,null,false);return false;" href="#"><span class="add_to_play_queue_bottom"></span></a>';
-
-        /* Add research page song in the head playqueue */
-        add_page_results += '<a onclick="addSearchToPlayQueue(\'head\',\''+ search.search_value + '\',\'';
-        add_page_results += search.search_comparison + '\', \'';
-        add_page_results += search.search_field + '\', \'' +  search.order_by;
-        add_page_results += '\',\'up\',null,null,false);return false;" href="#"><span class="add_to_play_queue_top"></span></a>';
-        add_page_results += '</div><div style="background-color:#888888;">&nbsp;</div></li>';
-
-        songlist_html = '<ul>' + add_page_results + songlist_html + add_page_results + '</ul>';
-
-    } else {
-        songlist_html += "no results found";
-    }
-    $('collection_content').update(songlist_html);
-     
-    
-    // Create all draggables, once update is done.
-    for (var i = 0; i < librarySongs.length; i++) {
-	new Draggable('library_song_' + i, {
-	    scroll: window,
-	    revert: true,
-	    handle: 'library_handle_' + i
-	});
-    }
-
-    var resultsSlider = document.getElementsByName('results_slider');
-    var tab = Array();
-    var locked = Array()
-
-    /* fill the array for the slider range */
-    var pages = Array();
-    var timer;
-    for(var i = 0; i < page_count; ++i){
-        pages.push(i+1);
-    }
-
-    /* Init the link list */
-    $$('div.page_links').each(function(s) {
-	    s.update(generatePagesLinks(current_page, current_page, page_count));
-    });
-
-    /* Init each sliders */
-    for(var i = 0 ; i <  resultsSlider.length; i++ ){
-        tab[i] = new Control.Slider(resultsSlider[i].down('.handle'), resultsSlider[i], {
-            range: $R(1,pages.length),
-            values: pages,
-            sliderValue: current_page,
-            id:i,
-            timer:null,
-            onSlide: function(values){
-                $$('div.page_links').each(function(s) {
-	                s.update(generatePagesLinks(current_page, values, page_count));
-                });
-
-                for( var k in tab ){
-                    if ( k != this.id ){
-                        locked[k]=true;
-                        if(typeof tab[k].setValue === 'function') {
-                            tab[k].setValue(values);
-                        }
-                        locked[k]=false;
-                    }
-                }
-            },
-            onChange: function(values){
-                if( ! locked[this.id] )
-                    goToPage(values);
-            }
-        });
-    }
-}
 
 function checkAndSendJson () {
 

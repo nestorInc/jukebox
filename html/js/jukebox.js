@@ -19,12 +19,23 @@ var refreshSongTimeTimer = null;
 var refreshFrequency = 100;
 var lastCurrentSongElapsedTimeUpdate = null;
 
+var tabs = new tabs('tab');
+
 function jsonPrettyPrint (input) {
     var json_hr = JSON.stringify(input, null, "\t");
     json_hr = json_hr.replace(/\n/g, '<br />');
     json_hr = json_hr.replace(/\t/g, ' &nbsp;&nbsp; ');
     return json_hr;
 }
+
+function FormatTime (t) {
+    t = Number(t);
+    var h = Math.floor(t / 3600);
+    var m = Math.floor(t % 3600 / 60);
+    var s = Math.floor(t % 3600 % 60);
+    return ((h > 0 ? h + ":" : "") + (m > 0 ? (h > 0 && m < 10 ? "0" : "") + m + ":" : "0:") + (s < 10 ? "0" : "") + s);
+}
+
 
 function setActivityMonitor(status) {
     var color = 'green';
@@ -195,8 +206,20 @@ function updateJukebox ( update_timestamp ) {
             }
             
             if (json.search_results != null && json.search_results != 'null') {
-                //    alert(json.search_results);
-                displaySearchResults(json.search_results);
+                // The caller must be tabs : ex tabs.displaySearchResults(json.search)
+                // create a new searchTab
+                if(undefined == json.search_results.identifier || 
+                   null == json.search_results.identifier){
+                    // Adds the new created tab to the tabs container
+                    var searchTab = new SearchTab(json.search_results);
+                    tabs.addTab(searchTab);
+                } else {
+                    // If the user send a search query with an identifier he wants to update the tab content so we refresh the displayed 
+                    // results
+                    tabs.getTabFromUniqueId(json.search_results.identifier).updateNewSearchInformations(json.search_results);
+                    tabs.getTabFromUniqueId(json.search_results.identifier).updateContent();
+                }
+                // A new search could be initiated form the left pannel so we must automatically expand the right pannel
                 ExpandCollection();
             }
 
@@ -228,38 +251,6 @@ function updateJukebox ( update_timestamp ) {
     });
 }
 
-function formatSecondsToString(secs){
-    var hours = Math.floor(secs / (60 * 60));
-   
-    var divisor_for_minutes = secs % (60 * 60);
-    var minutes = Math.floor(divisor_for_minutes / 60);
- 
-    var divisor_for_seconds = divisor_for_minutes % 60;
-    var seconds = Math.ceil(divisor_for_seconds);
-
-
-    var result = '';
-    if( hours > 0 ){
-        result += hours.toString() + ":";
-        if(minutes < 10){
-            result += '0';
-        }
-        result += minutes.toString() + ":";
-        if(seconds < 10) {
-            result += '0';
-        }
-        result += seconds.toString();
-    } else if ( minutes > 0 ){
-        result += minutes.toString() + ":";
-        if(seconds < 10) {
-            result += '0';
-        }
-        result += seconds.toString();
-    } else {
-        result += seconds.toString() + "s";
-    }
-    return result;
-}
 
 
 function updateSongTimeRefresh(){
@@ -289,7 +280,7 @@ function updateSongTimeRefresh(){
             width: percent + '%'
         });
 
-        $('player_song_time').update(formatSecondsToString(currentSongElapsedTime) + "/" + formatSecondsToString(current_song.total_time));
+        $('player_song_time').update(FormatTime(currentSongElapsedTime) + "/" + FormatTime(current_song.total_time));
     }
     lastCurrentSongElapsedTime = currentSongElapsedTime;
 }
@@ -309,15 +300,17 @@ function UpdateCurrentSongTime (delta_time) {
 function UpdateCurrentSong (delta_time) {
     if (current_song != null) {
         var song = '';
-        song += '<a href="#" onclick="javascript:doSearch( 1, \'';
+        song += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         song += current_song.artist.replace(/'/g,"\\'");
-        song += '\',\'equal\', \'artist\',' + search.result_count + ' )">' + current_song.artist + '</a> - ';
-        song += '<a href="#" onclick="javascript:doSearch( 1, \'';
+        song += '\',\'equal\', \'artist\',\'artist,album,title\',\'up\',' + search.result_count + ' )">' + current_song.artist + '</a> - ';
+        song += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         song +=  current_song.album.replace(/'/g,"\\'");
-        song += '\',\'equal\', \'album\',' + search.result_count + ' )">' + current_song.album + '</a> - ';
+        song += '\',\'equal\', \'album\',\'artist,album,title\',\'up\',' + search.result_count + ' )">' + current_song.album + '</a> - ';
         song += current_song.title;
         $('player_song_title').update( song );
         UpdateCurrentSongTime (0);
+        /* force refresh */
+        updateSongTimeRefresh();
     }
 }
 
@@ -405,7 +398,7 @@ function DisplayPlayQueue () {
     var html = '';
     html += '<ul>';
     html += '<li id="play_queue_li_first" class="droppable">Play queue';
-    html += '<a href="#" onclick="PlayQueueDelete();"><span class="play_queue_delete"></span></a>';
+    html += '<a href="javascript:void(0)" onclick="PlayQueueDelete();"><span class="play_queue_delete"></span></a>';
     html += '</li>';
 
     var currentPQSongIndex = 0;
@@ -416,18 +409,18 @@ function DisplayPlayQueue () {
         html += '<li id="play_queue_li_' + currentPQSongIndex + '" class="droppable">';
         html += '<div id="play_queue_song_' + currentPQSongIndex + '" class="play_queue_draggable">';
         html += '<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">';
-        html += '<a href="#" onclick="javascript:doSearch( 1, \'';
+        html += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         html += song.artist.replace(/'/g,"\\'");
-        html += '\',\'equal\', \'artist\',' + search.result_count + ' )">' + song.artist + '</a>';
+        html += '\',\'equal\', \'artist\',\'artist,album,title\',\'up\',20 )">' + song.artist + '</a>';
         html +=' - ';
-        html += '<a href="#" onclick="javascript:doSearch( 1, \'';
+        html += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         html += song.album.replace(/'/g,"\\'");
-        html += '\',\'equal\', \'album\',' + search.result_count + ' )">' + song.album  + '</a>';
+        html += '\',\'equal\', \'album\',\'artist,album,title\',\'up\',20)">' + song.album  + '</a>';
         html += ' - ';
         html += song.title + ' (' + FormatTime(song.duration) + ')</div>';
-        html += '<a href="#" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', 0);return false;"><span class="play_queue_move_top"></span></a>';
-        html += '<a href="#" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', ' + lastPQIndex + ');return false;"><span class="play_queue_move_bottom"></span></a>';
-        html += '<a href="#" onclick="PlayQueueDelete(1,' + currentPQSongIndex + ');return false;"><span class="play_queue_delete"></span></a></span></a>';
+        html += '<a href="javascript:void(0)" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', 0);return false;"><span class="play_queue_move_top"></span></a>';
+        html += '<a href="javascript:void(0)" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', ' + lastPQIndex + ');return false;"><span class="play_queue_move_bottom"></span></a>';
+        html += '<a href="javascript:void(0)" onclick="PlayQueueDelete(1,' + currentPQSongIndex + ');return false;"><span class="play_queue_delete"></span></a></span></a>';
 
         html += '</div></li>';
 
@@ -509,10 +502,3 @@ function MakePlayQueueSongDroppable (droppable_id) {
     });
 }
 
-function FormatTime (t) {
-    t = Number(t);
-    var h = Math.floor(t / 3600);
-    var m = Math.floor(t % 3600 / 60);
-    var s = Math.floor(t % 3600 % 60);
-    return ((h > 0 ? h + ":" : "") + (m > 0 ? (h > 0 && m < 10 ? "0" : "") + m + ":" : "0:") + (s < 10 ? "0" : "") + s);
-}
