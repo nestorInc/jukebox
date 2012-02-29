@@ -28,7 +28,7 @@ class JsonManager < HttpNode
       res = create_message(JsonManager::MSG_LVL_WARNING,
                                 "Unknown channel #{s.user}");
     else
-      argv = req.date.split("&").map() { |v|
+      argv = req.data.split("&").map() { |v|
         v.split("=").map() { |v|
           CGI.unescape(v);
         }
