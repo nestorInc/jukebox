@@ -264,7 +264,7 @@ var SearchTab = Class.create(Tab, {
                 identifier:currentIdentifier,
                 onSlide: function(values){
                     $$('[name=page_links_' + this.identifier + ']').each(function(s) {
-	                    s.update(generatePagesLinks(this.getIdentifier(), current_page, values, page_count));
+	                    s.update(generatePagesLinks(this.identifier, current_page, values, page_count));
                     });
                     
                     for( var k in tab ){
