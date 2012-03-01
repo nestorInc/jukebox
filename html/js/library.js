@@ -1,7 +1,8 @@
 var results_per_page = 10;
-
-var searches = new Array();
+var default_search_fields = "artist, album, title, duration";
+var librarySongs = new Array();
 var search = new Object();
+var search_results = new Object();
 search.order_by = 'artist';
 search.order_by_way = 'up';
 search.search_value = '';
@@ -9,12 +10,8 @@ search.search_comparison = 'like';
 search.search_field = '';
 search.first_result = 0;
 search.result_count = results_per_page;
-var search_results = new Object();
 search_results.total_results = 0;
 search_results.results = null;
-
-var default_search_fields = "artist, album, title, duration";
-var librarySongs = new Array();
 
 function doSearch( page, identifier, select_fields,
                    search_value, search_comparison, 

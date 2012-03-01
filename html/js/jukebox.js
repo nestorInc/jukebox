@@ -206,7 +206,6 @@ function updateJukebox ( update_timestamp ) {
             }
             
             if (json.search_results != null && json.search_results != 'null') {
-                // The caller must be tabs : ex tabs.displaySearchResults(json.search)
                 // create a new searchTab
                 if(undefined == json.search_results.identifier || 
                    null == json.search_results.identifier){
@@ -219,7 +218,7 @@ function updateJukebox ( update_timestamp ) {
                     tabs.getTabFromUniqueId(json.search_results.identifier).updateNewSearchInformations(json.search_results);
                     tabs.getTabFromUniqueId(json.search_results.identifier).updateContent();
                 }
-                // A new search could be initiated form the left pannel so we must automatically expand the right pannel
+                // A new search could be initiated from the left pannel so we must automatically expand the right pannel
                 ExpandCollection();
             }
 
@@ -483,8 +482,9 @@ function MakePlayQueueSongDroppable (droppable_id) {
                     DisplayPlayQueue();
                 }
             } else if (dragged.hasClassName("library_draggable")) {
-                var library_index = parseInt(dragged.id.substring(13));
-                var song = librarySongs[library_index];
+                var tab_index = dragged.id.replace(/.*_([^_]*_[^_]*)_[0-9]*/,"$1");
+                var old_index = parseInt(dragged.id.replace(/.*_[^_]*_[^_]*_([0-9]*)/,"$1"));
+                var song = tabs.getTabFromUniqueId(tab_index).server_results[old_index];
                 var song_mid = song.mid;
                 
                 var play_queue_index = -1;

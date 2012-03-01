@@ -210,7 +210,7 @@ var SearchTab = Class.create(Tab, {
         var resultsSlider = null;
 
         /* Sliders */
-        var tab = new Array();
+        var sliders = new Array();
         var locked = new Array();
         var pages = new Array();
 
@@ -256,7 +256,7 @@ var SearchTab = Class.create(Tab, {
         // Init each sliders behavior
         resultsSlider = document.getElementsByName('results_slider_' + this.getIdentifier() );
         for(var i = 0 ; i <  resultsSlider.length; i++ ){
-            tab[i] = new Control.Slider(resultsSlider[i].down('.handle'), resultsSlider[i], {
+            sliders[i] = new Control.Slider(resultsSlider[i].down('.handle'), resultsSlider[i], {
                 range: $R(1,pages.length),
                 values: pages,
                 sliderValue: current_page,
@@ -267,15 +267,15 @@ var SearchTab = Class.create(Tab, {
 	                    s.update(generatePagesLinks(this.identifier, current_page, values, page_count));
                     });
                     
-                    for( var k in tab ){
+                    for( var k in sliders ){
                         if ( k != this.id ){
                             locked[k]=true;
                             /* Update others sliders values by setting value with the current slider sliding value*/
-                            if(typeof tab[k].setValue === 'function') {
+                            if(typeof sliders[k].setValue === 'function') {
                                 /* Caution this instruction fire onChange slider event */
                                 /* TODO replace hand made locks with disable onChange event */
                                 /*      it will be easier to read code and also more efficient */
-                                tab[k].setValue(values);
+                                sliders[k].setValue(values);
                             }
                             locked[k]=false;
                         }

@@ -34,7 +34,6 @@ class JsonManager < HttpNode
         }
       }
       argv = Hash[argv];
-      error(argv["query"]);
       res = parse(argv["query"], ch);
     end
     rep.setData(res);
