@@ -218,7 +218,7 @@ var SearchTab = Class.create(Tab, {
         var current_page = 0;
         
         /* Gets the number of pages */
-        page_count = Math.floor((this.total_results / this.result_count));
+        page_count = Math.floor( this.total_results / this.result_count);
         if( this.total_results % this.result_count > 0  )
             page_count = page_count + 1;
 
@@ -234,7 +234,7 @@ var SearchTab = Class.create(Tab, {
             if( page_count > 1 ){
 	            pagelist_html += '<div name="results_slider_' + this.getIdentifier() + '"';
                 pagelist_html += ' class="slider"><div class="handle"></div></div>';
-	            pagelist_html += '<div name="page_links_' + this.getIdentifier() + '"></div>';
+	            pagelist_html += '<div class="page_links" name="page_links_' + this.getIdentifier() + '"></div>';
             }
             pagelist_html += '</p>';
         }

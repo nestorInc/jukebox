@@ -462,3 +462,7 @@ a.slider_link {  }
 span.tab_delete {
     background: url("../images/icons/play_queue_delete.png") no-repeat left top;
 }
+
+#page_links{
+    text-align: center;
+}
