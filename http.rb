@@ -62,6 +62,7 @@ class HttpRequest
     # parse response line
     request_line = lines.shift(1)[0];
     method, page, proto = request_line.split(/[ \t]/);
+    return nil if(proto == nil);
     # decode header options
     options = {}
     lines.each { |l|
