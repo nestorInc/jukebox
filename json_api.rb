@@ -143,6 +143,7 @@ class JsonManager < HttpNode
   end
 
   def forward_action(req, ch)
+      resp = { :timestamp => Time.now.to_i() };
       case(req["name"])
       when "next"
         ch.next();
