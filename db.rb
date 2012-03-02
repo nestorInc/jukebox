@@ -160,7 +160,10 @@ class Library
   end
 
   def request(fieldsSelection, value, field, orderBy, orderByWay, firstResult, resultCount)
-    request  = "SELECT " + fieldsSelection + " FROM library WHERE status=#{FILE_OK} ";
+    if( fieldsSelection )
+      request  = "SELECT " + fieldsSelection + " FROM library WHERE status=#{FILE_OK} ";
+    else
+      request  = "SELECT * FROM library WHERE status=#{FILE_OK} ";
     request << "AND #{field} LIKE  :name " if(field != nil);
     if(orderBy != nil)
       request << "ORDER BY #{orderBy} ";
