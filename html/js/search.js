@@ -218,10 +218,10 @@ var SearchTab = Class.create(Tab, {
         var current_page = 0;
         
         /* Gets the number of pages */
-        page_count = Math.floor((this.total_results / this.result_count));
+        page_count = Math.ceil((this.total_results / this.result_count));
 
         /* Gets the current page number */
-        current_page = Math.floor(this.first_result / this.result_count + 1);
+        current_page = Math.ceil(this.first_result / this.result_count);
         if( current_page > page_count ) {
             current_page = 1;
         }
