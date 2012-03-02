@@ -142,7 +142,7 @@ class Channel
       extend Plugin
       log("Loading default plugin for songs selection")
       true;
-    rescue => e
+    rescue LoadError=> e
       error("Error to load plugin #{name}", true, $error_file);
       false;
     end
