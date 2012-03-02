@@ -164,6 +164,7 @@ class Library
       request  = "SELECT " + fieldsSelection + " FROM library WHERE status=#{FILE_OK} ";
     else
       request  = "SELECT * FROM library WHERE status=#{FILE_OK} ";
+    end
     request << "AND #{field} LIKE  :name " if(field != nil);
     if(orderBy != nil)
       request << "ORDER BY #{orderBy} ";
