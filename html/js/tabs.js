@@ -22,6 +22,15 @@ var tabs = Class.create({
         return -1;
     },
     
+    getFirstTabIdentifierByClassName : function( tabClassName ){
+        for(var i=0; i<this.tabs.length; ++i){
+            if( undefined != this.tabs[i].unique && this.tabs[i].unique == tabClassName ){
+                return this.tabs[i].identifier;
+            }
+        }
+        return null;
+    },
+
     //Add the tab in the html layout and in the tabs Array in javascript*/
     addTab : function(tab){
         var tabContentContainer = '';
@@ -40,7 +49,7 @@ var tabs = Class.create({
 
         // init html containers
         if( 1 == this.tabs.length ){
-            $('tabs').update('<ul id="tabs_list"><ul>');
+            $('tabsHeader').update('<ul id="tabs_list"></ul>');
         }
 
         // Add tab Header

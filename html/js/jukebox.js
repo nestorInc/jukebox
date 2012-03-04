@@ -144,7 +144,6 @@ function updateJukebox ( update_timestamp ) {
     $('debug1').update('<h2>Data sent</h2><p>' + jsonPrettyPrint(query) + '</p>');
     $('debug2').update('<h2>Waiting for response...</h2>');
     // cleanup query
-
     query = new Object();
 
     new Ajax.Request(url, {
@@ -177,7 +176,7 @@ function updateJukebox ( update_timestamp ) {
             
             if (json.current_song != null) {
                 current_song = json.current_song;
-                /* Get refreshDate*/
+                /* Get refreshDate */
                 refreshSongTimeFromAjaxRequestDatetime = new Date().getTime() / 1000;
                 UpdateCurrentSong(0);
             }
@@ -500,5 +499,27 @@ function MakePlayQueueSongDroppable (droppable_id) {
             }
         }
     });
+}
+
+function addOrSelectUploadTab() {
+    var identifier = tabs.getFirstTabIdentifierByClassName("UploadTab");
+    if( identifier != null){
+        tabs.toggleTab(identifier);
+    } else {
+        tabs.addTab(new uploadTab('Uploader','Uploader'));
+    }
+}
+
+
+function addOrSelectDebugTab() {
+
+}
+
+function addOrSelectNotificationsTab() {
+
+}
+
+function addOrSelectCuctomQueriesTab() {
+
 }
 

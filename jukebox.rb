@@ -17,6 +17,7 @@ require 'channel.rb'
 require 'encode.rb'
 require 'db.rb'
 require 'json_api.rb'
+require 'upload.rb'
 require 'basic_api.rb'
 require 'web_debug.rb'
 
@@ -52,9 +53,9 @@ Thread.new() {
 
 
 # Create HTTP server
-
 json   = JsonManager.new(channelList, library);
 basic  = BasicApi.new(channelList);
+upload = UploadManager.new();
 debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
 stream = Stream.new(channelList, library);
@@ -68,6 +69,7 @@ main.addAuth() { |s, req, user, pass|
 
 root = HttpRootNode.new({ "/api/json" => json,
                           "/api"      => basic,
+                          "/upload"   => upload,
                           "/"         => main,
                           "/stream"   => stream});
 #                          "/debug"    => debug,

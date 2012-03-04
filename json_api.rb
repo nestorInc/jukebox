@@ -69,7 +69,7 @@ class JsonManager < HttpNode
           when "search"
             parse_search(resp, value);
           when "action"
-              parse_action(resp, ch, value);
+            parse_action(resp, ch, value);
           else
             add_message(resp, MSG_LVL_ERROR, "unknown command #{type}", "Unknown command #{type}");
           end

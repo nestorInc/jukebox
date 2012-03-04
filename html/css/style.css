@@ -436,29 +436,31 @@ a.slider_link_current_selection { color:#00ff00; }
 a.slider_link {  }
 
 /* tabs */
-#tabs{
+#tabsHeader{
     margin-left: 4px;
     padding: 0;
     padding-left: 5px;
+    display:inline-block;
 }
-#tabs ul{
+#tabsHeader ul{
     font: bold 11px Arial, Verdana, sans-serif;
     list-style:none;
 }
-#tabs li{
+#tabsHeader li{
     display:inline;
 }
-#tabs a{
+#tabsHeader a{
     text-decoration:none;
 }
-#tabs a span{
+#tabsHeader a span{
     float:left;
     display:block;}
-#tabs a span{}
-#tabs a:hover{background-color: #7E94B9;color: white;}
-#tabs a:hover span{background-color: #7E94B9;}
+#tabsHeader a:hover{background-color: #7E94B9;color: white;}
+#tabsHeader a:hover span{background-color: #7E94B9;}
 .tabHeaderActive span, .tabHeaderActive a { background-color: #42577B; color:#fff;}
-.tabContent {}
+#tabscontent {
+    position:relative;
+}
 span.tab_delete {
     background: url("../images/icons/play_queue_delete.png") no-repeat left top;
 }
