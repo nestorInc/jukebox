@@ -49,7 +49,6 @@ function setActivityMonitor(status) {
 }
 
 function initJukebox () {
-    ShowDebug(false);
     CollapseCollection();
     setActivityMonitor(false);
     last_time = new Date().getTime() / 1000;
@@ -63,6 +62,7 @@ function initJukebox () {
     });
     
     updateJukebox();
+
     initNotifications();
 }
 
@@ -139,13 +139,16 @@ function updateJukebox ( update_timestamp ) {
     if( false != update_timestamp ) 
         query.timestamp = timestamp;
 
+
+    var identifier = tabs.getFirstTabIdentifierByClassName("debugTab");
+    if( identifier != null){
+        tabs.getTabFromUniqueId(identifier).updateSendingQuery(query);
+    }
+
     var query_json = Object.toJSON(query);
 
-    $('debug1').update('<h2>Data sent</h2><p>' + jsonPrettyPrint(query) + '</p>');
-    $('debug2').update('<h2>Waiting for response...</h2>');
     // cleanup query
     query = new Object();
-
     new Ajax.Request(url, {
         method:'post',
         parameters: {query: query_json},
@@ -163,17 +166,17 @@ function updateJukebox ( update_timestamp ) {
                 query_timer = setTimeout("updateJukebox();", 3000);
             }
 
-            if (response.responseText == null || response.responseText == '') {
-                sending_query = false;
-                $('debug2').update('<img src="images/server_down.jpg" />');
-            } else {
-                $('debug2').update('<h2>Data received</h2><p>' + response.responseText + '</p>');
-                $('debug2').update('<h2>Data received</h2><p> ' + response.responseText + '</p><h2>JSON response : </h2><p>' + jsonPrettyPrint(response.responseText.evalJSON()) + '</p>');
-
+            var identifier = tabs.getFirstTabIdentifierByClassName("debugTab");
+            if( identifier != null){
+                tabs.getTabFromUniqueId(identifier).updateResponse(response);
             }
 
             var json = response.responseText.evalJSON();
-            
+
+            if (response.responseText == null || response.responseText == '') {
+                sending_query = false;
+            }
+
             if (json.current_song != null) {
                 current_song = json.current_song;
                 /* Get refreshDate */
@@ -210,7 +213,12 @@ function updateJukebox ( update_timestamp ) {
                    null == json.search_results.identifier){
                     // Adds the new created tab to the tabs container
                     var searchTab = new SearchTab(json.search_results);
-                    tabs.addTab(searchTab);
+                    id = tabs.addTab(searchTab);
+                    if( undefined != json.search_results["select"] &&
+                        null != json.search_results["select"] &&
+                        'true' == json.search_results["select"]){
+                        tabs.toggleTab(id);
+                    }
                 } else {
                     // If the user send a search query with an identifier he wants to update the tab content so we refresh the displayed 
                     // results
@@ -238,10 +246,12 @@ function updateJukebox ( update_timestamp ) {
                       }*/
         }, 
         onFailure: function(response) {
-            $('debug2').update('<img src="images/server_down.jpg" />');
-            //          alert('FAILURE');
+            var identifier = tabs.getFirstTabIdentifierByClassName("debugTab");
+            if( identifier != null){
+                tabs.getTabFromUniqueId(identifier).updateResponse(null);
+            }
+            
             sending_query = false;
-            $('debug').update('échec');
         },
         onComplete: function(response) {
             //$('debug').update(response.getAllHeaders());
@@ -300,27 +310,15 @@ function UpdateCurrentSong (delta_time) {
         var song = '';
         song += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         song += current_song.artist.replace(/'/g,"\\'");
-        song += '\',\'equal\', \'artist\',\'artist,album,title\',\'up\',' + search.result_count + ' )">' + current_song.artist + '</a> - ';
+        song += '\',\'equal\', \'artist\',\'artist,album,title\',\'up\',' + search.result_count + ', \'false\' )">' + current_song.artist + '</a> - ';
         song += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         song +=  current_song.album.replace(/'/g,"\\'");
-        song += '\',\'equal\', \'album\',\'artist,album,title\',\'up\',' + search.result_count + ' )">' + current_song.album + '</a> - ';
+        song += '\',\'equal\', \'album\',\'artist,album,title\',\'up\',' + search.result_count + ' ), \'false\'">' + current_song.album + '</a> - ';
         song += current_song.title;
         $('player_song_title').update( song );
         UpdateCurrentSongTime (0);
         /* force refresh */
         updateSongTimeRefresh();
-    }
-}
-
-function ShowDebug(show) {
-    if (show == true) {
-        $('debug_wrapper').show();
-        $('show_debug').hide();
-        $('hide_debug').show();
-    } else {
-        $('debug_wrapper').hide();
-        $('show_debug').show();
-        $('hide_debug').hide();
     }
 }
 
@@ -409,11 +407,11 @@ function DisplayPlayQueue () {
         html += '<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">';
         html += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         html += song.artist.replace(/'/g,"\\'");
-        html += '\',\'equal\', \'artist\',\'artist,album,title\',\'up\',20 )">' + song.artist + '</a>';
+        html += '\',\'equal\', \'artist\',\'artist,album,title\',\'up\',20, \'false\' )">' + song.artist + '</a>';
         html +=' - ';
         html += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         html += song.album.replace(/'/g,"\\'");
-        html += '\',\'equal\', \'album\',\'artist,album,title\',\'up\',20)">' + song.album  + '</a>';
+        html += '\',\'equal\', \'album\',\'artist,album,title\',\'up\',20, \'false\')">' + song.album  + '</a>';
         html += ' - ';
         html += song.title + ' (' + FormatTime(song.duration) + ')</div>';
         html += '<a href="javascript:void(0)" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', 0);return false;"><span class="play_queue_move_top"></span></a>';
@@ -506,20 +504,35 @@ function addOrSelectUploadTab() {
     if( identifier != null){
         tabs.toggleTab(identifier);
     } else {
-        tabs.addTab(new uploadTab('Uploader','Uploader'));
+        tabs.toggleTab(tabs.addTab(new uploadTab('Uploader','Uploader')));
     }
 }
 
 
 function addOrSelectDebugTab() {
-
+    var identifier = tabs.getFirstTabIdentifierByClassName("debugTab");
+    if( identifier != null){
+        tabs.toggleTab(identifier);
+    } else {
+        tabs.toggleTab(tabs.addTab(new debugTab('Debug','Debug')));
+    }
 }
 
-function addOrSelectNotificationsTab() {
-
+function addOrSelectNotificationTab() {
+    var identifier = tabs.getFirstTabIdentifierByClassName("notificationTab");
+    if( identifier != null){
+        tabs.toggleTab(identifier);
+    } else {
+        tabs.toggleTab(tabs.addTab(new notificationTab('Notifications','Notifications')));
+    }
 }
 
-function addOrSelectCuctomQueriesTab() {
-
+function addOrSelectCustomQueriesTab() {
+    var identifier = tabs.getFirstTabIdentifierByClassName("customQueriesTab");
+    if( identifier != null){
+        tabs.toggleTab(identifier);
+    } else {
+        tabs.toggleTab(tabs.addTab(new customQueriesTab('Custom queries','Custom queries')));
+    }
 }
 

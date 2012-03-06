@@ -28,13 +28,19 @@ class JsonManager < HttpNode
       res = create_message(JsonManager::MSG_LVL_WARNING,
                                 "Unknown channel #{s.user}");
     else
-      argv = req.data.split("&").map() { |v|
-        v.split("=").map() { |v|
-          CGI.unescape(v);
+      if( nil != req and nil != req.data)
+        argv = req.data.split("&").map() { |v|
+          v.split("=").map() { |v|
+            CGI.unescape(v);
+          }
         }
-      }
-      argv = Hash[argv];
-      res = parse(argv["query"], ch);
+        argv = Hash[argv];
+        res = parse(argv["query"], ch);
+      else
+        res = create_message(JsonManager::MSG_LVL_ERROR,
+                             "HttpRequest not well formed");
+        
+      end
     end
     rep.setData(res);
     s.write(rep.to_s);
@@ -218,6 +224,7 @@ class JsonManager < HttpNode
     }
     resp [:search_results] = {
       :identifier     => req["identifier"],
+      :select         => req["select"],
       :select_fields  => req["select_fields"],
       :search_value	  => CGI::unescapeHTML(req["search_value"]),
       :search_comparison  => req["search_comparison"],

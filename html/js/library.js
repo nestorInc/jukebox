@@ -10,11 +10,17 @@ search.first_result = 0;
 
 function doSearch( page, identifier, select_fields,
                    search_value, search_comparison, 
-                   search_field, order_by, order_by_way, result_count ) {
+                   search_field, order_by, order_by_way, result_count, select ) {
     if( undefined == identifier || null == identifier || '' == identifier )
         search.identifier = null;
     else
         search.identifier = identifier;
+
+    if( undefined == select || null == select ) {
+        search.select="true";
+    } else {
+        search.select = select;
+    }
 
     if( undefined == select_fields || null == select_fields || '' == select_fields )
         search.select_fields="mid,title,album,artist,duration";

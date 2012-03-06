@@ -80,6 +80,8 @@ var tabs = Class.create({
 
         // start to init static tab content
         tab.updateContent();
+
+        return tab.identifier;
     },
 
     removeTab : function(identifier){

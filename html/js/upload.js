@@ -8,15 +8,14 @@ var uploadTab = Class.create(Tab, {
     },
 
     updateContent : function( ){
-        var upload_form ='';
-        upload_form += '';
+        var upload_form = '';
         upload_form += '<div id="file-uploader' + this.identifier +'">';
         upload_form += '<div class="qq-uploader">';
         upload_form += '<div class="qq-upload-drop-area" style="display: none;">';
         upload_form += '<span>Drop files here to upload</span>';
         upload_form += '</div>';
         upload_form += '<div class="qq-upload-button" style="position: relative; overflow: hidden; direction: ltr;">';
-        upload_form += 'Upload a file';
+        upload_form += 'Upload files';
         upload_form += '<input type="file" multiple="multiple" name="file"';
         upload_form += 'style="position:absolute; right:0pt; top:0pt; font-family:Arial; font-size:118px; margin:0pt; padding:0pt; cursor:pointer; opacity:0;">';
         upload_form += '</div>';
