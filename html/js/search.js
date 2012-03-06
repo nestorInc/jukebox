@@ -105,6 +105,14 @@ var SearchTab = Class.create(Tab, {
         // Search parameters 
         this.identifier = server_results.identifier;
         this.updateNewSearchInformations(server_results);
+
+        this.reloadControlers = true;
+        this.pages = new Array();
+        this.resultsSlider = null;
+
+        /* Sliders */
+        this.sliders = new Array();
+        this.locked = new Array();
     },
 
     updateNewSearchInformations : function( server_results ){
@@ -114,7 +122,6 @@ var SearchTab = Class.create(Tab, {
         } else if ( server_results.search_comparison == 'equal' && server_results.search_field == 'artist'){
             this.name = server_results.search_value;
         } else if ( server_results.search_comparison == 'equal' && server_results.search_field == 'album'){
-            // TODO get the artist name not from the first result but with 
             if( server_results.results.length > 0 ) {
                 // Caution it could generate errors
                 this.name =  server_results.results[0].artist + " - " + server_results.search_value;
@@ -135,6 +142,17 @@ var SearchTab = Class.create(Tab, {
         this.order_by_way = server_results.order_by_way;
         this.total_results = server_results.total_results;
         this.server_results = server_results.results;
+
+        /* Gets the number of pages */
+        this.page_count = Math.floor( this.total_results / this.result_count);
+        if( this.total_results % this.result_count > 0  )
+            this.page_count = this.page_count + 1;
+
+        /* Gets the current page number */
+        this.current_page = Math.floor(this.first_result / this.result_count)+1;
+        if( this.current_page > this.page_count ) {
+            this.current_page = 1;
+        }
     },
     
     // This function is used to add all pages search results in the playqueue
@@ -177,63 +195,55 @@ var SearchTab = Class.create(Tab, {
     },
 
     updateContent : function( ){
-        var search_page = '';
+        if(true == this.reloadControlers){
 
-        /* Save in the current instance the targeted tags and needed informations */        
-        $$('collection_pagelist_' + this.identifier).each(function(s) {
-	        s.remove();
-        });
-
-        if( null != $('collection_content_' + this.identifier) ){
-            $('collection_content_' + this.identifier).remove();
+            var search_page = '';
+            
+            /* Save in the current instance the targeted tags and needed informations */        
+            $$('collection_pagelist_' + this.identifier).each(function(s) {
+	            s.remove();
+            });
+            
+            if( null != $('collection_content_' + this.identifier) ){
+                $('collection_content_' + this.identifier).remove();
+            }
+            /* pre-init html structure */
+            search_page += '<br/>';
+            search_page += '<div class="collection_pagelist"';
+            search_page += ' name="collection_pagelist_' + this.identifier + '"></div>';
+            search_page += '<div id="collection_content_' + this.identifier + '"></div>';
+            search_page += '<div class="collection_pagelist"';
+            search_page += ' name="collection_pagelist_' + this.identifier + '"></div>';
+            $('tabContent_' + this.identifier).update(search_page);
+            
+            // Display sliders and links and init sliders behvior
+            this.initAndDisplaySearchControllers();
+            this.reloadControlers = false;
+        } else {
+            var links = generatePagesLinks(this.identifier, 
+                                            this.current_page, 
+                                            this.current_page, 
+                                           this.page_count);
+            $$('[name=page_links_' + this.identifier + ']').each(function(s) {
+	            s.update(links);
+            });
         }
-        /* pre-init html structure */
-        search_page += '<br/>';
-        search_page += '<div class="collection_pagelist"';
-        search_page += ' name="collection_pagelist_' + this.identifier + '"></div>';
-        search_page += '<div id="collection_content_' + this.identifier + '"></div>';
-        search_page += '<div class="collection_pagelist"';
-        search_page += ' name="collection_pagelist_' + this.identifier + '"></div>';
-        $('tabContent_' + this.identifier).update(search_page);
-
-        // Display sliders and links and init sliders behvior
-        this.initAndDisplaySearchControllers();
 
         // Display search results and init dragabble items
         this.initAndDisplaySearchResults();
+
     },
 
     /* Update sliders and pages*/
     initAndDisplaySearchControllers : function(){
         var pagelist_html = '';
-        var pages = new Array();
-        var resultsSlider = null;
-
-        /* Sliders */
-        var sliders = new Array();
-        var locked = new Array();
-        var pages = new Array();
-
-        var page_count = 0;
-        var current_page = 0;
         
-        /* Gets the number of pages */
-        page_count = Math.floor( this.total_results / this.result_count);
-        if( this.total_results % this.result_count > 0  )
-            page_count = page_count + 1;
-
-        /* Gets the current page number */
-        current_page = Math.floor(this.first_result / this.result_count)+1;
-        if( current_page > page_count ) {
-            current_page = 1;
-        }
-
         /* Only display slider and pages results links if nb pages > 1 */
         if( this.total_results > 0 ){
             pagelist_html += '<p>'
-            if( page_count > 1 ){
+            if( this.page_count > 1 ){
 	            pagelist_html += '<div name="results_slider_' + this.getIdentifier() + '"';
-                pagelist_html += ' class="slider"><div class="handle"></div></div>';
+                pagelist_html += ' class="slider" style="height:10px; width:600px"><div class="handle" style="height:10px;"></div></div>';
 	            pagelist_html += '<div class="page_links" name="page_links_' + this.getIdentifier() + '"></div>';
             }
             pagelist_html += '</p>';
@@ -245,48 +255,52 @@ var SearchTab = Class.create(Tab, {
         });
 
         // Fill the pages array used by sliders
-        for(var i = 0; i < page_count; ++i){
-            pages.push(i+1);
+        for(var i = 0; i < this.page_count; ++i){
+            this.pages.push(i+1);
         }
 
         // Init the link list
-        var currentIdentifier = this.getIdentifier();
+        var links = generatePagesLinks(this.identifier, this.current_page, this.current_page, this.page_count);
         $$('[name=page_links_' + this.getIdentifier() + ']' ).each(function(s) {
-	        s.update(generatePagesLinks(currentIdentifier, current_page, current_page, page_count));
+	        s.update(links);
         });
 
         // Init each sliders behavior
-        resultsSlider = document.getElementsByName('results_slider_' + this.getIdentifier() );
-        for(var i = 0 ; i <  resultsSlider.length; i++ ){
-            sliders[i] = new Control.Slider(resultsSlider[i].down('.handle'), resultsSlider[i], {
-                range: $R(1,pages.length),
-                values: pages,
-                sliderValue: current_page,
+        this.resultsSlider = document.getElementsByName('results_slider_' + this.getIdentifier() );
+        var tabId = this.getIdentifier();
+        for(var i = 0 ; i <  this.resultsSlider.length; i++ ){
+            var currentSlider = new Control.Slider(this.resultsSlider[i].down('.handle'), this.resultsSlider[i], {
+                range: $R(1,tabs.getTabFromUniqueId(tabId).pages.length),
+                values: tabs.getTabFromUniqueId(tabId).pages,
+                sliderValue: tabs.getTabFromUniqueId(tabId).current_page || 1,
                 id:i,
-                identifier:currentIdentifier,
+                identifier:tabId,
                 onSlide: function(values){
+                    var currentTab = tabs.getTabFromUniqueId(this.identifier);
                     $$('[name=page_links_' + this.identifier + ']').each(function(s) {
-	                    s.update(generatePagesLinks(this.identifier, current_page, values, page_count));
+	                    s.update(generatePagesLinks(this.identifier, 
+                                                    currentTab.current_page, 
+                                                    values, 
+                                                    currentTab.page_count));
                     });
                     
-                    for( var k in sliders ){
+                    for( var k in currentTab.sliders ){
                         if ( k != this.id ){
-                            locked[k]=true;
+                            currentTab.locked[k]=true;
                             /* Update others sliders values by setting value with the current slider sliding value*/
-                            if(typeof sliders[k].setValue === 'function') {
+                            if(typeof currentTab.sliders[k].setValue === 'function') {
                                 /* Caution this instruction fire onChange slider event */
-                                /* TODO replace hand made locks with disable onChange event */
-                                /*      it will be easier to read code and also more efficient */
-                                sliders[k].setValue(values);
+                                currentTab.sliders[k].setValue(values);
                             }
-                            locked[k]=false;
+                            currentTab.locked[k]=false;
                         }
                     }
                 },
                 onChange: function(values){
+                    var currentTab = tabs.getTabFromUniqueId(this.identifier);
                     /* Because we use multi slider we don't want to fire onChange event when sliding the other slider */
                     /* TODO remove lock and use disable events*/
-                    if( ! locked[this.id] ){
+                    if( ! currentTab.locked[this.id] ){
                         tabs.getTabFromUniqueId(this.identifier).goToPage(values);
                     }
                 }

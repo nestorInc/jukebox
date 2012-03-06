@@ -30,8 +30,10 @@
     <script type="text/javascript" src="js/Sound.js"></script>
     <script type="text/javascript" src="js/search.js"></script>
     <script type="text/javascript" src="js/upload.js"></script>
+    <script type="text/javascript" src="js/debug.js"></script>
+    <script type="text/javascript" src="js/customQueries.js"></script>
+    <script type="text/javascript" src="js/notification.js"></script>
     <script type="text/javascript" src="js/StreamPlayer.js"></script>
-    <script type="text/javascript" src="js/Notification.js"></script>
     <script type="text/javascript" src="js/jukebox.js"></script>
   </head>
   <body onload="ExpandCollection();initJukebox();">
@@ -124,65 +126,10 @@
       <div id="stop_stream">
 	    <a href="javascript:void(0);" onclick="StopStream(); return false;">Stop stream</a>
       </div>
+    </div>    
+    <div>
+       <div id="debug_slide"></div>
     </div>
-    
-    <div id="show_debug">
-      <a href="javascript:void(0);" onclick="ShowDebug(true); return false;">Show debug</a>
-    </div>
-    
-    <div id="hide_debug">
-      <a href="javascript:void(0);" onclick="ShowDebug(false); return false;">Hide debug</a>
-    </div>
-    
-    <div id="debug_wrapper">
-      <h1>Notification sender</h1>
-      <input type="button" value="test notification debug" onclick="showNotification(1,'Notification notification notification');" />
-      <input type="button" value="test notification info" onclick="showNotification(2,'Notification notification notification');" />
-      <input type="button" value="test notification warning" onclick="showNotification(3,'Notification notification notification');" />
-      <input type="button" value="test notification error" onclick="showNotification(4,'Notification notification notification');" />
-      <input type="button" value="test notification fatal" onclick="showNotification(5,'Notification notification notification');" />
 
-      <!-- Custom json query part-->
-      <h1>Custom Json Query</h1>
-      <table width="100%">
-        <tr>
-          <td colspan="2">
-            <center>
-              <textarea id="custom_json_query" style="width:95%;height:90px;"></textarea>            
-            </center>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            Query filler : <select id="custom_json_template_list" onchange="fillCustomJsonQuery();">
-            <option value="clear_form">clear_form</option>
-            <option value="dummy" selected="selected">--------</option>
-            <option value="">empty</option>
-            <option value="next">next</option>
-            <option value="previous">previous</option>
-            <option value="add_to_play_queue">add_to_play_queue</option>
-            <option value="remove_to_play_queue">remove_from_play_queue</option>
-            <option value="move_in_play_queue">move_in_play_queue</option>
-            <option value="join_channel">join_channel</option>
-            <option value="get_news">get_news</option>
-            <option value="search">search</option>
-          </select>
-          </td>
-          <td><input type="submit" onclick="checkAndSendJson();" value="send custom query"/></td>
-        </tr>
-      </table>
-
-      <h1>Debug console</h1>
-      <table width="100%"><tr><td width="50%">
-	    <div id="debug1">
-	      
-	    </div>
-        </td><td width="50%">
-	    <div id="debug2">
-	      
-	    </div>
-      </td></tr>
-      </table>
-    </div>
   </body>
 </html>
