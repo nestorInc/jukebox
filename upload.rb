@@ -89,16 +89,14 @@ class UploadManager < HttpNode
       rep = HttpResponse.new(req.proto, 200, "OK",
                              "Content-Type" => "application/json");
       res = '{ success: true}';
-      rep.setData(res);
-      s.write(rep.to_s);
     rescue Exception=>e
       error(e);
       rep = HttpResponse.new(req.proto, 200, "Error",
                            "Content-Type" => "application/json");
       res = '{ error: Could not save uploaded file., success: false}';
+    ensure
       rep.setData(res);
       s.write(rep.to_s);
-      return;
     end
   end
 end
