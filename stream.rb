@@ -3,7 +3,7 @@
 require 'http.rb'
 require 'channel.rb'
 
-class Stream < HttpNode
+class Stream < HttpRest
   module StreamSession
     def on_close()
       ch = @data;
@@ -46,6 +46,7 @@ class Stream < HttpNode
       metaint       = @icyInterval;
       rep = HttpResponse.new(proto, 200, "OK",
                              "Connection"   => "Close",
+                             "Server"       => "Jukebox Streaming",
                              "Content-Type" => "audio/mpeg");
       rep.options["icy-metaint"] = @icyInterval if(@icyInterval != 0);
 
@@ -80,7 +81,39 @@ class Stream < HttpNode
     super();
   end
 
-  def on_request(s, req)
+  def update(s, req)
+    data  = @user[s.user];
+    ch    = @list[data[:channel]];
+    param = JSON.parse(req.data || "");
+    owner = (data[:channel] == s.user);
+
+
+    case(req.remaining)
+    when "next"
+      ch.next() if(owner);
+    when "previous"
+      ch.previous() if(owner);
+    when "switch_channel"
+      ch = @list[param["channel"]];
+      data[:channel] = param["channel"];
+      data[:stream].each { |s|
+        s.switch_channel(ch);
+      }
+    end
+
+    rep  = HttpResponse.new(req.proto, 200, "OK",
+                            "Content-Type" => "application/json");
+
+    json = {}
+    json[:stream] = ch.queue.to_client(@library);
+    str = JSON.generate(json);
+    debug(str);
+    rep.setData(str);
+
+    rep;
+  end
+
+  def view(s, req)
     action      = req.remaining;
     channelName = s.user;
 
@@ -97,6 +130,7 @@ class Stream < HttpNode
       @list[channelName] = ch;
     end
 
+    return HttpResponse.generate301(req, req.prefix) if(action != nil);
     data[:stream].push(s);
 
     s.extend(StreamSession);
