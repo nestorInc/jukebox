@@ -97,14 +97,17 @@ class SongQueue < Playlist
   end
 
   def next()
+    @timestamp = Time.now().to_i();
     @pos += 1;
   end
 
   def previous()
+    @timestamp = Time.now().to_i();
     @pos -= 1 if(@pos > 0);
   end
 
   def shuffle()
+    @timestamp = Time.now().to_i();
     v = @list[@pos+1..-1] || [];
     @list = @list[0..@pos] + v.shuffle;
   end
@@ -124,7 +127,8 @@ class SongQueue < Playlist
     end
 
     {
-      :songs => queue || []
+      :updated => @timestamp,
+      :songs   => queue || []
     }
   end
 end
