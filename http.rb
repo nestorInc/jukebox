@@ -441,6 +441,28 @@ class HttpNode
   end
 end
 
+class HttpRest < HttpNode
+  def initialize()
+    super();
+  end
+  def on_request(s, req)
+    rsp = nil
+    case(req.method)
+    when "POST"
+      rsp = update(s, req) if(respond_to?(:update));
+    when "PUT"
+      rsp = create(s, req) if(respond_to?(:create));
+    when "DELETE"
+      rsp = delete(s, req) if(respond_to?(:delete));
+    when "GET"
+      rsp = view(s, req)   if(respond_to?(:view));
+    else
+      rsp = HttpResponse.generate405(req);
+    end
+    s.write(rsp.to_s) if(rsp);
+  end
+end
+
 # Map file directory on http directory
 class HttpNodeMapping < HttpNode
   ContentTypeTab = {
