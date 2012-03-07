@@ -36,6 +36,16 @@ class Song
     end
   end
 
+  def to_client()
+    res = {}
+    res[:mid     ] = @mid      if(@mid);
+    res[:title   ] = @title    if(@title);
+    res[:artist  ] = @artist   if(@artist);
+    res[:album   ] = @album    if(@album);
+    res[:duration] = @duration if(@duration);
+    res;
+  end
+
   def to_db()
     res = {}
     res[:mid     ] = @mid      if(@mid);

@@ -280,18 +280,18 @@ function updateSongTimeRefresh(){
         return;
     }
     
-    var currentSongElapsedTime = new Date().getTime()/1000 - refreshSongTimeFromAjaxRequestDatetime + current_song.elapsed_time;
-    if (currentSongElapsedTime > current_song.total_time) {
-        currentSongElapsedTime = current_song.total_time;
+    var currentSongElapsedTime = new Date().getTime()/1000 - refreshSongTimeFromAjaxRequestDatetime + current_song.elapsed;
+    if (currentSongElapsedTime > current_song.duration) {
+        currentSongElapsedTime = current_song.duration;
     }
  
     if(null == lastCurrentSongElapsedTime || currentSongElapsedTime > lastCurrentSongElapsedTime){
-        var percent = ((currentSongElapsedTime / current_song.total_time) * 100);
+        var percent = ((currentSongElapsedTime / current_song.duration) * 100);
         $('progressbar').setStyle({
             width: percent + '%'
         });
 
-        $('player_song_time').update(FormatTime(currentSongElapsedTime) + "/" + FormatTime(current_song.total_time));
+        $('player_song_time').update(FormatTime(currentSongElapsedTime) + "/" + FormatTime(current_song.duration));
     }
     lastCurrentSongElapsedTime = currentSongElapsedTime;
 }
@@ -302,9 +302,9 @@ function UpdateCurrentSongTime (delta_time) {
     }
 
     refreshSongTimeFromAjaxRequestDatetime = new Date().getTime()/1000;
-    current_song.elapsed_time += delta_time;
-    if (current_song.elapsed_time > current_song.total_time) {
-        current_song.elapsed_time = current_song.total_time;
+    current_song.elapsed += delta_time;
+    if (current_song.elapsed > current_song.duration) {
+        current_song.elapsed = current_song.duration;
     }
 }
 
