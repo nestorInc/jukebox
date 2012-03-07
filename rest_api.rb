@@ -26,6 +26,8 @@ class QueueRestApi < HttpRest
       ch.queue.del(json["index"]);
     when "move"
       ch.queue.move(json["index_old"], json["index_new"]);
+    when "shuffle"
+      ch.queue.shuffle();
     else
       return nil;
     end
