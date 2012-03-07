@@ -29,8 +29,8 @@ class JsonManager < HttpNode
     res = "";
     debug(req.data);
     if(ch == nil)
-      res = create_message(JsonManager::MSG_LVL_WARNING,
-                                "Unknown channel #{s.user}");
+      res = JsonManager.create_message(JsonManager::MSG_LVL_WARNING,
+                                       "Unknown channel #{s.user}");
     else
       res = parse(req.data, ch, s.user);
     end
@@ -38,26 +38,34 @@ class JsonManager < HttpNode
     s.write(rep.to_s);
   end
 
-  private
-  def create_message(lvl, code = nil, msg)
-    resp = {};
+  def JsonManager.add_message(resp, lvl, code, msg)
     msg = {
       :level   => lvl,
       :message => msg
     };
     msg[:code] = code if(code);
 
-    resp[:messages] = [ msg ];
+    resp[:messages] ||= [];
+    resp[:messages].push(msg);
+  end
+
+
+  def JsonManager.create_message(lvl, code = nil, msg)
+    resp = {};
+
+    JsonManager.add_message(resp, lvl, code, msg);
 
     str = JSON.generate(resp);
     debug(str);
     str;
   end
 
+  private
+
   def parse(req, ch, user)
     resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
-        add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");      
+        JsonManager.add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");      
     else
       begin
         json      = JSON.parse(req);
@@ -69,7 +77,7 @@ class JsonManager < HttpNode
           when "action"
             parse_action(resp, ch, user, value);
           else
-            add_message(resp, MSG_LVL_ERROR, "unknown command #{type}", "Unknown command #{type}");
+            JsonManager.add_message(resp, MSG_LVL_ERROR, "unknown command #{type}", "Unknown command #{type}");
           end
         }
         # refresh
@@ -79,7 +87,7 @@ class JsonManager < HttpNode
           resp[:play_queue] = ch.queue.to_client(@library);
         end
       rescue JSON::ParserError => e
-        add_message(resp, MSG_LVL_ERROR, "fail to parse request", "Exception when parsing json request, #{e}");
+        JsonManager.add_message(resp, MSG_LVL_ERROR, "fail to parse request", "Exception when parsing json request, #{e}");
         error("Exception when parsing json request, #{e}");
       end
     end
@@ -88,17 +96,6 @@ class JsonManager < HttpNode
     str;
   end
   
-  def add_message(resp, lvl, code, msg)
-    msg = {
-      :level   => lvl,
-      :message => msg
-    };
-    msg[:code] = code if(code);
-
-    resp[:messages] ||= [];
-    resp[:messages].push(msg);
-  end
-
   def forward_action(resp, req, ch, user)
     resp ||= {};
     resp[:timestamp] = Time.now.to_i();
