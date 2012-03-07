@@ -312,7 +312,8 @@ var SearchTab = Class.create(Tab, {
                     /* Because we use multi slider we don't want to fire onChange event when sliding the other slider */
                     if( ! locked[this.id] ){
                         clearTimeout(this.timeout);
-                        tabs.getTabFromUniqueId(this.identifier).goToPage(values);
+                        if( currentTab.current_page != values)
+                            tabs.getTabFromUniqueId(this.identifier).goToPage(values);
                     }
                 }
             });
