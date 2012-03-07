@@ -127,9 +127,10 @@ class Channel
   end
 
   def to_client()
-    {
-      :listener_count => @connections.size()
-    }
+    rsp                  = @currentEntry.to_client();
+    rsp[:elapsed]        = @currentEntry.duration * @frame / @cur.size;
+    rsp[:listener_count] = @connections.size();
+    rsp;
   end
  
   private
