@@ -8,18 +8,10 @@ class QueueRestApi < HttpRest
   end
 
   def update(s, req)
-    puts "update"
     ch   = @list[s.user];
-    rep  = HttpResponse.new(req.proto, 200, "OK");
     json = JSON.parse(req.data || "");
 
     case(req.remaining)
-    when "next"
-      rep.setData("<html><head><title>next</title></head><body><H1>Next</H1></body></head>");
-      ch.next();
-    when "previous"
-      rep.setData("<html><head><title>Previous</title></head><body><H1>Previous</H1></body></head>");
-      ch.previous();
     when "add"
       ch.queue.add(json["index"], json["mid"]);
     when "del"
@@ -32,14 +24,16 @@ class QueueRestApi < HttpRest
       return nil;
     end
 
-    rep;
+    view(s, req);
   end
 
   def view(s, req)
     ch   = @list[s.user];
-    rep  = HttpResponse.new(req.proto, 200, "OK");
+    rep  = HttpResponse.new(req.proto, 200, "OK",
+                            "Content-Type" => "application/json");
 
-    json = ch.queue.to_client(@library);
+    json = {}
+    json[:queue] = ch.queue.to_client(@library);
     str = JSON.generate(json);
     debug(str);
     rep.setData(str);
