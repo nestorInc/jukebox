@@ -151,7 +151,7 @@ function updateJukebox ( update_timestamp ) {
     query = new Object();
     new Ajax.Request(url, {
         method:'post',
-        parameters: {query: query_json},
+        postBody: query_json,
         onSuccess: function(response) {
             var autorefresh = false;
             if ($F('cb_autorefresh') != null) {

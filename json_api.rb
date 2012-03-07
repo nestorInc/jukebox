@@ -24,23 +24,12 @@ class JsonManager < HttpNode
     rep = HttpResponse.new(req.proto, 200, "OK",
                            "Content-Type" => "application/json");
     res = "";
+    debug(req.data);
     if(ch == nil)
       res = create_message(JsonManager::MSG_LVL_WARNING,
                                 "Unknown channel #{s.user}");
     else
-      if( nil != req and nil != req.data)
-        argv = req.data.split("&").map() { |v|
-          v.split("=").map() { |v|
-            CGI.unescape(v);
-          }
-        }
-        argv = Hash[argv];
-        res = parse(argv["query"], ch);
-      else
-        res = create_message(JsonManager::MSG_LVL_ERROR,
-                             "HttpRequest not well formed");
-        
-      end
+      res = parse(req.data, ch);
     end
     rep.setData(res);
     s.write(rep.to_s);
