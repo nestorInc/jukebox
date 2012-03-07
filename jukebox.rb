@@ -55,7 +55,7 @@ Thread.new() {
 
 # Create HTTP server
 json   = JsonManager.new(channelList, library, userData, config[:upload.to_s], config[:encode.to_s]);
-rest   = RestApi.new(channelList);
+rest   = RestApi.new(channelList, library);
 upload = UploadManager.new(config[:upload.to_s]);
 debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
