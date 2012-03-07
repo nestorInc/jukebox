@@ -9,16 +9,8 @@ class Playlist
   end
 
   def add(pos = nil, data)
-    mids =
-      case(data)
-      when Fixnum
-        [ data ];
-      when Playlist
-        data.list;
-      else
-        raise "Playlist::add Invalid mids class";
-      end
-    pos = check_pos(pos);
+    mids = expand_data(data);
+    pos  = check_pos(pos);
     @list.insert(pos, *mids);
     pos;
   end
@@ -52,6 +44,25 @@ class Playlist
   end
 
   private
+  def expand_data(data)
+    case(data)
+    when Fixnum
+      [ data ];
+    when Playlist
+      data.list;
+    when Song
+      [ data.mid ];
+    when Array
+      v = [];
+      data.each { |e|
+        v.push(expand_data(e));
+      }
+      v;
+    else
+      raise "Playlist::add Invalid mids class";
+    end
+  end
+
   def check_pos(pos)
     return @list.size() if(pos == nil || pos < 0 || pos > @list.size());
     pos;

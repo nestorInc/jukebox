@@ -113,14 +113,9 @@ class Channel
  
   def add_song(pos, mid)
     @timestamp = Time.now().to_i();
-    @history.add(@pos + pos + 1, mid)
+    pos += @pos + 1 if(pos != nil);
+    @history.add(pos, mid);
   end
-
-  def add_song_tail(mid)
-    @timestamp = Time.now().to_i();
-    @history.add(nil, mid)
-  end
-
 
   def del_song(pos)
     @timestamp = Time.now().to_i();

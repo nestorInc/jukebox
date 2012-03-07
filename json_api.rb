@@ -155,21 +155,12 @@ class JsonManager < HttpNode
                                          req["order_by_way"],
                                          req["first_result"],
                                          req["result_count"]);
-        if( "head" == req["play_queue_position"] )
+        if(req["play_queue_position"]  == "head")
           i = 0;
         else
-          i= nil;
+          i = nil;
         end
-
-        result.each do |song|
-          if( i != nil )
-            ch.add_song(i, song.mid);
-            i = i + 1;
-          else
-            ch.add_song_tail(song.mid);
-          end
-        end
-
+        ch.add_song(i, result);
       when "remove_from_play_queue"
         ch.del_song(req["play_queue_index"]);
       when "move_in_play_queue"
