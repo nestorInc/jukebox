@@ -390,7 +390,7 @@ class HttpNode
     path.each { |v|
       e = n.child[v];
       if(path.last.__id__ == v.__id__)
-        node.child = n.child[v].child if(e != nil);
+        node.child.merge!(n.child[v].child) if(e != nil);
         n.child[v] = node;
       else
         if(e == nil)
