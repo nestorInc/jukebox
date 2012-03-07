@@ -112,7 +112,6 @@ var SearchTab = Class.create(Tab, {
 
         /* Sliders */
         this.sliders = new Array();
-        this.locked = new Array();
     },
 
     updateNewSearchInformations : function( server_results ){
@@ -266,6 +265,8 @@ var SearchTab = Class.create(Tab, {
         });
 
         // Init each sliders behavior
+        var locked = new Array();
+
         this.resultsSlider = document.getElementsByName('results_slider_' + this.getIdentifier() );
         var tabId = this.getIdentifier();
         for(var i = 0 ; i <  this.resultsSlider.length; i++ ){
@@ -275,6 +276,8 @@ var SearchTab = Class.create(Tab, {
                 sliderValue: tabs.getTabFromUniqueId(tabId).current_page || 1,
                 id:i,
                 identifier:tabId,
+                timeout:null,
+                lastSelectedValue: null,
                 onSlide: function(values){
                     var currentTab = tabs.getTabFromUniqueId(this.identifier);
                     $$('[name=page_links_' + this.identifier + ']').each(function(s) {
@@ -286,25 +289,34 @@ var SearchTab = Class.create(Tab, {
                     
                     for( var k in currentTab.sliders ){
                         if ( k != this.id ){
-                            currentTab.locked[k]=true;
+                            locked[k]=true;
                             /* Update others sliders values by setting value with the current slider sliding value*/
                             if(typeof currentTab.sliders[k].setValue === 'function') {
                                 /* Caution this instruction fire onChange slider event */
                                 currentTab.sliders[k].setValue(values);
                             }
-                            currentTab.locked[k]=false;
+                            locked[k]=false;
                         }
                     }
+
+                    // Auto page selection if stuck on a page
+                    if( this.lastSelectedValue != values ) {
+                        clearTimeout(this.timeout);
+                        this.timeout = setTimeout("tabs.getTabFromUniqueId('" + this.identifier+ "').goToPage(" + values + ");", 400); 
+                    }
+
+                    this.lastSelectedValue = values;
                 },
                 onChange: function(values){
                     var currentTab = tabs.getTabFromUniqueId(this.identifier);
                     /* Because we use multi slider we don't want to fire onChange event when sliding the other slider */
-                    /* TODO remove lock and use disable events*/
-                    if( ! currentTab.locked[this.id] ){
+                    if( ! locked[this.id] ){
+                        clearTimeout(this.timeout);
                         tabs.getTabFromUniqueId(this.identifier).goToPage(values);
                     }
                 }
             });
+            this.sliders.push(currentSlider);
         }
     },
 

@@ -83,7 +83,7 @@ class UploadManager < HttpNode
 
     #All is ok we can begin to save file on disk
     begin
-      File.open( File.join(@dst_folder, req.options['X-File-Name']), 'w') {|f| 
+      File.open( File.join(File.join(@dst_folder,s.user), req.options['X-File-Name']), 'w') {|f| 
         f.write(req.data);
       }
       rep = HttpResponse.new(req.proto, 200, "OK",
