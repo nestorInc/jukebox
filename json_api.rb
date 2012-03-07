@@ -73,7 +73,7 @@ class JsonManager < HttpNode
           end
         }
         # refresh
-        add_channel_infos(resp, ch);
+        resp[:channel_infos] = ch.to_client();
         resp[:current_song]  = ch.getCurrentSongInfo();
         if(timestamp <= ch.timestamp)
           add_play_queue(resp, ch);
@@ -97,12 +97,6 @@ class JsonManager < HttpNode
 
     resp[:messages] ||= [];
     resp[:messages].push(msg);
-  end
-
-  def add_channel_infos(resp, ch)
-    resp[:channel_infos] = {
-      :listener_count => ch.getConnected()
-    };
   end
 
   def add_play_queue(resp, ch)

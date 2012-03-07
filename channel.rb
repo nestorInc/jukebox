@@ -106,10 +106,6 @@ class Channel
   def mids()
     @history[@pos..-1];
   end
-
-  def getConnected()
-    @connections.size();
-  end
  
   def add_song(pos, mid)
     @timestamp = Time.now().to_i();
@@ -147,6 +143,12 @@ class Channel
  
   def set_nb_songs()
     @nb_songs = @library.get_nb_songs;
+  end
+
+  def to_client()
+    {
+      :listener_count => @connections.size()
+    }
   end
  
   private
