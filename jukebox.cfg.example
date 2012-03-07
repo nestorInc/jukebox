@@ -4,6 +4,13 @@ encode:
   delay_scan: 30
   max_job: 3
   bitrate: 192
+upload:
+  max_request_size_in_bytes: 42991616
+  max_file_size_in_bytes: 31457280
+  dst_folder: uploads/
+  allowed_extensions: 
+    - '.mp3' 
+    - '.wav'
 server:
   -
     port: 8080
