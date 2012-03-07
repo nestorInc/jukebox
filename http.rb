@@ -133,6 +133,33 @@ class HttpResponse
     rsp;
   end
 
+  def HttpResponse.generateMoveError(req, val, msg, location)
+    rsp = HttpResponse.new(req.proto, val, msg, "Location" => location);
+    rsp.setData("<html>
+<head>
+<meta http-equiv=\"Refresh\" content=\"0; url=#{location}\" />
+<title>#{val} #{msg}</title>
+</head>
+<body>
+<h1>#{msg}</h1>
+<p>This page has moved to <a href=\"#{location}\">Here</a>.</p>
+</body>
+</html>");
+    rsp;
+  end
+
+  def HttpResponse.generate301(req, location)
+    HttpResponse.generateMoveError(req, 301, "Moved Permanently", location);
+  end
+
+  def HttpResponse.generate302(req, location)
+    HttpResponse.generateMoveError(req, 302, "Found", location);
+  end
+
+  def HttpResponse.generate301(req, location)
+    HttpResponse.generateMoveError(req, 301, "Moved Permanently", location);
+  end
+
   def HttpResponse.generate404(req)
     HttpResponse.generateError(req, 404, "Not found");
   end
