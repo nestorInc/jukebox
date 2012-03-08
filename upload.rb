@@ -6,10 +6,9 @@ require 'http.rb'
 require 'display.rb'
 
 class UploadManager < HttpNode
-
   def initialize(conf)
     super();
-    # Defaults serveur values if config file is undefined
+    # Defaults server values if config file is undefined
     @max_request_size_in_bytes = 21* 1024 * 1024;
     @max_file_size_in_bytes = 20 * 1024 * 1024; # 20M
     @allowed_extensions = [ 'mp3', "wav" ];
@@ -32,7 +31,6 @@ class UploadManager < HttpNode
       Dir.mkdir(File.join(@dst_folder,s.user));
     end
 
-    #TODO Check Query size limitation
     if( req.to_s.length > @max_request_size_in_bytes )
       rep = HttpResponse.new(req.proto, 200, "Error",
                              "Content-Type" => "application/json");
@@ -41,7 +39,6 @@ class UploadManager < HttpNode
       s.write(rep.to_s);
       return;
     end
-
 
     # Extensions tests before uploading the file
     fileExtentionValidated = false;
@@ -99,4 +96,40 @@ class UploadManager < HttpNode
       s.write(rep.to_s);
     end
   end
+  
+  def self.getUploadedFiles(uploadDirectory, user)
+    files = [];
+    Dir.foreach(File.join(uploadDirectory, user)) do |current_file| 
+      if File.file?(File.join(uploadDirectory, user, current_file))
+        id3info = Id3.decode(File.join(uploadDirectory, user, current_file));
+        file = {
+          :filename   => current_file,
+          :date_upload => File.atime(File.join(uploadDirectory, user, current_file)),
+          :filesize => current_file.size,
+          :artist => id3info.artist,
+          :album => id3info.album,
+          :title => id3info.title,
+          :year => id3info.date,
+          :track => id3info.track,
+          :genre => id3info.genre
+        };
+        files.push(file);
+      end
+    end
+    files;
+  end
+
+  # def self.setUploadedId3Tags( user, filename, artist, album, title, year, track, genre)
+
+  # end
+
+  # def self.deleteUploadedSong( user, filename )
+
+  # end
+
+  # def self.validateUploadedSong( user, filename )
+  #   UploadManager.deleteUploadedSong( user, filename );
+  # end
+
+
 end

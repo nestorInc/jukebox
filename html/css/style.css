@@ -428,9 +428,9 @@ div#notifications {
 
 /* Sliders */
 div.page_links{ text-align:center;}
-div.slider { width:100%; margin:10px 0; background-color:#ccc; height:10px; position: relative; }
-div.slider div.handle { width:10px; height:15px; background-color:#888; cursor:move; position: absolute; }
-div.slider div.handle span { height:10px; }
+div.slider { width:100%; margin:15px 0; background-color:#ccc; height:15px; position: relative; }
+div.slider div.handle { width:25px; height:25px; background-color:#888; cursor:move; position: absolute; top:-5px;}
+div.slider div.handle span { height:20px; }
 a.slider_link_current_page { color:#ff0000; }
 a.slider_link_current_selection { color:#00ff00; }
 a.slider_link {  }
@@ -454,7 +454,8 @@ a.slider_link {  }
 }
 #tabsHeader a span{
     float:left;
-    display:block;}
+    display:block;
+}
 #tabsHeader a:hover{background-color: #7E94B9;color: white;}
 #tabsHeader a:hover span{background-color: #7E94B9;}
 .tabHeaderActive span, .tabHeaderActive a { background-color: #42577B; color:#fff;}

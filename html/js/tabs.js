@@ -70,7 +70,7 @@ var tabs = Class.create({
         tabContentContainer += '<div id="tabContent_' + tab.getIdentifier() + '" ';
 
         if( 1 == this.tabs.length ){
-            tabContentContainer += 'style="display:yes;"></div>';
+            tabContentContainer += 'style="display:block;"></div>';
         } else {
             tabContentContainer += 'style="display:none;"></div>';
         }

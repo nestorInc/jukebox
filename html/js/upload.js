@@ -23,8 +23,13 @@ var uploadTab = Class.create(Tab, {
         upload_form += '</ul>';
         upload_form += '</div>';
         upload_form += '</div>';
+        upload_form += '<h2>Uploaded files</h2>';
+        upload_form += '<div id="uploaded_files">';
+        upload_form += '</div>';
             
         $('tabContent_' + this.identifier).update(upload_form);
+
+        // Init upload button behavior
         this.uploader = new qq.FileUploader({
             element: document.getElementById('file-uploader' + this.identifier),
             action: 'upload',
@@ -33,6 +38,12 @@ var uploadTab = Class.create(Tab, {
             },
             debug: true
         });
+
+        // Send a json query to obtain the list off uploaded files
+        query = new Object();
+        query.action = new Object();
+        query.action.name = "get_uploaded_files";
+        updateJukebox();
     }
 
 });

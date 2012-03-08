@@ -53,7 +53,7 @@ Thread.new() {
 
 
 # Create HTTP server
-json   = JsonManager.new(channelList, library);
+json   = JsonManager.new(channelList, library, config[:upload.to_s]);
 basic  = BasicApi.new(channelList);
 upload = UploadManager.new(config[:upload.to_s]);
 debug  = DebugPage.new();

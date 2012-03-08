@@ -152,6 +152,7 @@ var SearchTab = Class.create(Tab, {
         if( this.current_page > this.page_count ) {
             this.current_page = 1;
         }
+        this.locked = new Array();
     },
     
     // This function is used to add all pages search results in the playqueue
@@ -223,9 +224,21 @@ var SearchTab = Class.create(Tab, {
                                             this.current_page, 
                                             this.current_page, 
                                            this.page_count);
+            // Refresh displayed pages
             $$('[name=page_links_' + this.identifier + ']').each(function(s) {
 	            s.update(links);
             });
+
+            // Refresh slider position
+            for( var k in this.sliders ){
+                this.locked[k]=true;
+                /* Update others sliders values by setting value with the current slider sliding value*/
+                if(typeof this.sliders[k].setValue === 'function') {
+                    /* Caution this instruction fire onChange slider event */
+                    this.sliders[k].setValue(this.current_page);
+                }
+                this.locked[k]=false;
+            }
         }
 
         // Display search results and init dragabble items
@@ -242,7 +255,7 @@ var SearchTab = Class.create(Tab, {
             pagelist_html += '<p>'
             if( this.page_count > 1 ){
 	            pagelist_html += '<div name="results_slider_' + this.getIdentifier() + '"';
-                pagelist_html += ' class="slider" style="height:10px; width:600px"><div class="handle" style="height:10px;"></div></div>';
+                pagelist_html += ' class="slider" style="width:600px"><div class="handle"></div></div>';
 	            pagelist_html += '<div class="page_links" name="page_links_' + this.getIdentifier() + '"></div>';
             }
             pagelist_html += '</p>';
@@ -265,7 +278,7 @@ var SearchTab = Class.create(Tab, {
         });
 
         // Init each sliders behavior
-        var locked = new Array();
+
 
         this.resultsSlider = document.getElementsByName('results_slider_' + this.getIdentifier() );
         var tabId = this.getIdentifier();
@@ -289,13 +302,13 @@ var SearchTab = Class.create(Tab, {
                     
                     for( var k in currentTab.sliders ){
                         if ( k != this.id ){
-                            locked[k]=true;
+                            currentTab.locked[k]=true;
                             /* Update others sliders values by setting value with the current slider sliding value*/
                             if(typeof currentTab.sliders[k].setValue === 'function') {
                                 /* Caution this instruction fire onChange slider event */
                                 currentTab.sliders[k].setValue(values);
                             }
-                            locked[k]=false;
+                            currentTab.locked[k]=false;
                         }
                     }
 
@@ -310,7 +323,7 @@ var SearchTab = Class.create(Tab, {
                 onChange: function(values){
                     var currentTab = tabs.getTabFromUniqueId(this.identifier);
                     /* Because we use multi slider we don't want to fire onChange event when sliding the other slider */
-                    if( ! locked[this.id] ){
+                    if( ! currentTab.locked[this.id] ){
                         clearTimeout(this.timeout);
                         if( currentTab.current_page != values)
                             tabs.getTabFromUniqueId(this.identifier).goToPage(values);

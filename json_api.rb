@@ -4,6 +4,7 @@ require 'json'
 require 'rev'
 require 'http.rb'
 require 'display.rb'
+require 'upload.rb'
 
 class JsonManager < HttpNode
   MSG_LVL_DEBUG   = 1
@@ -12,10 +13,10 @@ class JsonManager < HttpNode
   MSG_LVL_ERROR   = 4
   MSG_LVL_FATAL   = 5
 
-  def initialize(list, library)
+  def initialize(list, library, conf)
     @list     = list;
     @library  = library;
-
+    @upload_dir = conf["dst_folder"];
     super();
   end
 
@@ -29,7 +30,7 @@ class JsonManager < HttpNode
       res = create_message(JsonManager::MSG_LVL_WARNING,
                                 "Unknown channel #{s.user}");
     else
-      res = parse(req.data, ch);
+      res = parse(req.data, ch, s.user);
     end
     rep.setData(res);
     s.write(rep.to_s);
@@ -51,7 +52,7 @@ class JsonManager < HttpNode
     str;
   end
 
-  def parse(req, ch)
+  def parse(req, ch, user)
     resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
         add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");      
@@ -64,7 +65,7 @@ class JsonManager < HttpNode
           when "search"
             parse_search(resp, value);
           when "action"
-            parse_action(resp, ch, value);
+            parse_action(resp, ch, user, value);
           else
             add_message(resp, MSG_LVL_ERROR, "unknown command #{type}", "Unknown command #{type}");
           end
@@ -80,7 +81,6 @@ class JsonManager < HttpNode
         error("Exception when parsing json request, #{e}");
       end
     end
-
     str = JSON.generate(resp);
     debug(str);
     str;
@@ -137,8 +137,12 @@ class JsonManager < HttpNode
     end
   end
 
-  def forward_action(req, ch)
-      resp = { :timestamp => Time.now.to_i() };
+  def forward_action(resp, req, ch, user)
+      if( nil == resp )
+        resp = { :timestamp => Time.now.to_i() };
+      else
+        resp[:timestamp] = Time.now.to_i();
+      end
       case(req["name"])
       when "next"
         ch.next();
@@ -165,6 +169,13 @@ class JsonManager < HttpNode
         ch.del_song(req["play_queue_index"]);
       when "move_in_play_queue"
         ch.move_song(req["play_queue_index"], req["new_play_queue_index"]);
+      when "get_uploaded_files"
+        #TODO only if https sessions or send a 403
+        files = UploadManager.getUploadedFiles(@upload_dir, user);
+        resp [:uploaded_files] = {
+          :nb_files     	=> files.size,
+          :files			=> files
+        };
       when "select_plugin"
         ch.set_plugin(req["plugin_name"]);
       else
@@ -173,13 +184,14 @@ class JsonManager < HttpNode
       end
   end
 
-  def parse_action(resp, ch, req)
+  def parse_action(resp, ch, user, req)
     if( req.kind_of?(Array) )
       req.each { |currentAction| 
-        forward_action(currentAction,ch);
+        # Warning multi action should merge responses
+        forward_action(resp, currentAction, ch, user );
       }
     else
-      forward_action(req,ch);
+      forward_action(resp, req, ch, user);
     end
   end
 
