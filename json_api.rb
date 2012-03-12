@@ -5,6 +5,7 @@ require 'rev'
 require 'http.rb'
 require 'display.rb'
 require 'upload.rb'
+require 'fileutils'
 
 class JsonManager < HttpNode
   MSG_LVL_DEBUG   = 1
@@ -13,10 +14,11 @@ class JsonManager < HttpNode
   MSG_LVL_ERROR   = 4
   MSG_LVL_FATAL   = 5
 
-  def initialize(list, library, conf)
+  def initialize(list, library, conf_upload, conf_encode)
     @list     = list;
     @library  = library;
-    @upload_dir = conf["dst_folder"];
+    @upload_dir = conf_upload["dst_folder"];
+    @source_dir = conf_encode["source_dir"];
     super();
   end
 
@@ -176,6 +178,137 @@ class JsonManager < HttpNode
           :nb_files     	=> files.size,
           :files			=> files
         };
+      when "update_uploaded_file"
+        #TODO each field check if it's well formed
+
+        file_path= File.join(@upload_dir, user, req["file_name"]);
+        if File.file?(file_path)
+          cmd = "id3v2 --artist '#{req["artist"]}' '#{file_path}'";
+          value = `#{cmd}`;
+          cmd = "id3v2 --album '#{req["album"]}' '#{file_path}'";
+          value = `#{cmd}`;
+          cmd = "id3v2 --song '#{req["title"]}' '#{file_path}'";
+          value = `#{cmd}`;
+          cmd = "id3v2 --year #{req['year']} '#{file_path}'";
+          value = `#{cmd}`;
+          cmd = "id3v2 --track '#{req["track"]}' '#{file_path}'";
+          value = `#{cmd}`;
+          cmd = "id3v2 --genre '#{req["genre"]}' '#{file_path}'";
+          value = `#{cmd}`;
+          action_response = {
+             :name              => "update_uploaded_file",
+             :return            => "success",
+             :message           => "Id3 informations for #{req["file_name"]} successfuly updated"
+          };
+          resp [:uploaded_files] = {
+             :action_response        => action_response
+          };
+        else
+            action_response = {
+               :name              => "update_uploaded_file",
+               :return            => "error",
+               :message           => "File not found"
+            };
+            resp [:uploaded_files] = {
+               :action_response        => action_response
+            };
+        end
+        
+      when "validate_uploaded_file"
+        file_path= File.join(@upload_dir, user, req["file_name"]);
+        if File.file?(file_path)
+          begin
+            id3info = Id3.decode(file_path);
+          rescue Exception=>e
+            error(e);
+          end
+
+
+          begin
+            title = "#{id3info.artist} - #{id3info.album} - #{id3info.title}.mp3";
+            album_folder = "#{id3info.date} - #{id3info.album}";
+            dst_folder = File.join(@source_dir, id3info.artist);
+            Dir.mkdir(dst_folder);
+            dst_folder = File.join(dst_folder, id3info.album);
+            Dir.mkdir(dst_folder);
+          rescue Exception=>e
+            error(e);
+          end
+
+          begin
+            FileUtils.mv(file_path, File.join(dst_folder,title));
+          rescue Exception=>e
+            error(e);
+          end
+          begin
+            add_message(resp, MSG_LVL_INFO, nil, "File : #{req["file_name"]}, successfuly sent for encoding.");
+            action_response = {
+               :name              => "validate_uploaded_file",
+               :return            => "success"
+            };
+            resp [:uploaded_files] = {
+               :action_response        => action_response
+            };
+          rescue Exception=>e
+            error(e);
+            add_message(resp, MSG_LVL_ERROR, nil, "Could not move file #{req["file_name"]}");
+            action_response = {
+               :name              => "validate_uploaded_file",
+               :return            => "error",
+               :message           => "Could not move the file #{req["file_name"]}"
+            };
+            resp [:uploaded_files] = {
+               :action_reponse        => action_response
+            };
+          end
+        else 
+            add_message(resp, MSG_LVL_ERROR, nil, "Validation abort. File not found : #{req["file_name"]}.");
+            action_response = {
+               :name              => "validate_uploaded_file",
+               :return            => "error",
+               :message           => "Validation abort. File not found : #{req["file_name"]}."
+            };
+            resp [:uploaded_files] = {
+               :action_response        => action_response
+            };
+        end
+
+      when "delete_uploaded_file"
+        file_path= File.join(@upload_dir, user, req["file_name"]);
+        if File.file?(file_path)
+          begin
+            File.delete(file_path);
+            add_message(resp, MSG_LVL_INFO, nil, "File : #{req["file_name"]}, successfuly deleted.");
+            action_response = {
+               :name              => "delete_uploaded_file",
+               :return            => "success"
+            };
+            resp [:uploaded_files] = {
+               :action_response        => action_response
+            };
+          rescue Exception=>e
+            error(e);
+            add_message(resp, MSG_LVL_ERROR, nil, "Could not remove file #{req["file_name"]}");
+            action_response = {
+               :name              => "delete_uploaded_file",
+               :return            => "error",
+               :message           => "Could not remove file #{req["file_name"]}"
+            };
+            resp [:uploaded_files] = {
+               :action_reponse        => action_response
+            };
+          end
+        else 
+            add_message(resp, MSG_LVL_ERROR, nil, "Deletion abort. File not found : #{req["file_name"]}.");
+            action_response = {
+               :name              => "delete_uploaded_file",
+               :return            => "error",
+               :message           => "Deletion abort. File not found : #{req["file_name"]}."
+            };
+            resp [:uploaded_files] = {
+               :action_response        => action_response
+            };
+        end
       when "select_plugin"
         ch.set_plugin(req["plugin_name"]);
       else

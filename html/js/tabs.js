@@ -31,6 +31,15 @@ var tabs = Class.create({
         return null;
     },
 
+    getFirstTabByClassName : function( tabClassName ){
+        for(var i=0; i<this.tabs.length; ++i){
+            if( undefined != this.tabs[i].unique && this.tabs[i].unique == tabClassName ){
+                return this.tabs[i];
+            }
+        }
+        return null;
+    },
+
     //Add the tab in the html layout and in the tabs Array in javascript*/
     addTab : function(tab){
         var tabContentContainer = '';
@@ -79,7 +88,8 @@ var tabs = Class.create({
         $('tabscontent').insert({'bottom':tabContentContainer});
 
         // start to init static tab content
-        tab.updateContent();
+        if( typeof tab.updateContent === 'function')
+            tab.updateContent();
 
         return tab.identifier;
     },
@@ -104,6 +114,10 @@ var tabs = Class.create({
                 // We copy all tabs elements in a new Array without the element to delete 
                 if( i != index ){
                     newArray.push(this.tabs[i]);
+                } else {
+                    // Call tab clearMethod
+                    if( typeof this.tabs[i].clear === 'function')
+                        this.tabs[i].clear();
                 }
             }
             // Replace the global tab list by the new Array without the removed tab

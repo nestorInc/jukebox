@@ -183,7 +183,11 @@ function updateJukebox ( update_timestamp ) {
                 refreshSongTimeFromAjaxRequestDatetime = new Date().getTime() / 1000;
                 UpdateCurrentSong(0);
             }
-            
+
+            if (json.uploaded_files != null) {
+                tabs.getFirstTabByClassName("UploadTab").treatResponse(json.uploaded_files);
+            }
+
             if (json.timestamp != null) {
                 timestamp = json.timestamp;
             }
@@ -211,12 +215,11 @@ function updateJukebox ( update_timestamp ) {
                 // create a new searchTab
                 if(undefined == json.search_results.identifier || 
                    null == json.search_results.identifier){
+
                     // Adds the new created tab to the tabs container
                     var searchTab = new SearchTab(json.search_results);
                     id = tabs.addTab(searchTab);
-                    if( undefined != json.search_results["select"] &&
-                        null != json.search_results["select"] &&
-                        'true' == json.search_results["select"]){
+                    if( 'false' != json.search_results["select"]){
                         tabs.toggleTab(id);
                     }
                 } else {

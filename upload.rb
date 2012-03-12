@@ -4,6 +4,7 @@ require 'json'
 require 'rev'
 require 'http.rb'
 require 'display.rb'
+require 'uri'
 
 class UploadManager < HttpNode
   def initialize(conf)
@@ -11,7 +12,7 @@ class UploadManager < HttpNode
     # Defaults server values if config file is undefined
     @max_request_size_in_bytes = 21* 1024 * 1024;
     @max_file_size_in_bytes = 20 * 1024 * 1024; # 20M
-    @allowed_extensions = [ 'mp3', "wav" ];
+    @allowed_extensions = [ 'mp3' ];
     @dst_folder = "uploads/"
 
     # Initialize uploder from config file if exists
@@ -21,7 +22,7 @@ class UploadManager < HttpNode
 
   def on_request(s, req)
     # TODO separate upload by users : must create a subFolder By users
-    warning('Upload : File to upload request received : '+ req.options['X-File-Name'] + " filesize : " + req.options['Content-Length']);
+    warning('Upload : File to upload request received : '+ URI.unescape(req.options['X-File-Name']) + " filesize : " + req.options['Content-Length']);
     
     #Creates upload directory if doesn't exists
     if ( not File.directory?(@dst_folder))
@@ -34,7 +35,7 @@ class UploadManager < HttpNode
     if( req.to_s.length > @max_request_size_in_bytes )
       rep = HttpResponse.new(req.proto, 200, "Error",
                              "Content-Type" => "application/json");
-      res = '{ error: HttpRequest too big. ' + req.to_s.length + ' > #{@max_request_size_in_bytes} , success: false}';
+      res = '{ "error": "HttpRequest too big. ' + req.to_s.length + ' > #{@max_request_size_in_bytes}" , success: false}';
       rep.setData(res);
       s.write(rep.to_s);
       return;
@@ -43,15 +44,15 @@ class UploadManager < HttpNode
     # Extensions tests before uploading the file
     fileExtentionValidated = false;
     @allowed_extensions.each { |ext|
-      if( ext == File.extname(req.options['X-File-Name']) )
+      if( ext == File.extname(URI.unescape(req.options['X-File-Name'])) )
         fileExtentionValidated = true;
       end
     }
     if( not fileExtentionValidated )
-      error("Unauthorized file extension "+File.extname(req.options['X-File-Name'])+". Authorized extensions are #{@allowed_extensions}");
+      error("Unauthorized file extension "+File.extname(URI.unescape(req.options['X-File-Name']))+". Authorized extensions are #{@allowed_extensions}");
       rep = HttpResponse.new(req.proto, 200, "Error",
                              "Content-Type" => "application/json");
-      res = '{ error: Unauthorized file extension "' + File.extname(req.options['X-File-Name']) + '". Authorized extensions are #{@allowed_extensions}, success: false}';
+      res = '{ error: "Unauthorized file extension \'' + URI.unescape(File.extname(req.options['X-File-Name'])) + '\'. Authorized extensions are #{@allowed_extensions}", success: false}';
       rep.setData(res);
       s.write(rep.to_s);
       return;
@@ -61,18 +62,18 @@ class UploadManager < HttpNode
     if( req.options['Content-Length'].to_i > @max_file_size_in_bytes )
       rep = HttpResponse.new(req.proto, 200, "Error",
                              "Content-Type" => "application/json");
-      res = '{ error: File too big. ' + req.options['Content-Length'] + ' > #{@max_file_size_in_bytes} , success: false}';
+      res = '{ error: "File too big. ' + req.options['Content-Length'] + ' > #{@max_file_size_in_bytes}" , success: false}';
       rep.setData(res);
       s.write(rep.to_s);
       return;
     end
 
     #Checks if the file already exists
-    if( File.exists?(File.join(@dst_folder, req.options['X-File-Name'])) )
-      error("File " + req.options['X-File-Name'] + " already uploaded. Upload canceled.");
+    if( File.exists?(File.join(@dst_folder, s.user, URI.unescape(req.options['X-File-Name']))) )
+      error("File " + URI.unescape(req.options['X-File-Name']) + " already uploaded. Upload canceled.");
       rep = HttpResponse.new(req.proto, 200, "Error",
                              "Content-Type" => "application/json");
-      res = '{ error: File : "' + req.options['X-File-Name'] + '" already exists. upload canceled., success: false}';
+      res = '{ error: "' + URI.unescape(req.options['X-File-Name']) + ' already exists. upload canceled.", success: false}';
       rep.setData(res);
       s.write(rep.to_s);
       return;
@@ -80,7 +81,7 @@ class UploadManager < HttpNode
 
     #All is ok we can begin to save file on disk
     begin
-      File.open( File.join(File.join(@dst_folder,s.user), req.options['X-File-Name']), 'w') {|f| 
+      File.open( File.join(@dst_folder,s.user, URI.unescape(req.options['X-File-Name'])), 'w') {|f| 
         f.write(req.data);
       }
       rep = HttpResponse.new(req.proto, 200, "OK",
@@ -90,7 +91,7 @@ class UploadManager < HttpNode
       error(e);
       rep = HttpResponse.new(req.proto, 200, "Error",
                            "Content-Type" => "application/json");
-      res = '{ error: Could not save uploaded file., success: false}';
+      res = '{ error: "Could not save uploaded file.", success: false}';
     ensure
       rep.setData(res);
       s.write(rep.to_s);
@@ -118,18 +119,4 @@ class UploadManager < HttpNode
     end
     files;
   end
-
-  # def self.setUploadedId3Tags( user, filename, artist, album, title, year, track, genre)
-
-  # end
-
-  # def self.deleteUploadedSong( user, filename )
-
-  # end
-
-  # def self.validateUploadedSong( user, filename )
-  #   UploadManager.deleteUploadedSong( user, filename );
-  # end
-
-
 end

@@ -276,7 +276,6 @@ qq.FileUploaderBasic = function(o){
             onLeave: "The files are being uploaded, if you leave now the upload will be cancelled."            
         },
         showMessage: function(message){
-            alert(message);
         }               
     };
     qq.extend(this._options, o);
@@ -611,15 +610,20 @@ qq.extend(qq.FileUploader.prototype, {
         qq.FileUploaderBasic.prototype._onComplete.apply(this, arguments);
 
         // mark completed
-        var item = this._getItemByFileId(id);                
-        qq.remove(this._find(item, 'cancel'));
-        qq.remove(this._find(item, 'spinner'));
-        
+        var item = this._getItemByFileId(id);  
+        //qq.remove(this._find(item, 'cancel'));
+        //qq.remove(this._find(item, 'spinner'));
+
         if (result.success){
-            qq.addClass(item, this._classes.success);    
+            //qq.addClass(item, this._classes.success);    
+            showNotification(2,'File ' + fileName + 'successfuly uploaded.');
         } else {
-            qq.addClass(item, this._classes.fail);
+            if( result.error )
+                showNotification(5, result.error );
+            //qq.addClass(item, this._classes.fail);
         }         
+        qq.remove(item);
+
     },
     _addToList: function(id, fileName){
         var item = qq.toElement(this._options.fileTemplate);                

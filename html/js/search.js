@@ -231,13 +231,11 @@ var SearchTab = Class.create(Tab, {
 
             // Refresh slider position
             for( var k in this.sliders ){
-                this.locked[k]=true;
-                /* Update others sliders values by setting value with the current slider sliding value*/
                 if(typeof this.sliders[k].setValue === 'function') {
-                    /* Caution this instruction fire onChange slider event */
+                    this.locked[k]=true;
                     this.sliders[k].setValue(this.current_page);
+                    this.locked[k]=false;
                 }
-                this.locked[k]=false;
             }
         }
 
@@ -246,7 +244,7 @@ var SearchTab = Class.create(Tab, {
 
     },
 
-    /* Update sliders and pages*/
+    /* Update sliders and pages */
     initAndDisplaySearchControllers : function(){
         var pagelist_html = '';
         
@@ -278,8 +276,6 @@ var SearchTab = Class.create(Tab, {
         });
 
         // Init each sliders behavior
-
-
         this.resultsSlider = document.getElementsByName('results_slider_' + this.getIdentifier() );
         var tabId = this.getIdentifier();
         for(var i = 0 ; i <  this.resultsSlider.length; i++ ){
@@ -401,14 +397,15 @@ var SearchTab = Class.create(Tab, {
         }
         $('collection_content_' + this.getIdentifier() ).update(songlist_html);
         
-        
         // Create all draggables, once update is done.
-        for (var i = 0; i < librarySongs.length; i++) {
-	        new Draggable('library_song_' + this.getIdentifier() + '_' + i, {
-	            scroll: window,
-	            revert: true,
-	            handle: 'library_handle_' + this.getIdentifier() + '_' + i
-	        });
+        if( null != librarySongs ){
+            for (var i = 0; i < librarySongs.length; i++) {
+	            new Draggable('library_song_' + this.getIdentifier() + '_' + i, {
+	                scroll: window,
+	                revert: true,
+	                handle: 'library_handle_' + this.getIdentifier() + '_' + i
+	            });
+            }
         }
     }
 
