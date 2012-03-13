@@ -244,7 +244,9 @@ var uploadTab = Class.create(Tab, {
 
         // We assume that this.uploadedFiles.length > uploaded_files.length
         // It means that the last state could'nt contain less entries than the new list entries (deletions are not allowes in this code part)
-        if( null == this.uploadedFiles || null == this.uploadedFilesEdition || ( 0 == this.uploadedFiles.length && uploaded_files.length >= 1 )){
+        if( null == this.uploadedFiles || null == this.uploadedFilesEdition || 
+            ( ($('uploaded_files').down('tbody') == null ||( $('uploaded_files').down('tbody').childElementCount == 0 ) 
+               && uploaded_files.length >= 1 ))){
             /* TODO columns filters */
             if( uploaded_files.length > 0 ) {
                 if( null == this.tableId ){
