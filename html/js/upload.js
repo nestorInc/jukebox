@@ -103,7 +103,7 @@ var uploadTab = Class.create(Tab, {
                 
                 this.lastSendingDeletionIdentifier = null;
 
-                if( 0 == this.uploadedFiles.length ){
+                if( 0 == $('uploaded_files').down('tbody').childElementCount ){
                     var html_uploaded_files = '';
                     html_uploaded_files += "No file uploaded yet."
                     $('uploaded_files').update(html_uploaded_files);
@@ -160,7 +160,7 @@ var uploadTab = Class.create(Tab, {
                 /* release the sent query reference */
                 this.lastSendingValidationIdentifier = null;
 
-                if( 0 == this.uploadedFiles.length ){
+                if( $('uploaded_files').down('tbody').childElementCount  == 0 ){
                     var html_uploaded_files = '';
                     html_uploaded_files += "No file uploaded yet."
                     $('uploaded_files').update(html_uploaded_files);
