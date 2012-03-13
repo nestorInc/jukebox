@@ -19,11 +19,11 @@ var uploadTab = Class.create(Tab, {
     /* actions */
     deleteUploadedSong : function(file_name) {
         if( this.lastSendingDeletionIdentifier == null) {
-            this.lastSendingDeletionIdentifier = file_name;
+            this.lastSendingDeletionIdentifier = unescape(file_name);
             query = new Object();
             query.action = new Object();
             query.action.name = "delete_uploaded_file";
-            query.action.file_name = file_name;
+            query.action.file_name = unescape(file_name);
             updateJukebox();
         } 
     },
@@ -42,12 +42,12 @@ var uploadTab = Class.create(Tab, {
 
     updateUploadedSong : function(file_name){
         if( this.lastSendingUpdateIdentifier == null) {
-            this.lastSendingUpdateIdentifier = file_name;
-            var tmp = this.getUploadedFileEditionFromFilename(file_name);
+            this.lastSendingUpdateIdentifier = unescape(file_name);
+            var tmp = this.getUploadedFileEditionFromFilename(unescape(file_name));
             query = new Object();
             query.action = new Object();
             query.action.name = "update_uploaded_file";
-            query.action.file_name = file_name;
+            query.action.file_name = unescape(file_name);
             query.action.title = tmp.title;
             query.action.album = tmp.album;
             query.action.artist = tmp.artist;
@@ -60,11 +60,11 @@ var uploadTab = Class.create(Tab, {
 
     validateUploadedSong: function(file_name){
         if( this.lastSendingValidationIdentifier == null) {
-            this.lastSendingValidationIdentifier = file_name;
+            this.lastSendingValidationIdentifier = unescape(file_name);
             query = new Object();
             query.action = new Object();
             query.action.name = "validate_uploaded_file";
-            query.action.file_name = file_name;
+            query.action.file_name = unescape(file_name);
             updateJukebox();
         } 
     },
@@ -75,7 +75,7 @@ var uploadTab = Class.create(Tab, {
         if("success" == ret){
             if( null != this.lastSendingDeletionIdentifier ){
                 /* Delete html part*/
-                $('upload_line_' + this.lastSendingDeletionIdentifier).remove();
+                $('upload_line_' + escape(this.lastSendingDeletionIdentifier)).remove();
 
                 /* delete unmodified reference entry*/
                 var newUploaddedFilelist = new Array();
@@ -100,6 +100,7 @@ var uploadTab = Class.create(Tab, {
                 this.uploadedFilesEdition = newUploaddedFilelist;
 
                 /* release the sent query reference */
+                
                 this.lastSendingDeletionIdentifier = null;
 
                 if( 0 == this.uploadedFiles.length ){
@@ -108,6 +109,9 @@ var uploadTab = Class.create(Tab, {
                     $('uploaded_files').update(html_uploaded_files);
                     this.uploadedFilesEdition = null;
                     this.uploadedFiles = null;
+                } else {
+                    TableKit.unloadTable('uploaded_filelist_' + this.tableId); 
+                    TableKit.reloadTable('uploaded_filelist_' + this.tableId); 
                 }
             }
         } else if( "error" == ret ) {
@@ -129,7 +133,7 @@ var uploadTab = Class.create(Tab, {
         if("success" == ret){
             if( null != this.lastSendingValidationIdentifier ){
                 /* Delete html part*/
-                $('upload_line_' + this.lastSendingValidationIdentifier).remove();
+                $('upload_line_' + escape(this.lastSendingValidationIdentifier)).remove();
 
                 /* delete unmodified reference entry*/
                 var newUploaddedFilelist = new Array();
@@ -162,6 +166,8 @@ var uploadTab = Class.create(Tab, {
                     $('uploaded_files').update(html_uploaded_files);
                     this.uploadedFilesEdition = null;
                     this.uploadedFiles = null;
+                } else {
+                    TableKit.reloadTable('uploaded_filelist_' + this.tableId); 
                 }
             }
         } else if( "error" == ret ) {
@@ -190,7 +196,7 @@ var uploadTab = Class.create(Tab, {
 
     getUploadedFileHtml : function(obj){
         var html_uploaded_files = '';
-        html_uploaded_files += "<tr id='upload_line_" + obj.filename + "'>";
+        html_uploaded_files += "<tr id='upload_line_" + escape(obj.filename) + "'>";
         html_uploaded_files += "<td class='static'>";
         html_uploaded_files += obj.filename;
         html_uploaded_files += "</td>";
@@ -215,15 +221,15 @@ var uploadTab = Class.create(Tab, {
         html_uploaded_files += "<td class='static'>";
         html_uploaded_files += "<a href='javascript:void(0);'";
         html_uploaded_files += "onclick='tabs.getFirstTabByClassName(\"UploadTab\").deleteUploadedSong(\"" ;
-        html_uploaded_files += obj.filename + "\");return false;'>X</a>";
+        html_uploaded_files += escape(obj.filename) + "\");return false;'>X</a>";
 
         html_uploaded_files += "<a href='javascript:void(0);'"
         html_uploaded_files += "onclick='tabs.getFirstTabByClassName(\"UploadTab\").updateUploadedSong(\"";
-        html_uploaded_files += obj.filename + "\");return false;'>&nbsp;Update&nbsp;</a>";        
+        html_uploaded_files += escape(obj.filename) + "\");return false;'>&nbsp;Update&nbsp;</a>";        
 
         html_uploaded_files += "<a href='javascript:void(0);'"
         html_uploaded_files += "onclick='tabs.getFirstTabByClassName(\"UploadTab\").validateUploadedSong(\"";
-        html_uploaded_files += obj.filename + "\");return false;'>&nbsp;Validate&nbsp;</a>";        
+        html_uploaded_files += escape(obj.filename) + "\");return false;'>&nbsp;Validate&nbsp;</a>";        
         html_uploaded_files += "</td>";
         html_uploaded_files += "</tr>";
         return html_uploaded_files;
@@ -231,10 +237,10 @@ var uploadTab = Class.create(Tab, {
 
     displayUploadedFiles : function( uploaded_files ){
         var html_uploaded_files = '';
-
-        if(null == this.refresher){
-            this.refresher = setInterval("tabs.getFirstTabByClassName(\"UploadTab\").getUploadedFiles();", 10000);
-        }
+        
+        clearTimeout(this.refresher);
+        this.refresher = setTimeout("tabs.getFirstTabByClassName(\"UploadTab\").getUploadedFiles();", 5000);
+        
 
         // We assume that this.uploadedFiles.length > uploaded_files.length
         // It means that the last state could'nt contain less entries than the new list entries (deletions are not allowes in this code part)
@@ -265,7 +271,7 @@ var uploadTab = Class.create(Tab, {
                 html_uploaded_files += '<td id="year">Year</td>';
                 html_uploaded_files += '<td id="track">Track</td>';
                 html_uploaded_files += '<td id="genre">Genre</td>';
-                html_uploaded_files += '<th id="actions">Actions</th>';
+                html_uploaded_files += '<td id="actions">Actions</td>';
                 html_uploaded_files += '</tr></tfoot>';
                 
                 html_uploaded_files += '<tbody>';
@@ -282,8 +288,6 @@ var uploadTab = Class.create(Tab, {
                 html_uploaded_files += '</tbody></table>';
                 $('uploaded_files').update(html_uploaded_files);
 
-                // Todo create a class in a separate file
-
                 var obj = new musicFieldEditor("artist");
                 TableKit.Editable.addCellEditor(obj);
                 obj = new musicFieldEditor("album");
@@ -297,6 +301,7 @@ var uploadTab = Class.create(Tab, {
                 obj = new musicFieldEditor("genre");
                 TableKit.Editable.addCellEditor(obj);
 
+                TableKit.unloadTable('uploaded_filelist_' + this.tableId); 
                 TableKit.reloadTable('uploaded_filelist_' + this.tableId); 
 
             } else {
@@ -336,6 +341,7 @@ var uploadTab = Class.create(Tab, {
             }
             
             if( this.uploadedFiles.length != 0 && newLines.length > 0) {
+                TableKit.unloadTable('uploaded_filelist_' + this.tableId); 
                 TableKit.reloadTable('uploaded_filelist_'+this.tableId); 
             }
         }
@@ -348,7 +354,6 @@ var uploadTab = Class.create(Tab, {
 
     },
 
-
     getUploadedFiles: function(){
         query = new Object();
         query.action = new Object();
@@ -357,7 +362,8 @@ var uploadTab = Class.create(Tab, {
     },
 
     clear: function(){
-        clearInterval(this.refresher);
+        clearTimeout(this.refresher);
+        delete this.uploader;
         this.refresher = null;
     },
 
