@@ -183,6 +183,20 @@ class JsonManager < HttpNode
 
         file_path= File.join(@upload_dir, user, req["file_name"]);
         if File.file?(file_path)
+          if(nil == req["artist"] || nil == req["album"] || nil == req["title"] || nil ==  req["year"] )
+            error("Wrong id3 informations #{req["file_name"]}");
+            action_response = {
+            :name              => "validate_uploaded_file",
+            :return            => "error",
+            :message           => "Wrong id3 informations to update for #{req["file_name"]}"
+          };
+            resp [:uploaded_files] = {
+            :action_response        => action_response
+          };
+            return resp;
+          end
+          
+
           cmd = "id3v2 --artist '#{req["artist"]}' '#{file_path}'";
           value = `#{cmd}`;
           cmd = "id3v2 --album '#{req["album"]}' '#{file_path}'";
@@ -216,39 +230,76 @@ class JsonManager < HttpNode
         
       when "validate_uploaded_file"
         file_path= File.join(@upload_dir, user, req["file_name"]);
+
+        id3info = Id3.decode(file_path);
+        if(nil == id3info.artist || nil == id3info.album || nil == id3info.title || nil ==  id3info.date )
+          error("Wrong id3 informations #{req["file_name"]}");
+          action_response = {
+            :name              => "validate_uploaded_file",
+            :return            => "error",
+            :message           => "Wrong id3 informations for  #{req["file_name"]}"
+          };
+          resp [:uploaded_files] = {
+             :action_response        => action_response
+          };
+          return resp;
+        end
+
         if File.file?(file_path)
-          begin
-            id3info = Id3.decode(file_path);
-          rescue Exception=>e
-            error(e);
-          end
-
-
           begin
             title = "#{id3info.artist} - #{id3info.album} - #{id3info.title}.mp3";
             album_folder = "#{id3info.date} - #{id3info.album}";
             dst_folder = File.join(@source_dir, id3info.artist);
-            Dir.mkdir(dst_folder);
-            dst_folder = File.join(dst_folder, id3info.album);
-            Dir.mkdir(dst_folder);
           rescue Exception=>e
             error(e);
+            action_response = {
+               :name              => "validate_uploaded_file",
+               :return            => "error",
+               :message           => "Song #{req["file_name"]} : id3 informations not well formed. #{e}"
+            };
+            resp [:uploaded_files] = {
+               :action_reponse        => action_response
+            };
+            return resp;
           end
 
           begin
-            FileUtils.mv(file_path, File.join(dst_folder,title));
+            if not File.directory?(dst_folder)
+              warning("create " + dst_folder);
+              Dir.mkdir(dst_folder);
+            end
+            dst_folder = File.join(dst_folder, id3info.album);
+            if not File.directory?(dst_folder)
+              warning("create " + dst_folder);
+              Dir.mkdir(dst_folder);
+            end
           rescue Exception=>e
-            error(e);
           end
+
           begin
-            add_message(resp, MSG_LVL_INFO, nil, "File : #{req["file_name"]}, successfuly sent for encoding.");
-            action_response = {
-               :name              => "validate_uploaded_file",
-               :return            => "success"
-            };
-            resp [:uploaded_files] = {
-               :action_response        => action_response
-            };
+            if not File.file?(File.join(dst_folder,title))
+              FileUtils.mv(file_path, File.join(dst_folder,title));
+              warning( "File copied to " + File.join(dst_folder,title) );
+              action_response = {
+                :name              => "validate_uploaded_file",
+                :return            => "success",
+                :message           => "Song #{req["file_name"]} successfully sent for encoding."
+              };
+              resp [:uploaded_files] = {
+                :action_reponse        => action_response
+              };
+
+            else
+              action_response = {
+                :name              => "validate_uploaded_file",
+                :return            => "error",
+                :message           => "Song #{req["file_name"]} already in library, could not send it to encoding."
+              };
+              resp [:uploaded_files] = {
+                :action_reponse        => action_response
+              };
+              return resp;
+            end
           rescue Exception=>e
             error(e);
             add_message(resp, MSG_LVL_ERROR, nil, "Could not move file #{req["file_name"]}");
@@ -260,8 +311,9 @@ class JsonManager < HttpNode
             resp [:uploaded_files] = {
                :action_reponse        => action_response
             };
+            return resp;
           end
-        else 
+        else #!File
             add_message(resp, MSG_LVL_ERROR, nil, "Validation abort. File not found : #{req["file_name"]}.");
             action_response = {
                :name              => "validate_uploaded_file",
@@ -271,6 +323,7 @@ class JsonManager < HttpNode
             resp [:uploaded_files] = {
                :action_response        => action_response
             };
+            return resp;
         end
 
       when "delete_uploaded_file"

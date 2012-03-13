@@ -100,7 +100,6 @@ var uploadTab = Class.create(Tab, {
                 this.uploadedFilesEdition = newUploaddedFilelist;
 
                 /* release the sent query reference */
-                
                 this.lastSendingDeletionIdentifier = null;
 
                 if( 0 == $('uploaded_files').down('tbody').childElementCount ){
@@ -116,6 +115,7 @@ var uploadTab = Class.create(Tab, {
             }
         } else if( "error" == ret ) {
             showNotification(4,message);
+            this.lastSendingDeletionIdentifier = null;
         }
     },
 
@@ -125,12 +125,14 @@ var uploadTab = Class.create(Tab, {
             showNotification(1,message);
         } else if( "error" == ret ) {
             showNotification(4,message);
+            this.lastSendingUpdateIdentifier = null;
         }
     },
 
 
     validationResponse : function(ret, message){
         if("success" == ret){
+            showNotification(1,message);
             if( null != this.lastSendingValidationIdentifier ){
                 /* Delete html part*/
                 $('upload_line_' + escape(this.lastSendingValidationIdentifier)).remove();
@@ -172,6 +174,7 @@ var uploadTab = Class.create(Tab, {
             }
         } else if( "error" == ret ) {
             showNotification(4,message);
+            this.lastSendingValidationIdentifier = null;
         }
 
     },
@@ -311,7 +314,7 @@ var uploadTab = Class.create(Tab, {
                 html_uploaded_files += "No file uploaded yet."
                 $('uploaded_files').update(html_uploaded_files);
             }
-        } else if(this.uploadedFiles.length < uploaded_files.length){ // Just insert the new file
+        } else if($('uploaded_files').down('tbody').childElementCount < uploaded_files.length){ // Just insert the new file
             // Find files to add
             newLines = new Array();
             found = false;
@@ -386,7 +389,7 @@ var uploadTab = Class.create(Tab, {
         upload_form += '</div>';
         upload_form += '</div>';
         upload_form += '<h2>Uploaded files</h2>';
-        upload_form += '<div id="uploaded_files" style="overflow:none;">';
+        upload_form += '<div id="uploaded_files" style="overflow:auto;">';
         upload_form += '</div>';
         
         $('tabContent_' + this.identifier).update(upload_form);
