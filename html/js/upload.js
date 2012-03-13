@@ -306,7 +306,7 @@ var uploadTab = Class.create(Tab, {
                 obj = new musicFieldEditor("genre");
                 TableKit.Editable.addCellEditor(obj);
 
-                TableKit.unloadTable('uploaded_filelist_' + this.tableId); 
+                //TableKit.unloadTable('uploaded_filelist_' + this.tableId); 
                 TableKit.reloadTable('uploaded_filelist_' + this.tableId); 
 
             } else {

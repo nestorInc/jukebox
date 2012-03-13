@@ -179,23 +179,20 @@ class JsonManager < HttpNode
           :files			=> files
         };
       when "update_uploaded_file"
-        #TODO each field check if it's well formed
-
         file_path= File.join(@upload_dir, user, req["file_name"]);
         if File.file?(file_path)
           if(nil == req["artist"] || nil == req["album"] || nil == req["title"] || nil ==  req["year"] )
             error("Wrong id3 informations #{req["file_name"]}");
             action_response = {
-            :name              => "validate_uploaded_file",
-            :return            => "error",
-            :message           => "Wrong id3 informations to update for #{req["file_name"]}"
-          };
+              :name              => "update_uploaded_file",
+              :return            => "error",
+              :message           => "Wrong id3 informations to update for #{req["file_name"]}"
+            };
             resp [:uploaded_files] = {
-            :action_response        => action_response
-          };
+              :action_response        => action_response
+            };
             return resp;
           end
-          
 
           cmd = "id3v2 --artist '#{req["artist"]}' '#{file_path}'";
           value = `#{cmd}`;
@@ -258,7 +255,7 @@ class JsonManager < HttpNode
                :message           => "Song #{req["file_name"]} : id3 informations not well formed. #{e}"
             };
             resp [:uploaded_files] = {
-               :action_reponse        => action_response
+               :action_response        => action_response
             };
             return resp;
           end
@@ -286,7 +283,7 @@ class JsonManager < HttpNode
                 :message           => "Song #{req["file_name"]} successfully sent for encoding."
               };
               resp [:uploaded_files] = {
-                :action_reponse        => action_response
+                :action_response        => action_response
               };
 
             else
@@ -296,7 +293,7 @@ class JsonManager < HttpNode
                 :message           => "Song #{req["file_name"]} already in library, could not send it to encoding."
               };
               resp [:uploaded_files] = {
-                :action_reponse        => action_response
+                :action_response        => action_response
               };
               return resp;
             end
@@ -309,7 +306,7 @@ class JsonManager < HttpNode
                :message           => "Could not move the file #{req["file_name"]}"
             };
             resp [:uploaded_files] = {
-               :action_reponse        => action_response
+               :action_response        => action_response
             };
             return resp;
           end
@@ -348,7 +345,7 @@ class JsonManager < HttpNode
                :message           => "Could not remove file #{req["file_name"]}"
             };
             resp [:uploaded_files] = {
-               :action_reponse        => action_response
+               :action_response        => action_response
             };
           end
         else 
