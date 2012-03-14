@@ -233,12 +233,6 @@ class JsonManager < HttpNode
         file_path= File.join(@upload_dir, user, req["file_name"]);
 
         id3info = Id3.decode(file_path);
-        warning(id3info.artist);
-        warning(id3info.album);
-        warning(id3info.title);
-        warning(id3info.date);
-        warning(id3info.track);
-        warning(id3info.genre);
         if(nil == id3info.artist || nil == id3info.album || nil == id3info.title || nil ==  id3info.date || 
              "" == id3info.artist || "" == id3info.album || "" == id3info.title || "" ==  id3info.date || 
              id3info.artist.index('"') != nil || id3info.album.index('"') != nil || 
