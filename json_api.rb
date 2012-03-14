@@ -231,8 +231,20 @@ class JsonManager < HttpNode
         
       when "validate_uploaded_file"
         file_path= File.join(@upload_dir, user, req["file_name"]);
-
-        id3info = Id3.decode(file_path);
+        begin
+          id3info = Id3.decode(file_path);
+        rescue Exception=>e
+          error("Could not retrieve id3 informations #{file_path}");
+          action_response = {
+            :name              => "validate_uploaded_file",
+            :return            => "error",
+            :message           => "Could not retrieve id3 informations for #{file_path}"
+          };
+          resp [:uploaded_files] = {
+             :action_response        => action_response
+          };
+          return resp;
+        end
         if(nil == id3info.artist || nil == id3info.album || nil == id3info.title || nil ==  id3info.date || 
              "" == id3info.artist || "" == id3info.album || "" == id3info.title || "" ==  id3info.date || 
              id3info.artist.index('"') != nil || id3info.album.index('"') != nil || 
