@@ -64,7 +64,7 @@ musicFieldEditor.prototype.submit = function(cell, form) {
     
     /* update new value */
     for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition.length ; ++i ){
-        if( "upload_line_" + tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename == identifier )
+        if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename) == identifier )
         {
             tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name]=form.firstChild.value;
             break;
@@ -93,7 +93,7 @@ musicFieldEditor.prototype.edit = function(cell){
 
     /* update new value */
     for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition.length ; ++i ){
-        if( "upload_line_" + tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename == identifier )
+        if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename) == identifier )
         {
             input.value = tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name];
             break;

@@ -81,7 +81,7 @@ var uploadTab = Class.create(Tab, {
                 var newUploaddedFilelist = new Array();
                 var i = this.uploadedFiles.length - 1;
                 while( i >= 0 ){
-                    if( this.uploadedFiles.filename != this.lastSendingDeletionIdentifier ){
+                    if( this.uploadedFiles[i].filename != this.lastSendingDeletionIdentifier ){
                         newUploaddedFilelist.push(this.uploadedFiles[i]);
                     }
                     i = i - 1;
@@ -92,16 +92,13 @@ var uploadTab = Class.create(Tab, {
                 var newUploaddedFilelist = new Array();
                 var i = this.uploadedFilesEdition.length - 1;
                 while( i >= 0 ){
-                    if( this.uploadedFilesEdition.filename != this.lastSendingDeletionIdentifier ){
+                    if( this.uploadedFilesEdition[i].filename != this.lastSendingDeletionIdentifier ){
                         newUploaddedFilelist.push(this.uploadedFilesEdition[i]);
                     }
                     i = i - 1;
                 }
                 this.uploadedFilesEdition = newUploaddedFilelist;
-
-                /* release the sent query reference */
                 this.lastSendingDeletionIdentifier = null;
-
                 if( 0 == $('uploaded_files').down('tbody').childElementCount ){
                     var html_uploaded_files = '';
                     html_uploaded_files += "No file uploaded yet."
@@ -109,24 +106,22 @@ var uploadTab = Class.create(Tab, {
                     this.uploadedFilesEdition = null;
                     this.uploadedFiles = null;
                 } else {
-                    TableKit.unloadTable('uploaded_filelist_' + this.tableId); 
                     TableKit.reloadTable('uploaded_filelist_' + this.tableId); 
                 }
             }
         } else if( "error" == ret ) {
-            showNotification(4,message);
             this.lastSendingDeletionIdentifier = null;
+            showNotification(4,message);
         }
     },
 
     updateResponse : function(ret, message){
         if("success" == ret){
-            this.lastSendingUpdateIdentifier = null;
             showNotification(1,message);
         } else if( "error" == ret ) {
             showNotification(4,message);
-            this.lastSendingUpdateIdentifier = null;
         }
+        this.lastSendingUpdateIdentifier = null;
     },
 
 
@@ -141,7 +136,7 @@ var uploadTab = Class.create(Tab, {
                 var newUploaddedFilelist = new Array();
                 var i = this.uploadedFiles.length - 1;
                 while( i >= 0 ){
-                    if( this.uploadedFiles.filename != this.lastSendingValidationIdentifier ){
+                    if( this.uploadedFiles[i].filename != this.lastSendingValidationIdentifier ){
                         newUploaddedFilelist.push(this.uploadedFiles[i]);
                     }
                     i = i - 1;
@@ -152,14 +147,12 @@ var uploadTab = Class.create(Tab, {
                 var newUploaddedFilelist = new Array();
                 var i = this.uploadedFilesEdition.length - 1;
                 while( i >= 0 ){
-                    if( this.uploadedFilesEdition.filename != this.lastSendingValidationIdentifier ){
+                    if( this.uploadedFilesEdition[i].filename != this.lastSendingValidationIdentifier ){
                         newUploaddedFilelist.push(this.uploadedFilesEdition[i]);
                     }
                     i = i - 1;
                 }
                 this.uploadedFilesEdition = newUploaddedFilelist;
-
-                /* release the sent query reference */
                 this.lastSendingValidationIdentifier = null;
 
                 if( $('uploaded_files').down('tbody').childElementCount  == 0 ){
@@ -173,8 +166,8 @@ var uploadTab = Class.create(Tab, {
                 }
             }
         } else if( "error" == ret ) {
-            showNotification(4,message);
             this.lastSendingValidationIdentifier = null;
+            showNotification(4,message);
         }
 
     },

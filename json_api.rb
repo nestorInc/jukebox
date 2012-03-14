@@ -181,7 +181,11 @@ class JsonManager < HttpNode
       when "update_uploaded_file"
         file_path= File.join(@upload_dir, user, req["file_name"]);
         if File.file?(file_path)
-          if(nil == req["artist"] || nil == req["album"] || nil == req["title"] || nil ==  req["year"] )
+          warning(req);
+          if(nil == req["artist"] || nil == req["album"] || nil == req["title"] || nil ==  req["year"] || 
+             "" == req["artist"] || "" == req["album"] || "" == req["title"] || "" ==  req["year"] || 
+             req["artist"].index('"') != nil || req["album"].index('"') != nil || 
+             req["title"].index('"') != nil )
             error("Wrong id3 informations #{req["file_name"]}");
             action_response = {
               :name              => "update_uploaded_file",
@@ -194,17 +198,17 @@ class JsonManager < HttpNode
             return resp;
           end
 
-          cmd = "id3v2 --artist '#{req["artist"]}' '#{file_path}'";
+          cmd = "id3v2 --artist \"#{req["artist"]}\" \"#{file_path}\"";
           value = `#{cmd}`;
-          cmd = "id3v2 --album '#{req["album"]}' '#{file_path}'";
+          cmd = "id3v2 --album \"#{req["album"]}\" \"#{file_path}\"";
           value = `#{cmd}`;
-          cmd = "id3v2 --song '#{req["title"]}' '#{file_path}'";
+          cmd = "id3v2 --song \"#{req["title"]}\" \"#{file_path}\"";
           value = `#{cmd}`;
-          cmd = "id3v2 --year #{req['year']} '#{file_path}'";
+          cmd = "id3v2 --year #{req['year']} \"#{file_path}\"";
           value = `#{cmd}`;
-          cmd = "id3v2 --track '#{req["track"]}' '#{file_path}'";
+          cmd = "id3v2 --track \"#{req["track"]}\" \"#{file_path}\"";
           value = `#{cmd}`;
-          cmd = "id3v2 --genre '#{req["genre"]}' '#{file_path}'";
+          cmd = "id3v2 --genre \"#{req["genre"]}\" \"#{file_path}\"";
           value = `#{cmd}`;
           action_response = {
              :name              => "update_uploaded_file",
@@ -229,7 +233,17 @@ class JsonManager < HttpNode
         file_path= File.join(@upload_dir, user, req["file_name"]);
 
         id3info = Id3.decode(file_path);
-        if(nil == id3info.artist || nil == id3info.album || nil == id3info.title || nil ==  id3info.date )
+        warning(id3info.artist);
+        warning(id3info.album);
+        warning(id3info.title);
+        warning(id3info.date);
+        warning(id3info.track);
+        warning(id3info.genre);
+        if(nil == id3info.artist || nil == id3info.album || nil == id3info.title || nil ==  id3info.date || 
+             "" == id3info.artist || "" == id3info.album || "" == id3info.title || "" ==  id3info.date || 
+             id3info.artist.index('"') != nil || id3info.album.index('"') != nil || 
+             id3info.title.index('"') != nil )
+
           error("Wrong id3 informations #{req["file_name"]}");
           action_response = {
             :name              => "validate_uploaded_file",
