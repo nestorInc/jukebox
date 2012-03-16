@@ -29,7 +29,7 @@ musicFieldEditor.prototype.undo = function(cell) {
 
     /* Update html */
     for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFiles.length ; ++i ){
-        if( "upload_line_" + tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i].filename == identifier )
+        if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i].filename) == identifier )
         {
             cell.update(tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name]);
             tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name] = tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name];

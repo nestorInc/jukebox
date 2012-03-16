@@ -35,7 +35,7 @@ class UploadManager < HttpNode
     if( req.to_s.length > @max_request_size_in_bytes )
       rep = HttpResponse.new(req.proto, 200, "Error",
                              "Content-Type" => "application/json");
-      res = '{ "error": "HttpRequest too big. ' + req.to_s.length + ' > #{@max_request_size_in_bytes}" , success: false}';
+      res = '{ "error": "HttpRequest too big. #{req.to_s.length}  > #{@max_request_size_in_bytes}" , success: false}';
       rep.setData(res);
       s.write(rep.to_s);
       return;

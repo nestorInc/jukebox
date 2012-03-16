@@ -12,7 +12,7 @@ var uploadTab = Class.create(Tab, {
         this.lastSendingUpdateIdentifier = null;
         this.lastSendingValidationIdentifier = null;
         this.refresher = null;
-        this.tableId = 0;
+        this.tableId = new Date().getTime();
     },
 
 
@@ -105,8 +105,13 @@ var uploadTab = Class.create(Tab, {
                     $('uploaded_files').update(html_uploaded_files);
                     this.uploadedFilesEdition = null;
                     this.uploadedFiles = null;
+
                 } else {
-                    TableKit.reloadTable('uploaded_filelist_' + this.tableId); 
+                    var temp = new Date().getTime() ;
+                    $('uploaded_filelist_' + this.tableId).id = 'uploaded_filelist_' + temp; 
+                    this.tableId = temp;
+
+                    this.tableKit = new TableKit( 'uploaded_filelist_' + this.tableId, { });
                 }
             }
         } else if( "error" == ret ) {
@@ -161,8 +166,11 @@ var uploadTab = Class.create(Tab, {
                     $('uploaded_files').update(html_uploaded_files);
                     this.uploadedFilesEdition = null;
                     this.uploadedFiles = null;
-                } else {
-                    TableKit.reloadTable('uploaded_filelist_' + this.tableId); 
+                } else {                
+                    var temp = new Date().getTime();
+                    $('uploaded_filelist_' + this.tableId).id = 'uploaded_filelist_' + temp; 
+                    this.tableId = temp;
+                    this.tableKit = new TableKit( 'uploaded_filelist_' + this.tableId, { });
                 }
             }
         } else if( "error" == ret ) {
@@ -237,22 +245,17 @@ var uploadTab = Class.create(Tab, {
         clearTimeout(this.refresher);
         this.refresher = setTimeout("tabs.getFirstTabByClassName(\"UploadTab\").getUploadedFiles();", 5000);
         
-
         // We assume that this.uploadedFiles.length > uploaded_files.length
-        // It means that the last state could'nt contain less entries than the new list entries (deletions are not allowes in this code part)
+        // It means that the last state could'nt contain less entries than the new list entries
+        // (deletions are not allowes in this code part)
         if( null == this.uploadedFiles || null == this.uploadedFilesEdition || 
             ( ($('uploaded_files').down('tbody') == null ||( $('uploaded_files').down('tbody').childElementCount == 0 ) 
                && uploaded_files.length >= 1 ))){
             /* TODO columns filters */
             if( uploaded_files.length > 0 ) {
-                if( null == this.tableId ){
-                    this .tableId = 0;
-                } else {
-                    this.tableId = this.tableId + 1;
-                }
                 html_uploaded_files += '<table id="uploaded_filelist_' + this.tableId + '" class="sortable resizable editable">';
                 html_uploaded_files += '<thead><tr>';
-                html_uploaded_files += '<th class="sortfirstdesc" id="filename">Filename</th>';
+                html_uploaded_files += '<th id="filename">Filename</th>';
                 html_uploaded_files += '<th id="artist">Artist</th>';
                 html_uploaded_files += '<th id="album">Album</th>';
                 html_uploaded_files += '<th id="title">Title</th>';
@@ -262,7 +265,7 @@ var uploadTab = Class.create(Tab, {
                 html_uploaded_files += '<th id="actions">Actions</th>';
                 html_uploaded_files += '</tr></thead>';
                 html_uploaded_files += '<tfoot><tr>';
-                html_uploaded_files += '<td class="sortfirstdesc" id="filename">Filename</td>';
+                html_uploaded_files += '<td id="filename">Filename</td>';
                 html_uploaded_files += '<td id="artist">Artist</td>';
                 html_uploaded_files += '<td id="album">Album</td>';
                 html_uploaded_files += '<td id="title">Title</td>';
@@ -299,13 +302,14 @@ var uploadTab = Class.create(Tab, {
                 obj = new musicFieldEditor("genre");
                 TableKit.Editable.addCellEditor(obj);
 
-                //TableKit.unloadTable('uploaded_filelist_' + this.tableId); 
-                TableKit.reloadTable('uploaded_filelist_' + this.tableId); 
+                this.tableKit = new TableKit( 'uploaded_filelist_' + this.tableId, { });
+
 
             } else {
                 var html_uploaded_files = '';
                 html_uploaded_files += "No file uploaded yet."
                 $('uploaded_files').update(html_uploaded_files);
+
             }
         } else if($('uploaded_files').down('tbody').childElementCount < uploaded_files.length){ // Just insert the new file
             // Find files to add
@@ -339,11 +343,14 @@ var uploadTab = Class.create(Tab, {
             }
             
             if( this.uploadedFiles.length != 0 && newLines.length > 0) {
-                TableKit.unloadTable('uploaded_filelist_' + this.tableId); 
-                TableKit.reloadTable('uploaded_filelist_'+this.tableId); 
+                var temp = new Date().getTime();
+                $('uploaded_filelist_' + this.tableId).id = 'uploaded_filelist_' + temp; 
+                this.tableId = temp;
+                this.tableKit = new TableKit( 'uploaded_filelist_' + this.tableId, { });
             }
         }
         if(null == this.uploadedFiles){
+            // trick used to clone
             this.uploadedFiles = JSON.parse(JSON.stringify(uploaded_files));
         }
         if( null == this.uploadedFilesEdition ) {
@@ -361,6 +368,7 @@ var uploadTab = Class.create(Tab, {
 
     clear: function(){
         clearTimeout(this.refresher);
+        /* Don't know if it works */
         delete this.uploader;
         this.refresher = null;
     },

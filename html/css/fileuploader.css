@@ -31,6 +31,7 @@
 .qq-upload-fail .qq-upload-failed-text {display:inline;}
 
 
+
 thead, tfoot {
     background-color: #DDD;
 }
@@ -73,3 +74,5 @@ div.resize-handle {
     top:0;
     left:0;
 }
+
+
