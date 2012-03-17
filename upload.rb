@@ -100,23 +100,26 @@ class UploadManager < HttpNode
   
   def self.getUploadedFiles(uploadDirectory, user)
     files = [];
-    Dir.foreach(File.join(uploadDirectory, user)) do |current_file| 
-      if File.file?(File.join(uploadDirectory, user, current_file))
-        id3info = Id3.decode(File.join(uploadDirectory, user, current_file));
-        file = {
-          :filename   => current_file,
-          :date_upload => File.atime(File.join(uploadDirectory, user, current_file)),
-          :filesize => current_file.size,
-          :artist => id3info.artist,
-          :album => id3info.album,
-          :title => id3info.title,
-          :year => id3info.date,
-          :track => id3info.track,
-          :genre => id3info.genre
-        };
-        files.push(file);
+    begin
+      Dir.foreach(File.join(uploadDirectory, user)) do |current_file| 
+        if File.file?(File.join(uploadDirectory, user, current_file))
+          id3info = Id3.decode(File.join(uploadDirectory, user, current_file));
+          file = {
+            :filename   => current_file,
+            :date_upload => File.atime(File.join(uploadDirectory, user, current_file)),
+            :filesize => current_file.size,
+            :artist => id3info.artist,
+            :album => id3info.album,
+            :title => id3info.title,
+            :year => id3info.date,
+            :track => id3info.track,
+            :genre => id3info.genre
+          };
+          files.push(file);
+        end
       end
-    end
-    files;
+   rescue Exception=>e      
+   end
+   files;
   end
 end

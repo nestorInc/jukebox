@@ -179,45 +179,102 @@ class JsonManager < HttpNode
           :files			=> files
         };
       when "update_uploaded_file"
+        error_message = nil;
+
         file_path= File.join(@upload_dir, user, req["file_name"]);
         if File.file?(file_path)
-          warning(req);
-          if(nil == req["artist"] || nil == req["album"] || nil == req["title"] || nil ==  req["year"] || 
-             "" == req["artist"] || "" == req["album"] || "" == req["title"] || "" ==  req["year"] || 
-             req["artist"].index('"') != nil || req["album"].index('"') != nil || 
-             req["title"].index('"') != nil )
-            error("Wrong id3 informations #{req["file_name"]}");
-            action_response = {
-              :name              => "update_uploaded_file",
-              :return            => "error",
-              :message           => "Wrong id3 informations to update for #{req["file_name"]}"
-            };
-            resp [:uploaded_files] = {
-              :action_response        => action_response
-            };
-            return resp;
+
+          # Integrity check part
+          if(nil == req["artist"] ||  "" == req["artist"])
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag artist, this field should not be empty. ';
           end
 
-          cmd = "id3v2 --artist \"#{req["artist"]}\" \"#{file_path}\"";
-          value = `#{cmd}`;
-          cmd = "id3v2 --album \"#{req["album"]}\" \"#{file_path}\"";
-          value = `#{cmd}`;
-          cmd = "id3v2 --song \"#{req["title"]}\" \"#{file_path}\"";
-          value = `#{cmd}`;
-          cmd = "id3v2 --year #{req['year']} \"#{file_path}\"";
-          value = `#{cmd}`;
-          cmd = "id3v2 --track \"#{req["track"]}\" \"#{file_path}\"";
-          value = `#{cmd}`;
-          cmd = "id3v2 --genre \"#{req["genre"]}\" \"#{file_path}\"";
-          value = `#{cmd}`;
-          action_response = {
-             :name              => "update_uploaded_file",
-             :return            => "success",
-             :message           => "Id3 informations for #{req["file_name"]} successfuly updated"
-          };
-          resp [:uploaded_files] = {
-             :action_response        => action_response
-          };
+          if( nil == req["album"] || "" == req["album"] )
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag album, this field should not be empty. ';
+          end
+
+          if( nil == req["title"] || "" == req["title"] )
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag title, this field should not be empty. ';
+          end
+
+          # Todo regexp to check if [0-9]+
+          if( nil == req["year"] || "" == req["year"] || "" == req["year"] )
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag year, this field must be an integer. ';
+          end
+
+
+          # Todo regexp to check if [0-9]+/?[0-9]*
+          if( nil == req["track"] || "" == req["track"] )
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag track, this field must be shaped as [Track number]/[Album nb tracks]. ';
+          end
+
+          # Todo regexp to check if [0-9]+
+          if( nil == req["genre"] || "" == req["genre"] )
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag genre, it must be an integer >=0 and <= 255.';
+          end
+
+
+          if( nil == error_message )
+            begin
+              cmd = "id3v2 --album \"#{req["album"]}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --song \"#{req["title"]}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --year #{req['year']} \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --artist \"#{req["artist"]}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --track \"#{req["track"]}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --genre \"#{req["genre"]}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              action_response = {
+                :name              => "update_uploaded_file",
+                :return            => "success",
+                :message           => "Id3 informations for #{req["file_name"]} successfuly updated"
+              };
+              resp [:uploaded_files] = {
+                :action_response        => action_response
+              };
+            rescue Exception=>e
+              action_response = {
+                :name              => "update_uploaded_file",
+                :return            => "error",
+                :message           => "No ID3 tag updated for #{req["file_name"]} : #{e}"
+              };
+              resp [:uploaded_files] = {
+                :action_response        => action_response
+              };
+            end
+          else
+            action_response = {
+               :name              => "update_uploaded_file",
+               :return            => "error",
+               :message           => "No ID3 tage updated! #{error_message}"
+            };
+            resp [:uploaded_files] = {
+               :action_response        => action_response
+            };
+  
+          end
         else
             action_response = {
                :name              => "update_uploaded_file",
@@ -245,24 +302,68 @@ class JsonManager < HttpNode
           };
           return resp;
         end
-        if(nil == id3info.artist || nil == id3info.album || nil == id3info.title || nil ==  id3info.date || 
-             "" == id3info.artist || "" == id3info.album || "" == id3info.title || "" ==  id3info.date || 
-             id3info.artist.index('"') != nil || id3info.album.index('"') != nil || 
-             id3info.title.index('"') != nil )
 
+        # Integrity check part
+        if(nil == id3info.artist or  "" == id3info.artist)
+          if( nil == error_message )
+            error_message = '';
+          end
+          error_message += 'ID3 tag Artist invalid, this field should not be empty. ';
+        end
+        
+        if( nil == id3info.album or "" == id3info.album )
+          if( nil == error_message )
+            error_message = '';
+          end
+          error_message += 'ID3 tag Album invalid, this field should not be empty. ';
+        end
+
+        if( nil == id3info.title or "" == id3info.title )
+          if( nil == error_message )
+            error_message = '';
+          end
+          error_message += 'ID3 tag title invalid, this field should not be empty. ';
+        end
+        
+        # Todo regexp to check if [0-9]+
+        if( nil == id3info.date or "" == id3info.date or "" == id3info.date )
+          if( nil == error_message )
+            error_message = '';
+          end
+          error_message += 'Id3 tag Year invalid, this field must be an integer. ';
+        end
+        
+        # Todo regexp to check if [0-9]+/?[0-9]*
+        if( nil == id3info.track or "" == id3info.track )
+          if( nil == error_message )
+            error_message = '';
+          end
+          error_message += 'Id3 tag track is invalid, this field must be shaped as [Track number]/[Album nb tracks]. ';
+        end
+
+        # Todo regexp to check if [0-9]+
+        if( nil == id3info.genre or "" == id3info.genre )
+          if( nil == error_message )
+            error_message = '';
+          end
+          error_message += 'Could not set ID3 tag genre, it must be an integer >=0 and <= 255.';
+        end
+
+
+        if( nil != error_message )
           error("Wrong id3 informations #{req["file_name"]}");
           action_response = {
             :name              => "validate_uploaded_file",
             :return            => "error",
-            :message           => "Wrong id3 informations for  #{req["file_name"]}"
+            :message           => "Could not validate #{req["file_name"]}, wrong id3 informations. #{error_message}"
           };
           resp [:uploaded_files] = {
-             :action_response        => action_response
+           :action_response        => action_response
           };
           return resp;
         end
 
-        if File.file?(file_path)
+        if( File.file?(file_path)  )
           begin
             title = "#{id3info.artist} - #{id3info.album} - #{id3info.title}.mp3";
             album_folder = "#{id3info.date} - #{id3info.album}";
