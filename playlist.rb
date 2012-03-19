@@ -2,20 +2,23 @@ class Playlist
   attr_reader :list;
 
   def initialize(params = {})
-    @id     = params["pid"];
-    @list   = params["list"];
-    @list   = @list.split(",").map { |v| v.to_i; } if(@list);
-    @list ||= [];
+    @timestamp   = Time.now().to_i();
+    @id          = params["pid"];
+    @list        = params["list"];
+    @list        = @list.split(",").map { |v| v.to_i; } if(@list);
+    @list      ||= [];
   end
 
   def add(pos = nil, data)
-    mids = expand_data(data);
-    pos  = check_pos(pos);
+    @timestamp   = Time.now().to_i();
+    mids         = expand_data(data);
+    pos          = check_pos(pos);
     @list.insert(pos, *mids);
     pos;
   end
 
   def del(pos)
+    @timestamp   = Time.now().to_i();
     raise "Playlist::del Invalid position class" if(pos.class != Fixnum);
     @list.delete_at(pos) || false;
   end
@@ -66,5 +69,53 @@ class Playlist
   def check_pos(pos)
     return @list.size() if(pos == nil || pos < 0 || pos > @list.size());
     pos;
+  end
+end
+
+class SongQueue < Playlist
+  def initialize()
+    @pos = 0;
+    super();
+  end
+
+  def add(pos = nil, mid)
+    pos += @pos + 1 if(pos != nil);
+    super(pos, mid);
+  end
+
+  def del(pos)
+    pos += @pos + 1 if(pos != nil);
+    super(pos);
+  end
+
+  def move(opos, npos)
+    super(opos, npos);
+  end
+
+  def next()
+    @pos += 1;
+  end
+
+  def previous()
+    @pos -= 1 if(@pos > 0);
+  end
+
+  def [](range)
+    @list[@pos..-1][range];
+  end
+
+  def size()
+    @list[@pos..-1].size();
+  end
+
+  def to_client(lib)
+    queue = @list[1..-1];
+    if(queue.size() != 0)
+      queue = lib.get_file(*queue).reject(&:nil?).map(&:to_client);
+    end
+
+    {
+      :songs => queue || []
+    }
   end
 end

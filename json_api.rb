@@ -76,7 +76,7 @@ class JsonManager < HttpNode
         resp[:channel_infos] = ch.to_client();
         resp[:current_song]  = ch.getCurrentSongInfo();
         if(timestamp <= ch.timestamp)
-          add_play_queue(resp, ch);
+          resp[:play_queue] = ch.queue.to_client(@library);
         end
       rescue JSON::ParserError => e
         add_message(resp, MSG_LVL_ERROR, "fail to parse request", "Exception when parsing json request, #{e}");
@@ -99,82 +99,66 @@ class JsonManager < HttpNode
     resp[:messages].push(msg);
   end
 
-  def add_play_queue(resp, ch)
-    queue = ch.mids[1..-1];
-    if(queue.size() != 0)
-      queue = @library.get_file(*queue).reject(&:nil?).map(&:to_client);
-    end
-
-    if(queue)
-      resp[:play_queue] = {
-        :songs => queue
-      }
-    end
-  end
-
   def forward_action(resp, req, ch, user)
-      if( nil == resp )
-        resp = { :timestamp => Time.now.to_i() };
+    resp ||= {};
+    resp[:timestamp] = Time.now.to_i();
+    case(req["name"])
+    when "next"
+      ch.next();
+    when "previous"
+      ch.previous();
+    when "add_to_play_queue"
+      ch.queue.add(req["play_queue_index"], req["mid"])
+    when "add_search_to_play_queue" 
+      result = @library.secure_request("mid",
+                                       CGI::unescape(req["search_value"]),
+                                       req["search_comparison"],
+                                       req["search_field"],
+                                       req["order_by"],
+                                       req["order_by_way"],
+                                       req["first_result"],
+                                       req["result_count"]);
+      if(req["play_queue_position"]  == "head")
+        i = 0;
       else
-        resp[:timestamp] = Time.now.to_i();
+        i = nil;
       end
-      case(req["name"])
-      when "next"
-        ch.next();
-      when "previous"
-        ch.previous();
-      when "add_to_play_queue"
-        ch.add_song(req["play_queue_index"], req["mid"])
-      when "add_search_to_play_queue" 
-        result = @library.secure_request("mid",
-                                         CGI::unescape(req["search_value"]),
-                                         req["search_comparison"],
-                                         req["search_field"],
-                                         req["order_by"],
-                                         req["order_by_way"],
-                                         req["first_result"],
-                                         req["result_count"]);
-        if(req["play_queue_position"]  == "head")
-          i = 0;
-        else
-          i = nil;
-        end
-        ch.add_song(i, result);
-      when "remove_from_play_queue"
-        ch.del_song(req["play_queue_index"]);
-      when "move_in_play_queue"
-        ch.move_song(req["play_queue_index"], req["new_play_queue_index"]);
-      when "get_uploaded_files"
-        #TODO only if https sessions or send a 403
-        files = UploadManager.getUploadedFiles(@upload_dir, user);
-        resp [:uploaded_files] = {
-          :nb_files     	=> files.size,
-          :files			=> files
-        };
-      when "update_uploaded_file"
-        action_response = UploadManager.updateUploadedFiles(@upload_dir, user, 
-                                                           req, resp);
-        resp [:uploaded_files] = {
-           :action_response        => action_response
-        };
-      when "validate_uploaded_file"
-        action_response = UploadManager.validateUploadedFiles(@source_dir, @upload_dir, user, 
-                                                             req, resp);
-        resp [:uploaded_files] = {
-          :action_response        => action_response
-        };
-      when "delete_uploaded_file"
-        action_response = UploadManager.deleteUploadedFiles(@upload_dir, user, 
-                                                           req, resp);
-        resp [:uploaded_files] = {
-          :action_response        => action_response
-        };
-      when "select_plugin"
-        ch.set_plugin(req["plugin_name"]);
-      else
-        error("Unknown action #{req["name"]}", true, $error_file);
-        add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
-      end
+      ch.queue.add(i, result);
+    when "remove_from_play_queue"
+      ch.queue.del(req["play_queue_index"]);
+    when "move_in_play_queue"
+      ch.queue.move(req["play_queue_index"], req["new_play_queue_index"]);
+    when "get_uploaded_files"
+      #TODO only if https sessions or send a 403
+      files = UploadManager.getUploadedFiles(@upload_dir, user);
+      resp [:uploaded_files] = {
+        :nb_files     	=> files.size,
+        :files			=> files
+      };
+    when "update_uploaded_file"
+      action_response = UploadManager.updateUploadedFiles(@upload_dir, user, 
+                                                          req, resp);
+      resp [:uploaded_files] = {
+        :action_response        => action_response
+      };
+    when "validate_uploaded_file"
+      action_response = UploadManager.validateUploadedFiles(@source_dir, @upload_dir, user, 
+                                                            req, resp);
+      resp [:uploaded_files] = {
+        :action_response        => action_response
+      };
+    when "delete_uploaded_file"
+      action_response = UploadManager.deleteUploadedFiles(@upload_dir, user, 
+                                                          req, resp);
+      resp [:uploaded_files] = {
+        :action_response        => action_response
+      };
+    when "select_plugin"
+      ch.set_plugin(req["plugin_name"]);
+    else
+      error("Unknown action #{req["name"]}", true, $error_file);
+      add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
+    end
   end
 
   def parse_action(resp, ch, user, req)

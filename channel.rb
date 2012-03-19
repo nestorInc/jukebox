@@ -36,12 +36,13 @@ $channelsCron.attach(Rev::Loop.default)
 class Channel
   attr_reader   :name
   attr_reader   :timestamp
+  attr_reader   :queue
 
   def initialize(name, library)
     @name         = name;
     @library      = library;
     @connections  = [];
-    @history      = Playlist.new();
+    @queue        = SongQueue.new();
     @cur          = nil;
     @pos          = 0;
     @currentEntry = nil;
@@ -93,34 +94,14 @@ class Channel
 
   def next()
     log("Next on channel #{@name}");
-    @pos += 1;    
+    @queue.next();
     fetchData();
   end
 
   def previous()
     log("Previous on channel #{@name}");
-    @pos -=1 if(@pos > 0);
+    @queue.previous();
     fetchData();
-  end
-
-  def mids()
-    @history[@pos..-1];
-  end
- 
-  def add_song(pos, mid)
-    @timestamp = Time.now().to_i();
-    pos += @pos + 1 if(pos != nil);
-    @history.add(pos, mid);
-  end
-
-  def del_song(pos)
-    @timestamp = Time.now().to_i();
-    @history.del(@pos + pos + 1);
-  end
-
-  def move_song(old_index, new_index)
-    @timestamp = Time.now().to_i();
-    @history.move(@pos + old_index + 1, @pos + new_index + 1);
   end
 
   def getCurrentSongInfo()
@@ -155,7 +136,7 @@ class Channel
   def fetchData()
     begin
       # move to the next entry
-      mid = @history[@pos];
+      mid = @queue[0];
       @currentEntry = @library.get_file(mid).first;
       file = @currentEntry.dst;
       log("Fetching on channel #{@name}: #{file}");
@@ -175,7 +156,7 @@ class Channel
       @tag = tag.to_s();
       @timestamp = Time.now().to_i();
     rescue => e
-      @pos += 1 if(@history[@pos]);
+      @queue.next() if(@queue[0]);
       error("Can't load mid=#{mid}: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
       retry;
     end
