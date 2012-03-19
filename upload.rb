@@ -229,6 +229,7 @@ class UploadManager < HttpNode
   end
 
   def self.validateUploadedFiles(source_dir,upload_dir, user, req, resp)
+    error_message = nil;
     file_path= File.join(upload_dir, user, Iconv.conv('ISO-8859-1', 'utf-8', req["file_name"]));
 
     begin

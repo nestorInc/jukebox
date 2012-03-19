@@ -75,4 +75,6 @@ div.resize-handle {
     left:0;
 }
 
-
+td.modified {
+    color : #880000;
+}

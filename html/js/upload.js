@@ -74,8 +74,10 @@ var uploadTab = Class.create(Tab, {
     deletionResponse : function(ret, message){
         if("success" == ret){
             if( null != this.lastSendingDeletionIdentifier ){
+
                 /* Delete html part*/
                 $('upload_line_' + escape(this.lastSendingDeletionIdentifier)).remove();
+                showNotification(2, "song '" + this.lastSendingDeletionIdentifier + "'sucessfully deleted");
 
                 /* delete unmodified reference entry*/
                 var newUploaddedFilelist = new Array();
@@ -123,6 +125,23 @@ var uploadTab = Class.create(Tab, {
     updateResponse : function(ret, message){
         if("success" == ret){
             showNotification(1,message);
+
+            /* delete all modified styles */
+            $('upload_line_' + escape(this.lastSendingUpdateIdentifier)).select('[class="modified"]').each(function(e){
+                    e.removeClassName("modified");
+            });
+
+            /* hide update */
+            $('upload_line_' + escape(this.lastSendingUpdateIdentifier)).select('[name="update"]').each(function(e){
+                    e.hide();
+            });
+
+            /* Show validate */
+            $('upload_line_' + escape(this.lastSendingUpdateIdentifier)).select('[name="validate"]').each(function(e){
+                    e.show();
+            });
+            
+
         } else if( "error" == ret ) {
             showNotification(4,message);
         }
@@ -222,18 +241,18 @@ var uploadTab = Class.create(Tab, {
         html_uploaded_files += "<td>";
         html_uploaded_files += obj.genre;
         html_uploaded_files += "</td>";
-        html_uploaded_files += "<td class='static'>";
-        html_uploaded_files += "<a href='javascript:void(0);'";
+        html_uploaded_files += "<td class='static actions'>";
+        html_uploaded_files += "<div name='delete'><a href='javascript:void(0);'";
         html_uploaded_files += "onclick='tabs.getFirstTabByClassName(\"UploadTab\").deleteUploadedSong(\"" ;
-        html_uploaded_files += escape(obj.filename) + "\");return false;'>X</a>";
+        html_uploaded_files += escape(obj.filename) + "\");return false;'>X</a></div>";
 
-        html_uploaded_files += "<a href='javascript:void(0);'"
+        html_uploaded_files += "<div name='update' style='display:none;'><a href='javascript:void(0);'"
         html_uploaded_files += "onclick='tabs.getFirstTabByClassName(\"UploadTab\").updateUploadedSong(\"";
-        html_uploaded_files += escape(obj.filename) + "\");return false;'>&nbsp;Update&nbsp;</a>";        
+        html_uploaded_files += escape(obj.filename) + "\");return false;'>&nbsp;Update&nbsp;</a></div>";        
 
-        html_uploaded_files += "<a href='javascript:void(0);'"
+        html_uploaded_files += "<div name='validate'><a href='javascript:void(0);'"
         html_uploaded_files += "onclick='tabs.getFirstTabByClassName(\"UploadTab\").validateUploadedSong(\"";
-        html_uploaded_files += escape(obj.filename) + "\");return false;'>&nbsp;Validate&nbsp;</a>";        
+        html_uploaded_files += escape(obj.filename) + "\");return false;'>&nbsp;Validate&nbsp;</a></div>";        
         html_uploaded_files += "</td>";
         html_uploaded_files += "</tr>";
         return html_uploaded_files;
