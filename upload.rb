@@ -5,6 +5,7 @@ require 'rev'
 require 'http.rb'
 require 'display.rb'
 require 'uri'
+require 'iconv'
 
 class UploadManager < HttpNode
   def initialize(conf)
@@ -121,5 +122,270 @@ class UploadManager < HttpNode
    rescue Exception=>e      
    end
    files;
+  end
+
+  def self.updateUploadedFiles(upload_dir, user, req, resp)
+    error_message = nil;
+    file_path= File.join(upload_dir, user, Iconv.conv('ISO-8859-1', 'utf-8', req["file_name"]));
+
+    if File.file?(file_path)
+
+      # Integrity check part
+          if(nil == req["artist"] ||  "" == req["artist"])
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag artist, this field should not be empty. ';
+          end
+
+          if( nil == req["album"] || "" == req["album"] )
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag album, this field should not be empty. ';
+          end
+
+          if( nil == req["title"] || "" == req["title"] )
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag title, this field should not be empty. ';
+          end
+
+          # Todo regexp to check if [0-9]+
+          if( nil == req["year"] || "" == req["year"] || "" == req["year"] )
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag year, this field must be an integer. ';
+          end
+
+
+          # Todo regexp to check if [0-9]+/?[0-9]*
+          if( nil == req["track"] || "" == req["track"] )
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag track, this field must be shaped as [Track number]/[Album nb tracks]. ';
+          end
+
+          # Todo regexp to check if [0-9]+
+          if( nil == req["genre"] || "" == req["genre"] )
+            if( nil == error_message )
+              error_message = '';
+            end
+            error_message += 'Could not set ID3 tag genre, it must be an integer >=0 and <= 255.';
+          end
+
+
+          if( nil == error_message )
+            begin
+              cmd = "id3v2 --album \"#{req["album"]}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --song \"#{req["title"]}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --year #{req['year']} \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --artist \"#{req["artist"]}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --track \"#{req["track"]}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --genre \"#{req["genre"]}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              action_response = {
+                :name              => "update_uploaded_file",
+                :return            => "success",
+                :message           => "Id3 informations for #{req["file_name"]} successfuly updated"
+              };
+              return action_response;
+            rescue Exception=>e
+              action_response = {
+                :name              => "update_uploaded_file",
+                :return            => "error",
+                :message           => "No ID3 tag updated for #{req["file_name"]} : #{e}"
+              };
+              return action_response;
+            end
+          else
+            action_response = {
+               :name              => "update_uploaded_file",
+               :return            => "error",
+               :message           => "No ID3 tage updated! #{error_message}"
+            };
+            return action_response;
+          end
+        else
+            action_response = {
+               :name              => "update_uploaded_file",
+               :return            => "error",
+               :message           => "File not found"
+            };
+            return action_response;
+        end
+  end
+
+  def self.validateUploadedFiles(source_dir,upload_dir, user, req, resp)
+    file_path= File.join(upload_dir, user, Iconv.conv('ISO-8859-1', 'utf-8', req["file_name"]));
+
+    begin
+      id3info = Id3.decode(file_path);
+    rescue Exception=>e
+      error("Validation : Could not retrieve id3 informations #{file_path}, #{e}");
+      action_response = {
+        :name              => "validate_uploaded_file",
+        :return            => "error",
+        :message           => "Could not retrieve id3 informations for #{file_path}, #{e}"
+      };
+      return action_response;
+    end
+
+    # Integrity check part
+    if(nil == id3info.artist or  "" == id3info.artist)
+      if( nil == error_message )
+        error_message = '';
+      end
+      error_message += 'ID3 tag Artist invalid, this field should not be empty. ';
+    end
+        
+    if( nil == id3info.album or "" == id3info.album )
+      if( nil == error_message )
+        error_message = '';
+      end
+      error_message += 'ID3 tag Album invalid, this field should not be empty. ';
+    end
+
+    if( nil == id3info.title or "" == id3info.title )
+      if( nil == error_message )
+        error_message = '';
+      end
+      error_message += 'ID3 tag title invalid, this field should not be empty. ';
+    end
+        
+    # Todo regexp to check if [0-9]+
+    if( nil == id3info.date or "" == id3info.date or "" == id3info.date )
+      if( nil == error_message )
+        error_message = '';
+      end
+      error_message += 'Id3 tag Year invalid, this field must be an integer. ';
+    end
+    
+    # Todo regexp to check if [0-9]+/?[0-9]*
+    if( nil == id3info.track or "" == id3info.track )
+      if( nil == error_message )
+        error_message = '';
+      end
+      error_message += 'Id3 tag track is invalid, this field must be shaped as [Track number]/[Album nb tracks]. ';
+    end
+
+    # Todo regexp to check if [0-9]+
+    if( nil == id3info.genre or "" == id3info.genre )
+      if( nil == error_message )
+        error_message = '';
+      end
+      error_message += 'Could not set ID3 tag genre, it must be an integer >=0 and <= 255.';
+    end
+    
+    
+    if( nil != error_message )
+      error("Wrong id3 informations #{req["file_name"]}");
+      action_response = {
+        :name        => "validate_uploaded_file",
+        :return      => "error",
+        :message     => "Could not validate #{req["file_name"]}, wrong id3 informations. #{error_message}"
+      };
+      return action_response;
+    end
+    if( File.file?(file_path)  )
+      begin
+        title = "#{id3info.artist} - #{id3info.album} - #{id3info.title}.mp3";
+        album_folder = "#{id3info.date} - #{id3info.album}";
+        dst_folder = File.join(source_dir, id3info.artist);
+      rescue Exception=>e
+        error(e);
+        action_response = {
+          :name      => "validate_uploaded_file",
+          :return    => "error",
+          :message   => "Song #{req["file_name"]} : id3 informations not well formed. #{e}"
+        };
+        return action_response;
+      end
+
+      begin
+        if not File.directory?(dst_folder)
+          warning("create " + dst_folder);
+          Dir.mkdir(dst_folder);
+        end
+        dst_folder = File.join(dst_folder, id3info.album);
+        if not File.directory?(dst_folder)
+          warning("create " + dst_folder);
+          Dir.mkdir(dst_folder);
+        end
+      rescue Exception=>e
+      end
+
+      begin
+        if not File.file?(File.join(dst_folder,title))
+          FileUtils.mv(file_path, File.join(dst_folder,title));
+          warning( "File copied to " + File.join(dst_folder,title) );
+          action_response = {
+            :name              => "validate_uploaded_file",
+            :return            => "success",
+            :message           => "Song #{req["file_name"]} successfully sent for encoding."
+          };
+          return action_response;
+        else
+          action_response = {
+            :name              => "validate_uploaded_file",
+            :return            => "error",
+            :message           => "Song #{req["file_name"]} already in library, could not send it to encoding."
+          };
+          return action_response;
+        end
+      rescue Exception=>e
+        error(e);
+        action_response = {
+          :name              => "validate_uploaded_file",
+          :return            => "error",
+          :message           => "Could not move the file #{req["file_name"]}, #{e}"
+        };
+        return action_response;
+      end
+    else #!File
+      action_response = {
+        :name              => "validate_uploaded_file",
+        :return            => "error",
+        :message           => "Validation abort. File not found : #{req["file_name"]}."
+      };
+      return action_response;
+    end
+  end
+
+  def self.deleteUploadedFiles(upload_dir, user, req, resp)
+    file_path= File.join(upload_dir, user, Iconv.conv('ISO-8859-1', 'utf-8', req["file_name"]));
+    if File.file?(file_path)
+      begin
+        File.delete(file_path);
+        action_response = {
+          :name              => "delete_uploaded_file",
+          :return            => "success"
+        };
+        return action_response;
+      rescue Exception=>e
+        error(e);
+        action_response = {
+          :name              => "delete_uploaded_file",
+          :return            => "error",
+          :message           => "Could not remove file #{req["file_name"]}, #{e}"
+        };
+        return action_response;
+      end
+    else 
+      action_response = {
+        :name       => "delete_uploaded_file",
+        :return     => "error",
+        :message    => "Deletion abort. File not found : #{req["file_name"]}, #{e}."
+      };
+      return action_response;
+    end
   end
 end
