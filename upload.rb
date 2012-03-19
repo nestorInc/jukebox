@@ -180,13 +180,13 @@ class UploadManager < HttpNode
 
           if( nil == error_message )
             begin
-              cmd = "id3v2 --album \"#{req["album"]}\" \"#{file_path}\"";
+              cmd = "id3v2 --album \"#{Iconv.conv('ISO-8859-1', 'utf-8',req["album"])}\" \"#{file_path}\"";
               value = `#{cmd}`;
-              cmd = "id3v2 --song \"#{req["title"]}\" \"#{file_path}\"";
+              cmd = "id3v2 --song \"#{Iconv.conv('ISO-8859-1', 'utf-8',req["title"])}\" \"#{file_path}\"";
+              value = `#{cmd}`;
+              cmd = "id3v2 --artist \"#{Iconv.conv('ISO-8859-1', 'utf-8',req["artist"])}\" \"#{file_path}\"";
               value = `#{cmd}`;
               cmd = "id3v2 --year #{req['year']} \"#{file_path}\"";
-              value = `#{cmd}`;
-              cmd = "id3v2 --artist \"#{req["artist"]}\" \"#{file_path}\"";
               value = `#{cmd}`;
               cmd = "id3v2 --track \"#{req["track"]}\" \"#{file_path}\"";
               value = `#{cmd}`;
