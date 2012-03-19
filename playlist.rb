@@ -29,6 +29,10 @@ class Playlist
     add(npos, del(opos));
   end
 
+  def shuffle()
+    @list.shuffle!();
+  end
+
   def [](range)
     @list[range];
   end
@@ -98,6 +102,11 @@ class SongQueue < Playlist
 
   def previous()
     @pos -= 1 if(@pos > 0);
+  end
+
+  def shuffle()
+    v = @list[@pos+1..-1] || [];
+    @list = @list[0..@pos] + v.shuffle;
   end
 
   def [](range)
