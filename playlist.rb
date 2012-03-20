@@ -77,6 +77,8 @@ class Playlist
 end
 
 class SongQueue < Playlist
+  attr_reader :timestamp;
+
   def initialize()
     @pos = 0;
     super();
