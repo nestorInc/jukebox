@@ -17,8 +17,10 @@ class UploadManager < HttpNode
     @dst_folder = "uploads/"
 
     # Initialize uploder from config file if exists
-    @max_file_size_in_bytes = conf['max_file_size_in_bytes'] if( conf && conf['max_file_size_in_bytes'] )
-    @allowed_extensions = conf['allowed_extensions'] if( conf && conf['allowed_extensions'] )
+    @max_request_size_in_bytes = conf['max_request_size_in_bytes'] if( conf && conf['max_request_size_in_bytes'] );
+    @max_file_size_in_bytes = conf['max_file_size_in_bytes'] if( conf && conf['max_file_size_in_bytes'] );
+    @allowed_extensions = conf['allowed_extensions'] if( conf && conf['allowed_extensions'] );
+    @dst_folder = conf['dst_folder'] if( conf && conf['dst_folder'] );
   end
 
   def on_request(s, req)
@@ -50,10 +52,12 @@ class UploadManager < HttpNode
       end
     }
     if( not fileExtentionValidated )
-      error("Unauthorized file extension "+File.extname(URI.unescape(req.options['X-File-Name']))+". Authorized extensions are #{@allowed_extensions}");
+      allowed_extensions_str = @allowed_extensions.map{ |i|  "'" + i.to_s + "'" }.join(",")
+      
+      error("Unauthorized file extension "+File.extname(URI.unescape(req.options['X-File-Name']))+". Authorized extensions are #{allowed_extensions_str}");
       rep = HttpResponse.new(req.proto, 200, "Error",
                              "Content-Type" => "application/json");
-      res = '{ error: "Unauthorized file extension \'' + URI.unescape(File.extname(req.options['X-File-Name'])) + '\'. Authorized extensions are #{@allowed_extensions}", success: false}';
+      res = '{ error: "Unauthorized file extension \'' + URI.unescape(File.extname(req.options['X-File-Name'])) + '\'. Authorized extensions are ' + allowed_extensions_str +'", success: false}';
       rep.setData(res);
       s.write(rep.to_s);
       return;
@@ -225,6 +229,7 @@ class UploadManager < HttpNode
   end
 
   def self.validateUploadedFiles(source_dir,upload_dir, user, req, resp)
+    error_message = nil;
     file_path= File.join(upload_dir, user, Iconv.conv('ISO-8859-1', 'utf-8', req["file_name"]));
 
     begin

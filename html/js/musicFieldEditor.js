@@ -29,13 +29,22 @@ musicFieldEditor.prototype.undo = function(cell) {
 
     /* Update html */
     for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFiles.length ; ++i ){
-        if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i].filename) == identifier )
-        {
+        if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i].filename) == identifier ){
+            /* Show validate */
+            if( 1 == $('upload_line_' + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename)).select('[class="modified"]').length){
+                $('upload_line_' + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename)).select('[name="update"]').each( function(e){ e.hide();});
+                $('upload_line_' + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename)).select('[name="validate"]').each( function(e){ e.show();});
+            }
+            
+
             cell.update(tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name]);
             tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name] = tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name];
             break;
         }
     }
+
+    /* remove cell style modified */
+    cell.removeClassName("modified");
 
 	var data = TableKit.getCellData(cell);
 	data.active = false;
@@ -67,9 +76,30 @@ musicFieldEditor.prototype.submit = function(cell, form) {
         if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename) == identifier )
         {
             tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name]=form.firstChild.value;
+
+            /* Upload cell style If the new value differs */
+            if( form.firstChild.value != tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name] &&
+                !cell.hasClassName("modified")){
+                cell.addClassName("modified");
+                /* hide update */
+                $('upload_line_' + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename)).select('[name="update"]').each(function(e){
+                    e.show();
+                });
+
+                /* Show validate */
+                $('upload_line_' + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename)).select('[name="validate"]').each(function(e){
+                    e.hide();
+                });
+
+            } else if(form.firstChild.value == tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name] &&
+                cell.hasClassName("modified")){
+                cell.removeClassName("modified");
+            }
+
             break;
         }
     }
+
 	var data = TableKit.getCellData(cell);
 	data.active = false;
 }
