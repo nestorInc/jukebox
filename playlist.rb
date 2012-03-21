@@ -123,7 +123,7 @@ class SongQueue < Playlist
   end
 
   def to_client(lib)
-    queue = @list[1..-1];
+    queue = self[1..-1];
     if(queue.size() != 0)
       queue = lib.get_file(*queue).reject(&:nil?).map(&:to_client);
     end
