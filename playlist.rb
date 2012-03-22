@@ -62,7 +62,7 @@ class Playlist
     when Array
       v = [];
       data.each { |e|
-        v.push(expand_data(e));
+        v.push(*expand_data(e));
       }
       v;
     else
