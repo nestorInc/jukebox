@@ -378,6 +378,11 @@ var SearchTab = Class.create(Tab, {
             /* Add links to add all research current page songs into playqueue */
             add_page_results += '<li>';
             add_page_results += '<div style="position:relative;">';
+            /* Add research to playqueue randomly */
+            add_page_results += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
+            add_page_results += '.addSearchToPlayQueue(\'rand\');return false;"';
+            add_page_results += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
+
             /* Add research to playqueue on tail */
             add_page_results += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
             add_page_results += '.addSearchToPlayQueue(\'tail\');return false;"';

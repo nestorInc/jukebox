@@ -116,11 +116,13 @@ class JsonManager < HttpNode
                                        req["first_result"],
                                        req["result_count"]);
       if(req["play_queue_position"]  == "head")
-        i = 0;
-      else
-        i = nil;
+        ch.queue.add(0, result);
+      elsif( req["play_queue_position"]  == "tail" )
+        ch.queue.add(nil, result);
+      else # randomly
+         ch.queue.add_randomly(result);
       end
-      ch.queue.add(i, result);
+
     when "remove_from_play_queue"
       ch.queue.del(req["play_queue_index"]);
     when "move_in_play_queue"

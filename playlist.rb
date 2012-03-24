@@ -17,6 +17,15 @@ class Playlist
     pos;
   end
 
+  def add_randomly(data)
+    @timestamp   = Time.now().to_i();
+    mids         = expand_data(data);
+    pos          = check_pos(rand(@list.length));
+    @list.insert(pos, *mids);
+    pos;
+  end
+
+
   def del(pos)
     @timestamp   = Time.now().to_i();
     raise "Playlist::del Invalid position class" if(pos.class != Fixnum);
