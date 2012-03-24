@@ -47,7 +47,7 @@ class UploadManager < HttpNode
     # Extensions tests before uploading the file
     fileExtentionValidated = false;
     @allowed_extensions.each { |ext|
-      if( ext == File.extname(URI.unescape(req.options['X-File-Name'])) )
+      if( ext == File.extname(URI.unescape(req.options['X-File-Name'])).downcase() )
         fileExtentionValidated = true;
       end
     }
@@ -302,7 +302,16 @@ class UploadManager < HttpNode
     end
     if( File.file?(file_path)  )
       begin
-        title = "#{id3info.artist} - #{id3info.album} - #{id3info.title}.mp3";
+        if( id3info.track.include?("/") ) 
+          track = id3info.track.split("/")[0];
+        else
+          track = id3info.track;
+        end
+
+        title = "#{id3info.artist} - #{id3info.album} - #{track} - #{id3info.title}.mp3";
+        if(title.length > 255 )
+          title = "#{id3info.title}.mp3"
+        end
         album_folder = "#{id3info.date} - #{id3info.album}";
         dst_folder = File.join(source_dir, id3info.artist);
       rescue Exception=>e

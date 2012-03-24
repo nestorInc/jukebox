@@ -370,8 +370,8 @@ var uploadTab = Class.create(Tab, {
             // Add files to references
             for( var i=0; i<newLines.length; ++i){
                 $('uploaded_filelist_' + this.tableId).down('tbody').insert( this.getUploadedFileHtml(newLines[i]) );
-                this.uploadedFiles.push(newLines[i]);
-                this.uploadedFilesEdition.push(newLines[i]);
+                this.uploadedFiles.push(JSON.parse(JSON.stringify(newLines[i])));
+                this.uploadedFilesEdition.push(JSON.parse(JSON.stringify(newLines[i])));
                 $$( '.qq-upload-success').each( function(element){
                     if(element.down('.qq-upload-file').innerHTML == newLines[i].filename){
                         element.remove();
@@ -387,14 +387,13 @@ var uploadTab = Class.create(Tab, {
                 this.tableKit = new TableKit( 'uploaded_filelist_' + this.tableId, { });
             }
         }
-        if(null == this.uploadedFiles){
+        if(null == this.uploadedFiles|| this.uploadedFiles.length == 0 ){
             // trick used to clone
             this.uploadedFiles = JSON.parse(JSON.stringify(uploaded_files));
         }
-        if( null == this.uploadedFilesEdition ) {
+        if( null == this.uploadedFilesEdition || this.uploadedFilesEdition.length == 0 ) {
             this.uploadedFilesEdition = JSON.parse(JSON.stringify(uploaded_files));
         }
-
     },
 
     getUploadedFiles: function(){
@@ -407,7 +406,10 @@ var uploadTab = Class.create(Tab, {
     clear: function(){
         clearTimeout(this.refresher);
         /* Don't know if it works */
-        delete this.uploader;
+        if(tabs.getFirstTabByClassName("UploadTab").uploader._handler._queue.length > 0)
+            showNotification(1, "All current uploads canceled.");
+        tabs.getFirstTabByClassName("UploadTab").uploader._handler.cancelAll();
+
         this.refresher = null;
     },
 
