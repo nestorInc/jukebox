@@ -140,8 +140,6 @@ var uploadTab = Class.create(Tab, {
             $('upload_line_' + escape(this.lastSendingUpdateIdentifier)).select('[name="validate"]').each(function(e){
                     e.show();
             });
-            
-
         } else if( "error" == ret ) {
             showNotification(4,message);
         }
@@ -224,22 +222,39 @@ var uploadTab = Class.create(Tab, {
         html_uploaded_files += obj.filename;
         html_uploaded_files += "</td>";
         html_uploaded_files += "<td>";
-        html_uploaded_files += obj.artist;
+        if(obj.artist)
+            html_uploaded_files += obj.artist;
         html_uploaded_files += "</td>";
         html_uploaded_files += "<td>";
-        html_uploaded_files += obj.album;
+        if(obj.album)
+            html_uploaded_files += obj.album;
         html_uploaded_files += "</td>";
         html_uploaded_files += "<td>";
-        html_uploaded_files += obj.title;
+        if(obj.title)
+            html_uploaded_files += obj.title;
         html_uploaded_files += "</td>";
         html_uploaded_files += "<td>";
         html_uploaded_files += obj.year;
         html_uploaded_files += "</td>";
         html_uploaded_files += "<td>";
-        html_uploaded_files += obj.track;
+        if( obj.track.toString().indexOf("/") != -1 )
+            html_uploaded_files += obj.track.split("/")[0];
+        else
+            html_uploaded_files += obj.track;
         html_uploaded_files += "</td>";
         html_uploaded_files += "<td>";
-        html_uploaded_files += obj.genre;
+        if( obj.track.toString().indexOf("/") != -1 )
+            html_uploaded_files += obj.track.split("/")[1];
+        else
+            html_uploaded_files += 0;
+        html_uploaded_files += "</td>";
+
+        html_uploaded_files += "<td>";
+        if( genres.length >= obj.genre ) {
+            html_uploaded_files += genres[obj.genre];
+        } else {
+            html_uploaded_files += genres[genres.length - 1];
+        }
         html_uploaded_files += "</td>";
         html_uploaded_files += "<td class='static actions'>";
         html_uploaded_files += "<div name='delete'><a href='javascript:void(0);'";
@@ -280,6 +295,7 @@ var uploadTab = Class.create(Tab, {
                 html_uploaded_files += '<th id="title">Title</th>';
                 html_uploaded_files += '<th id="year">Year</th>';
                 html_uploaded_files += '<th id="track">Track</th>';
+                html_uploaded_files += '<th id="trackNb">TrackNb</th>';
                 html_uploaded_files += '<th id="genre">Genre</th>';
                 html_uploaded_files += '<th id="actions">Actions</th>';
                 html_uploaded_files += '</tr></thead>';
@@ -290,6 +306,7 @@ var uploadTab = Class.create(Tab, {
                 html_uploaded_files += '<td id="title">Title</td>';
                 html_uploaded_files += '<td id="year">Year</td>';
                 html_uploaded_files += '<td id="track">Track</td>';
+                html_uploaded_files += '<td id="trackNb">TrackNb</td>';
                 html_uploaded_files += '<td id="genre">Genre</td>';
                 html_uploaded_files += '<td id="actions">Actions</td>';
                 html_uploaded_files += '</tr></tfoot>';
@@ -317,6 +334,8 @@ var uploadTab = Class.create(Tab, {
                 obj = new musicFieldEditor("year");
                 TableKit.Editable.addCellEditor(obj);
                 obj = new musicFieldEditor("track");
+                TableKit.Editable.addCellEditor(obj);
+                obj = new musicFieldEditor("trackNb");
                 TableKit.Editable.addCellEditor(obj);
                 obj = new musicFieldEditor("genre");
                 TableKit.Editable.addCellEditor(obj);
@@ -427,7 +446,4 @@ var uploadTab = Class.create(Tab, {
         // Send a json query to obtain the list off uploaded files
         this.getUploadedFiles();
     }
-
-    
-
 });
