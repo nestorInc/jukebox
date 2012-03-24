@@ -140,6 +140,7 @@ div#player_controls
 	background-color: #DEDEDE;
 	width: 100%;
 	height: 45px;
+    overflow:hidden;
 }
 
 p#player_song_title
@@ -253,7 +254,7 @@ div.play_queue_handle
 }
 
 
-span.play_queue_delete, span.play_queue_move_top, span.play_queue_move_bottom, span.add_to_play_queue_bottom, span.add_to_play_queue_top, span.add_to_play_queue_randomly {
+span.play_queue_delete, span.play_queue_move_top, span.play_queue_move_bottom, span.add_to_play_queue_bottom, span.add_to_play_queue_top, span.add_to_play_queue_rand {
 /*	display: block;
 	float: right;*/
 	width: 10px;
@@ -274,6 +275,7 @@ span.add_to_play_queue_bottom {
 }
 
 span.add_to_play_queue_rand {
+    right: 35px;
     background: url("../images/icons/add_to_play_queue_randomly.png") no-repeat left top;
 }
 
