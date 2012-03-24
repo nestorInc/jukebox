@@ -71,7 +71,7 @@ class Playlist
     when Array
       v = [];
       data.each { |e|
-        v.push(expand_data(e));
+        v.push(*expand_data(e));
       }
       v;
     else
@@ -86,6 +86,8 @@ class Playlist
 end
 
 class SongQueue < Playlist
+  attr_reader :timestamp;
+
   def initialize()
     @pos = 0;
     super();
@@ -130,7 +132,7 @@ class SongQueue < Playlist
   end
 
   def to_client(lib)
-    queue = @list[1..-1];
+    queue = self[1..-1];
     if(queue.size() != 0)
       queue = lib.get_file(*queue).reject(&:nil?).map(&:to_client);
     end

@@ -17,8 +17,8 @@ class JsonManager < HttpNode
   def initialize(list, library, conf_upload, conf_encode)
     @list     = list;
     @library  = library;
-    @upload_dir = conf_upload["dst_folder"];
-    @source_dir = conf_encode["source_dir"];
+    @upload_dir = conf_upload  && conf_upload["dst_folder"] || "uploads";
+    @source_dir = conf_encode  && conf_encode["source_dir"] || "../../musik/sorted/";
     super();
   end
 
@@ -83,7 +83,7 @@ class JsonManager < HttpNode
         # refresh
         resp[:channel_infos] = ch.to_client();
         resp[:current_song]  = ch.getCurrentSongInfo();
-        if(timestamp <= ch.timestamp)
+        if(timestamp <= ch.queue.timestamp)
           resp[:play_queue] = ch.queue.to_client(@library);
         end
       rescue JSON::ParserError => e
