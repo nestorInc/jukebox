@@ -302,8 +302,9 @@ class UploadManager < HttpNode
     end
     if( File.file?(file_path)  )
       begin
-        if( id3info.track.include?("/") ) 
-          track = id3info.track.split("/")[0];
+        trackStr = '#{id3info.track}';
+        if( trackStr.include?("/") ) 
+          track = trackStr.split("/")[0];
         else
           track = id3info.track;
         end
