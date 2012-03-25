@@ -12,7 +12,6 @@ function sort_unique(arr) {
 }
 
 
-
 function generatePagesLinks(identifier, currentPage, currentSelection, nbPages){
     var pages = Array();
     // TODO put this constant in a javascript config file
@@ -357,6 +356,8 @@ var SearchTab = Class.create(Tab, {
 	            songlist_html += '<div id="library_song_'+ identifier + '_' + i;
                 songlist_html += '" style="position:relative;';
                 songlist_html +=  style + '" class="library_draggable">';
+	            songlist_html += '<a href="javascript:void(0)" onclick="addToPlayQueueRandom(' + s.mid + ');return false;">';
+                songlist_html += '<span class="add_to_play_queue_rand"></span></a>';
 	            songlist_html += '<a href="javascript:void(0)" onclick="addToPlayQueue(' + s.mid + ',0);return false;">';
                 songlist_html += '<span class="add_to_play_queue_top"></span></a>';
 	            songlist_html += '<a href="javascript:void(0)" onclick="addToPlayQueueBottom(' + s.mid + ');return false;">';

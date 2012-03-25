@@ -106,6 +106,8 @@ class JsonManager < HttpNode
       ch.previous();
     when "add_to_play_queue"
       ch.queue.add(req["play_queue_index"], req["mid"])
+    when "shuffle_play_queue"
+      ch.queue.shuffle();
     when "add_search_to_play_queue" 
       result = @library.secure_request("mid",
                                        CGI::unescape(req["search_value"]),

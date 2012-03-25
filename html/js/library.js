@@ -79,6 +79,11 @@ function addToPlayQueueBottom(mid) {
     addToPlayQueue(mid, playQueueSongs.length);
 }
 
+function addToPlayQueueRandom(mid) {
+    addToPlayQueue(mid, Math.floor(Math.random()*playQueueSongs.length));
+}
+
+
 function addToPlayQueue(mid, play_queue_index) {
     if( Object.prototype.toString.call( mid ) === '[object Array]' 
                && Object.prototype.toString.call( play_queue_index ) === '[object Array]'){

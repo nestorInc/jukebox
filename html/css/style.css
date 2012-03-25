@@ -254,7 +254,7 @@ div.play_queue_handle
 }
 
 
-span.play_queue_delete, span.play_queue_move_top, span.play_queue_move_bottom, span.add_to_play_queue_bottom, span.add_to_play_queue_top, span.add_to_play_queue_rand {
+span.play_queue_delete, span.play_queue_shuffle, span.play_queue_move_top, span.play_queue_move_bottom, span.add_to_play_queue_bottom, span.add_to_play_queue_top, span.add_to_play_queue_rand {
 /*	display: block;
 	float: right;*/
 	width: 10px;
@@ -281,6 +281,11 @@ span.add_to_play_queue_rand {
 
 span.play_queue_delete {
     background: url("../images/icons/play_queue_delete.png") no-repeat left top;
+}
+
+span.play_queue_shuffle {
+    right: 20px;
+    background: url("../images/icons/play_queue_shuffle.png") no-repeat left top;
 }
 
 span.play_queue_move_top {

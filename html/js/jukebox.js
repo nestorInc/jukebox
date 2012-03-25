@@ -508,6 +508,14 @@ function PlayQueueMove(mid, play_queue_index, new_play_queue_index) {
     updateJukebox();
 }
 
+function PlayQueueShuffle() {
+    var action = new Object();
+    action.name = "shuffle_play_queue";
+    query.action = action;
+    updateJukebox();
+}
+
+
 function PlayQueueDelete(mid, play_queue_index) {
     if(undefined == mid || null == mid || undefined == play_queue_index || null == play_queue_index){
         /* Nothing is passed as argument we want to clear all the playlist */
@@ -551,6 +559,7 @@ function DisplayPlayQueue () {
     var html = '';
     html += '<ul>';
     html += '<li id="play_queue_li_first" class="droppable">Play queue';
+    html += '<a href="javascript:void(0)" onclick="PlayQueueShuffle();"><span class="play_queue_shuffle"></span></a>';
     html += '<a href="javascript:void(0)" onclick="PlayQueueDelete();"><span class="play_queue_delete"></span></a>';
     html += '</li>';
 

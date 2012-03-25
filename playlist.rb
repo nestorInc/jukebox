@@ -20,11 +20,14 @@ class Playlist
   def add_randomly(data)
     @timestamp   = Time.now().to_i();
     mids         = expand_data(data);
-    pos          = check_pos(rand(@list.length));
-    @list.insert(pos, *mids);
-    pos;
+    positions    = [];
+    for i in 0..mids.size() do
+      pos = rand(@list.length);
+      positions.push(pos)
+      @list.insert(pos, *mids[i]);
+    end
+    positions;
   end
-
 
   def del(pos)
     @timestamp   = Time.now().to_i();
