@@ -347,6 +347,11 @@ function updateJukebox ( update_timestamp ) {
             }
             
             if (json.channel_infos != null) {
+                $$('span.count_user_listening').each(function(e){ 
+                    content = '';
+                    content += json.channel_infos.listener_count.toString();
+                    e.update(content);
+                });
                 /*var select = $('channel_select');
                   channel = $('channel_select').value;
                   select.update('');
@@ -559,6 +564,8 @@ function DisplayPlayQueue () {
     var html = '';
     html += '<ul>';
     html += '<li id="play_queue_li_first" class="droppable">Play queue';
+    html += '<div><span class="nb_listening_users"></span>';
+    html += '<span class="count_user_listening">0</span></div>';
     html += '<a href="javascript:void(0)" onclick="PlayQueueShuffle();"><span class="play_queue_shuffle"></span></a>';
     html += '<a href="javascript:void(0)" onclick="PlayQueueDelete();"><span class="play_queue_delete"></span></a>';
     html += '</li>';
