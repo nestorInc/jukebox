@@ -347,6 +347,7 @@ function updateJukebox ( update_timestamp ) {
             }
             
             if (json.channel_infos != null) {
+                /* Display the nb user listening the channel */
                 $$('span.count_user_listening').each(function(e){ 
                     content = '';
                     content += json.channel_infos.listener_count.toString();

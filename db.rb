@@ -88,6 +88,7 @@ class Library
                        mid INTEGER PRIMARY KEY,
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
+                       track INTEGER UNSIGNED NULL, trackNb INTEGER UNSIGNED NULL, genre INTEGER UNSIGNED NULL,
                        status INTEGER, frames TEXT, bitrate INTEGER, duration INTEGER);" );
     req = @db.prepare("UPDATE library SET status=#{FILE_WAIT} WHERE status=#{FILE_ENCODING_PROGRESS}");
     res = req.execute!();
