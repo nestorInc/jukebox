@@ -530,6 +530,10 @@ function UpdateCurrentSong (delta_time) {
         song += current_song.title;
         $('player_song_title').update( song );
         UpdateCurrentSongTime (0);
+
+        /* change the page title with the current song played */
+        $$("title").each(function(elmt) { elmt.update("Jukebox - " + current_song.artist + " - " + current_song.album + " - " + current_song.title); }); 
+
         /* force refresh */
         updateSongTimeRefresh();
     }
