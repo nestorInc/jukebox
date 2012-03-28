@@ -12,6 +12,9 @@ class Song
   attr_accessor :artist
   attr_accessor :album
   attr_accessor :years
+  attr_accessor :genre
+  attr_accessor :track
+  attr_accessor :trackNb
   attr_accessor :status
   attr_accessor :bitrate
   attr_accessor :frames
@@ -25,6 +28,9 @@ class Song
     @artist   = params["artist"];
     @album    = params["album"];
     @years    = params["years"];
+    @track    = params["track"];
+    @trackNb  = params["trackNb"];
+    @genre    = params["genre"];
     @status   = params["status"]   && params["status"].to_i;
     @duration = params["duration"] && params["duration"].to_i;
     @bitrate  = params["bitrate"]  && params["bitrate"].to_i;
@@ -42,6 +48,10 @@ class Song
     res[:title   ] = @title    if(@title);
     res[:artist  ] = @artist   if(@artist);
     res[:album   ] = @album    if(@album);
+    res[:years   ] = @years    if(@years);
+    res[:track   ] = @track    if(@track);
+    res[:trackNb ] = @trackNb  if(@trackNb);
+    res[:genre   ] = @genre    if(@genre);
     res[:duration] = @duration if(@duration);
     res;
   end
@@ -55,6 +65,9 @@ class Song
     res[:artist  ] = @artist   if(@artist);
     res[:album   ] = @album    if(@album);
     res[:years   ] = @years    if(@years);
+    res[:track   ] = @track    if(@track);
+    res[:trackNb ] = @trackNb  if(@trackNb);
+    res[:genre   ] = @genre    if(@genre);
     res[:status  ] = @status   if(@status);
     res[:bitrate ] = @bitrate  if(@bitrate);
     res[:duration] = @duration if(@duration);
@@ -98,9 +111,7 @@ class Library
     log("library initialized.");
   end
 
-# searching methods here 
-#SELECT * FROM music ORDER BY mid LIMIT 60,10;
-  
+  # searching methods here 
   def get_nb_songs()
     req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK}");
     res = req.execute!();
@@ -148,11 +159,6 @@ class Library
     end
     res.map(&Song.from_db).first
   end
-
-# search value
-# search field
-# order by order by way
-# first result result count
 
   def secure_request(fieldsSelection, value, comparison, field, orderBy, orderByWay, firstResult, resultCount)
     field   = "artist" if(field   != "title" && field   != "album");

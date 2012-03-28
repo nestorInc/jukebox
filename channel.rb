@@ -52,7 +52,7 @@ class Channel
     @remaining    = 0;
 
     log("Creating new channel #{name}");
-    set_plugin()
+    set_plugin();
     set_nb_songs();
     fetchData();
   end

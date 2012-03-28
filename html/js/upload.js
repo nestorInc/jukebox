@@ -251,9 +251,14 @@ var uploadTab = Class.create(Tab, {
 
         html_uploaded_files += "<td>";
         if( genres.length >= obj.genre ) {
-            html_uploaded_files += genres[obj.genre];
+            for( var i = 0; i< genres.length ;++i){
+                if(genres[i][1] ==  obj.genre){
+                    html_uploaded_files += genres[i][0];
+                    break;
+                }
+            }
         } else {
-            html_uploaded_files += genres[genres.length - 1];
+            html_uploaded_files += genres[genres.length - 1][0];
         }
         html_uploaded_files += "</td>";
         html_uploaded_files += "<td class='static actions'>";

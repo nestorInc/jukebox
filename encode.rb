@@ -28,8 +28,14 @@ class EncodingThread < Rev::IO
     song.artist = tag.artist;
     song.title  = tag.title;
     song.years  = tag.date;
-    song.track  = tag.track.split('/')|0] if(tag.track);
-    song.trackNb  = tag.track.split('/')|1] if(tag.track);
+    trackStr = "#{tag.track}";
+    if trackStr.include?("/") 
+      song.track  = tag.track.split('/')[0];
+      song.trackNb  = tag.track.split('/')[1];
+    else
+      song.track = trackStr;
+      song.trackNb = nil;
+    end
     song.genre  = tag.genre;
 
     if(tag.title == nil || tag.artist == nil || tag.album == nil)

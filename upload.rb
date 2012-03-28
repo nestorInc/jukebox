@@ -302,14 +302,15 @@ class UploadManager < HttpNode
     end
     if( File.file?(file_path)  )
       begin
-        trackStr = '#{id3info.track}';
+        trackStr = "#{id3info.track}";
         if( trackStr.include?("/") ) 
           track = trackStr.split("/")[0];
         else
-          track = id3info.track;
+          track = trackStr;
         end
 
         title = "#{id3info.artist} - #{id3info.album} - #{track} - #{id3info.title}.mp3";
+        #filename is limited to 255 by the filesystem
         if(title.length > 255 )
           title = "#{id3info.title}.mp3"
         end

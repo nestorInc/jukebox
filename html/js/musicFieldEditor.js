@@ -74,7 +74,11 @@ musicFieldEditor.prototype.submit = function(cell, form) {
 
     /* Update html */
     if(this.name == "genre"){
-        cell.update( genres[form.firstChild.value] );
+        for( var i = 0; i< genres.length ;++i){
+            if( form.firstChild.value == genres[i][1]  ){
+                cell.update( genres[i][0] );
+            }
+        }
     } else {
         cell.update( form.firstChild.value );
     }    
@@ -158,8 +162,8 @@ musicFieldEditor.prototype.edit = function(cell){
 
         for( var i = 0; i< genres.length ;++i){
             var option = document.createElement("option");
-            option.value = i;
-            option.appendChild(document.createTextNode(genres[i]));
+            option.value = genres[i][1];
+            option.appendChild(document.createTextNode(genres[i][0]));
             input.appendChild(option);
         }        
     } else {
