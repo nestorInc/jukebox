@@ -356,18 +356,18 @@ var SearchTab = Class.create(Tab, {
 	            songlist_html += '<div id="library_song_'+ identifier + '_' + i;
                 songlist_html += '" style="position:relative;';
                 songlist_html +=  style + '" class="library_draggable">';
-	            songlist_html += '<a href="javascript:void(0)" onclick="addToPlayQueueRandom(' + s.mid + ');return false;">';
+	            songlist_html += '<a href="javascript:void(0)" title="Enqueue randomly" onclick="addToPlayQueueRandom(' + s.mid + ');return false;">';
                 songlist_html += '<span class="add_to_play_queue_rand"></span></a>';
-	            songlist_html += '<a href="javascript:void(0)" onclick="addToPlayQueue(' + s.mid + ',0);return false;">';
+	            songlist_html += '<a href="javascript:void(0)" title="Enqueue after current song" onclick="addToPlayQueue(' + s.mid + ',0);return false;">';
                 songlist_html += '<span class="add_to_play_queue_top"></span></a>';
-	            songlist_html += '<a href="javascript:void(0)" onclick="addToPlayQueueBottom(' + s.mid + ');return false;">';
+	            songlist_html += '<a href="javascript:void(0)" title="Enqueue after last song" onclick="addToPlayQueueBottom(' + s.mid + ');return false;">';
                 songlist_html += '<span class="add_to_play_queue_bottom"></span></a>';
 	            songlist_html += '<div id="library_handle_' + identifier +'_'+ i + '">'
                 /* TODO create a class song_link to generate the link in the same way for playqueue/search/currentsong */
-                songlist_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
+                songlist_html += '<a href="javascript:void(0)" title="search same artist" onclick="doSearch( 1, null, null,\'';
                 songlist_html +=  s.artist.replace(/'/g,"\\'") +'\', \'equal\',\'artist\',\'artist,album,title\',\'up\',' + count + ' )">' ;
                 songlist_html +=  s.artist + '</a> - ';
-                songlist_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null, \'';
+                songlist_html += '<a href="javascript:void(0)" title="search same album" onclick="doSearch( 1, null, null, \'';
                 songlist_html +=  s.album.replace(/'/g,"\\'");
                 songlist_html += '\', \'equal\',\'album\',\'artist,album,title\',\'up\',' + count + ' )">' + s.album + '</a> - ';
                 songlist_html += '' + s.title;
@@ -380,17 +380,17 @@ var SearchTab = Class.create(Tab, {
             add_page_results += '<li>';
             add_page_results += '<div style="position:relative;">';
             /* Add research to playqueue randomly */
-            add_page_results += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
+            add_page_results += '<a title="Enqueue all randomly" onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
             add_page_results += '.addSearchToPlayQueue(\'rand\');return false;"';
             add_page_results += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
 
             /* Add research to playqueue on tail */
-            add_page_results += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
+            add_page_results += '<a title="Enqueue all after last" onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
             add_page_results += '.addSearchToPlayQueue(\'tail\');return false;"';
             add_page_results += 'href="javascript:void(0)"><span class="add_to_play_queue_bottom"></span></a>';
 
             /* Add research page song in the head playqueue */
-            add_page_results += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
+            add_page_results += '<a title="Enqueue all to playlist" onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
             add_page_results += '.addSearchToPlayQueue(\'head\');return false;"';
             add_page_results += 'href="javascript:void(0)"><span class="add_to_play_queue_top"></span></a>';
             add_page_results += '</div><div style="background-color:#888888;">&nbsp;</div></li>';
