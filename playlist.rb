@@ -21,10 +21,11 @@ class Playlist
     @timestamp   = Time.now().to_i();
     mids         = expand_data(data);
     positions    = [];
-    for i in 0..mids.size() do
-      pos = rand(@list.length);
+    for i in 0..(mids.size() -1) do
+      pos = check_pos(rand(@list.length));
       positions.push(pos)
       @list.insert(pos, *mids[i]);
+      warning(pos);
     end
     positions;
   end

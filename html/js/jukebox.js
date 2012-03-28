@@ -2,7 +2,7 @@ var channel;
 var server_port;
 var current_song = null;
 var timestamp = 0;
-
+var last_nb_listening_users = 0;
 var force_query = false;
 var query_timer = null;
 var sending_query = false;
@@ -397,10 +397,19 @@ function updateJukebox ( update_timestamp ) {
             }
             
             if (json.channel_infos != null) {
+                /* notification When new user connection or a user left*/
+                /* TODO add the real number of user connected and also display plural string if n>1 */
+                if( last_nb_listening_users > json.channel_infos.listener_count.toString()){
+                    showNotification(1,'1 user left the channel.');
+                } else if ( last_nb_listening_users < json.channel_infos.listener_count.toString()) {
+                    showNotification(1,'1 new user listening the channel.');
+                }
+
                 /* Display the nb user listening the channel */
                 $$('span.count_user_listening').each(function(e){ 
                     content = '';
                     content += json.channel_infos.listener_count.toString();
+                    last_nb_listening_users = json.channel_infos.listener_count.toString();
                     e.update(content);
                 });
                 /*var select = $('channel_select');
@@ -620,7 +629,7 @@ function DisplayPlayQueue () {
     html += '<ul>';
     html += '<li id="play_queue_li_first" class="droppable">Play queue';
     html += '<div><span class="nb_listening_users"></span>';
-    html += '<span class="count_user_listening">0</span></div>';
+    html += '<span class="count_user_listening">' + last_nb_listening_users + '</span></div>';
     html += '<a href="javascript:void(0)" onclick="PlayQueueShuffle();"><span class="play_queue_shuffle"></span></a>';
     html += '<a href="javascript:void(0)" onclick="PlayQueueDelete();"><span class="play_queue_delete"></span></a>';
     html += '</li>';
