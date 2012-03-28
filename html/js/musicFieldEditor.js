@@ -154,6 +154,8 @@ musicFieldEditor.prototype.edit = function(cell){
 
     /* Change behavior from field names */
     var input = null;
+    var modified = false;
+
     if( this.name == "genre" ){
         /* create genre element add fill options */ 
 	    var input = document.createElement("select");
@@ -165,12 +167,21 @@ musicFieldEditor.prototype.edit = function(cell){
             option.value = genres[i][1];
             option.appendChild(document.createTextNode(genres[i][0]));
             input.appendChild(option);
-        }        
+        }
+
+        for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition.length ; ++i ){
+            if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename) == identifier ){
+                if( tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["genre"] != tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i]["genre"]){
+                    modified = true;
+                }
+            }
+        }
+
+        
     } else {
-	    var input = document.createElement("input");
+	    input = document.createElement("input");
         input.type="text";
 
-        var modified = false;
         /* update new value */
         for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition.length ; ++i ){
             if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename) == identifier ){
