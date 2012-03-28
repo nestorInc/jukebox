@@ -566,8 +566,8 @@ function DisplayPlayQueue () {
     html += '<li id="play_queue_li_first" class="droppable">Play queue';
     html += '<div><span class="nb_listening_users"></span>';
     html += '<span class="count_user_listening">0</span></div>';
-    html += '<a href="javascript:void(0)" onclick="PlayQueueShuffle();"><span class="play_queue_shuffle"></span></a>';
-    html += '<a href="javascript:void(0)" onclick="PlayQueueDelete();"><span class="play_queue_delete"></span></a>';
+    html += '<a href="javascript:void(0)" title="Shuffle playlist" onclick="PlayQueueShuffle();"><span class="play_queue_shuffle"></span></a>';
+    html += '<a href="javascript:void(0)" title="Delete all" onclick="PlayQueueDelete();"><span class="play_queue_delete"></span></a>';
     html += '</li>';
 
     var currentPQSongIndex = 0;
@@ -587,9 +587,9 @@ function DisplayPlayQueue () {
         html += '\',\'equal\', \'album\',\'artist,album,title\',\'up\',20, \'false\')">' + song.album  + '</a>';
         html += ' - ';
         html += song.title + ' (' + FormatTime(song.duration) + ')</div>';
-        html += '<a href="javascript:void(0)" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', 0);return false;"><span class="play_queue_move_top"></span></a>';
-        html += '<a href="javascript:void(0)" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', ' + lastPQIndex + ');return false;"><span class="play_queue_move_bottom"></span></a>';
-        html += '<a href="javascript:void(0)" onclick="PlayQueueDelete(1,' + currentPQSongIndex + ');return false;"><span class="play_queue_delete"></span></a></span></a>';
+        html += '<a href="javascript:void(0)" title="Move up" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', 0);return false;"><span class="play_queue_move_top"></span></a>';
+        html += '<a href="javascript:void(0)" title="Move down" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', ' + lastPQIndex + ');return false;"><span class="play_queue_move_bottom"></span></a>';
+        html += '<a href="javascript:void(0)" title="Delete" onclick="PlayQueueDelete(1,' + currentPQSongIndex + ');return false;"><span class="play_queue_delete"></span></a></span></a>';
 
         html += '</div></li>';
 

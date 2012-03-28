@@ -50,15 +50,15 @@
       <div id="header">
         canal : <input type="text" id="channel" value="beuiot" style="width: 70px;" />
         <button onclick="joinChannel();">Rejoindre</button>
-        <a href="javascript:void(0);" onclick="ExpandCollection(); return false;"><span id="expand_collection_button">&gt;</span></a>
-        <a href="javascript:void(0);" onclick="CollapseCollection(); return false;"><span id="collapse_collection_button">&lt;</span></a>
+        <a href="javascript:void(0);" title="Expand" onclick="ExpandCollection(); return false;"><span id="expand_collection_button">&gt;</span></a>
+        <a href="javascript:void(0);" title="Collapse" onclick="CollapseCollection(); return false;"><span id="collapse_collection_button">&lt;</span></a>
         <span id="activity_monitor"></span>
       </div>
       
       <div id="player">
         <div id="player_controls">
-          <a href="javascript:void(0);" onclick="previousSong(); return false;"><span id="previous_button">&lt;</span></a>
-          <a href="javascript:void(0);" onclick="nextSong(); return false;"><span id="next_button">&gt;</span></a>
+          <a href="javascript:void(0);" title="Play previous song" onclick="previousSong(); return false;"><span id="previous_button">&lt;</span></a>
+          <a href="javascript:void(0);" title="Play next song" onclick="nextSong(); return false;"><span id="next_button">&gt;</span></a>
           <p id="player_song_title"></p>
 
           <div id="progressbar_wrapper">
