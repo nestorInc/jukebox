@@ -5,7 +5,6 @@ require 'rev'
 require 'http.rb'
 require 'display.rb'
 require 'uri'
-require 'iconv'
 
 class UploadManager < HttpNode
   def initialize(conf)
@@ -130,7 +129,7 @@ class UploadManager < HttpNode
 
   def self.updateUploadedFiles(upload_dir, user, req, resp)
     error_message = nil;
-    file_path= File.join(upload_dir, user, Iconv.conv('ISO-8859-1', 'utf-8', req["file_name"]));
+    file_path= File.join(upload_dir, user, req["file_name"].force_encoding('UTF-8').encode(Encoding.locale_charmap));
 
     if File.file?(file_path)
 
@@ -184,11 +183,11 @@ class UploadManager < HttpNode
 
           if( nil == error_message )
             begin
-              cmd = "id3v2 --album \"#{Iconv.conv('ISO-8859-1', 'utf-8',req["album"])}\" \"#{file_path}\"";
+              cmd = "id3v2 --album \"#{req["album"].force_encoding('UTF-8').encode(Encoding.locale_charmap)}\" \"#{file_path}\"";
               value = `#{cmd}`;
-              cmd = "id3v2 --song \"#{Iconv.conv('ISO-8859-1', 'utf-8',req["title"])}\" \"#{file_path}\"";
+              cmd = "id3v2 --song \"#{req["title"].force_encoding('UTF-8').encode(Encoding.locale_charmap)}\" \"#{file_path}\"";
               value = `#{cmd}`;
-              cmd = "id3v2 --artist \"#{Iconv.conv('ISO-8859-1', 'utf-8',req["artist"])}\" \"#{file_path}\"";
+              cmd = "id3v2 --artist \"#{req["artist"].force_encoding('UTF-8').encode(Encoding.locale_charmap)}\" \"#{file_path}\"";
               value = `#{cmd}`;
               cmd = "id3v2 --year #{req['year']} \"#{file_path}\"";
               value = `#{cmd}`;
@@ -230,7 +229,8 @@ class UploadManager < HttpNode
 
   def self.validateUploadedFiles(source_dir,upload_dir, user, req, resp)
     error_message = nil;
-    file_path= File.join(upload_dir, user, Iconv.conv('ISO-8859-1', 'utf-8', req["file_name"]));
+    file_path= File.join(upload_dir, user,
+                         req["file_name"].force_encoding('UTF-8').encode(Encoding.locale_charmap));
 
     begin
       id3info = Id3.decode(file_path);
@@ -377,7 +377,8 @@ class UploadManager < HttpNode
   end
 
   def self.deleteUploadedFiles(upload_dir, user, req, resp)
-    file_path= File.join(upload_dir, user, Iconv.conv('ISO-8859-1', 'utf-8', req["file_name"]));
+    file_path= File.join(upload_dir, user,
+                         req["file_name"].force_encoding('UTF-8').encode(Encoding.locale_charmap));
     if File.file?(file_path)
       begin
         File.delete(file_path);
