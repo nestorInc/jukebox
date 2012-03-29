@@ -621,13 +621,6 @@ TableKit.Resizable = {
 			Event.observe(c, 'mouseout', TableKit.Resizable.killDetect);
 		});
 
-        /* Add listener on each cell and not on just header cells */
-		table.select("td").each(function(c){
-			c = $(c);
-			Event.observe(c, 'mouseover', TableKit.Resizable.initDetect);
-			Event.observe(c, 'mouseout', TableKit.Resizable.killDetect);
-		});
-
 	},
 	resize : function(table, index, w) {
 		var cell;
@@ -651,6 +644,7 @@ TableKit.Resizable = {
 	initDetect : function(e) {
 		e = TableKit.e(e);
 		var cell = Event.element(e);
+        /* Check if the cell is not an header in order */
 		Event.observe(cell, 'mousemove', TableKit.Resizable.detectHandle);
 		Event.observe(cell, 'mousedown', TableKit.Resizable.startResize);
 	},
@@ -941,6 +935,77 @@ TableKit.Editable.selectInput = function(n,attributes,selectOptions) {
 		'selectOptions' : selectOptions
 	}));	
 };
+
+Object.extend(TableKit.options || {}, {
+    // If true table width gets recalculated on column resize
+    trueResize : false,
+    // If true table width will be kept constant on column resize
+    keepWidth : false
+});
+
+Object.extend(TableKit.Resizable, {
+    resize : function(table, index, w) {
+        // This part is taken from Andrew Tetlaw's original TableKit.Resizable.resize
+        var cell;
+        if(typeof index === 'number') {
+            if(!table || (table.tagName && table.tagName !== "TABLE")) {return;}
+            table = $(table);
+            index = Math.min(table.rows[0].cells.length, index);
+            index = Math.max(1, index);
+            index -= 1;
+            cell = (table.tHead && table.tHead.rows.length > 0) ? $(table.tHead.rows[table.tHead.rows.length-1].cells[index]) : $(table.rows[0].cells[index]);
+        } else {
+            cell = $(index);
+            table = table ? $(table) : cell.up('table');
+            index = TableKit.getCellIndex(cell);
+        }
+        // And now, for the fun stuff
+        // Read the new options values for the given table
+        var op = TableKit.option('trueResize keepWidth minWidth', table.id);
+        // Took also the minWidth as we're gonna use it later anyway
+        var pad = parseInt(cell.getStyle('paddingLeft'),10) + parseInt(cell.getStyle('paddingRight'),10);
+        // Improvement: add cell border to padding as width incorporates both
+        pad += parseInt(cell.getStyle('borderLeftWidth'),10) + parseInt(cell.getStyle('borderRightWidth'),10);
+        w = Math.max(w-pad, op.minWidth); // This will also be used later
+        if (!op.trueResize) {
+            // Original resize method
+            cell.setStyle({'width' : w + 'px'});  // Using previously read minWidth instead of the old way
+        } else {
+            // New stuff
+            var delta = (w + pad - parseInt(cell.getWidth()));
+            if (!op.keepWidth) {
+                // We'll be updating the table width
+                var tableWidth = parseInt(table.getWidth()) + delta;
+                cell.setStyle({'width' : w + 'px'});
+                table.setStyle({'width' : tableWidth + 'px'});
+            } else {
+                // Let's see what we have to do to keep the table width constant
+                var cells = TableKit.getHeaderCells(table);
+                if (index < 0 || index > cells.length) { return; }
+                var nbour;
+                if (index == cells.length - 1) {// Rightmost cell
+                    nbour = cells[index - 1];
+                } else {// Left or inner cell
+                    nbour = cells[index + 1];
+                }
+                var nbourWidth = parseInt(nbour.getWidth());
+                var nbourPad = parseInt(nbour.getStyle('paddingLeft'),10) + parseInt(nbour.getStyle('paddingRight'),10);
+                var proposedNbourWidth = nbourWidth - nbourPad  - delta;
+                var newNbourWidth;
+                if (proposedNbourWidth < op.minWidth) {
+                    // Don't be mean to neighbours. Step off their porch.
+                    newNbourWidth = Math.min(nbourWidth - nbourPad, op.minWidth);
+                    w -= newNbourWidth - proposedNbourWidth;
+                } else {
+                    newNbourWidth = proposedNbourWidth;
+                }
+                nbour.setStyle({'width' : newNbourWidth + 'px'});
+                cell.setStyle({'width' : w + 'px'});
+            }
+        }
+    }
+});
+
 
 /*
 TableKit.Bench = {

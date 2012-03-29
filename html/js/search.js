@@ -460,7 +460,7 @@ var SearchTab = Class.create(Tab, {
             songlist_html +=  add_page_results;
 
             $('collection_content_' + this.getIdentifier() ).update(songlist_html);
-            this.tableKit = new TableKit('results_filelist_' + this.getIdentifier() + '_' + temp, {'sortable':false, 'editable':false});
+            this.tableKit = new TableKit('results_filelist_' + this.getIdentifier() + '_' + temp, {'sortable':false, 'editable':false, 'trueResize' : true, 'keepWidth' : true});
         } else {
             // Todo display no results more beautifully
             songlist_html += "no results found";
