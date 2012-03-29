@@ -340,13 +340,21 @@ var SearchTab = Class.create(Tab, {
         var identifier = this.getIdentifier();
         var count = this.result_count;
         var i = 0;
+        var isOdd = true;
+        var style = null;
         if(this.total_results > 0) {
 
             librarySongs = this.server_results;
 
             librarySongs.each(function(s) {
                 addToPlayQueuemids.push(s.mid);
-	            songcell_html += '<tr id="library_song_' + identifier + '_' + i + '" class="library_draggable">';
+                if( isOdd ){
+                    style="rowodd";
+                } else {
+                    style="roweven";
+                }
+                isOdd = !isOdd;
+	            songcell_html += '<tr id="library_song_' + identifier + '_' + i + '" class="library_draggable ' + style + '">';
                 songcell_html += '<td id="">';
                 songcell_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
                 songcell_html +=  s.artist.replace(/'/g,"\\'") +'\', \'equal\',\'artist\',\'artist,album, track, title\',\'up\',' + count + ' )">' ;
@@ -365,14 +373,6 @@ var SearchTab = Class.create(Tab, {
 
                 songcell_html += '<td>';
                 songcell_html +=  s.title;
-                songcell_html += '</td>';
-
-                songcell_html += '<td>';
-                songcell_html +=  s.trackNb;
-                songcell_html += '</td>';
-
-                songcell_html += '<td>';
-                songcell_html +=  s.years;
                 songcell_html += '</td>';
 
                 songcell_html += '<td>';
@@ -410,8 +410,6 @@ var SearchTab = Class.create(Tab, {
             songlist_html += '<th id="album">Album</th>';
             songlist_html += '<th id="track">Track</th>';
             songlist_html += '<th id="title">Title</th>';
-            songlist_html += '<th id="trackNb">TrackNb</th>';
-            songlist_html += '<th id="year">Year</th>';
             songlist_html += '<th id="duration">Duration</th>';
             songlist_html += '<th id="genre">Genre</th>';
 
@@ -437,8 +435,6 @@ var SearchTab = Class.create(Tab, {
             songlist_html += '<td id="album">Album</td>';
             songlist_html += '<td id="track">Track</td>';
             songlist_html += '<td id="title">Title</td>';
-            songlist_html += '<td id="trackNb">TrackNb</td>';
-            songlist_html += '<td id="year">Year</td>';
             songlist_html += '<td id="duration">Duration</td>';
             songlist_html += '<td id="genre">Genre</td>';
             songlist_html += '<td id="actions">';

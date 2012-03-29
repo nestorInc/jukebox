@@ -342,7 +342,7 @@ var uploadTab = Class.create(Tab, {
                 obj = new musicFieldEditor("genre");
                 TableKit.Editable.addCellEditor(obj);
                 
-                this.tableKit = new TableKit( 'uploaded_filelist_' + this.tableId, { 'sortable':true, 'editable':true,'trueResize' : true, 'keepWidth' : true});
+                this.tableKit = new TableKit( 'uploaded_filelist_' + this.tableId, {'sortable':true, 'editable':true,'trueResize' : true, 'keepWidth' : true});
             } else { /* The array is empty and nothing to insert */
                 var html_uploaded_files = '';
                 html_uploaded_files += "No file uploaded yet."

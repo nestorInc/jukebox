@@ -76,7 +76,7 @@ var tabs = Class.create({
         tabDisplay += '</a>';
         tabDisplay += '</li>';
 
-        tabContentContainer += '<div id="tabContent_' + tab.getIdentifier() + '" ';
+        tabContentContainer += '<div id="tabContent_' + tab.getIdentifier() + '"';
 
         if( 1 == this.tabs.length ){
             tabContentContainer += 'style="display:block;"></div>';

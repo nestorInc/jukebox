@@ -461,10 +461,12 @@ td form{
 
 td, th {
     border: 1px solid #CCCCCC;
-    padding: 0.5em;
     overflow:hidden;
     height:12px;
     white-space: nowrap;
+    max-width:50px;
+    width:auto;
+    min-width:10px;
 }
 
 th {
@@ -523,6 +525,11 @@ td.modified {
     color : #880000;
 }
 
+td div{
+    float:left;
+    display:block;
+}
+
 div#notifications {
     position: absolute;
     top: 0;
@@ -530,7 +537,6 @@ div#notifications {
     z-index: 1000;
     width: 100%;
 }
-
 
 
 /* Sliders */
