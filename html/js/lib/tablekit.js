@@ -620,6 +620,14 @@ TableKit.Resizable = {
 			Event.observe(c, 'mouseover', TableKit.Resizable.initDetect);
 			Event.observe(c, 'mouseout', TableKit.Resizable.killDetect);
 		});
+
+        /* Add listener on each cell and not on just header cells */
+		table.select("td").each(function(c){
+			c = $(c);
+			Event.observe(c, 'mouseover', TableKit.Resizable.initDetect);
+			Event.observe(c, 'mouseout', TableKit.Resizable.killDetect);
+		});
+
 	},
 	resize : function(table, index, w) {
 		var cell;

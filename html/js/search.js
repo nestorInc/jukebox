@@ -412,10 +412,10 @@ var SearchTab = Class.create(Tab, {
             songlist_html += '<th id="title">Title</th>';
             songlist_html += '<th id="trackNb">TrackNb</th>';
             songlist_html += '<th id="year">Year</th>';
-            songlist_html += '<th id="duration">duration</th>';
+            songlist_html += '<th id="duration">Duration</th>';
             songlist_html += '<th id="genre">Genre</th>';
 
-            songlist_html += '<th id="actions">';
+            songlist_html += '<th id="actions" style="width:36px;">';
             songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
             songlist_html += '.addSearchToPlayQueue(\'rand\');return false;"';
             songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';

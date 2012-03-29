@@ -66,6 +66,11 @@ th.resize-handle-active {
     cursor: e-resize;
 }
 
+td.resize-handle-active {
+    cursor: e-resize;
+}
+
+
 div.resize-handle {
     cursor: e-resize;
     width: 2px;
