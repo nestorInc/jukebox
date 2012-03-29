@@ -398,7 +398,7 @@ function updateJukebox ( update_timestamp ) {
             
             if (json.channel_infos != null) {
                 /* notification When new user connection or a user left*/
-                /* TODO add the real number of user connected and also display plural string if n>1 */
+                /* TODO add the real number of user connected/disconnected and also display plural string if n>1 */
                 if( last_nb_listening_users > json.channel_infos.listener_count.toString()){
                     showNotification(1,'1 user left the channel.');
                 } else if ( last_nb_listening_users < json.channel_infos.listener_count.toString()) {
@@ -541,7 +541,7 @@ function UpdateCurrentSong (delta_time) {
         UpdateCurrentSongTime (0);
 
         /* change the page title with the current song played */
-        $$("title").each(function(elmt) { elmt.update("Jukebox - " + current_song.artist + " - " + current_song.album + " - " + current_song.title); }); 
+        document.title="Jukebox - " + current_song.artist + " - " + current_song.album + " - " + current_song.title; 
 
         /* force refresh */
         updateSongTimeRefresh();

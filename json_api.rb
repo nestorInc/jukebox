@@ -189,6 +189,10 @@ class JsonManager < HttpNode
         :artist   => song.artist,
         :title    => song.title,
         :album    => song.album,
+        :track    => song.track,
+        :trackNb  => song.trackNb,
+        :genre    => song.genre,
+        :years    => song.years,
         :duration => song.duration
       }
     }

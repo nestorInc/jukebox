@@ -111,6 +111,8 @@ var SearchTab = Class.create(Tab, {
 
         /* Sliders */
         this.sliders = new Array();
+
+        this.tableKit = null;
     },
 
     updateNewSearchInformations : function( server_results ){
@@ -330,78 +332,141 @@ var SearchTab = Class.create(Tab, {
     },
 
     initAndDisplaySearchResults : function() {
-        var pagelist_html = '';
+        var songcell_html = '';
         var songlist_html = '';
         var addToPlayQueuemids = new Array();
         var add_page_results = '';
         var librarySongs = null;
         var identifier = this.getIdentifier();
         var count = this.result_count;
+        var i = 0;
         if(this.total_results > 0) {
-            var i = 0;
-            var grey_bg = false;
-            
+
             librarySongs = this.server_results;
 
             librarySongs.each(function(s) {
-                var style = '';
-
                 addToPlayQueuemids.push(s.mid);
+	            songcell_html += '<tr id="library_song_' + identifier + '_' + i + '" class="library_draggable">';
+                songcell_html += '<td id="">';
+                songcell_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
+                songcell_html +=  s.artist.replace(/'/g,"\\'") +'\', \'equal\',\'artist\',\'artist,album, track, title\',\'up\',' + count + ' )">' ;
+                songcell_html +=  s.artist + '</a>';
+                songcell_html += '</td>';
 
-                if (grey_bg == true) {
-                    style = 'background-color: #DEDEDE;';
+                songcell_html += '<td id="">';
+                songcell_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
+                songcell_html +=  s.album.replace(/'/g,"\\'") +'\', \'equal\',\'album\',\'artist,album, track, title\',\'up\',' + count + ' )">' ;
+                songcell_html +=  s.album + '</a>';
+                songcell_html += '</td>';
+
+                songcell_html += '<td>';
+                songcell_html +=  s.track;
+                songcell_html += '</td>';
+
+                songcell_html += '<td>';
+                songcell_html +=  s.title;
+                songcell_html += '</td>';
+
+                songcell_html += '<td>';
+                songcell_html +=  s.trackNb;
+                songcell_html += '</td>';
+
+                songcell_html += '<td>';
+                songcell_html +=  s.years;
+                songcell_html += '</td>';
+
+                songcell_html += '<td>';
+                songcell_html +=  FormatTime(s.duration);
+                songcell_html += '</td>';
+
+                songcell_html += '<td>';
+                for( var j = 0; j< genres.length ;++j){
+                    if( s.genre == genres[j][1]  ){
+                        songcell_html +=  genres[j][0];
+                        break;
+                    }
                 }
+                songcell_html += '</td>';
 
-	            songlist_html += '<li id="library_li_' + identifier + '_' + i + '">';
-	            songlist_html += '<div id="library_song_'+ identifier + '_' + i;
-                songlist_html += '" style="position:relative;';
-                songlist_html +=  style + '" class="library_draggable">';
-	            songlist_html += '<a href="javascript:void(0)" onclick="addToPlayQueueRandom(' + s.mid + ');return false;">';
-                songlist_html += '<span class="add_to_play_queue_rand"></span></a>';
-	            songlist_html += '<a href="javascript:void(0)" onclick="addToPlayQueue(' + s.mid + ',0);return false;">';
-                songlist_html += '<span class="add_to_play_queue_top"></span></a>';
-	            songlist_html += '<a href="javascript:void(0)" onclick="addToPlayQueueBottom(' + s.mid + ');return false;">';
-                songlist_html += '<span class="add_to_play_queue_bottom"></span></a>';
-	            songlist_html += '<div id="library_handle_' + identifier +'_'+ i + '">'
-                /* TODO create a class song_link to generate the link in the same way for playqueue/search/currentsong */
-                songlist_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
-                songlist_html +=  s.artist.replace(/'/g,"\\'") +'\', \'equal\',\'artist\',\'artist,album,title\',\'up\',' + count + ' )">' ;
-                songlist_html +=  s.artist + '</a> - ';
-                songlist_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null, \'';
-                songlist_html +=  s.album.replace(/'/g,"\\'");
-                songlist_html += '\', \'equal\',\'album\',\'artist,album,title\',\'up\',' + count + ' )">' + s.album + '</a> - ';
-                songlist_html += '' + s.title;
-	            songlist_html += '</div></div></li>';
-	            i++;
-                grey_bg = !grey_bg;
+                songcell_html += '<td id="">';
+	            songcell_html += '<a href="javascript:void(0)" onclick="addToPlayQueueRandom(' + s.mid + ');return false;">';
+                songcell_html += '<span class="add_to_play_queue_rand"></span></a>';
+	            songcell_html += '<a href="javascript:void(0)" onclick="addToPlayQueue(' + s.mid + ',0);return false;">';
+                songcell_html += '<span class="add_to_play_queue_top"></span></a>';
+	            songcell_html += '<a href="javascript:void(0)" onclick="addToPlayQueueBottom(' + s.mid + ');return false;">';
+                songcell_html += '<span class="add_to_play_queue_bottom"></span></a>';
+	            //songcell_html += '<div id="library_handle_' + identifier +'_'+ i + '">'
+                songcell_html += '</td>';
+	            songcell_html += '</tr>';
+
+                i++;
             });
 
-            /* Add links to add all research current page songs into playqueue */
-            add_page_results += '<li>';
-            add_page_results += '<div style="position:relative;">';
-            /* Add research to playqueue randomly */
-            add_page_results += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
-            add_page_results += '.addSearchToPlayQueue(\'rand\');return false;"';
-            add_page_results += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
+            var temp = new Date().getTime();
+            songlist_html =  add_page_results;
+            songlist_html += '<table id="results_filelist_' + this.getIdentifier() + '_' + temp + '" class="resizable">';
+            songlist_html += '<thead><tr>';
+            songlist_html += '<th id="artist">Artist</th>';
+            songlist_html += '<th id="album">Album</th>';
+            songlist_html += '<th id="track">Track</th>';
+            songlist_html += '<th id="title">Title</th>';
+            songlist_html += '<th id="trackNb">TrackNb</th>';
+            songlist_html += '<th id="year">Year</th>';
+            songlist_html += '<th id="duration">duration</th>';
+            songlist_html += '<th id="genre">Genre</th>';
+
+            songlist_html += '<th id="actions">';
+            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
+            songlist_html += '.addSearchToPlayQueue(\'rand\');return false;"';
+            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
 
             /* Add research to playqueue on tail */
-            add_page_results += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
-            add_page_results += '.addSearchToPlayQueue(\'tail\');return false;"';
-            add_page_results += 'href="javascript:void(0)"><span class="add_to_play_queue_bottom"></span></a>';
+            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
+            songlist_html += '.addSearchToPlayQueue(\'tail\');return false;"';
+            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_bottom"></span></a>';
 
             /* Add research page song in the head playqueue */
-            add_page_results += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
-            add_page_results += '.addSearchToPlayQueue(\'head\');return false;"';
-            add_page_results += 'href="javascript:void(0)"><span class="add_to_play_queue_top"></span></a>';
-            add_page_results += '</div><div style="background-color:#888888;">&nbsp;</div></li>';
+            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
+            songlist_html += '.addSearchToPlayQueue(\'head\');return false;"';
+            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_top"></span></a>';
 
-            songlist_html = '<ul>' + add_page_results + songlist_html + add_page_results + '</ul>';
+            songlist_html += '</th>';
+            songlist_html += '</tr></thead>';
+            songlist_html += '<tfoot><tr>';
+            songlist_html += '<td id="artist">Artist</td>';
+            songlist_html += '<td id="album">Album</td>';
+            songlist_html += '<td id="track">Track</td>';
+            songlist_html += '<td id="title">Title</td>';
+            songlist_html += '<td id="trackNb">TrackNb</td>';
+            songlist_html += '<td id="year">Year</td>';
+            songlist_html += '<td id="duration">Duration</td>';
+            songlist_html += '<td id="genre">Genre</td>';
+            songlist_html += '<td id="actions">';
+            /* Add research to playqueue on tail */
+            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
+            songlist_html += '.addSearchToPlayQueue(\'tail\');return false;"';
+            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_bottom"></span></a>';
 
+            /* Add research page song in the head playqueue */
+            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
+            songlist_html += '.addSearchToPlayQueue(\'head\');return false;"';
+            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_top"></span></a>';
+
+            songlist_html +='</td>';
+            songlist_html += '</tr></tfoot>';
+            songlist_html += '<tbody>';
+            songlist_html +=  songcell_html;
+            songlist_html += '</tbody></table>';
+            songlist_html +=  add_page_results;
+
+            $('collection_content_' + this.getIdentifier() ).update(songlist_html);
+            this.tableKit = new TableKit('results_filelist_' + this.getIdentifier() + '_' + temp, {'sortable':false, 'editable':false});
         } else {
             // Todo display no results more beautifully
             songlist_html += "no results found";
+            $('collection_content_' + this.getIdentifier() ).update(songlist_html);
         }
-        $('collection_content_' + this.getIdentifier() ).update(songlist_html);
+
         
         // Create all draggables, once update is done.
         if( null != librarySongs ){
@@ -409,7 +474,7 @@ var SearchTab = Class.create(Tab, {
 	            new Draggable('library_song_' + this.getIdentifier() + '_' + i, {
 	                scroll: window,
 	                revert: true,
-	                handle: 'library_handle_' + this.getIdentifier() + '_' + i
+	                handle: 'library_song_' + this.getIdentifier() + '_' + i
 	            });
             }
         }

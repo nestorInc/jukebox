@@ -23,7 +23,7 @@ function doSearch( page, identifier, select_fields,
     }
 
     if( undefined == select_fields || null == select_fields || '' == select_fields )
-        search.select_fields="mid,title,album,artist,duration";
+        search.select_fields="mid, title, album, artist, track, trackNb, genre, years, duration";
     else
         search.select_fields = select_fields;
 

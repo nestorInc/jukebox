@@ -254,7 +254,7 @@ div.play_queue_handle
 }
 
 
-span.play_queue_delete, span.play_queue_shuffle, span.play_queue_move_top, span.play_queue_move_bottom, span.add_to_play_queue_bottom, span.add_to_play_queue_top, span.add_to_play_queue_rand, span.nb_listening_users {
+span.play_queue_delete, span.play_queue_shuffle, span.play_queue_move_top, span.play_queue_move_bottom, span.nb_listening_users {
 /*	display: block;
 	float: right;*/
 	width: 10px;
@@ -262,6 +262,14 @@ span.play_queue_delete, span.play_queue_shuffle, span.play_queue_move_top, span.
     position: absolute;
 	top: 2px;
 	right: 5px;
+	background-color: black;
+}
+
+span.add_to_play_queue_bottom, span.add_to_play_queue_top, span.add_to_play_queue_rand {
+	width: 10px;
+	height: 10px;
+    display:block;
+    float:left;
 	background-color: black;
 }
 
@@ -386,7 +394,7 @@ li.droppable_hover
     border-bottom:5px solid blue;
 }
 
-li.being_dragged
+li.being_dragged tr.being_dragged
 {
     height: 0px;
 }
@@ -395,7 +403,7 @@ li.being_dragged div {
     border: 1px solid black;
 }
 
-div#play_queue_content li.being_dragged {
+div#play_queue_content li.being_dragged tr.being_dragged {
     border-top: none;
 }
 
@@ -441,7 +449,14 @@ div.notification_wrapper_fatal {
     border-color: black;
 }
 
-
+table {
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+td, th {
+    border: 1px solid #CCCCCC;
+    padding: 0.5em;
+}
 
 div#notifications {
     position: absolute;
