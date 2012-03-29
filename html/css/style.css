@@ -449,10 +449,8 @@ div.notification_wrapper_fatal {
 
 /* tableKIT */
 table {
-	border-collapse: collapse;
 	border-spacing: 0;
-    width: 580px;
-    table-layout: fixed;
+    width: 600px;
 }
 
 td form{
@@ -461,12 +459,9 @@ td form{
 
 td, th {
     border: 1px solid #CCCCCC;
-    overflow:hidden;
-    height:12px;
-    white-space: nowrap;
-    max-width:50px;
+    max-width:100px;
     width:auto;
-    min-width:10px;
+    min-width:5px;
 }
 
 th {
@@ -525,11 +520,6 @@ td.modified {
     color : #880000;
 }
 
-td div{
-    float:left;
-    display:block;
-}
-
 div#notifications {
     position: absolute;
     top: 0;
@@ -538,9 +528,8 @@ div#notifications {
     width: 100%;
 }
 
-
 /* Sliders */
-div.page_links{ text-align:center;}
+div.page_links{ align:center;text-align:center;}
 div.slider { width:100%; margin:15px 0; background-color:#ccc; height:15px; position: relative; }
 div.slider div.handle { width:25px; height:25px; background-color:#888; cursor:move; position: absolute; top:-5px;}
 div.slider div.handle span { height:20px; }

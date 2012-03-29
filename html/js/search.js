@@ -254,7 +254,7 @@ var SearchTab = Class.create(Tab, {
             pagelist_html += '<p>'
             if( this.page_count > 1 ){
 	            pagelist_html += '<div name="results_slider_' + this.getIdentifier() + '"';
-                pagelist_html += ' class="slider" style="width:600px"><div class="handle"></div></div>';
+                pagelist_html += ' class="slider" style="width:600px;"><div class="handle"></div></div>';
 	            pagelist_html += '<div class="page_links" name="page_links_' + this.getIdentifier() + '"></div>';
             }
             pagelist_html += '</p>';
@@ -368,15 +368,11 @@ var SearchTab = Class.create(Tab, {
                 songcell_html += '</td>';
 
                 songcell_html += '<td>';
-                songcell_html +=  s.track;
-                songcell_html += '</td>';
-
-                songcell_html += '<td>';
                 songcell_html +=  s.title;
                 songcell_html += '</td>';
 
                 songcell_html += '<td>';
-                songcell_html +=  FormatTime(s.duration);
+                songcell_html +=  s.track;
                 songcell_html += '</td>';
 
                 songcell_html += '<td>';
@@ -386,6 +382,10 @@ var SearchTab = Class.create(Tab, {
                         break;
                     }
                 }
+                songcell_html += '</td>';
+
+                songcell_html += '<td>';
+                songcell_html +=  FormatTime(s.duration);
                 songcell_html += '</td>';
 
                 songcell_html += '<td id="">';
@@ -408,12 +408,12 @@ var SearchTab = Class.create(Tab, {
             songlist_html += '<thead><tr>';
             songlist_html += '<th id="artist">Artist</th>';
             songlist_html += '<th id="album">Album</th>';
-            songlist_html += '<th id="track">Track</th>';
             songlist_html += '<th id="title">Title</th>';
-            songlist_html += '<th id="duration">Duration</th>';
+            songlist_html += '<th id="track">Track</th>';
             songlist_html += '<th id="genre">Genre</th>';
+            songlist_html += '<th id="duration">Duration</th>';
 
-            songlist_html += '<th id="actions" style="width:36px;">';
+            songlist_html += '<th id="actions">';
             songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
             songlist_html += '.addSearchToPlayQueue(\'rand\');return false;"';
             songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
@@ -433,11 +433,15 @@ var SearchTab = Class.create(Tab, {
             songlist_html += '<tfoot><tr>';
             songlist_html += '<td id="artist">Artist</td>';
             songlist_html += '<td id="album">Album</td>';
-            songlist_html += '<td id="track">Track</td>';
             songlist_html += '<td id="title">Title</td>';
-            songlist_html += '<td id="duration">Duration</td>';
+            songlist_html += '<td id="track">Track</td>';
             songlist_html += '<td id="genre">Genre</td>';
+            songlist_html += '<td id="duration">Duration</td>';
             songlist_html += '<td id="actions">';
+            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
+            songlist_html += '.addSearchToPlayQueue(\'rand\');return false;"';
+            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
+
             /* Add research to playqueue on tail */
             songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
             songlist_html += '.addSearchToPlayQueue(\'tail\');return false;"';
