@@ -12,13 +12,13 @@ class UploadManager < HttpNode
     # Defaults server values if config file is undefined
     @max_request_size_in_bytes = 21* 1024 * 1024;
     @max_file_size_in_bytes = 20 * 1024 * 1024; # 20M
-    @allowed_extensions = [ 'mp3' ];
+    @allowed_extensions = { '.mp3' => true };
     @dst_folder = "uploads/"
 
     # Initialize uploder from config file if exists
     @max_request_size_in_bytes = conf['max_request_size_in_bytes'] if( conf && conf['max_request_size_in_bytes'] );
     @max_file_size_in_bytes = conf['max_file_size_in_bytes'] if( conf && conf['max_file_size_in_bytes'] );
-    @allowed_extensions = conf['allowed_extensions'] if( conf && conf['allowed_extensions'] );
+    conf['allowed_extensions'].each { |ext| @allowed_extensions[ext] = true; } if(conf && conf['allowed_extensions']);
     @dst_folder = conf['dst_folder'] if( conf && conf['dst_folder'] );
   end
 
@@ -44,14 +44,8 @@ class UploadManager < HttpNode
     end
 
     # Extensions tests before uploading the file
-    fileExtentionValidated = false;
-    @allowed_extensions.each { |ext|
-      if( ext == File.extname(URI.unescape(req.options['X-File-Name'])).downcase() )
-        fileExtentionValidated = true;
-      end
-    }
-    if( not fileExtentionValidated )
-      allowed_extensions_str = @allowed_extensions.map{ |i|  "'" + i.to_s + "'" }.join(",")
+    if(@allowed_extensions[File.extname(URI.unescape(req.options['X-File-Name'])).downcase()] != true)
+      allowed_extensions_str = @allowed_extensions.keys.map{ |i|  "'" + i.to_s + "'" }.join(",")
       
       error("Unauthorized file extension "+File.extname(URI.unescape(req.options['X-File-Name']))+". Authorized extensions are #{allowed_extensions_str}");
       rep = HttpResponse.new(req.proto, 200, "Error",
