@@ -137,6 +137,8 @@ div#player_controls
 	width: 100%;
 	height: 45px;
     overflow:hidden;
+	border-right: 1px solid black;
+    border-bottom: 1px solid black;
 }
 
 p#player_song_title
@@ -351,7 +353,17 @@ div#collection_header
 	background-color: #DEDEDE;
 	font-size: 80%;
 	border-bottom: 1px solid black;
+    border-left: 1px solid black;
 }
+
+div#tab_links
+{
+	position: relative;
+	background-color: #DEDEDE;
+	font-size: 80%;
+    border-left: 1px solid black;
+}
+
 
 div#debug_wrapper
 {
@@ -445,8 +457,6 @@ div.notification_wrapper_fatal {
     border-color: black;
 }
 
-
-
 /* tableKIT */
 table {
 	border-spacing: 0;
@@ -507,7 +517,6 @@ th.resize-handle-active {
 td.resize-handle-active {
     cursor: e-resize;
 }
-
 
 div.resize-handle {
     cursor: e-resize;

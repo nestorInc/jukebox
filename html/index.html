@@ -75,7 +75,7 @@
         </div>
       </div>
       <div id="music_collection_wrapper">
-        <div>
+        <div id="tab_links">
           <a href="javascript:void(0)" onclick="addOrSelectUploadTab();return false;"><span>Upload<span></a>
           <a href="javascript:void(0)" onclick="addOrSelectCustomQueriesTab();return false;"><span>Query<span></a>
           <a href="javascript:void(0)" onclick="addOrSelectNotificationTab();return false;"><span>Notifications<span></a>
@@ -114,7 +114,6 @@
       <div id="footer">
         <input type="button" value="Refresh" onclick="timestamp=0;updateJukebox();" />
         <input type="checkbox" value="autorefresh" id="cb_autorefresh" checked/> autorefresh
-        <br />
         <br />
         Plugin :<input type="text" id="music_selection_plugin" value="default" style="width: 70px;" />
         <input type="button" value="Appliquer" onclick="setSongSelectionPlugin();" />
