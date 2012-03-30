@@ -13,6 +13,7 @@ class Playlist
     @timestamp   = Time.now().to_i();
     mids         = expand_data(data);
     pos          = check_pos(pos);
+    warning("#{pos} #{mids}");
     @list.insert(pos, *mids);
     pos;
   end
@@ -22,12 +23,9 @@ class Playlist
     mids         = expand_data(data);
     positions    = [];
     for i in 0..(mids.size() -1) do
-      pos = check_pos(rand(@list.length));
-      positions.push(pos)
-      @list.insert(pos, *mids[i]);
-      warning(pos);
+      positions.push(rand(@list.length-1)+1)
     end
-    positions;
+    @list.insert(*positions, *mids);
   end
 
   def del(pos)

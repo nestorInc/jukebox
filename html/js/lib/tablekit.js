@@ -617,8 +617,10 @@ TableKit.Resizable = {
 		var cells = TableKit.getHeaderCells(table);
 		cells.each(function(c){
 			c = $(c);
-			Event.observe(c, 'mouseover', TableKit.Resizable.initDetect);
-			Event.observe(c, 'mouseout', TableKit.Resizable.killDetect);
+            if(c.id != "actions"){
+			    Event.observe(c, 'mouseover', TableKit.Resizable.initDetect);
+			    Event.observe(c, 'mouseout', TableKit.Resizable.killDetect);
+            }
 		});
 
 	},
