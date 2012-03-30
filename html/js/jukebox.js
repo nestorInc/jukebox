@@ -194,11 +194,23 @@ function updateJukebox ( update_timestamp ) {
             
             if (json.channel_infos != null) {
                 /* notification When new user connection or a user left*/
-                /* TODO add the real number of user connected/disconnected and also display plural string if n>1 */
                 if( last_nb_listening_users > json.channel_infos.listener_count.toString()){
-                    showNotification(1,'1 user left the channel.');
+                    var message = '';
+                    var nb = last_nb_listening_users - json.channel_infos.listener_count.toString();
+                    message += nb + ' user';
+                    if( nb > 1) 
+                        message += 's';
+                    message += " left the channel",
+                    showNotification(1, message);
                 } else if ( last_nb_listening_users < json.channel_infos.listener_count.toString()) {
-                    showNotification(1,'1 new user listening the channel.');
+                    var message = '';
+                    var nb = json.channel_infos.listener_count.toString() - last_nb_listening_users;
+                    message += nb + ' user';
+                    if( nb > 1) 
+                        message += 's';
+                    message += " join the channel",
+
+                    showNotification(1, message);
                 }
                 last_nb_listening_users = json.channel_infos.listener_count.toString();
 
