@@ -13,7 +13,6 @@ class Playlist
     @timestamp   = Time.now().to_i();
     mids         = expand_data(data);
     pos          = check_pos(pos);
-    warning("#{pos} #{mids}");
     @list.insert(pos, *mids);
     pos;
   end
