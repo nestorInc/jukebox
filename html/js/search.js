@@ -496,13 +496,13 @@ var SearchTab = Class.create(Tab, {
 	            songcell_html += '<tr id="library_song_' + identifier + '_' + i + '" class="library_draggable ' + style + '">';
                 songcell_html += '<td id="">';
                 songcell_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
-                songcell_html +=  s.artist.replace(/'/g,"\\'") +'\', \'equal\',\'artist\',\'artist,album, track, title\',\'up\',' + count + ' )">' ;
+                songcell_html +=  s.artist.replace(/'/g,"\\'") +'\', \'equal\',\'artist\',\'artist,album, track, title\',' + count + ' )">' ;
                 songcell_html +=  s.artist + '</a>';
                 songcell_html += '</td>';
 
                 songcell_html += '<td id="">';
                 songcell_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
-                songcell_html +=  s.album.replace(/'/g,"\\'") +'\', \'equal\',\'album\',\'artist,album, track, title\',\'up\',' + count + ' )">' ;
+                songcell_html +=  s.album.replace(/'/g,"\\'") +'\', \'equal\',\'album\',\'artist,album, track, title\',' + count + ' )">' ;
                 songcell_html +=  s.album + '</a>';
                 songcell_html += '</td>';
 
@@ -517,7 +517,9 @@ var SearchTab = Class.create(Tab, {
                 songcell_html += '<td>';
                 for( var j = 0; j< genres.length ;++j){
                     if( s.genre == genres[j][1]  ){
-                        songcell_html +=  genres[j][0];
+                        songcell_html +=  '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
+                        songcell_html +=  s.genre +'\', \'equal\',\'genre\',\'artist,album, track, title\',' + count + ' )">' ;
+                        songcell_html +=  genres[j][0] + '</a>';
                         break;
                     }
                 }

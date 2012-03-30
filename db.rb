@@ -200,8 +200,8 @@ class Library
       res = req.execute(:name => value).map(&Song.from_db);
       req.close();
     rescue => e
-      error("Error when executing query #{request}")
-      res = nil;
+      error("#{e}. Query #{request}");
+      res = [];
     end
     return res;
   end

@@ -340,10 +340,10 @@ function UpdateCurrentSong (delta_time) {
         var song = '';
         song += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         song += current_song.artist.replace(/'/g,"\\'");
-        song += '\',\'equal\', \'artist\',\'artist,album,track,title\',\'up\',' + search.result_count + ', \'false\' )">' + current_song.artist + '</a> - ';
+        song += '\',\'equal\', \'artist\',\'artist,album,track,title\',' + search.result_count + ', \'false\' )">' + current_song.artist + '</a> - ';
         song += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         song +=  current_song.album.replace(/'/g,"\\'");
-        song += '\',\'equal\', \'album\',\'artist,album,track,title\',\'up\',' + search.result_count + ' ), \'false\'">' + current_song.album + '</a> - ';
+        song += '\',\'equal\', \'album\',\'artist,album,track,title\',' + search.result_count + ' ), \'false\'">' + current_song.album + '</a> - ';
         song += current_song.title;
         $('player_song_title').update( song );
         UpdateCurrentSongTime (0);
@@ -452,11 +452,11 @@ function DisplayPlayQueue () {
         html += '<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">';
         html += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         html += song.artist.replace(/'/g,"\\'");
-        html += '\',\'equal\', \'artist\',\'artist,album,track, title\',\'up\',20, \'false\' )">' + song.artist + '</a>';
+        html += '\',\'equal\', \'artist\',\'artist,album,track, title\',20, \'false\' )">' + song.artist + '</a>';
         html +=' - ';
         html += '<a href="javascript:void(0)" onclick="javascript:doSearch( 1, null, null,\'';
         html += song.album.replace(/'/g,"\\'");
-        html += '\',\'equal\', \'album\',\'artist,album,track,title\',\'up\',20, \'false\')">' + song.album  + '</a>';
+        html += '\',\'equal\', \'album\',\'artist,album,track,title\',20, \'false\')">' + song.album  + '</a>';
         html += ' - ';
         html += song.title + ' (' + FormatTime(song.duration) + ')</div>';
         html += '<a href="javascript:void(0)" onclick="PlayQueueMove(1,' + currentPQSongIndex + ', 0);return false;"><span class="play_queue_move_top"></span></a>';
