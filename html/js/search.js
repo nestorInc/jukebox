@@ -146,7 +146,6 @@ var SearchTab = Class.create(Tab, {
         this.first_result = server_results.first_result;
         this.result_count = server_results.result_count;
         this.order_by = server_results.order_by;
-        this.order_by_way = server_results.order_by_way;
         this.total_results = server_results.total_results;
         this.server_results = server_results.results;
 
@@ -175,7 +174,6 @@ var SearchTab = Class.create(Tab, {
         action.search_comparison = this.search_comparison
         action.search_field = this.search_field ;
         action.order_by = this.order_by ;
-        action.order_by_way = this.order_by_way;
 
         if( "like" == action.search_comparison ) {
             action.first_result = this.first_result;
@@ -198,7 +196,17 @@ var SearchTab = Class.create(Tab, {
                  this.search_comparison, 
                  this.search_field, 
                  this.order_by,
-                 this.order_by_way,
+                 this.result_count);
+    },
+
+    sort : function (order_by) {
+        doSearch(this.page,
+                 this.identifier,
+                 this.select_fields,
+                 this.search_value, 
+                 this.search_comparison, 
+                 this.search_field, 
+                 order_by,
                  this.result_count);
     },
 
@@ -266,8 +274,7 @@ var SearchTab = Class.create(Tab, {
             }
             pagelist_html += '</p>';
         }
-        
-        // Display sliders and links
+                // Display sliders and links
         $$('[name=collection_pagelist_' + this.getIdentifier()+']').each(function(s) {
 	        s.update(pagelist_html);
         });
@@ -338,6 +345,131 @@ var SearchTab = Class.create(Tab, {
         }
     },
 
+    declareTableHeader: function(cellTag) {
+        var songlist_html = '<tr>';
+        songlist_html += '<' + cellTag + ' id="artist" ';
+        if(this.order_by.split(",")[0].indexOf("artist") != -1 ){
+            if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
+                songlist_html += 'class="sortcol sortasc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'artist COLLATE NOCASE DESC, album COLLATE NOCASE ASC, track DESC, title COLLATE NOCASE DESC\');"';
+            } else {
+                songlist_html += 'class="sortcol sortdesc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'artist COLLATE NOCASE ASC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+            }
+        } else {
+            songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+            songlist_html += '.sort( \'artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+        }
+        songlist_html += '>Artist</' + cellTag + '>';
+
+        songlist_html += '<' + cellTag + ' id="album" ';
+        if(this.order_by.split(",")[0].indexOf("album") != -1 ){
+            if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
+                songlist_html += 'class="sortcol sortasc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+            } else {
+                songlist_html += 'class="sortcol sortdesc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'album COLLATE NOCASE ASC, track DESC, title COLLATE NOCASE DESC\');"';
+            }
+        } else {
+            songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+            songlist_html += '.sort( \'album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+        }
+        songlist_html += '>Album</' + cellTag + '>';
+
+
+        songlist_html += '<' + cellTag + ' id="title" ';
+        if(this.order_by.split(",")[0].indexOf("title") != -1 ){
+            if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
+                songlist_html += 'class="sortcol sortasc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \' title COLLATE NOCASE DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC\');"';
+            } else {
+                songlist_html += 'class="sortcol sortdesc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'title COLLATE NOCASE ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC\');"';
+            }
+        } else {
+            songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+            songlist_html += '.sort( \'title COLLATE NOCASE DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC\');"';
+        }
+        songlist_html += '>Title</' + cellTag + '>';
+
+        songlist_html += '<' + cellTag + ' id="track" ';
+        if(this.order_by.split(",")[0].indexOf("track") != -1 ){
+            if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
+                songlist_html += 'class="sortcol sortasc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'track DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC\');"';
+            } else {
+                songlist_html += 'class="sortcol sortdesc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'track ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC \');"';
+            }
+        } else {
+            songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+            songlist_html += '.sort( \'track DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC\');"';
+        }
+        songlist_html += '>Track</' + cellTag + '>';
+
+        songlist_html += '<' + cellTag + ' id="genre" ';
+        if(this.order_by.split(",")[0].indexOf("genre") != -1 ){
+            if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
+                songlist_html += 'class="sortcol sortasc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'genre DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+            } else {
+                songlist_html += 'class="sortcol sortdesc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'genre ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC,title COLLATE NOCASE DESC \');"';
+            }
+        } else {
+            songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+            songlist_html += '.sort( \'genre DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+        }
+        songlist_html += '>Genre</' + cellTag + '>';
+
+        songlist_html += '<' + cellTag + ' id="duration" '
+        if(this.order_by.split(",")[0].indexOf("duration") != -1 ){
+            if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
+                songlist_html += 'class="sortcol sortasc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'duration DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+            } else {
+                songlist_html += 'class="sortcol sortdesc" ';
+                songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+                songlist_html += '.sort( \'duration ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC,title COLLATE NOCASE DESC \');"';
+            }
+        } else {
+            songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
+            songlist_html += '.sort( \'duration DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+        }
+        songlist_html += '>Duration</' + cellTag + '>';
+        
+        songlist_html += '<' + cellTag + ' id="actions">';
+        songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
+        songlist_html += '.addSearchToPlayQueue(\'rand\');return false;"';
+        songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
+        
+        /* Add research to playqueue on tail */
+        songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
+        songlist_html += '.addSearchToPlayQueue(\'tail\');return false;"';
+        songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_bottom"></span></a>';
+        
+        /* Add research page song in the head playqueue */
+        songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
+        songlist_html += '.addSearchToPlayQueue(\'head\');return false;"';
+        songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_top"></span></a>';
+        
+        songlist_html += '</' + cellTag + '>';
+        songlist_html += '</tr>';
+        return songlist_html;
+    },
+
     initAndDisplaySearchResults : function() {
         var songcell_html = '';
         var songlist_html = '';
@@ -402,7 +534,6 @@ var SearchTab = Class.create(Tab, {
                 songcell_html += '<span class="add_to_play_queue_top"></span></a>';
 	            songcell_html += '<a href="javascript:void(0)" onclick="addToPlayQueueBottom(' + s.mid + ');return false;">';
                 songcell_html += '<span class="add_to_play_queue_bottom"></span></a>';
-	            //songcell_html += '<div id="library_handle_' + identifier +'_'+ i + '">'
                 songcell_html += '</td>';
 	            songcell_html += '</tr>';
 
@@ -412,162 +543,12 @@ var SearchTab = Class.create(Tab, {
             var temp = new Date().getTime();
             songlist_html =  add_page_results;
             songlist_html += '<table id="results_filelist_' + this.getIdentifier() + '_' + temp + '" class="resizable">';
-            songlist_html += '<thead><tr>';
-            songlist_html += '<th id="artist" ';
-            if(this.order_by.split(",")[0] == "artist" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Artist</th>';
-
-            songlist_html += '<th id="album" ';
-            if(this.order_by.split(",")[0] == "album" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Album</th>';
-
-            songlist_html += '<th id="title" ';
-            if(this.order_by.split(",")[0] == "title" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Title</th>';
-
-            songlist_html += '<th id="track" ';
-            if(this.order_by.split(",")[0] == "track" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Track</th>';
-
-            songlist_html += '<th id="genre" ';
-            if(this.order_by.split(",")[0] == "genre" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Genre</th>';
-
-            songlist_html += '<th id="duration" '
-            if(this.order_by.split(",")[0] == "duration" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Duration</th>';
-
-            songlist_html += '<th id="actions">';
-            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
-            songlist_html += '.addSearchToPlayQueue(\'rand\');return false;"';
-            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
-
-            /* Add research to playqueue on tail */
-            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
-            songlist_html += '.addSearchToPlayQueue(\'tail\');return false;"';
-            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_bottom"></span></a>';
-
-            /* Add research page song in the head playqueue */
-            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
-            songlist_html += '.addSearchToPlayQueue(\'head\');return false;"';
-            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_top"></span></a>';
-
-            songlist_html += '</th>';
-            songlist_html += '</tr></thead>';
-            songlist_html += '<tfoot><tr>';
-            songlist_html += '<td id="artist" ';
-            if(this.order_by.split(",")[0] == "artist" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Artist</td>';
-
-            songlist_html += '<td id="album" ';
-            if(this.order_by.split(",")[0] == "album" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Album</td>';
-
-            songlist_html += '<td id="title" ';
-            if(this.order_by.split(",")[0] == "title" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Title</td>';
-
-            songlist_html += '<td id="track" ';
-            if(this.order_by.split(",")[0] == "track" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Track</td>';
-
-            songlist_html += '<td id="genre" ';
-            if(this.order_by.split(",")[0] == "genre" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Genre</td>';
-
-            songlist_html += '<td id="duration" ';
-            if(this.order_by.split(",")[0] == "duration" ){
-                if( this.order_by_way == "up" ){
-                    songlist_html += 'class="sortcol sortdesc" ';
-                } else {
-                    songlist_html += 'class="sortcol sortasc" ';
-                }
-            }
-            songlist_html += '>Duration</td>';
-
-            songlist_html += '<td id="actions">';
-            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
-            songlist_html += '.addSearchToPlayQueue(\'rand\');return false;"';
-            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
-
-            /* Add research to playqueue on tail */
-            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
-            songlist_html += '.addSearchToPlayQueue(\'tail\');return false;"';
-            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_bottom"></span></a>';
-
-            /* Add research page song in the head playqueue */
-            songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + identifier + '\')';
-            songlist_html += '.addSearchToPlayQueue(\'head\');return false;"';
-            songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_top"></span></a>';
-
-            songlist_html +='</td>';
-            songlist_html += '</tr></tfoot>';
+            songlist_html += '<thead>';
+            songlist_html += this.declareTableHeader('th');
+            songlist_html += '</thead>';
+            songlist_html += '<tfoot>';
+            songlist_html += this.declareTableHeader('td');
+            songlist_html += '</tfoot>';
             songlist_html += '<tbody>';
             songlist_html +=  songcell_html;
             songlist_html += '</tbody></table>';

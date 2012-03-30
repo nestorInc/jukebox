@@ -160,14 +160,10 @@ class Library
     res.map(&Song.from_db).first
   end
 
-  def secure_request(fieldsSelection, value, comparison, field, orderBy, orderByWay, firstResult, resultCount)
+  def secure_request(fieldsSelection, value, comparison, field, orderBy, firstResult, resultCount)
     field   = "artist" if(field != "title" && field != "album" && field != "genre");
-    orderBy = "artist, album, track, title" if(orderBy != "title" && orderBy != "album");
-    if(orderByWay == "down")
-      orderByWay = "DESC";
-    else
-      orderByWay = "ASC";
-    end
+    orderBy = "artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track ASC, title COLLATE NOCASE DESC" if(orderBy == nil);
+
     if( nil != firstResult && nil != resultCount) 
       firstResult = 0  if(!(firstResult.is_a? Integer))
       firstResult = 0  if(firstResult < 0)
@@ -176,10 +172,10 @@ class Library
     if("like" == comparison)
       value = '%' + value + '%';
     end
-    return request(fieldsSelection, value, field, orderBy, orderByWay, firstResult, resultCount); 
+    return request(fieldsSelection, value, field, orderBy, firstResult, resultCount); 
   end
 
-  def request(fieldsSelection, value, field, orderBy, orderByWay, firstResult, resultCount)
+  def request(fieldsSelection, value, field, orderBy, firstResult, resultCount)
     if( fieldsSelection )
       request  = "SELECT " + fieldsSelection + " FROM library WHERE status=#{FILE_OK} ";
     else
@@ -188,7 +184,6 @@ class Library
     request << "AND #{field} LIKE  :name " if(field != nil);
     if(orderBy != nil)
       request << "ORDER BY #{orderBy} ";
-      request << "#{orderByWay} " if(orderByWay != nil);
     end
 
     if(firstResult && resultCount)
@@ -199,10 +194,15 @@ class Library
       end
     end
     
-    warning("Querying database : #{request}");
-    req = @db.prepare(request);
-    res = req.execute(:name => value).map(&Song.from_db);
-    req.close();
+    #warning("Querying database : #{request}");
+    begin
+      req = @db.prepare(request);
+      res = req.execute(:name => value).map(&Song.from_db);
+      req.close();
+    rescue => e
+      error("Error when executing query #{request}")
+      res = nil;
+    end
     return res;
   end
 

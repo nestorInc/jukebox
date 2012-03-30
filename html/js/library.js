@@ -2,7 +2,6 @@ var librarySongs = new Array();
 var search = new Object();
 
 search.order_by = 'artist';
-search.order_by_way = 'up';
 search.search_value = '';
 search.search_comparison = 'like';
 search.search_field = '';
@@ -10,7 +9,7 @@ search.first_result = 0;
 
 function doSearch( page, identifier, select_fields,
                    search_value, search_comparison, 
-                   search_field, order_by, order_by_way, result_count, select ) {
+                   search_field, order_by, result_count, select ) {
     if( undefined == identifier || null == identifier || '' == identifier )
         search.identifier = null;
     else
@@ -69,12 +68,6 @@ function doSearch( page, identifier, select_fields,
         search.order_by="artist,album,track,title";
     } else {
         search.order_by = order_by;
-    }
-
-    if( undefined == order_by_way || null == order_by_way ) {
-        search.order_by_way="up";
-    } else {
-        search.order_by_way = order_by_way;
     }
 
     search.search_value = search.search_value;
@@ -205,7 +198,6 @@ function fillCustomJsonQuery () {
         subelt.result_count=5;
     } else if ( "search" == value ) { 
         subelt.order_by="artist";
-        subelt.order_by_way="down";
         subelt.search_value="muse";
         subelt.search_field="artist";
         subelt.first_result=0;

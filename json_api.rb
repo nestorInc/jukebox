@@ -114,7 +114,6 @@ class JsonManager < HttpNode
                                        req["search_comparison"],
                                        req["search_field"],
                                        req["order_by"],
-                                       req["order_by_way"],
                                        req["first_result"],
                                        req["result_count"]);
       if(req["play_queue_position"]  == "head")
@@ -181,7 +180,6 @@ class JsonManager < HttpNode
                                      req["search_comparison"],
                                      req["search_field"],
                                      req["order_by"],
-                                     req["order_by_way"],
                                      req["first_result"],
                                      req["result_count"]);
 
@@ -205,7 +203,6 @@ class JsonManager < HttpNode
       :search_field   => req["search_field"],
       :result_count   => req["result_count"],
       :order_by       => req["order_by"],
-      :order_by_way   => req["order_by_way"],
       :first_result   => req["first_result"],
       :total_results  => @library.get_total(req["search_field"],
                                        req["search_comparison"],
