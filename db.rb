@@ -161,8 +161,8 @@ class Library
   end
 
   def secure_request(fieldsSelection, value, comparison, field, orderBy, orderByWay, firstResult, resultCount)
-    field   = "artist" if(field   != "title" && field   != "album");
-    orderBy = "artist, album, title" if(orderBy != "title" && orderBy != "album");
+    field   = "artist" if(field != "title" && field != "album" && field != "genre");
+    orderBy = "artist, album, track, title" if(orderBy != "title" && orderBy != "album");
     if(orderByWay == "down")
       orderByWay = "DESC";
     else

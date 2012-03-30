@@ -124,9 +124,16 @@ var SearchTab = Class.create(Tab, {
         } else if ( server_results.search_comparison == 'equal' && server_results.search_field == 'album'){
             if( server_results.results.length > 0 ) {
                 // Caution it could generate errors
-                this.name =  server_results.results[0].artist + " - " + server_results.search_value;
+                this.name = server_results.results[0].artist + " - " + server_results.search_value;
             } else {
                 this.name = server_results.search_value;
+            }
+        } else if ( server_results.search_comparison == 'equal' && server_results.search_field == 'genre'){
+            for( var i = 0; i < genres.length; ++i ){
+                if(genres[i][1] == server_results.search_value){
+                    this.name = "Genre:" + genres[i][0];
+                    break;
+                }
             }
         } else {
             this.name =  server_results.search_value;

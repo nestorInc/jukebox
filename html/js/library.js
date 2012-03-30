@@ -27,22 +27,30 @@ function doSearch( page, identifier, select_fields,
     else
         search.select_fields = select_fields;
 
-    if( undefined == search_value || null == search_value ) { 
-        search.search_value = $('search_input').value;
-    } else {
-        search.search_value = search_value;
-    }
-
-    if( undefined == search_comparison || null == search_comparison ) { 
-        search.search_comparison = 'like';
-    } else {
-        search.search_comparison = search_comparison;
-    }
-
     if( undefined == search_field || null == search_field ) { 
         search.search_field = $('search_field').value;
     } else {
         search.search_field = search_field;
+    }
+
+    if( undefined != search_value && null != search_value ){
+            search.search_value = search_value;
+    } else {
+        if( search.search_field != "genre"){
+            search.search_value = $('search_input').value;
+        } else {
+            search.search_value = $('search_genres').value;
+        }
+    }
+
+    if( undefined == search_comparison || null == search_comparison ) { 
+        if( search.search_field != "genre"){
+            search.search_comparison = 'like';
+        } else {
+            search.search_comparison = 'equal';
+        }
+    } else {
+        search.search_comparison = search_comparison;
     }
 
     if( undefined == result_count || null == result_count ) { 
@@ -58,7 +66,7 @@ function doSearch( page, identifier, select_fields,
     }
 
     if( undefined == order_by || null == order_by ) {
-        search.order_by="artist,album,title";
+        search.order_by="artist,album,track,title";
     } else {
         search.order_by = order_by;
     }
@@ -73,6 +81,30 @@ function doSearch( page, identifier, select_fields,
     query.search = search;
 
     updateJukebox();
+}
+
+
+/*
+ * Display the select_genre input in place of input_value if the selected field is genre
+ * Also fills tho select_genre list if empty
+ */
+function selectAndFillGenres(){
+    if( $('search_field').options[$('search_field').selectedIndex].value =='genre'){
+        $('search_input').hide();
+        $('search_genres').show();
+        
+        if($('search_genres').options.length == 0){ 
+            for(var i=0;i < genres.length; ++i){ 
+                var option = document.createElement('option');
+                option.value = genres[i][1]; 
+                option.appendChild(document.createTextNode(genres[i][0]));
+                $('search_genres').appendChild(option);  
+            } 
+        }
+    } else {
+        $('search_input').show();
+        $('search_genres').hide();
+    }
 }
 
 function addToPlayQueueBottom(mid) {

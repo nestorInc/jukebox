@@ -1,7 +1,7 @@
 ﻿/* http://meyerweb.com/eric/tools/css/reset/ 
    v2.0 | 20110126
    License: none (public domain)
-*/
+   */
 /* begin reset */
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -97,7 +97,7 @@ div#page_wrapper {
 	margin-top: 10px;
 	margin-right: auto;
 	margin-left: auto;
-/*	width: 280px;*/
+    /*	width: 280px;*/
 	width: 960px;
 	border: 1px solid black;
 }
@@ -189,20 +189,20 @@ span#previous_button
 
 span#next_button
 {
-        background: url("../images/next.jpg") no-repeat left top;
-        display: block;
-        position: absolute;
-        left: 25px;
-        top: 5px;
-        width: 12px;
-        height: 30px;
-        background-color: white;
+    background: url("../images/next.jpg") no-repeat left top;
+    display: block;
+    position: absolute;
+    left: 25px;
+    top: 5px;
+    width: 12px;
+    height: 30px;
+    background-color: white;
 }
 
 
 div#progressbar_wrapper {
 	overflow: hidden;
-background-color: white;
+    background-color: white;
     height: 10px;
     left: 50px;
     position: absolute;
@@ -222,7 +222,7 @@ div#progressbar {
 }
 
 div#progressbar_foreground {
-background: url("../images/progressbar_fg.png") no-repeat left top;
+    background: url("../images/progressbar_fg.png") no-repeat left top;
 	z-index: 200;
     height: 10px;
     left: 0;
@@ -253,8 +253,8 @@ div.play_queue_handle
 
 
 span.play_queue_delete, span.play_queue_shuffle, span.play_queue_move_top, span.play_queue_move_bottom, span.nb_listening_users {
-/*	display: block;
-	float: right;*/
+    /*	display: block;
+	    float: right;*/
 	width: 10px;
 	height: 10px;
     position: absolute;
@@ -574,6 +574,7 @@ a.slider_link {  }
 .tabHeaderActive span, .tabHeaderActive a { background-color: #42577B; color:#fff;}
 #tabscontent {
     position:relative;
+    border-left: 1px solid black;
 }
 span.tab_delete {
     background: url("../images/icons/play_queue_delete.png") no-repeat left top;

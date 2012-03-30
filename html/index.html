@@ -84,7 +84,9 @@
         <div id="collection_header">
           Rechercher : 
           <input type="text" id="search_input" />
-          <select id="search_field">
+          <select id="search_genres" style="display:none;">
+          </select>
+          <select id="search_field" onchange="selectAndFillGenres();">
             <option value="artist">artiste</option>
             <option value="title">title</option>
             <option value="album">album</option>
