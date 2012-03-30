@@ -122,7 +122,9 @@ class JsonManager < HttpNode
       elsif( req["play_queue_position"]  == "tail" )
         ch.queue.add(nil, result);
       else # randomly
-         ch.queue.add_randomly(result);
+        result.each { |song|
+           ch.queue.add(rand(ch.queue.list.length-1) , song);
+        }
       end
 
     when "remove_from_play_queue"
