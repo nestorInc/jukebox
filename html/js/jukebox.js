@@ -404,12 +404,12 @@ function updateJukebox ( update_timestamp ) {
                 } else if ( last_nb_listening_users < json.channel_infos.listener_count.toString()) {
                     showNotification(1,'1 new user listening the channel.');
                 }
+                last_nb_listening_users = json.channel_infos.listener_count.toString();
 
                 /* Display the nb user listening the channel */
                 $$('span.count_user_listening').each(function(e){ 
                     content = '';
                     content += json.channel_infos.listener_count.toString();
-                    last_nb_listening_users = json.channel_infos.listener_count.toString();
                     e.update(content);
                 });
                 /*var select = $('channel_select');

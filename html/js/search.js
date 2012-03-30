@@ -473,8 +473,8 @@ var SearchTab = Class.create(Tab, {
             for (var i = 0; i < librarySongs.length; i++) {
 	            new Draggable('library_song_' + this.getIdentifier() + '_' + i, {
 	                scroll: window,
-	                revert: true,
-	                handle: 'library_song_' + this.getIdentifier() + '_' + i
+                    ghosting:true,
+	                revert: function(element){ element.style.position = "relative";},
 	            });
             }
         }
