@@ -71,7 +71,7 @@ var tabs = Class.create({
         tabDisplay += '<a href="javascript:void(0)" onclick="tabs.toggleTab(\'' + tab.getIdentifier() + '\')">';
         tabDisplay += '<span>' + tab.getName() + '</span>';
         tabDisplay += '</a>';
-        tabDisplay += '<a href="javascript:void(0)" onclick="tabs.removeTab(\'' + tab.getIdentifier() + '\')">';
+        tabDisplay += '<a href="javascript:void(0)" title="Close tab" onclick="tabs.removeTab(\'' + tab.getIdentifier() + '\')">';
         tabDisplay += '<span> X </span>';
         tabDisplay += '</a>';
         tabDisplay += '</li>';

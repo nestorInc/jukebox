@@ -1,7 +1,7 @@
 var librarySongs = new Array();
 var search = new Object();
 
-search.order_by = 'artist';
+search.order_by = 'artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track ASC, title COLLATE NOCASE DESC';
 search.search_value = '';
 search.search_comparison = 'like';
 search.search_field = '';

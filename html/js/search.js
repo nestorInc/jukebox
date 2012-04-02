@@ -451,17 +451,17 @@ var SearchTab = Class.create(Tab, {
         songlist_html += '>Duration</' + cellTag + '>';
         
         songlist_html += '<' + cellTag + ' id="actions">';
-        songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
+        songlist_html += '<a title="Add search results randomly into the playqueue" onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
         songlist_html += '.addSearchToPlayQueue(\'rand\');return false;"';
         songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
         
         /* Add research to playqueue on tail */
-        songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
+        songlist_html += '<a title="Add search after the tail\'s playqueue" onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
         songlist_html += '.addSearchToPlayQueue(\'tail\');return false;"';
         songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_bottom"></span></a>';
         
         /* Add research page song in the head playqueue */
-        songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
+        songlist_html += '<a title="Add the search before the head\'s playqueue" onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
         songlist_html += '.addSearchToPlayQueue(\'head\');return false;"';
         songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_top"></span></a>';
         
@@ -530,11 +530,11 @@ var SearchTab = Class.create(Tab, {
                 songcell_html += '</td>';
 
                 songcell_html += '<td id="">';
-	            songcell_html += '<a href="javascript:void(0)" onclick="addToPlayQueueRandom(' + s.mid + ');return false;">';
+	            songcell_html += '<a href="javascript:void(0)" title="Add song to playqueue randomly" onclick="addToPlayQueueRandom(' + s.mid + ');return false;">';
                 songcell_html += '<span class="add_to_play_queue_rand"></span></a>';
-	            songcell_html += '<a href="javascript:void(0)" onclick="addToPlayQueue(' + s.mid + ',0);return false;">';
+	            songcell_html += '<a href="javascript:void(0)" title="Add song to the head\'s playqueue" onclick="addToPlayQueue(' + s.mid + ',0);return false;">';
                 songcell_html += '<span class="add_to_play_queue_top"></span></a>';
-	            songcell_html += '<a href="javascript:void(0)" onclick="addToPlayQueueBottom(' + s.mid + ');return false;">';
+	            songcell_html += '<a href="javascript:void(0)" title="Add song to the tail\'s playqueue" onclick="addToPlayQueueBottom(' + s.mid + ');return false;">';
                 songcell_html += '<span class="add_to_play_queue_bottom"></span></a>';
                 songcell_html += '</td>';
 	            songcell_html += '</tr>';
