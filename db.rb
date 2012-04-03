@@ -175,6 +175,20 @@ class Library
     return request(fieldsSelection, value, field, orderBy, firstResult, resultCount); 
   end
 
+  def deleteSong(mid)
+    select = @db.prepare("SELECT src, dst FROM library WHERE mid=? limit 1");
+    select_result = select.execute!(mid);
+    if(select_result.length == 0)
+      raise "File already deleted";
+    end
+    File.delete(select_result[0][1]);
+    File.delete(select_result[0][0]);
+    req = @db.prepare("DELETE FROM library WHERE mid=?");
+    res = req.execute!(mid);
+    req.close();
+    select.close();
+  end
+
   def request(fieldsSelection, value, field, orderBy, firstResult, resultCount)
     if( fieldsSelection )
       request  = "SELECT " + fieldsSelection + " FROM library WHERE status=#{FILE_OK} ";

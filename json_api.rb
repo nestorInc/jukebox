@@ -130,6 +130,28 @@ class JsonManager < HttpNode
       ch.queue.del(req["play_queue_index"]);
     when "move_in_play_queue"
       ch.queue.move(req["play_queue_index"], req["new_play_queue_index"]);
+    when "remove_song_permanently"
+      #TODO change this hardcoded restrictions
+      if (user == "aetu" or 
+          user == "beuiot" or 
+          user == "moustik" or 
+          user == "john" or 
+          user == "trashman" )
+        begin
+          @library.deleteSong(req["mid"]);
+          JsonManager.add_message(resp, MSG_LVL_INFO, nil, 
+                                  "File with mid : #{req["mid"]} successfully deleted.");
+
+        rescue => e
+          error("#{e}. Could not delete song #{req["mid"]}.");
+          JsonManager.add_message(resp, MSG_LVL_ERROR, nil, 
+                                  "#{e}. Could not delete song #{req["mid"]}.");
+          
+        end
+      else
+        error("User #{user} is not allowed to delete songs.");
+        JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "User #{user} is not allowed to delete songs.");
+      end
     when "get_uploaded_files"
       #TODO only if https sessions or send a 403
       files = UploadManager.getUploadedFiles(@upload_dir, user);

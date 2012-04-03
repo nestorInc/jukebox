@@ -83,7 +83,8 @@ function generatePagesLinks(identifier, currentPage, currentSelection, nbPages){
         if( lastdisplayedValue != null && lastdisplayedValue != pages[i] - 1){
             result+= ".....";
         }
-        result += "<a href='javascript:void(0)' onclick=\"javascript:tabs.getTabFromUniqueId( '" + identifier + "').goToPage(" + pages[i] + ");\" class='";
+        result += "<a href='javascript:void(0)' ";
+        result += "onclick=\"javascript:tabs.getTabFromUniqueId( '" + identifier + "').goToPage(" + pages[i] + ");\" class='";
         
         if( pages[i] == currentPage ){
             result += "slider_link_current_page" ;
@@ -352,15 +353,18 @@ var SearchTab = Class.create(Tab, {
             if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
                 songlist_html += 'class="sortcol sortasc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'artist COLLATE NOCASE DESC, album COLLATE NOCASE ASC, track DESC, title COLLATE NOCASE DESC\');"';
+                songlist_html += '.sort(\'artist COLLATE NOCASE DESC, album COLLATE NOCASE ASC,';
+                songlist_html += ' track DESC, title COLLATE NOCASE DESC\');"';
             } else {
                 songlist_html += 'class="sortcol sortdesc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'artist COLLATE NOCASE ASC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+                songlist_html += '.sort(\'artist COLLATE NOCASE ASC, album COLLATE NOCASE DESC,';
+                songlist_html += ' track DESC, title COLLATE NOCASE DESC\');"';
             }
         } else {
             songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-            songlist_html += '.sort( \'artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+            songlist_html += '.sort(\'artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC,';
+            songlist_html += ' track DESC, title COLLATE NOCASE DESC\');"';
         }
         songlist_html += '>Artist</' + cellTag + '>';
 
@@ -369,15 +373,15 @@ var SearchTab = Class.create(Tab, {
             if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
                 songlist_html += 'class="sortcol sortasc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+                songlist_html += '.sort(\'album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
             } else {
                 songlist_html += 'class="sortcol sortdesc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'album COLLATE NOCASE ASC, track DESC, title COLLATE NOCASE DESC\');"';
+                songlist_html += '.sort(\'album COLLATE NOCASE ASC, track DESC, title COLLATE NOCASE DESC\');"';
             }
         } else {
             songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-            songlist_html += '.sort( \'album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+            songlist_html += '.sort(\'album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
         }
         songlist_html += '>Album</' + cellTag + '>';
 
@@ -387,15 +391,18 @@ var SearchTab = Class.create(Tab, {
             if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
                 songlist_html += 'class="sortcol sortasc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \' title COLLATE NOCASE DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC\');"';
+                songlist_html += '.sort(\'title COLLATE NOCASE DESC, artist COLLATE NOCASE DESC,'
+                songlist_html += 'album COLLATE NOCASE DESC, track DESC\');"';
             } else {
                 songlist_html += 'class="sortcol sortdesc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'title COLLATE NOCASE ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC\');"';
+                songlist_html += '.sort(\'title COLLATE NOCASE ASC, artist COLLATE NOCASE DESC,'
+                songlist_html += 'album COLLATE NOCASE DESC, track DESC\');"';
             }
         } else {
             songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-            songlist_html += '.sort( \'title COLLATE NOCASE DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC\');"';
+            songlist_html += '.sort(\'title COLLATE NOCASE DESC, artist COLLATE NOCASE DESC,'
+            songlist_html += 'album COLLATE NOCASE DESC, track DESC\');"';
         }
         songlist_html += '>Title</' + cellTag + '>';
 
@@ -404,15 +411,18 @@ var SearchTab = Class.create(Tab, {
             if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
                 songlist_html += 'class="sortcol sortasc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'track DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC\');"';
+                songlist_html += '.sort(\'track DESC, artist COLLATE NOCASE DESC,';
+                songlist_html += 'album COLLATE NOCASE DESC, title COLLATE NOCASE DESC\');"';
             } else {
                 songlist_html += 'class="sortcol sortdesc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'track ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC \');"';
+                songlist_html += '.sort(\'track ASC, artist COLLATE NOCASE DESC,' 
+                songlist_html += 'album COLLATE NOCASE DESC, title COLLATE NOCASE DESC \');"';
             }
         } else {
             songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-            songlist_html += '.sort( \'track DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC\');"';
+            songlist_html += '.sort( \'track DESC, artist COLLATE NOCASE DESC,';
+            songlist_html += ' album COLLATE NOCASE DESC, title COLLATE NOCASE DESC\');"';
         }
         songlist_html += '>Track</' + cellTag + '>';
 
@@ -421,15 +431,18 @@ var SearchTab = Class.create(Tab, {
             if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
                 songlist_html += 'class="sortcol sortasc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'genre DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+                songlist_html += '.sort( \'genre DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC,'
+                songlist_html += ' track DESC, title COLLATE NOCASE DESC\');"';
             } else {
                 songlist_html += 'class="sortcol sortdesc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'genre ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC,title COLLATE NOCASE DESC \');"';
+                songlist_html += '.sort( \'genre ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC,'
+                songlist_html += ' track DESC,title COLLATE NOCASE DESC \');"';
             }
         } else {
             songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-            songlist_html += '.sort( \'genre DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+            songlist_html += '.sort( \'genre DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC,'
+            songlist_html += ' track DESC, title COLLATE NOCASE DESC\');"';
         }
         songlist_html += '>Genre</' + cellTag + '>';
 
@@ -438,30 +451,36 @@ var SearchTab = Class.create(Tab, {
             if( this.order_by.split(",")[0].indexOf("DESC") == -1 ){
                 songlist_html += 'class="sortcol sortasc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'duration DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+                songlist_html += '.sort(\'duration DESC, artist COLLATE NOCASE DESC,' 
+                songlist_html += 'album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
             } else {
                 songlist_html += 'class="sortcol sortdesc" ';
                 songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-                songlist_html += '.sort( \'duration ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC,title COLLATE NOCASE DESC \');"';
+                songlist_html += '.sort( \'duration ASC, artist COLLATE NOCASE DESC,' 
+                songlist_html += 'album COLLATE NOCASE DESC, track DESC,title COLLATE NOCASE DESC \');"';
             }
         } else {
             songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-            songlist_html += '.sort( \'duration DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+            songlist_html += '.sort(\'duration DESC, artist COLLATE NOCASE DESC,';
+            songlist_html += 'album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
         }
         songlist_html += '>Duration</' + cellTag + '>';
         
         songlist_html += '<' + cellTag + ' id="actions">';
-        songlist_html += '<a title="Add search results randomly into the playqueue" onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
+        songlist_html += '<a title="Add search results randomly into the playqueue"';
+        songlist_html += ' onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
         songlist_html += '.addSearchToPlayQueue(\'rand\');return false;"';
         songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
         
         /* Add research to playqueue on tail */
-        songlist_html += '<a title="Add search after the tail\'s playqueue" onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
+        songlist_html += '<a title="Add search after the tail\'s playqueue"' 
+        songlist_html += 'onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
         songlist_html += '.addSearchToPlayQueue(\'tail\');return false;"';
         songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_bottom"></span></a>';
         
         /* Add research page song in the head playqueue */
-        songlist_html += '<a title="Add the search before the head\'s playqueue" onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
+        songlist_html += '<a title="Add the search before the head\'s playqueue"';
+        songlist_html += 'onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
         songlist_html += '.addSearchToPlayQueue(\'head\');return false;"';
         songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_top"></span></a>';
         
@@ -496,13 +515,15 @@ var SearchTab = Class.create(Tab, {
 	            songcell_html += '<tr id="library_song_' + identifier + '_' + i + '" class="library_draggable ' + style + '">';
                 songcell_html += '<td id="">';
                 songcell_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
-                songcell_html +=  s.artist.replace(/'/g,"\\'") +'\', \'equal\',\'artist\',\'artist,album, track, title\',' + count + ' )">' ;
+                songcell_html +=  s.artist.replace(/'/g,"\\'") +'\', \'equal\',\'artist\',\'artist,album,';
+                songcell_html += 'track, title\',' + count + ' )">' ;
                 songcell_html +=  s.artist + '</a>';
                 songcell_html += '</td>';
 
                 songcell_html += '<td id="">';
                 songcell_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
-                songcell_html +=  s.album.replace(/'/g,"\\'") +'\', \'equal\',\'album\',\'artist,album, track, title\',' + count + ' )">' ;
+                songcell_html +=  s.album.replace(/'/g,"\\'") +'\', \'equal\',\'album\',\'artist,';
+                songcell_html += 'album, track, title\',' + count + ' )">' ;
                 songcell_html +=  s.album + '</a>';
                 songcell_html += '</td>';
 
@@ -530,11 +551,17 @@ var SearchTab = Class.create(Tab, {
                 songcell_html += '</td>';
 
                 songcell_html += '<td id="">';
-	            songcell_html += '<a href="javascript:void(0)" title="Add song to playqueue randomly" onclick="addToPlayQueueRandom(' + s.mid + ');return false;">';
+	            songcell_html += '<a href="javascript:void(0)" title="Remove song permanently" ';
+                songcell_html += 'onclick="removeSongPermanently(' + s.mid + ');return false;">';
+                songcell_html += '<span class="remove_song_permanently"></span></a>';
+	            songcell_html += '<a href="javascript:void(0)" title="Add song to playqueue randomly" ';
+                songcell_html += 'onclick="addToPlayQueueRandom(' + s.mid + ');return false;">';
                 songcell_html += '<span class="add_to_play_queue_rand"></span></a>';
-	            songcell_html += '<a href="javascript:void(0)" title="Add song to the head\'s playqueue" onclick="addToPlayQueue(' + s.mid + ',0);return false;">';
+	            songcell_html += '<a href="javascript:void(0)" title="Add song to the head\'s playqueue" ';
+                songcell_html += 'onclick="addToPlayQueue(' + s.mid + ',0);return false;">';
                 songcell_html += '<span class="add_to_play_queue_top"></span></a>';
-	            songcell_html += '<a href="javascript:void(0)" title="Add song to the tail\'s playqueue" onclick="addToPlayQueueBottom(' + s.mid + ');return false;">';
+	            songcell_html += '<a href="javascript:void(0)" title="Add song to the tail\'s playqueue" ';
+                songcell_html += 'onclick="addToPlayQueueBottom(' + s.mid + ');return false;">';
                 songcell_html += '<span class="add_to_play_queue_bottom"></span></a>';
                 songcell_html += '</td>';
 	            songcell_html += '</tr>';
@@ -557,7 +584,8 @@ var SearchTab = Class.create(Tab, {
             songlist_html +=  add_page_results;
 
             $('collection_content_' + this.getIdentifier() ).update(songlist_html);
-            this.tableKit = new TableKit('results_filelist_' + this.getIdentifier() + '_' + temp, {'sortable':false, 'editable':false, 'trueResize' : true, 'keepWidth' : true});
+            this.tableKit = new TableKit('results_filelist_' + this.getIdentifier() + '_' + temp, 
+                                         {'sortable':false, 'editable':false, 'trueResize' : true, 'keepWidth' : true});
         } else {
             // Todo display no results more beautifully
             songlist_html += "no results found";
