@@ -14,25 +14,27 @@ class JsonManager < HttpNode
   MSG_LVL_ERROR   = 4
   MSG_LVL_FATAL   = 5
 
-  def initialize(list, library, conf_upload, conf_encode)
+  def initialize(list, library, user, conf_upload, conf_encode)
     @list     = list;
     @library  = library;
+    @user     = user;
     @upload_dir = conf_upload  && conf_upload["dst_folder"] || "uploads";
     @source_dir = conf_encode  && conf_encode["source_dir"] || "../../musik/sorted/";
     super();
   end
 
   def on_request(s, req)
-    ch  = @list[s.user];
-    rep = HttpResponse.new(req.proto, 200, "OK",
-                           "Content-Type" => "application/json");
+    data  = @user[s.user] || {};
+    ch    = @list[data[:channel]];
+    rep   = HttpResponse.new(req.proto, 200, "OK",
+                             "Content-Type" => "application/json");
     res = "";
     debug(req.data);
     if(ch == nil)
       res = JsonManager.create_message(JsonManager::MSG_LVL_WARNING,
                                        "Unknown channel #{s.user}");
     else
-      res = parse(req.data, ch, s.user);
+      res = parse(req.data, ch, data, s.user);
     end
     rep.setData(res);
     s.write(rep.to_s);
@@ -62,7 +64,7 @@ class JsonManager < HttpNode
 
   private
 
-  def parse(req, ch, user)
+  def parse(req, ch, data, user)
     resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
         JsonManager.add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");      
@@ -75,7 +77,7 @@ class JsonManager < HttpNode
           when "search"
             parse_search(resp, value);
           when "action"
-            parse_action(resp, ch, user, value);
+            parse_action(resp, ch, data, user, value);
           else
             JsonManager.add_message(resp, MSG_LVL_ERROR, "unknown command #{type}", "Unknown command #{type}");
           end
@@ -96,9 +98,12 @@ class JsonManager < HttpNode
     str;
   end
   
-  def forward_action(resp, req, ch, user)
+  def forward_action(resp, req, ch, data, user)
     resp ||= {};
     resp[:timestamp] = Time.now.to_i();
+    data  = @user[user];
+    ch    = @list[data[:channel]];
+
     case(req["name"])
     when "next"
       ch.next();
@@ -157,20 +162,31 @@ class JsonManager < HttpNode
       };
     when "select_plugin"
       ch.set_plugin(req["plugin_name"]);
+    when "join_channel"
+      nch = @list[req["channel"]];
+      if(nch == nil)
+        error("join_channel: Unknown channel #{req["channel"]}", true, $error_file);
+        JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "unknown channel #{req["channel"]}");
+      else
+        data[:channel] = req["channel"];
+        data[:stream].each { |s|
+          s.switch_channel(nch);
+        }
+      end
     else
       error("Unknown action #{req["name"]}", true, $error_file);
       JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
     end
   end
 
-  def parse_action(resp, ch, user, req)
+  def parse_action(resp, ch, data, user, req)
     if( req.kind_of?(Array) )
       req.each { |currentAction| 
         # Warning multi action should merge responses
-        forward_action(resp, currentAction, ch, user );
+        forward_action(resp, currentAction, ch, data, user );
       }
     else
-      forward_action(resp, req, ch, user);
+      forward_action(resp, req, ch, data, user);
     end
   end
 

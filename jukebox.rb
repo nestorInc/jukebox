@@ -27,6 +27,7 @@ $error_file = File.open("error.log", "a+");
 
 library = Library.new();
 channelList = {};
+userData    = {};
 
 # Config
 
@@ -53,12 +54,12 @@ Thread.new() {
 
 
 # Create HTTP server
-json   = JsonManager.new(channelList, library, config[:upload.to_s], config[:encode.to_s]);
+json   = JsonManager.new(channelList, library, userData, config[:upload.to_s], config[:encode.to_s]);
 basic  = BasicApi.new(channelList);
 upload = UploadManager.new(config[:upload.to_s]);
 debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
-stream = Stream.new(channelList, library);
+stream = Stream.new(channelList, library, userData);
 
 main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);

@@ -11,6 +11,13 @@ class Stream < HttpNode
       super();
     end
 
+    def switch_channel(ch)
+      oldch = @data;
+      oldch.unregister(self);
+      ch.register(self);
+      @data = ch;
+    end
+
     def write(data, low = false)
       if(@icyRemaining == 0 || low)
         super(data);
@@ -65,9 +72,10 @@ class Stream < HttpNode
     end
   end
 
-  def initialize(list, library)
+  def initialize(list, library, user)
     @list     = list;
     @library  = library;
+    @user     = user;
 
     super();
   end
@@ -75,12 +83,21 @@ class Stream < HttpNode
   def on_request(s, req)
     action      = req.remaining;
     channelName = s.user;
-    ch = @list[channelName];
+
+    @user[s.user] ||= {
+      :channel => s.user,
+      :stream  => []
+    };
+    data = @user[s.user];
+
+    ch = @list[data[:channel]];
   
     if(ch == nil)
       ch = Channel.new(channelName, @library);
       @list[channelName] = ch;
     end
+
+    data[:stream].push(s);
 
     s.extend(StreamSession);
     s.stream_init(req.options["Icy-MetaData"], ch, req.proto);
