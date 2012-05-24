@@ -303,6 +303,13 @@ class HttpSession < Rev::SSLSocket
       m_auth    = nil;
       m_request = nil;
 
+      if(@req.uri.path == nil)
+        # Authentification error
+        rsp = HttpResponse.generate500(@req)
+        write(rsp.to_s);
+        @length = nil;
+        next
+      end
       uri  = @req.uri.path.split("/");
       uri.delete_if {|n| n == "" };
 
