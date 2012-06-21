@@ -1,0 +1,11 @@
+INSTALL
+=======
+
+Generate Makefile
+$ ruby extconf.rb
+
+Compilation
+$ make
+
+Launch
+$ ./jukebox.rb

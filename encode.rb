@@ -3,7 +3,7 @@
 require 'rev'
 require 'thread'
 require 'date'
-require 'mp3.rb'
+require 'mp3'
 require 'id3.rb'
 
 ENCODE_DELAY_SCAN = 30; # seconds
@@ -75,10 +75,10 @@ class EncodingThread < Rev::IO
   end
 
   def on_close()
-    frames = Mp3File.open(@song.dst);
-    @song.frames   = frames;
+    info = Mp3File.new(@song.dst);
     
-    @song.duration = frames.inject(&:+) * 8 / (@song.bitrate * 1000);
+    @song.frames   = info.frames;
+    @song.duration = info.duration;
     pid, status = Process.waitpid2(@pid);
     if(status.exitstatus() == 0)
       @song.status = Library::FILE_OK;

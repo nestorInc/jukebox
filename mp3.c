@@ -4,6 +4,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <arpa/inet.h>
+
+
+#include "vector.h"
+
+VECTOR_T(int);
 
 #define CHECK_SIZE(need)                                                \
     if((len-pos) < need) return pos;
@@ -39,13 +45,16 @@ typedef struct mp3_frame_info_t {
 } mp3_frame_info_t;
 
 typedef struct mp3_info_t {
-    char        *title;
-    char        *artist;
-    char        *album;
-    int          track;
-    int          nb_track;
-    int          nb_frames;
-    float        duration;
+    int                  fd;
+    void                *data;
+    char                *title;
+    char                *artist;
+    char                *album;
+    int                  track;
+    int                  nb_track;
+    float                duration;
+    int                  size;
+    vector_int_t         frames;
 } mp3_info_t;
 
 typedef enum mpeg_version_t {
@@ -85,7 +94,7 @@ size_t mp3_frame_decode(mp3_frame_info_t *info, uint8_t *data, size_t len)
     size_t pos = 0;
 
     CHECK_SIZE(sizeof(mp3_frame_t));
-    info->frame.header = *((uint32_t *)data);
+    info->frame.header = htonl(*((uint32_t *)data));
 
     if(info->frame.sync != 0x7FF)
         return 0;
@@ -123,7 +132,6 @@ size_t mp3_frame_decode(mp3_frame_info_t *info, uint8_t *data, size_t len)
     }
 
     info->bitrate = bitrate_table[info->frame.bitrate][info->layer-1+((info->version-1)*3)];
-    
     if(info->bitrate == 0)
         return 0;
 
@@ -138,7 +146,7 @@ size_t mp3_frame_decode(mp3_frame_info_t *info, uint8_t *data, size_t len)
 
     info->duration   = (float)info->len * 8 / info->bitrate;
 
-    return sizeof(mp3_frame_t) + info->len;
+    return info->len;
 }
 
 typedef struct __attribute__((packed)) id3_v1_t {
@@ -146,7 +154,7 @@ typedef struct __attribute__((packed)) id3_v1_t {
     uint8_t title  [30];
     uint8_t artist [30];
     uint8_t album  [30];
-    uint8_t data   [ 4];
+    uint8_t years  [ 4];
     uint8_t comment[29];
     uint8_t track;
     uint8_t genre;
@@ -164,8 +172,6 @@ size_t id3_v1_decode(uint8_t *buf, size_t len)
 
     if(memcmp(tag->tag, "TAG", 3) != 0)
         return 0;
-
-    printf("ID3V1 Tag\n");
 
     return sizeof(id3_v1_t);
 }
@@ -198,7 +204,6 @@ size_t id3_v2_get_size(uint8_t *data)
     for(i = 0; i < 4; ++i) {
         size *= 128;
         size += data[i];
-//        printf("data[%i] = %i\n", i, data[i]);
     }
     
     return size;
@@ -242,9 +247,10 @@ size_t id3_v2_decode(uint8_t *buf, size_t len)
             return pos;
         CHECK_SIZE(data_len);
 
-        printf("ID3V2 Tag %4s\n", frame->id);
-
-      /* data = data[4..-1]                    if(flag & 0x0001 == 0x0001); */
+        if(frame->data_length) {
+            data_len -= sizeof(uint32_t);
+            pos      += sizeof(uint32_t);
+        }
       /* data = Id3.getUnsynchronisation(data) if(flag & 0x0002 == 0x0002); */
         pos += data_len;
     }
@@ -252,15 +258,13 @@ size_t id3_v2_decode(uint8_t *buf, size_t len)
     return len;
 }
 
-
-
-int mp3_decode(mp3_info_t *info, char *file)
+int mp3_file_decode(mp3_info_t *info, char *file)
 {
     struct stat          stat;
     uint8_t             *buffer;
     size_t               size;
     size_t               i;
-    size_t               frame_size;
+    int                  frame_size;
     int                  fd;
     mp3_frame_info_t     finfo;
 
@@ -278,33 +282,87 @@ int mp3_decode(mp3_info_t *info, char *file)
     if(buffer == MAP_FAILED)
         return -1;
 
+    info->size  = size;
+    info->fd    = fd;
+    info->data  = buffer;
+
     frame_size  = id3_v1_decode(buffer, size);
     size       -= frame_size;
 
-    for(i = 0; i < size; ++i) {
+    for(i = 0; i < size;) {
         frame_size = mp3_frame_decode(&finfo, buffer + i, size - i);
         if(frame_size) {
-            info->nb_frames++;
             info->duration += finfo.duration;
+            vector_int_push(&info->frames, &frame_size);
         } else {
             frame_size = id3_v2_decode(buffer + i, size - i);
         }
+        if(frame_size == 0)
+            frame_size = 1;
         i += frame_size;
     }
-    printf("nb frame %i duration %f\n", info->nb_frames, info->duration);
 
     return 0;
 }
 
+#include "ruby.h"
 
-int main(int argc, char *argv[])
+VALUE cMp3;
+
+static VALUE mp3_init(VALUE self, VALUE arg)
 {
-    int                 i;
-    mp3_info_t          info;
+    VALUE       array;
+    mp3_info_t *info;
+    int         i;
 
-    for(i = 1; i < argc; ++i) {
-        mp3_decode(&info, argv[i]);
+    Data_Get_Struct(self, mp3_info_t, info);
+
+    array = rb_ary_new2(info->frames.len);
+
+    for(i = 0; i < info->frames.len; ++i) {
+        rb_ary_push(array, INT2FIX(info->frames.data[i]));
     }
-    
-    return 0;
+
+    rb_iv_set(self, "@frames", array);
+
+    return self;
+}
+
+static VALUE mp3_frames(VALUE self, VALUE arg)
+{
+    return rb_iv_get(self, "@frames");
+}
+
+static VALUE mp3_duration(VALUE self, VALUE arg)
+{
+    mp3_info_t *info;
+
+    Data_Get_Struct(self, mp3_info_t, info);
+
+    return INT2FIX((int)info->duration);
+}
+
+static void mp3_free(mp3_info_t *info)
+{
+    munmap(info->data, info->size);
+    close(info->fd);
+    vector_int_clean(&info->frames);
+    free(info);
+}
+
+static VALUE mp3_new(VALUE class, VALUE file)
+{
+  mp3_info_t *info = ALLOC(mp3_info_t);
+  mp3_file_decode(info, StringValuePtr(file));
+  VALUE tdata = Data_Wrap_Struct(class, 0, mp3_free, info);
+  rb_obj_call_init(tdata, 0, NULL);
+  return tdata;
+}
+
+void Init_mp3() {
+  cMp3 = rb_define_class("Mp3File", rb_cObject);
+  rb_define_singleton_method(cMp3, "new", mp3_new, 1);
+  rb_define_method(cMp3, "initialize", mp3_init, 0);
+  rb_define_method(cMp3, "frames", mp3_frames, 0);
+  rb_define_method(cMp3, "duration", mp3_duration, 0);
 }
