@@ -4,7 +4,6 @@ require 'rev'
 require 'thread'
 require 'date'
 require 'mp3'
-require 'id3.rb'
 
 ENCODE_DELAY_SCAN = 30; # seconds
 MAX_ENCODE_JOB    = 2;
@@ -23,22 +22,21 @@ class EncodingThread < Rev::IO
     
     log("Encoding #{song.src} -> #{song.dst}");
 
-    tag = Id3.decode(song.src);
-    song.album  = tag.album;
-    song.artist = tag.artist;
-    song.title  = tag.title;
-    song.years  = tag.date;
-    trackStr = "#{tag.track}";
-    if trackStr.include?("/") 
-      song.track  = tag.track.split('/')[0];
-      song.trackNb  = tag.track.split('/')[1];
-    else
-      song.track = trackStr;
-      song.trackNb = nil;
-    end
-    song.genre  = tag.genre;
+    info = Mp3File.new(song.src)
+    song.album   = info.album;
+    song.artist  = info.artist;
+    song.title   = info.title;
+    song.years   = info.years;
+    song.track   = info.track;
+    song.trackNb = info.nb_track;
+    # Need implement this
+    song.genre   = 0;
 
-    if(tag.title == nil || tag.artist == nil || tag.album == nil)
+    song.album  = nil if(song.album == "")
+    song.artist = nil if(info.artist == "");
+    song.title  = nil if(info.title == "");
+
+    if(info.title == nil || info.artist == nil || info.album == nil)
       song.status = Library::FILE_BAD_TAG;
       @block.call(song, *@args);
       raise "Bad tag";

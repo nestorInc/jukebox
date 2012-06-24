@@ -75,11 +75,11 @@ class Channel
     @connections.push(s);
     log("Registering channel #{@name} [#{@connections.size()} user(s) connected]");
     if(@currentEntry)
-      tag = Id3.new();
-      tag.title  = @currentEntry.title;
-      tag.artist = @currentEntry.artist;
-      tag.album  = @currentEntry.album;
-      s.write(tag.to_s());
+#      tag = Id3.new();
+#      tag.title  = @currentEntry.title;
+#      tag.artist = @currentEntry.artist;
+#      tag.album  = @currentEntry.album;
+#      s.write(tag.to_s());
     end
   end
 
@@ -150,11 +150,11 @@ class Channel
         f;
       }
       @frame = 0;
-      tag = Id3.new();
-      tag.title  = @currentEntry.title;
-      tag.artist = @currentEntry.artist;
-      tag.album  = @currentEntry.album;
-      @tag = tag.to_s();
+#      tag = Id3.new();
+#      tag.title  = @currentEntry.title;
+#      tag.artist = @currentEntry.artist;
+#      tag.album  = @currentEntry.album;
+#      @tag = tag.to_s();
       @timestamp = Time.now().to_i();
     rescue => e
       @queue.next() if(@queue[0]);
