@@ -90,10 +90,8 @@
 <script type="text/javascript" src="js/lib/prototype.js"></script>
 <script type="text/javascript" src="js/lib/scriptaculous.js?load=effects,dragdrop,slider"></script>
 <script type="text/javascript" src="js/lib/tablekit.js"></script>
-
-<script type="text/javascript" src="js/fileuploader.js"></script>
-<script type="text/javascript" src="js/Sound.js"></script>
-
+<script type="text/javascript" src="js/lib/fileuploader.js"></script>
+<script type="text/javascript" src="js/lib/Sound.js"></script>
 <script type="text/javascript" src="js/tabs.js"></script>
 <script type="text/javascript" src="js/genres.js"></script>
 <script type="text/javascript" src="js/library.js"></script>
@@ -108,40 +106,47 @@
 <script type="text/javascript">
 document.observe("dom:loaded", function()
 {
-	ExpandCollection();
-	initJukebox();
-
-	// ---------------
-	// Declare listeners
-
-	$("btnJoinChannel").on("click", joinChannel);
-	$("expand_collection_button").on("click", ExpandCollection);
-	$("collapse_collection_button").on("click", CollapseCollection);
-
-	$("previous_button").on("click", previousSong);
-	$("next_button").on("click", nextSong);
-
-	$("tab_upload").on("click", addOrSelectUploadTab);
-	$("tab_query").on("click", addOrSelectCustomQueriesTab);
-	$("tab_notifs").on("click", addOrSelectNotificationTab);
-	$("tab_debug").on("click", addOrSelectDebugTab);
-
-	$("search_field").on("change", selectAndFillGenres);
-	$("btnSearch").on("click", function() // Protects from event args
+	try
 	{
-		doSearch();
-	});
+		ExpandCollection();
+		initJukebox();
 
-	$("btnRefresh").on("change", function()
+		// ---------------
+		// Declare listeners
+
+		$("btnJoinChannel").on("click", joinChannel);
+		$("expand_collection_button").on("click", ExpandCollection);
+		$("collapse_collection_button").on("click", CollapseCollection);
+
+		$("previous_button").on("click", previousSong);
+		$("next_button").on("click", nextSong);
+
+		$("tab_upload").on("click", addOrSelectUploadTab);
+		$("tab_query").on("click", addOrSelectCustomQueriesTab);
+		$("tab_notifs").on("click", addOrSelectNotificationTab);
+		$("tab_debug").on("click", addOrSelectDebugTab);
+
+		$("search_field").on("change", selectAndFillGenres);
+		$("btnSearch").on("click", function() // Protects from event args
+		{
+			doSearch();
+		});
+
+		$("btnRefresh").on("change", function()
+		{
+			timestamp = 0; //TODO: avoid global
+			updateJukebox();
+		});
+
+		$("btnApplyPlugin").on("click", setSongSelectionPlugin);
+
+		$("play_stream").on("click", PlayStream);
+		$("stop_stream").on("click", StopStream);
+	}
+	catch(fatalE)
 	{
-		timestamp = 0; //TODO: avoid global
-		updateJukebox();
-	});
-
-	$("btnApplyPlugin").on("click", setSongSelectionPlugin);
-
-	$("play_stream").on("click", PlayStream);
-	$("stop_stream").on("click", StopStream);
+		//TODO
+	}
 });
 </script>
 </body>
