@@ -56,7 +56,7 @@ var Tabs = Class.create(
 		return null;
 	},
 
-	// Add the tab in the html layout and in the tabs Array in javascript
+	// Add the tab in the html layout and in the tabs array
 	addTab: function(tab)
 	{
 		var tabContentContainer = '';
@@ -86,19 +86,16 @@ var Tabs = Class.create(
 		tabDisplay += '<li style="margin-left: 1px" id="tabHeader_' + tab.getIdentifier() + '"';
 		if(1 == this.tabs.length)
 		{
-			tabDisplay += ' class="tabHeaderActive">';
+			tabDisplay += ' class="tabHeaderActive"';
 		}
-		else
-		{
-			tabDisplay += '>';
-		}
-		tabDisplay += '<a href="javascript:void(0)" onclick="tabs.toggleTab(\'' + tab.getIdentifier() + '\')">';
-		tabDisplay += '<span>' + tab.getName() + '</span>';
-		tabDisplay += '</a>';
-		tabDisplay += '<a href="javascript:void(0)" onclick="tabs.removeTab(\'' + tab.getIdentifier() + '\')">';
-		tabDisplay += '<span> X </span>';
-		tabDisplay += '</a>';
-		tabDisplay += '</li>';
+		tabDisplay += '>' +
+		'<a href="javascript:void(0)" onclick="tabs.toggleTab(\'' + tab.getIdentifier() + '\')">' +
+			'<span>' + tab.getName() + '</span>' +
+		'</a>' +
+		'<a href="javascript:void(0)" onclick="tabs.removeTab(\'' + tab.getIdentifier() + '\')">' +
+			'<span> X </span>' +
+		'</a>' +
+		'</li>';
 
 		tabContentContainer += '<div id="tabContent_' + tab.getIdentifier() + '"';
 
