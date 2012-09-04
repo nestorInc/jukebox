@@ -68,8 +68,6 @@ function initJukebox()
 	});
 	
 	updateJukebox();
-
-	initNotifications();
 }
 
 function setSongSelectionPlugin()
@@ -234,7 +232,7 @@ function updateJukebox(update_timestamp)
 						message += 's';
 					}
 					message += " left the channel";
-					showNotification(1, message);
+					Notifications.Display(1, message);
 				}
 				else if(last_nb_listening_users < json.channel_infos.listener_count.toString())
 				{
@@ -245,7 +243,7 @@ function updateJukebox(update_timestamp)
 						message += 's';
 					}
 					message += " join the channel";
-					showNotification(1, message);
+					Notifications.Display(1, message);
 				}
 				last_nb_listening_users = json.channel_infos.listener_count.toString();
 
@@ -307,7 +305,7 @@ function updateJukebox(update_timestamp)
 			{
 				json.messages.each(function(message)
 				{
-					showNotification(message.level, message.message);
+					Notifications.Display(message.level, message.message);
 				});
 			}
 			/*

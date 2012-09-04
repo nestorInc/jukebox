@@ -1,56 +1,22 @@
-// Array of notifications that are currently on screen.
+(function(){
+
+// Notifications levels
+var LEVELS =
+{
+	debug: 1,
+	info: 2,
+	warning: 3,
+	error: 4,
+	fatal: 5
+};
+
+// Notifications that are currently on screen
 var activeNotifications = [];
 
-// This has to be loaded first. It starts the update loop and show a welcome / test notification.
-function initNotifications()
-{
-	setTimeout(updateNotifications, 1000);
-	showNotification(2, "Client loaded.");
-}
+// Passed notifications (for history)
+var passedNotifications = [];
 
-// Main update loop. It checks whether notifications should be removed.
-function updateNotifications()
-{
-	for(var i = 0; i < activeNotifications.length; i++)
-	{
-		var notification = activeNotifications[i];
-		notification.remainingTime -= 1;
-		if(notification.remainingTime <= 0)
-		{
-			removeNotificationFromIndex(i);
-			i--;
-		}
-	}
-	setTimeout(updateNotifications, 1000);
-}
-
-
-// Find a notification from its DOM id and if found, removes it.
-function removeNotificationFromId(id)
-{
-	for(var i = 0; i < activeNotifications.length; i++)
-	{
-		var notification = activeNotifications[i];
-		if(notification.id == id)
-		{
-			removeNotificationFromIndex(i);
-			break;
-		}
-	}
-}
-
-// Remove the given notification.
-function removeNotificationFromIndex(index)
-{
-	var notification = activeNotifications[index];
-	notification.remove();
-	activeNotifications.splice(index, 1);
-}
-
-function showNotification(level, message)
-{
-	activeNotifications.push(new Notification(level, message));
-}
+//==================================================
 
 // Main class containing notification stuff.
 // It is capable of appearing, updating its content, and disappearing.
@@ -60,51 +26,57 @@ function Notification(level, message)
 	this.level = level;
 	this.message = message;
 
-	// Default display time is 8 seconds.
-	this.remainingTime = 8;
+	// Default display time in seconds
+	var delay = 8;
 	
-	// The id has to be unique. Generating one from time and current array length.
-	this.id = activeNotifications.length + 1 + (last_time = new Date().getTime() / 1000);
+	// The id has to be unique.
+	this.id = new Date().getTime() + "." + Math.round(Math.random()*100000);
 	
-	
-	this.style = "notification_wrapper_";
-
 	// Assign correct style and time according to given level.
+	var style = "notification_wrapper_";
 	switch(level)
 	{
-	case 1:
-		this.style += "debug";
-		this.remainingTime = 3;
+	case LEVELS.debug:
+		style += "debug";
+		delay = 3;
 		break;
-	case 2:
-		this.style += "info";
-		this.remainingTime = 4;
+	case LEVELS.info:
+		style += "info";
+		delay = 4;
 		break;
-	case 3:
-		this.style += "warning";
-		this.remainingTime = 4;
+	case LEVELS.warning:
+		style += "warning";
+		delay = 4;
 		break;
-	case 4:
-		this.style += "error";
-		this.remainingTime = 20;
+	case LEVELS.error:
+		style += "error";
+		delay = 20;
 		break;
-	case 5:
-		this.style += "fatal";
-		this.remainingTime = 20;
+	case LEVELS.fatal:
+		style += "fatal";
+		delay = 20;
 		break;
 	default:
-		this.style += "default";
+		style += "default";
 		break;
 	}
+
+	activeNotifications.push(this);
 	
 	// Insert notification wrapper in the page
-	$('notifications').insert('<div class="notification_wrapper" id="notification' + this.id + '"><div class="' + this.style + '" id="notification_content'+this.id+'"></div></div>');
-
-	// Update content of notification
-	this.update();
+	var html = '' +
+	'<div class="notification_wrapper" id="notification' + this.id + '">' +
+		'<div class="' + style + '" id="notification_content' + this.id + '">' +
+			'<p>' + message + ' </p>' +
+		'</div>' +
+	'</div>';
+	$('notifications').insert(html);
 	
-	// Hide notification, then make it appear
-	$('notification'+this.id).hide();
+	// Hide notification, then make it appear with an animation
+	$('notification' + this.id).hide();
+	this.startTime = new Date();
+
+	var notif = this;
 	Effect.SlideDown('notification' + this.id,
 	{
 	 	duration: 0.6,
@@ -112,41 +84,76 @@ function Notification(level, message)
 		afterFinish: function(effect)
 		{
 			// Once the notification appeared, make the click on its wrapper close it.
-			Event.observe(effect.element, 'click', function(event)
+			Event.observe(effect.element, 'click', function()
 			{
-				var element_id = $(Event.element(event)).up('.notification_wrapper').id.substring(12);
-				removeNotificationFromId(element_id);
+				notif.remove();
 			});
 		}
 	});
+
+	// Self-destruction
+	this._timer = setTimeout(function()
+	{
+		notif.remove();
+	}, delay * 1000);
+
 	return true;
 }
-
-// Updates the content of a notification
-Notification.prototype.update = function()
-{
-	$('notification_content' + this.id).update('<p>' + this.message + ' </p>');
-};
 
 // Make a notification disappear
 Notification.prototype.remove = function()
 {
+	// Handle case where somebody still got a reference on this notif and call remove() again
+	if(!this._timer) {return;}
+
+	var notif = this;
 	Effect.SlideUp('notification' + this.id,
 	{
 		duration: 0.4,
 		afterFinish: function(effect)
 		{
 			effect.element.remove();
+			notif.endTime = new Date();
+
+			// Remove the notive from the active list
+			for(var i = 0; i < activeNotifications.length; i++)
+			{
+				if(activeNotifications[i] == notif)
+				{
+					activeNotifications.splice(i, 1);
+					passedNotifications.push(notif);
+					break;
+				}
+			}
 		}
 	});
+
+	// Stop timer (remove can be called before the timer timeout)
+	clearTimeout(this._timer);
+	this._timer = null;
 }
 
+//==================================================
 
-var NotificationTab = Class.create(Tab,
+// Expose a Notifications object on global scope
+var Notifications =
+{
+	LEVELS: LEVELS,
+	// Display a new notification on screen
+	Display: function(level, message)
+	{
+		/*return */new Notification(level, message);
+	}
+};
+this.Notifications = Notifications;
+
+//==================================================
+
+// Expose a NotificationTab object on global scope
+this.NotificationTab = Class.create(Tab,
 {
 	initialize: function(identifier, tabName)
 	{
-		// Search parameters 
 		this.identifier = identifier;
 		this.name = tabName;
 		this.uploader = null;
@@ -155,14 +162,32 @@ var NotificationTab = Class.create(Tab,
 
 	updateContent: function()
 	{
-		var notification_display = '' +
-		'<h1>Notification sender</h1>' +
-		'<input type="button" value="test notification debug" onclick="showNotification(1,\'Notification notification notification\');" />' +
-		'<input type="button" value="test notification info" onclick="showNotification(2,\'Notification notification notification\');" />' +
-		'<input type="button" value="test notification warning" onclick="showNotification(3,\'Notification notification notification\');" />' +
-		'<input type="button" value="test notification error" onclick="showNotification(4,\'Notification notification notification\');" />' +
-		'<input type="button" value="test notification fatal" onclick="showNotification(5,\'Notification notification notification\');" />';
-		$('tabContent_' + this.identifier).update(notification_display);
+		var $tabContent = $('tabContent_' + this.identifier);
+		$tabContent.update('<h1>Notification tests:</h1>');
+
+		for(var level in LEVELS)
+		{
+			addButton(level);
+		}
+
+		function addButton(level)
+		{
+			var btn = new Element('input', {'type': 'button', value: 'Test ' + level});
+			btn.on("click", function()
+			{
+				Notifications.Display(LEVELS[level], "Notification: " + level);
+			});
+			$tabContent.insert(btn);
+		}
 	}
 
 });
+
+//==================================================
+
+document.observe("dom:loaded", function()
+{
+	Notifications.Display(LEVELS.info, "Client loaded");
+});
+
+})();

@@ -92,7 +92,7 @@ var UploadTab = Class.create(Tab,
 			{
 				// Delete html part
 				$('upload_line_' + escape(this.lastSendingDeletionIdentifier)).remove();
-				showNotification(2, "song '" + this.lastSendingDeletionIdentifier + "'sucessfully deleted");
+				Notifications.Display(2, "song '" + this.lastSendingDeletionIdentifier + "'sucessfully deleted");
 
 				// Delete unmodified reference entry
 				var newUploaddedFilelist = [];
@@ -148,7 +148,7 @@ var UploadTab = Class.create(Tab,
 		else if("error" == ret)
 		{
 			this.lastSendingDeletionIdentifier = null;
-			showNotification(4, message);
+			Notifications.Display(4, message);
 		}
 	},
 
@@ -156,7 +156,7 @@ var UploadTab = Class.create(Tab,
 	{
 		if("success" == ret)
 		{
-			showNotification(1, message);
+			Notifications.Display(1, message);
 
 			// Delete all modified styles
 			$('upload_line_' + escape(this.lastSendingUpdateIdentifier)).select('[class="modified"]').each(function(e)
@@ -178,7 +178,7 @@ var UploadTab = Class.create(Tab,
 		}
 		else if("error" == ret)
 		{
-			showNotification(4, message);
+			Notifications.Display(4, message);
 		}
 		this.lastSendingUpdateIdentifier = null;
 	},
@@ -187,7 +187,7 @@ var UploadTab = Class.create(Tab,
 	{
 		if("success" == ret)
 		{
-			showNotification(1, message);
+			Notifications.Display(1, message);
 			if(null != this.lastSendingValidationIdentifier)
 			{
 				// Delete html part
@@ -245,7 +245,7 @@ var UploadTab = Class.create(Tab,
 		else if("error" == ret)
 		{
 			this.lastSendingValidationIdentifier = null;
-			showNotification(4, message);
+			Notifications.Display(4, message);
 		}
 	},
 
@@ -379,7 +379,7 @@ var UploadTab = Class.create(Tab,
 						if(element.down('.qq-upload-file').innerHTML == uploaded_files[i].filename)
 						{
 							element.remove();
-							showNotification(1, 'Informations for : ' + uploaded_files[i].filename + 'successfuly retrieved.');
+							Notifications.Display(1, 'Informations for : ' + uploaded_files[i].filename + 'successfuly retrieved.');
 						}
 					});
 				}
@@ -502,7 +502,7 @@ var UploadTab = Class.create(Tab,
 					if(element.down('.qq-upload-file').innerHTML == newLines[i].filename)
 					{
 						element.remove();
-						showNotification(1, 'Informations for : ' + uploaded_files[i].filename + 'successfuly retrieved.');
+						Notifications.Display(1, 'Informations for : ' + uploaded_files[i].filename + 'successfuly retrieved.');
 					}
 				});
 			}
@@ -545,7 +545,7 @@ var UploadTab = Class.create(Tab,
 		clearTimeout(this.refresher); // Don't know if it works
 		if(tabs.getFirstTabByClassName("UploadTab").uploader._handler._queue.length > 0)
 		{
-			showNotification(1, "All current uploads canceled.");
+			Notifications.Display(1, "All current uploads canceled.");
 		}
 		tabs.getFirstTabByClassName("UploadTab").uploader._handler.cancelAll();
 

@@ -616,10 +616,10 @@ qq.extend(qq.FileUploader.prototype, {
 
         if (result.success){
             //qq.addClass(item, this._classes.success);    
-            showNotification(2,'File ' + fileName + 'successfuly uploaded.');
+            Notifications.Display(2,'File ' + fileName + 'successfuly uploaded.');
         } else {
             if( result.error )
-                showNotification(5, result.error );
+                Notifications.Display(5, result.error );
             //qq.addClass(item, this._classes.fail);
         }         
         qq.remove(item);
