@@ -10,7 +10,7 @@ var CustomQueriesTab = Class.create(Tab,
 
 	updateContent: function()
 	{
-		var custom_queries_display = '';
+		var custom_queries_display = '' +
 		'<h1>Custom Json Query</h1>' +
 		'<table width="100%">' +
 		'<tr>' +
