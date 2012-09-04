@@ -1,221 +1,283 @@
-musicFieldEditor = function(name ) {
-    this.name = name;
+function MusicFieldEditor(name)
+{
+	this.name = name;
 }
 
-musicFieldEditor.prototype._cancel = function(e) {
+MusicFieldEditor.prototype._cancel = function(e)
+{
 	var cell = Event.findElement(e,'td');
 	Event.stop(e);
 	this.cancel(cell);
 };
-musicFieldEditor.prototype.cancel = function(cell) {
+MusicFieldEditor.prototype.cancel = function(cell)
+{
 	var data = TableKit.getCellData(cell);
 	cell.innerHTML = data.htmlContent;
 	data.htmlContent = '';
 	data.active = false;
 };
 
-musicFieldEditor.prototype._undo = function(e) {
+MusicFieldEditor.prototype._undo = function(e)
+{
 	var cell = Event.findElement(e,'td');
 	Event.stop(e);
 	this.undo(cell);
 }
-musicFieldEditor.prototype.undo = function(cell) {
-	var data = TableKit.getCellData(cell);
-	var row = cell.up('tr');
-	var table = cell.up('table');
+MusicFieldEditor.prototype.undo = function(cell)
+{
+	var row = cell.up('tr'),
+		UploadTab = tabs.getFirstTabByClassName("UploadTab");
 
-    /* get the line filename ( identifier ) */
-    var identifier = row.id;
+	// Get the line filename ( identifier )
+	var identifier = row.id;
 
-    /* Update html */
-    for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFiles.length ; ++i ){
-        if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i].filename) == identifier ){
-            /* Show validate */
-            if( 1 == $('upload_line_' + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename)).select('[class="modified"]').length){
-                $('upload_line_' + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename)).select('[name="update"]').each( function(e){ e.hide();});
-                $('upload_line_' + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename)).select('[name="validate"]').each( function(e){ e.show();});
-            }
-            if(this.name == "track") {
-                cell.update(tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i]["track"].split('/')[0]);
-            } else if (this.name == "trackNb"){
-                cell.update(tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i]["track"].split('/')[1]);
-            } else {
-                cell.update(tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name]);
-            }
-            tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name] = tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name];
-            break;
-        }
-    }
+	// Update html
+	for(var i = 0; i < UploadTab.uploadedFiles.length; ++i)
+	{
+		if("upload_line_" + escape(UploadTab.uploadedFiles[i].filename) == identifier)
+		{
+			// Show validate
+			var selector = 'upload_line_' + escape(UploadTab.uploadedFilesEdition[i].filename),
+				$selector = $(selector);
+			if(1 == $selector.select('[class="modified"]').length)
+			{
+				$selector.select('[name="update"]').each(function(e){e.hide();});
+				$selector.select('[name="validate"]').each(function(e){e.show();});
+			}
+			if(this.name == "track")
+			{
+				cell.update(UploadTab.uploadedFiles[i]["track"].split('/')[0]);
+			}
+			else if (this.name == "trackNb")
+			{
+				cell.update(UploadTab.uploadedFiles[i]["track"].split('/')[1]);
+			}
+			else
+			{
+				cell.update(UploadTab.uploadedFiles[i][this.name]);
+			}
+			UploadTab.uploadedFilesEdition[i][this.name] = UploadTab.uploadedFiles[i][this.name];
+			break;
+		}
+	}
 
-    /* remove cell style modified */
-    cell.removeClassName("modified");
+	// Remove cell style modified
+	cell.removeClassName("modified");
 
 	var data = TableKit.getCellData(cell);
 	data.active = false;
+};
 
-}
-
-
-musicFieldEditor.prototype._submit = function(e) {
+MusicFieldEditor.prototype._submit = function(e)
+{
 	var cell = Event.findElement(e,'td');
 	var form = Event.findElement(e,'form');
 	Event.stop(e);
 	this.submit(cell,form);
-}
+};
 
-musicFieldEditor.prototype.submit = function(cell, form) {
+MusicFieldEditor.prototype.submit = function(cell, form)
+{
 	form = form ? form : cell.down('form');
-	var head = $(TableKit.getHeaderCells(null, cell)[TableKit.getCellIndex(cell)]);
-	var row = cell.up('tr');
-	var table = cell.up('table');
 
-    /* get the line filename ( identifier ) */
-    var identifier = row.id;
+	var row = cell.up('tr'),
+		UploadTab = tabs.getFirstTabByClassName("UploadTab");
 
-    /* Update html */
-    if(this.name == "genre"){
-        for( var i = 0; i< genres.length ;++i){
-            if( form.firstChild.value == genres[i][1]  ){
-                cell.update( genres[i][0] );
-            }
-        }
-    } else {
-        cell.update( form.firstChild.value );
-    }    
-    /* update new value */
-    for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition.length ; ++i ){
-        if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename) == identifier )
-        {
-            if(this.name == "genre"){
-                tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name]=form.firstChild.options[form.firstChild.selectedIndex].value;
-            } else if(this.name == "track"){
-                if( -1 == tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name].toString().indexOf("/") ) {
-                    tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name]=form.firstChild.value + "/0";
-                } else {
-                    tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name]=form.firstChild.value + "/" + tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name].split("/")[1];
-                }
-            } else if(this.name == "trackNb"){
-                if( -1 == tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"].toString().indexOf("/") ) {
-                    tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"]= tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"] + "/" + form.firstChild.value;
-                } else {
-                    tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"] =  tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"].toString().split('/')[0] + "/" + form.firstChild.value;
-                } 
-            } else {
-                tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name] = form.firstChild.value;
-            }
+	// Get the line filename ( identifier )
+	var identifier = row.id,
+		firstChild = form.firstChild,
+		firstChildVal = firstChild.value;
 
-            /* Upload cell style If the new value differs */
-            if( ((this.name == "track" && tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name].split('/')[0] != form.firstChild.value ) ||
-                (this.name == "trackNb" && tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i]["track"].split('/')[1] != form.firstChild.value ) ||
-                ( this.name != "track" && this.name != "trackNb" && 
-                  form.firstChild.value != tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name] )) 
-                && !cell.hasClassName("modified")){
+	// Update html
+	if(this.name == "genre")
+	{
+		for(var k = 0; k < genres.length ; ++k)
+		{
+			if(firstChildVal == genres[k][1])
+			{
+				cell.update(genres[k][0]);
+			}
+		}
+	}
+	else
+	{
+		cell.update(firstChildVal);
+	}
 
-                /* Default behaviour*/
-                cell.addClassName("modified");
+	// Update new value
+	for(var i = 0; i < UploadTab.uploadedFilesEdition.length; ++i)
+	{
+		var fileE = UploadTab.uploadedFilesEdition[i];
+		if("upload_line_" + escape(fileE.filename) == identifier)
+		{
+			if(this.name == "genre")
+			{
+				fileE[this.name] = firstChild.options[firstChild.selectedIndex].value;
+			}
+			else if(this.name == "track")
+			{
+				if(-1 == fileE[this.name].toString().indexOf("/"))
+				{
+					fileE[this.name] = firstChildVal + "/0";
+				}
+				else
+				{
+					fileE[this.name] = firstChildVal + "/" + fileE[this.name].split("/")[1];
+				}
+			}
+			else if(this.name == "trackNb")
+			{
+				if(-1 == fileE["track"].toString().indexOf("/"))
+				{
+					fileE["track"] = fileE["track"] + "/" + firstChildVal;
+				}
+				else
+				{
+					fileE["track"] = fileE["track"].toString().split('/')[0] + "/" + firstChildVal;
+				} 
+			}
+			else
+			{
+				fileE[this.name] = firstChildVal;
+			}
 
+			// Upload cell style ff the new value differs
+			if( (
+				( this.name == "track" && UploadTab.uploadedFiles[i][this.name].split('/')[0] != firstChildVal ) ||
+				( this.name == "trackNb" && UploadTab.uploadedFiles[i]["track"].split('/')[1] != firstChildVal ) ||
+				( this.name != "track" && this.name != "trackNb" && firstChildVal != UploadTab.uploadedFiles[i][this.name] )
+				)
+				&& !cell.hasClassName("modified"))
+			{
+				// Default behaviour
+				cell.addClassName("modified");
 
-                /* hide update */
-                $('upload_line_' + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename)).select('[name="update"]').each(function(e){
-                    e.show();
-                });
+				var $selector = $('upload_line_' + escape(fileE.filename));
 
-                /* Show validate */
-                $('upload_line_' + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename)).select('[name="validate"]').each(function(e){
-                    e.hide();
-                });
+				// Hide update
+				$selector.select('[name="update"]').each(function(e){e.show();});
 
-            } else if(form.firstChild.value == tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name] &&
-                cell.hasClassName("modified")){
-                cell.removeClassName("modified");
-            }
+				// Show validate
+				$selector.select('[name="validate"]').each(function(e){e.hide();});
 
-            break;
-        }
-    }
+			}
+			else if(firstChildVal == UploadTab.uploadedFiles[i][this.name] && cell.hasClassName("modified"))
+			{
+				cell.removeClassName("modified");
+			}
+
+			break;
+		}
+	}
 
 	var data = TableKit.getCellData(cell);
 	data.active = false;
-}
+};
 
-musicFieldEditor.prototype.edit = function(cell){  
+MusicFieldEditor.prototype.edit = function(cell)
+{
 	cell = $(cell);
-    if( cell.hasClassName("static"))
-        return;
-    
-	var table = cell.up('table');
-	var row = cell.up('tr');
-    var identifier = row.id;
-	/* Change behaviour following the column name */
+	if(cell.hasClassName("static"))
+	{
+		return;
+	}
+	
+	var table = cell.up('table'),
+		row = cell.up('tr'),
+		identifier = row.id,
+		UploadTab = tabs.getFirstTabByClassName("UploadTab"),
+		i;
+
+	// Change behaviour following the column name
 	var form = $(document.createElement("form"));
 	form.id = cell.id + '-form';
 	form.addClassName(TableKit.option('formClassName', table.id)[0]);
 	form.onsubmit = this._submit.bindAsEventListener(this);
 
-    /* Change behavior from field names */
-    var input = null;
-    var modified = false;
+	// Change behavior from field names
+	var modified = false;
 
-    if( this.name == "genre" ){
-        /* create genre element add fill options */ 
-	    var input = document.createElement("select");
-        input.id="genre";
-        form.appendChild(input);
+	if(this.name == "genre")
+	{
+		// Create genre element add fill options
+		var select = document.createElement("select");
+		select.id = "genre";
+		form.appendChild(select);
 
-        for( var i = 0; i< genres.length ;++i){
-            var option = document.createElement("option");
-            option.value = genres[i][1];
-            option.appendChild(document.createTextNode(genres[i][0]));
-            input.appendChild(option);
-        }
+		for(i = 0; i < genres.length; ++i)
+		{
+			var option = document.createElement("option");
+			option.value = genres[i][1];
+			option.appendChild(document.createTextNode(genres[i][0]));
+			select.appendChild(option);
+		}
 
-        for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition.length ; ++i ){
-            if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename) == identifier ){
-                if( tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["genre"] != tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i]["genre"]){
-                    modified = true;
-                }
-            }
-        }
+		for(i = 0; i < UploadTab.uploadedFilesEdition.length; ++i)
+		{
+			if("upload_line_" + escape(UploadTab.uploadedFilesEdition[i].filename) == identifier)
+			{
+				if(UploadTab.uploadedFilesEdition[i]["genre"] != UploadTab.uploadedFiles[i]["genre"])
+				{
+					modified = true;
+				}
+			}
+		}
+	}
+	else
+	{
+		var input = document.createElement("input");
+		input.type = "text";
 
-        
-    } else {
-	    input = document.createElement("input");
-        input.type="text";
+		// Update new value
+		for(i = 0; i < UploadTab.uploadedFilesEdition.length; ++i)
+		{
+			var fileE = UploadTab.uploadedFilesEdition[i];
+			if("upload_line_" + escape(fileE.filename) == identifier)
+			{
+				if(this.name == "track")
+				{
+					if(fileE["track"].toString().indexOf('/') == -1)
+					{
+						input.value = fileE["track"];
+					}
+					else
+					{
+						input.value = fileE["track"].toString().split('/')[0];
+						if(fileE["track"].toString().split('/')[1] != UploadTab.uploadedFiles[i]["track"].toString().split('/')[1])
+						{
+							modified = true;
+						}
+					}
+				}
+				else if(this.name == "trackNb")
+				{
+					if(fileE["track"].toString().indexOf('/') == -1)
+					{
+						input.value = "0";
+					}
+					else
+					{
+						input.value = fileE["track"].toString().split('/')[1];
+						if(fileE["track"].toString().split('/')[1] != UploadTab.uploadedFiles[i]["track"].toString().split('/')[1])
+						{
+							modified = true;
+						}
+					}
+				}
+				else
+				{
+					input.value = fileE[this.name];
+					if(fileE[this.name] != UploadTab.uploadedFiles[i][this.name])
+					{
+						modified = true;
+					}
+				}
 
-        /* update new value */
-        for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition.length ; ++i ){
-            if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename) == identifier ){
-                if( this.name == "track" ) {
-                    if( tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"].toString().indexOf('/') == -1) {
-                        input.value = tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"]
-                    } else {
-                        input.value = tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"].toString().split('/')[0];
-                        if( tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"].toString().split('/')[1] != tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i]["track"].toString().split('/')[1]){
-                            modified = true;
-                        }
-
-                    }
-                } else if( this.name == "trackNb" ){
-                    if( tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"].toString().indexOf('/') == -1) {
-                        input.value = "0";
-                    } else {
-                        input.value = tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"].toString().split('/')[1];
-                        if( tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i]["track"].toString().split('/')[1] != tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i]["track"].toString().split('/')[1]){
-                            modified = true;
-                        }
-                    }
-                } else {
-                    input.value = tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name];
-                    if(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name] != tabs.getFirstTabByClassName("UploadTab").uploadedFiles[i][this.name]){
-                        modified = true;
-                    }
-                }
-
-                break;
-            }
-        }
-	    form.appendChild(input);
-    }
+				break;
+			}
+		}
+		form.appendChild(input);
+	}
 
 	var okButton = document.createElement("input");
 	okButton.type = "submit";
@@ -223,14 +285,15 @@ musicFieldEditor.prototype.edit = function(cell){
 	okButton.className = 'editor_ok_button';
 	form.appendChild(okButton);
 
-    if( modified ){
-	    var undoLink = document.createElement("a");
-	    undoLink.href = "#";
-	    undoLink.appendChild(document.createTextNode("undo"));
-	    undoLink.onclick = this._undo.bindAsEventListener(this);
-	    undoLink.className = 'editor_undo';      
-	    form.appendChild(undoLink);
-    }
+	if(modified)
+	{
+		var undoLink = document.createElement("a");
+		undoLink.href = "#";
+		undoLink.appendChild(document.createTextNode("undo"));
+		undoLink.onclick = this._undo.bindAsEventListener(this);
+		undoLink.className = 'editor_undo';      
+		form.appendChild(undoLink);
+	}
 	
 	var cancelLink = document.createElement("a");
 	cancelLink.href = "#";
@@ -239,27 +302,29 @@ musicFieldEditor.prototype.edit = function(cell){
 	cancelLink.className = 'editor_cancel';      
 	form.appendChild(cancelLink);
 
-    cell.innerHTML = '';
+	cell.innerHTML = '';
 	cell.appendChild(form);
 
-    /* update new value */
-    for( var i =0; i < tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition.length ; ++i ){
-        if( "upload_line_" + escape(tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i].filename) == identifier )
-        {
-            /* Automatically select genre */
-            var options = $$('select#genre option');
-            var len = options.length;
-            if( len > 0 && len < tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name])
-                options[len-1].selected = true;
-            for (var j = 0; j < len; j++) {
-                if(options[j].value == tabs.getFirstTabByClassName("UploadTab").uploadedFilesEdition[i][this.name]){
-                    options[j].selected = true;
-                        break;
-                }
-            }
-        }
-    }
-
-
-
-}
+	// Update new value
+	for(i = 0; i < UploadTab.uploadedFilesEdition.length; ++i)
+	{
+		if("upload_line_" + escape(UploadTab.uploadedFilesEdition[i].filename) == identifier)
+		{
+			// Automatically select genre
+			var options = $$('select#genre option');
+			var len = options.length;
+			if(len > 0 && len < UploadTab.uploadedFilesEdition[i][this.name])
+			{
+				options[len-1].selected = true;
+			}
+			for(var j = 0; j < len; j++)
+			{
+				if(options[j].value == UploadTab.uploadedFilesEdition[i][this.name])
+				{
+					options[j].selected = true;
+					break;
+				}
+			}
+		}
+	}
+};
