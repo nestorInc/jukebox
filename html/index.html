@@ -82,6 +82,10 @@
 	
 	<a id="play_stream">Play stream</a>
 	<a id="stop_stream">Stop stream</a>
+	<br />
+	<span id="volumeBox">
+		<input type="text" id="streamVolume" /><input type="button" id="streamVolumeBtn" value="Set volume (0-100)" />
+	</span>
 </div>
 
 <footer></footer>
@@ -96,7 +100,7 @@
 <script type="text/javascript" src="js/genres.js"></script>
 <script type="text/javascript" src="js/library.js"></script>
 <script type="text/javascript" src="js/search.js"></script>
-<script type="text/javascript" src="js/MusicFieldEditor.js"></script>
+<script type="text/javascript" src="js/musicFieldEditor.js"></script>
 <script type="text/javascript" src="js/upload.js"></script>
 <script type="text/javascript" src="js/debug.js"></script>
 <script type="text/javascript" src="js/customQueries.js"></script>
@@ -139,9 +143,6 @@ document.observe("dom:loaded", function()
 		});
 
 		$("btnApplyPlugin").on("click", setSongSelectionPlugin);
-
-		$("play_stream").on("click", PlayStream);
-		$("stop_stream").on("click", StopStream);
 	}
 	catch(fatalE)
 	{

@@ -314,7 +314,7 @@ height: 10px;
 position: absolute;
 top: 2px;
 left: 85px;
-font-size:10px;
+font-size: 10px;
 }
 span.nb_listening_users{
 left: 80px;
@@ -590,4 +590,14 @@ border-left: 1px solid black;
 }
 span.tab_delete{
 background: url("../images/icons/play_queue_delete.png") no-repeat left top;
+}
+
+#stop_stream{
+display: none; /* initial state */
+}
+#volumeBox input{
+height: 100%;
+}
+#streamVolume{
+width: 20px;
 }
