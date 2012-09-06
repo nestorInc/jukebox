@@ -5,10 +5,10 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <arpa/inet.h>
+#include <unistd.h>
+#include <stdlib.h>
 
-#include "vector.h"
-
-#include "ruby.h"
+#include "mp3.h"
 
 enum charset {
     ISO_8859_1,
@@ -17,11 +17,6 @@ enum charset {
     UTF16_LE,
     UTF16_BOM,
 };
-
-#define malloc xmalloc
-#define free xfree
-
-VECTOR_T(int);
 
 #define CHECK_SIZE(need)                                                \
     if((len-pos) < need) return pos;
@@ -56,20 +51,6 @@ typedef struct mp3_frame_info_t {
     size_t       len;
 } mp3_frame_info_t;
 
-typedef struct mp3_info_t {
-    int                  fd;
-    void                *data;
-    char                *title;
-    char                *artist;
-    char                *album;
-    int                  track;
-    int                  nb_track;
-    int                  years;
-    float                duration;
-    int                  size;
-    vector_int_t         frames;
-} mp3_info_t;
-
 typedef enum mpeg_version_t {
     MPEG_VERSION_1         = 3,
     MPEG_VERSION_2         = 2,
@@ -102,7 +83,7 @@ const int bitrate_table[][6]=
  { 448000, 384000, 320000, 256000, 160000, 160000 },
  {      0,      0,      0,      0,      0,      0 }};
 
-size_t mp3_frame_decode(mp3_frame_info_t *info, uint8_t *data, size_t len)
+static size_t mp3_frame_decode(mp3_frame_info_t *info, uint8_t *data, size_t len)
 {
     size_t pos = 0;
 
@@ -177,7 +158,7 @@ static inline int utf8_code_encoding_size(unsigned int code)
     return 0;
 }
 
-static inline uint8_t * utf8_code_convert_code(unsigned int code, uint8_t *pos)
+static inline char * utf8_code_convert_code(unsigned int code, char *pos)
 {
     switch(code) {
     case 0x10000 ... 0x1FFFF:
@@ -212,12 +193,12 @@ static inline uint8_t * utf8_code_convert_code(unsigned int code, uint8_t *pos)
     return pos;
 }
 
-static inline uint8_t * utf8_convert_iso(const uint8_t *txt, size_t len)
+static inline char * utf8_convert_iso(const char *txt, size_t len)
 {
     int            dlen;
-    uint8_t       *ret;
-    const uint8_t *cpos;
-    uint8_t       *pos;
+    char          *ret;
+    const char    *cpos;
+    char          *pos;
 
     for(dlen = 0, cpos = txt; cpos != txt + len; ++cpos)
         dlen += utf8_code_encoding_size(*cpos);
@@ -226,16 +207,16 @@ static inline uint8_t * utf8_convert_iso(const uint8_t *txt, size_t len)
     pos = ret;
 
     for(cpos = txt; cpos != txt + len ; ++cpos)
-        pos = utf8_code_convert_code(*cpos, pos);
+        pos = utf8_code_convert_code((unsigned)*cpos, pos);
 
     *pos = 0;
 
     return ret;
 }
 
-static inline uint8_t * utf8_convert_utf8(const uint8_t *txt, size_t len)
+static inline char * utf8_convert_utf8(const char *txt, size_t len)
 {
-    uint8_t *ret;
+    char *ret;
 
     ret = malloc(len + 1);
     memcpy(ret, txt, len);
@@ -244,12 +225,12 @@ static inline uint8_t * utf8_convert_utf8(const uint8_t *txt, size_t len)
     return ret;
 }
 
-static inline uint8_t * utf8_convert_utf16_be(const uint8_t *txt, size_t len)
+static inline char * utf8_convert_utf16_be(const char *txt, size_t len)
 {
     int             dlen;
-    uint8_t        *ret;
+    char           *ret;
     const uint16_t *cpos;
-    uint8_t        *dpos;
+    char           *dpos;
     const uint16_t *epos;
 
     len &= ~1;
@@ -269,12 +250,12 @@ static inline uint8_t * utf8_convert_utf16_be(const uint8_t *txt, size_t len)
     return ret;
 }
 
-static inline uint8_t * utf8_convert_utf16_le(uint8_t *txt, size_t len)
+static inline char * utf8_convert_utf16_le(char *txt, size_t len)
 {
     int             dlen;
-    uint8_t        *ret;
+    char           *ret;
     const uint16_t *cpos;
-    uint8_t        *dpos;
+    char           *dpos;
     const uint16_t *epos;
 
     len &= ~1;
@@ -294,10 +275,10 @@ static inline uint8_t * utf8_convert_utf16_le(uint8_t *txt, size_t len)
     return ret;
 }
 
-static inline uint8_t * convert_to_utf8(uint8_t *txt, size_t len, enum charset from)
+static inline char * convert_to_utf8(char *txt, size_t len, enum charset from)
 {
     if(len == (unsigned)-1)
-        len = strlen(txt);
+        len = strlen((char *)txt);
 
     switch(from) {
     case ISO_8859_1:
@@ -310,27 +291,26 @@ static inline uint8_t * convert_to_utf8(uint8_t *txt, size_t len, enum charset f
         return utf8_convert_utf16_le(txt, len);
     case UTF16_BOM:
         if(le16toh(*((uint16_t *)txt)) == 0xFEFF)
-            return utf8_convert_utf16_le(txt + 2, len - 2);    
-        return utf8_convert_utf16_be(txt + 2, len - 2);
+            return (char *) utf8_convert_utf16_le(txt + 2, len - 2);    
+        return (char *) utf8_convert_utf16_be(txt + 2, len - 2);
     }
 
     return NULL;
 }
 
 typedef struct __attribute__((packed)) id3_v1_t {
-    uint8_t tag    [ 3]; // TAG
-    uint8_t title  [30];
-    uint8_t artist [30];
-    uint8_t album  [30];
-    uint8_t years  [ 4];
-    uint8_t comment[29];
+    char    tag    [ 3]; // TAG
+    char    title  [30];
+    char    artist [30];
+    char    album  [30];
+    char    years  [ 4];
+    char    comment[29];
     uint8_t track;
     uint8_t genre;
 } id3_v1_t;
 
 static size_t id3_v1_decode(id3_v1_t **info, uint8_t *buf, size_t len)
 {
-    int          pos    = 0;
     id3_v1_t    *tag;
 
     if(len != sizeof(id3_v1_t))
@@ -381,7 +361,7 @@ static size_t id3_v2_get_size(uint8_t *data)
     return size;
 }
 
-char * id3_v2_get_string(uint8_t *data, size_t len)
+static char * id3_v2_get_string(char *data, size_t len)
 {
     switch(data[0]) {
     case 1:
@@ -400,9 +380,9 @@ char * id3_v2_get_string(uint8_t *data, size_t len)
 #define ID3_ID(a, b, c, d)                                              \
     (a << 24) | (b << 16) | (c << 8) | (d << 0) 
 
-typedef void (*id3_v2_cb)(uint32_t id, uint8_t *str, size_t size, void *data);
+typedef void (*id3_v2_cb)(uint32_t id, char *str, size_t size, void *data);
 
-size_t id3_v2_decode(uint8_t *buf, size_t len, id3_v2_cb cb, void *data)
+static size_t id3_v2_decode(uint8_t *buf, size_t len, id3_v2_cb cb, void *data)
 {
     size_t               data_len;
     size_t               pos            = 0;
@@ -447,7 +427,7 @@ size_t id3_v2_decode(uint8_t *buf, size_t len, id3_v2_cb cb, void *data)
       /* data = Id3.getUnsynchronisation(data) if(flag & 0x0002 == 0x0002); */
 
         if(cb)
-            cb(htonl(frame->id), buf + pos, data_len, data);
+            cb(htonl(frame->id), (char *)buf + pos, data_len, data);
 
         pos += data_len;
     }
@@ -455,11 +435,11 @@ size_t id3_v2_decode(uint8_t *buf, size_t len, id3_v2_cb cb, void *data)
     return len;
 }
 
-void mp3_save_tag(uint32_t id, uint8_t *str, size_t size, void *data)
+static void mp3_save_tag(uint32_t id, char *str, size_t size, void *data)
 {
     mp3_info_t *info;
-    uint8_t    *txt;
-    uint8_t    *nb_track;
+    char       *txt;
+    char       *nb_track;
 
     info = data;
 
@@ -499,11 +479,12 @@ void mp3_save_tag(uint32_t id, uint8_t *str, size_t size, void *data)
     }
 }
 
-int mp3_file_decode(mp3_info_t *info, char *file)
+int mp3_info_decode(mp3_info_t *info, char *file)
 {
     struct stat          stat;
     uint8_t             *buffer;
     size_t               size;
+    size_t               real_size;
     size_t               i;
     int                  frame_size;
     int                  fd;
@@ -519,28 +500,34 @@ int mp3_file_decode(mp3_info_t *info, char *file)
 
     fstat(fd, &stat);
 
-    size = stat.st_size;
+    if(!S_ISREG(stat.st_mode)) {
+        close(fd);
+        return -1;
+    }
+    real_size = size = stat.st_size;
 
     buffer = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
-    if(buffer == MAP_FAILED)
+    if(buffer == MAP_FAILED) {
+        close(fd);
         return -1;
+    }
 
-    info->size  = size;
-    info->fd    = fd;
-    info->data  = buffer;
+    frame_size = id3_v1_decode(&info_v1, buffer + size - sizeof(id3_v1_t), size);
+    if(frame_size)
+        size -= frame_size;
 
     for(i = 0; i < size;) {
         frame_size = mp3_frame_decode(&finfo, buffer + i, size - i);
         if(frame_size) {
             info->duration += finfo.duration;
-            vector_int_push(&info->frames, &frame_size);
         } else {
             frame_size = id3_v2_decode(buffer + i, size - i, mp3_save_tag, info);
-            if(frame_size != 0)
-                frame_size = id3_v1_decode(&info_v1, buffer + i, size - i);
         }
-        if(frame_size == 0)
+        if(frame_size == 0) {
             frame_size = 1;
+            if(i == 0)
+                break;
+        }
         i += frame_size;
     }
     if(info_v1) {
@@ -555,134 +542,28 @@ int mp3_file_decode(mp3_info_t *info, char *file)
         if(info->years == 0)
             info->years  = atoi(info_v1->years);
     }
+
+    munmap(buffer, real_size);
+    close(fd);
+
+    if(i == 0)
+        return -1;
     return 0;
 }
 
-VALUE cMp3;
-
-static VALUE mp3_init(VALUE self, VALUE arg)
+void mp3_info_free(mp3_info_t *info)
 {
-    VALUE       array;
-    mp3_info_t *info;
-    int         i;
-
-    Data_Get_Struct(self, mp3_info_t, info);
-
-    array = rb_ary_new2(info->frames.len);
-
-    for(i = 0; i < info->frames.len; ++i) {
-        rb_ary_push(array, INT2FIX(info->frames.data[i]));
-    }
-
-    rb_iv_set(self, "@frames", array);
-
-    return self;
-}
-
-static VALUE mp3_frames(VALUE self, VALUE arg)
-{
-    return rb_iv_get(self, "@frames");
-}
-
-static VALUE mp3_duration(VALUE self, VALUE arg)
-{
-    mp3_info_t *info;
-
-    Data_Get_Struct(self, mp3_info_t, info);
-
-    return INT2FIX((int)info->duration);
-}
-
-static VALUE mp3_artist(VALUE self, VALUE arg)
-{
-    mp3_info_t *info;
-
-    Data_Get_Struct(self, mp3_info_t, info);
-
-    if(info->artist == NULL)
-        return Qnil;
-    return rb_tainted_str_new2(info->artist);
-}
-
-static VALUE mp3_album(VALUE self, VALUE arg)
-{
-    mp3_info_t *info;
-
-    Data_Get_Struct(self, mp3_info_t, info);
-
-    if(info->album == NULL)
-        return Qnil;
-    return rb_tainted_str_new2(info->album);
-}
-
-static VALUE mp3_title(VALUE self, VALUE arg)
-{
-    mp3_info_t *info;
-
-    Data_Get_Struct(self, mp3_info_t, info);
-
-    if(info->title == NULL)
-        return Qnil;
-    return rb_tainted_str_new2(info->title);
-}
-
-static VALUE mp3_years(VALUE self, VALUE arg)
-{
-    mp3_info_t *info;
-
-    Data_Get_Struct(self, mp3_info_t, info);
-
-    return INT2FIX((int)info->years);
-}
-
-static VALUE mp3_track(VALUE self, VALUE arg)
-{
-    mp3_info_t *info;
-
-    Data_Get_Struct(self, mp3_info_t, info);
-
-    return INT2FIX((int)info->track);
-}
-
-static VALUE mp3_nb_track(VALUE self, VALUE arg)
-{
-    mp3_info_t *info;
-
-    Data_Get_Struct(self, mp3_info_t, info);
-
-    return INT2FIX((int)info->nb_track);
-}
-
-static void mp3_free(mp3_info_t *info)
-{
-    munmap(info->data, info->size);
-    close(info->fd);
-    vector_int_clean(&info->frames);
     free(info->title);
     free(info->artist);
     free(info->album);
-    free(info);
 }
 
-static VALUE mp3_new(VALUE class, VALUE file)
+void mp3_info_dump(const mp3_info_t *info)
 {
-  mp3_info_t *info = ALLOC(mp3_info_t);
-  mp3_file_decode(info, StringValuePtr(file));
-  VALUE tdata = Data_Wrap_Struct(class, 0, mp3_free, info);
-  rb_obj_call_init(tdata, 0, NULL);
-  return tdata;
-}
-
-void Init_mp3() {
-  cMp3 = rb_define_class("Mp3File", rb_cObject);
-  rb_define_singleton_method(cMp3, "new", mp3_new, 1);
-  rb_define_method(cMp3, "initialize", mp3_init, 0);
-  rb_define_method(cMp3, "frames", mp3_frames, 0);
-  rb_define_method(cMp3, "duration", mp3_duration, 0);
-  rb_define_method(cMp3, "title", mp3_title, 0);
-  rb_define_method(cMp3, "album", mp3_album, 0);
-  rb_define_method(cMp3, "artist", mp3_artist, 0);
-  rb_define_method(cMp3, "years", mp3_title, 0);
-  rb_define_method(cMp3, "track", mp3_album, 0);
-  rb_define_method(cMp3, "nb_track", mp3_artist, 0);
+    printf("Title    %s\n",    info->title);
+    printf("Artist   %s\n",    info->artist);
+    printf("Album    %s\n",    info->album);
+    printf("Track    %i/%i\n", info->track, info->nb_track);
+    printf("Years    %i\n",    info->years);
+    printf("Duration %f\n",    info->duration);
 }
