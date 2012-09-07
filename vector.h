@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define VECTOR_EACH(v, i)                                               \
+    for(i = &v->data[v->offset]; i != &v->data[v->offset + v->len]; ++i)
 
 #define VECTOR_T(name, type)                                            \
                                                                         \
@@ -13,7 +15,6 @@ typedef struct vector_##name {                                          \
     int          len;                                                   \
     int          size;                                                  \
 } vector_##name##_t;                                                    \
-                                                                        \
                                                                         \
 __attribute__((used))                                                   \
 static void vector_##name##_init(vector_##name##_t *v)                  \

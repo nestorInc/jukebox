@@ -110,12 +110,10 @@ VECTOR_T(inode_cache, inode_cache_t);
 
 int inode_cache_insert(vector_inode_cache_t *cache, ino_t ino, time_t mtime)
 {
-    int                 i;
     inode_cache_t       entry;
+    inode_cache_t      *pentry;
 
-    for(i = 0; i < cache->len; ++i) {
-        inode_cache_t *pentry = &cache->data[i];
-
+    VECTOR_EACH(cache, pentry) {
         if(pentry->ino == ino) {
             if(pentry->mtime == mtime)
                 return -1;
