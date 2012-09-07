@@ -234,12 +234,12 @@ void encode_th(void *data)
 
 typedef struct inode_cache_t {
     ino_t  ino;
-    time_t atime;
+    time_t mtime;
 } inode_cache_t;
 
 VECTOR_T(inode_cache, inode_cache_t);
 
-int inode_cache_insert(vector_inode_cache_t *cache, ino_t ino, time_t atime)
+int inode_cache_insert(vector_inode_cache_t *cache, ino_t ino, time_t mtime)
 {
     int                 i;
     inode_cache_t       entry;
@@ -248,16 +248,16 @@ int inode_cache_insert(vector_inode_cache_t *cache, ino_t ino, time_t atime)
         inode_cache_t *pentry = &cache->data[i];
 
         if(pentry->ino == ino) {
-            if(pentry->atime == atime)
+            if(pentry->mtime == mtime)
                 return -1;
             // update
-            pentry->atime = atime;
+            pentry->mtime = mtime;
             return 0;
         }
     }
     
     entry.ino   = ino;
-    entry.atime = atime;
+    entry.mtime = mtime;
 
     vector_inode_cache_push(cache, &entry);
 
@@ -330,8 +330,8 @@ int main(int argc, char *argv[])
 
             stat(data->src, &buf);            
 
-            if(!S_ISREG(buf.st_mode) || buf.st_atime + (scan_time * 2) > cur_time ||
-               inode_cache_insert(&inode_cache, buf.st_ino, buf.st_atime) == -1) {
+            if(!S_ISREG(buf.st_mode) || buf.st_mtime + (scan_time * 2) > cur_time ||
+               inode_cache_insert(&inode_cache, buf.st_ino, buf.st_mtime) == -1) {
                 /* Check if is dir and scan it */
                 free(data);
                 continue;
