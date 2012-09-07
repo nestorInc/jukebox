@@ -10,6 +10,7 @@
 #include "vector.h"
 #include "mp3.h"
 #include "thread_pool.h"
+#include "mstring.h"
 
 typedef struct encode_file_t {
     char *src;
@@ -138,8 +139,8 @@ int main(int argc, char *argv[])
     DIR                        *dp; 
     struct dirent              *dirp;
 
-    int                         srcdir_len   = strlen(argv[1]);
-    int                         dstdir_len   = strlen(argv[2]);
+    string_t                    srcdir;
+    string_t                    dstdir;
 
     // Replace by hash tab
     vector_inode_cache_t        inode_cache;
@@ -148,6 +149,9 @@ int main(int argc, char *argv[])
     int                         scan_time    = 30; // 30s
 
     argc = argc;
+
+    srcdir = string_init_static(argv[1]);
+    dstdir = string_init_static(argv[2]);
 
     vector_inode_cache_init(&inode_cache);
 
@@ -162,34 +166,34 @@ int main(int argc, char *argv[])
 
         while ((dirp = readdir(dp)) != NULL) {
             encode_file_t *data;
-            int            len = strlen(dirp->d_name);
-            char          *pos;
+            string_t       name;
+            string_t       srcfile;
+            string_t       dstfile;
 
-            if((len == 1 && memcmp(dirp->d_name, "." , 1) == 0) ||
-               (len == 2 && memcmp(dirp->d_name, "..", 2) == 0))
+            name = string_init_static(dirp->d_name);
+
+            if((name.len == 1 && memcmp(dirp->d_name, "." , 1) == 0) ||
+               (name.len == 2 && memcmp(dirp->d_name, "..", 2) == 0))
                 continue;
 
             data = malloc(sizeof(encode_file_t) +
-                          len + srcdir_len + 1 + 1 +
-                          len + dstdir_len + 1 + 1);
+                          name.len + srcdir.len + 1 + 1 +
+                          name.len + dstdir.len + 1 + 1);
 
-            pos = data->data;
+            srcfile = string_init_full(data->data, 0,
+                                       name.len + srcdir.len + 1 + 1, STRING_ALLOC_STATIC);
+            dstfile = string_init_full(data->data + srcfile.size, 0,
+                                       name.len + srcdir.len + 1 + 1, STRING_ALLOC_STATIC);
 
-            data->src = pos;
-            memcpy(pos, argv[1], srcdir_len);
-            pos += srcdir_len;
-            *pos = '/';
-            pos++;
-            memcpy(pos, dirp->d_name, len + 1);
-            pos += len + 1;
+            srcfile   = string_concat(srcfile, srcdir);
+            srcfile   = string_chr(srcfile, '/');
+            srcfile   = string_concat(srcfile, name);
+            data->src = srcfile.txt;
 
-            data->dst = pos;
-            memcpy(pos, argv[2], dstdir_len);
-            pos += dstdir_len;
-            *pos = '/';
-            pos++;
-            memcpy(pos, dirp->d_name, len + 1);
-            pos += len + 1;
+            dstfile   = string_concat(dstfile, dstdir);
+            dstfile   = string_chr(dstfile, '/');
+            dstfile   = string_concat(dstfile, name);
+            data->dst = dstfile.txt;
 
             struct stat buf;
 
