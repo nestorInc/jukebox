@@ -1,123 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <time.h>
 
 #include "vector.h"
 #include "mp3.h"
-
-typedef void (*thread_f)(void *data);
-
-typedef struct thread_cmd_t {
-    thread_f             fn;
-    void                *data;
-} thread_cmd_t;
-
-VECTOR_T(thread, thread_cmd_t);
-
-typedef struct queue {
-    pthread_mutex_t mutex;
-    pthread_cond_t  cond;
-    vector_thread_t cmd;
-} queue_t;
-
-void queue_init(queue_t *q)
-{
-    vector_thread_init(&q->cmd);
-    pthread_cond_init(&q->cond, NULL);
-    pthread_mutex_init(&q->mutex, NULL);
-}
-
-void queue_add(queue_t *q, thread_cmd_t *cmd)
-{
-    pthread_mutex_lock(&q->mutex);
-    vector_thread_push(&q->cmd, cmd);
-    pthread_cond_signal(&q->cond);
-    pthread_mutex_unlock(&q->mutex);
-}
-
-void queue_get(queue_t *q, thread_cmd_t *cmd)
-{
-    pthread_mutex_lock(&q->mutex);
-    while(vector_thread_shift(&q->cmd, cmd) == -1)
-        pthread_cond_wait(&q->cond, &q->mutex);
-    pthread_mutex_unlock(&q->mutex);
-}
-
-typedef struct jobs_queue {
-    int             n;
-    queue_t         q;
-    pthread_mutex_t mutex;
-    pthread_cond_t  cond;
-} jobs_queue_t;
-
-void jobs_queue_wait(jobs_queue_t *jq)
-{
-    thread_cmd_t cmd = { .fn = NULL };
-    int          i;
-
-    pthread_mutex_lock(&jq->mutex);
-    for(i = 0; i < jq->n; ++i)
-        queue_add(&jq->q, &cmd);
-
-    while(jq->n)
-        pthread_cond_wait(&jq->cond, &jq->mutex); 
-
-    pthread_mutex_unlock(&jq->mutex);
-}
-
-void jobs_queue_add(jobs_queue_t *jq, thread_f fn, void *data)
-{
-    thread_cmd_t c = { .fn   = fn,
-                       .data = data };
-    if(fn != NULL)
-        queue_add(&jq->q, &c);
-}
-
-static void * jobs_queue_process(jobs_queue_t *jq)
-{
-    int running = 1;
-
-    while(running) {
-        thread_cmd_t cmd;
-
-        queue_get(&jq->q, &cmd);
-
-        if(cmd.fn == NULL) { /* Terminate thread */
-            running = 0;
-            continue;
-        }
-
-        cmd.fn(cmd.data);
-    }
-
-    pthread_mutex_lock(&jq->mutex);
-    jq->n--;
-    pthread_cond_signal(&jq->cond);
-    pthread_mutex_unlock(&jq->mutex);
-
-    return NULL;
-}
-
-void jobs_queue_init(jobs_queue_t *jq, int n)
-{
-    int i;
-
-    pthread_cond_init(&jq->cond, NULL);
-    pthread_mutex_init(&jq->mutex, NULL);
-    queue_init(&jq->q);
-    jq->n = n;
-
-    for(i = 0; i < n; ++i) {
-        pthread_t th;
-        pthread_create(&th, NULL, (void * (*)(void *))jobs_queue_process, jq);
-        pthread_detach(th);
-    }
-}
+#include "thread_pool.h"
 
 typedef struct encode_file_t {
     char *src;
@@ -244,7 +136,7 @@ int inode_cache_insert(vector_inode_cache_t *cache, ino_t ino, time_t mtime)
 int main(int argc, char *argv[])
 {
     int                         nb_thread = 4;
-    jobs_queue_t                jq;
+    thread_pool_t              *pool;
     DIR                        *dp; 
     struct dirent              *dirp;
 
@@ -261,7 +153,7 @@ int main(int argc, char *argv[])
 
     vector_inode_cache_init(&inode_cache);
 
-    jobs_queue_init(&jq, nb_thread);
+    pool = thread_pool_new(nb_thread);
 
     while(1) {
         cur_time = time(NULL);
@@ -314,13 +206,13 @@ int main(int argc, char *argv[])
 
             printf("add %s\n", data->src);
 
-            jobs_queue_add(&jq, encode_th, data);
+            thread_pool_add(pool, encode_th, data);
         }
         closedir(dp);
         sleep(scan_time);
     }
     
-    jobs_queue_wait(&jq);
+    thread_pool_wait(pool);
 
     return 0;
 }
