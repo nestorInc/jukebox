@@ -10,8 +10,10 @@
 #include "vector.h"
 #include "mp3.h"
 
+typedef void (*thread_f)(void *data);
+
 typedef struct thread_cmd_t {
-    unsigned int         cmd;
+    thread_f             fn;
     void                *data;
 } thread_cmd_t;
 
@@ -46,21 +48,16 @@ void queue_get(queue_t *q, thread_cmd_t *cmd)
     pthread_mutex_unlock(&q->mutex);
 }
 
-#define JOBS_QUEUE_MAX_FUNC 16
-
-typedef void (*thread_f)(void *data);
-
 typedef struct jobs_queue {
     int             n;
     queue_t         q;
     pthread_mutex_t mutex;
     pthread_cond_t  cond;
-    thread_f        func[JOBS_QUEUE_MAX_FUNC];
 } jobs_queue_t;
 
 void jobs_queue_wait(jobs_queue_t *jq)
 {
-    thread_cmd_t cmd = { .cmd = -1 };
+    thread_cmd_t cmd = { .fn = NULL };
     int          i;
 
     pthread_mutex_lock(&jq->mutex);
@@ -73,11 +70,11 @@ void jobs_queue_wait(jobs_queue_t *jq)
     pthread_mutex_unlock(&jq->mutex);
 }
 
-void jobs_queue_add(jobs_queue_t *jq, int cmd, void *data)
+void jobs_queue_add(jobs_queue_t *jq, thread_f fn, void *data)
 {
-    thread_cmd_t c = { .cmd  = cmd,
+    thread_cmd_t c = { .fn   = fn,
                        .data = data };
-    if(cmd != -1 && cmd < JOBS_QUEUE_MAX_FUNC)
+    if(fn != NULL)
         queue_add(&jq->q, &c);
 }
 
@@ -90,15 +87,12 @@ static void * jobs_queue_process(jobs_queue_t *jq)
 
         queue_get(&jq->q, &cmd);
 
-        if(cmd.cmd == (unsigned)-1) {
+        if(cmd.fn == NULL) { /* Terminate thread */
             running = 0;
             continue;
         }
 
-        if(jq->func[cmd.cmd] == NULL)
-            continue;
-
-        jq->func[cmd.cmd](cmd.data);
+        cmd.fn(cmd.data);
     }
 
     pthread_mutex_lock(&jq->mutex);
@@ -116,7 +110,6 @@ void jobs_queue_init(jobs_queue_t *jq, int n)
     pthread_cond_init(&jq->cond, NULL);
     pthread_mutex_init(&jq->mutex, NULL);
     queue_init(&jq->q);
-    memset(jq->func, 0, sizeof(jq->func));
     jq->n = n;
 
     for(i = 0; i < n; ++i) {
@@ -124,22 +117,6 @@ void jobs_queue_init(jobs_queue_t *jq, int n)
         pthread_create(&th, NULL, (void * (*)(void *))jobs_queue_process, jq);
         pthread_detach(th);
     }
-}
-
-int jobs_queue_func_add(jobs_queue_t *jq, thread_f fn)
-{
-    int i;
-
-    for(i = 0; i < JOBS_QUEUE_MAX_FUNC; ++i)
-        if(jq->func[i] == NULL)
-            break;
-
-    if(i == JOBS_QUEUE_MAX_FUNC)
-        return -1;
-    
-    jq->func[i] = fn;
-
-    return i;
 }
 
 typedef struct encode_file_t {
@@ -268,7 +245,6 @@ int main(int argc, char *argv[])
 {
     int                         nb_thread = 4;
     jobs_queue_t                jq;
-    int                         cmd;
     DIR                        *dp; 
     struct dirent              *dirp;
 
@@ -286,7 +262,6 @@ int main(int argc, char *argv[])
     vector_inode_cache_init(&inode_cache);
 
     jobs_queue_init(&jq, nb_thread);
-    cmd = jobs_queue_func_add(&jq, encode_th);
 
     while(1) {
         cur_time = time(NULL);
@@ -339,7 +314,7 @@ int main(int argc, char *argv[])
 
             printf("add %s\n", data->src);
 
-            jobs_queue_add(&jq, cmd, data);        
+            jobs_queue_add(&jq, encode_th, data);
         }
         closedir(dp);
         sleep(scan_time);
