@@ -267,7 +267,7 @@ static inline char * utf8_convert_utf16_le(char *txt, size_t len)
     ret  = malloc(dlen + 1);
     dpos = ret;
 
-    for(cpos = (const uint16_t *)txt; *cpos; ++cpos)
+    for(cpos = (const uint16_t *)txt; cpos != epos; ++cpos)
         dpos = utf8_code_convert_code(le16toh(*cpos), dpos);
 
     *dpos = 0;
