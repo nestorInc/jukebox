@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 typedef enum string_alloc_t {
     STRING_ALLOC_DYNAMIC,
@@ -88,7 +89,7 @@ string_t string_concat(string_t txt1, string_t txt2);
 
 string_t string_chr(string_t str, char c);
 
-void string_dump(string_t str)
+static inline void string_dump(string_t str)
 {
     printf("%.*s\n", str.len, str.txt);
 }

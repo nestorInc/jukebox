@@ -10,13 +10,16 @@
 #include "vector.h"
 #include "mp3.h"
 #include "thread_pool.h"
+#include "db.h"
 #include "mstring.h"
 
-typedef struct encode_file_t {
-    char *src;
-    char *dst;
 
-    char  data[0];
+typedef struct encode_file_t {
+    char   *src;
+    char   *dst;
+    time_t  mtime;
+
+    char    data[0];
 } encode_file_t;
 
 void encode_th(void *data)
@@ -28,6 +31,7 @@ void encode_th(void *data)
     int            pid_encoder;
     mp3_info_t     info;
     int            ret;
+    song_t         song;
 
     ret = mp3_info_decode(&info, enc->src);
     if(info.album  == NULL ||
@@ -35,19 +39,35 @@ void encode_th(void *data)
        info.title  == NULL)
         ret = -2;
 
+    song.src      = enc->src;
+    song.dst      = enc->dst;
+    song.album    = info.album;
+    song.artist   = info.artist;
+    song.title    = info.title;
+    song.years    = info.years;
+    song.track    = info.track;
+    song.track_nb = info.nb_track;
+    song.genre    = 0;
+    song.mtime    = enc->mtime;
+    song.bitrate  = 192;
+    song.duration = info.duration;
+    
     switch(ret) {
     case -1:
         printf("Skip %s -> %s\n", enc->src, enc->dst);
+        mp3_info_free(&info);
         break;
     case -2:
         printf("Bad tag %s -> %s\n", enc->src, enc->dst);
+        song.status = SONG_STATUS_BAD_TAG;
+        db_new_song(&song);
+        mp3_info_free(&info);
         break;
     default:
         printf("Encode %s -> %s\n", enc->src, enc->dst);
         mp3_info_dump(&info);
         break;
     }
-    mp3_info_free(&info);
 
     if(ret < 0)
         return;
@@ -93,12 +113,19 @@ void encode_th(void *data)
     close(pipedesc[1]);
 
     int stat_loc;
+
     waitpid(pid_decoder, &stat_loc, 0);
-    printf("decoder %i %s\n", stat_loc, enc->src);
-
     waitpid(pid_encoder, &stat_loc, 0);
-    printf("encoder %i\n", stat_loc);
 
+
+    if(stat_loc == 0)
+        song.status = SONG_STATUS_OK;
+    else
+        song.status = SONG_STATUS_ENCODING_FAIL;
+
+    db_new_song(&song);
+
+    mp3_info_free(&info);
     free(data);
 }
 
@@ -132,9 +159,19 @@ int inode_cache_insert(vector_inode_cache_t *cache, ino_t ino, time_t mtime)
     return 0;
 }
 
+void scan(const unsigned char *src, time_t mtime, void *data)
+{
+    vector_inode_cache_t       *inode_cache = data;
+
+    struct stat buf;
+    stat((const char *)src, &buf);
+
+    inode_cache_insert(inode_cache, buf.st_ino, mtime);
+}
+
 int main(int argc, char *argv[])
 {
-    int                         nb_thread = 4;
+    int                         nb_thread = 2;
     thread_pool_t              *pool;
     DIR                        *dp; 
     struct dirent              *dirp;
@@ -150,16 +187,20 @@ int main(int argc, char *argv[])
 
     argc = argc;
 
+    db_init();
+
     srcdir = string_init_static(argv[1]);
     dstdir = string_init_static(argv[2]);
 
     vector_inode_cache_init(&inode_cache);
 
+    db_scan_song(scan, &inode_cache);
+
     pool = thread_pool_new(nb_thread);
 
     while(1) {
         cur_time = time(NULL);
-        printf("new scan\n");
+
         dp = opendir(argv[1]);
         if(dp == NULL)
             return 1;
@@ -199,14 +240,14 @@ int main(int argc, char *argv[])
 
             stat(data->src, &buf);            
 
+            data->mtime = buf.st_mtime;
+
             if(!S_ISREG(buf.st_mode) || buf.st_mtime + (scan_time * 2) > cur_time ||
                inode_cache_insert(&inode_cache, buf.st_ino, buf.st_mtime) == -1) {
                 /* Check if is dir and scan it */
                 free(data);
                 continue;
             }
-
-            printf("add %s\n", data->src);
 
             thread_pool_add(pool, encode_th, data);
         }
