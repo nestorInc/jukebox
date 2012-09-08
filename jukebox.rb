@@ -14,12 +14,10 @@ include Rpam
 require 'stream.rb'
 require 'http.rb'
 require 'channel.rb'
-require 'encode.rb'
 require 'db.rb'
 require 'json_api.rb'
 require 'upload.rb'
 require 'basic_api.rb'
-require 'web_debug.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
@@ -40,23 +38,22 @@ end
 
 # Encode
 
-Thread.new() {
-  e = Encode.new(library, config[:encode.to_s]);
-  e.attach(Rev::Loop.default);
-  begin
-    Rev::Loop.default.run();
-  rescue => e
-    error(([ e.to_s ] + e.backtrace).join("\n"), true, $error_file);
-    retry;
-  end
-}
+conf = config[:encode.to_s];
 
+originDir   = conf["source_dir"]  if(conf && conf["source_dir"]);
+raise "Config: encode::source_dir not found" if(originDir == nil);
+originDir.force_encoding(Encoding.locale_charmap)
+
+encodedDir  = conf["encoded_dir"] if(conf && conf["encoded_dir"]);
+raise "Config: encode::encoded_dir not found" if(encodedDir == nil);
+encodedDir.force_encoding(Encoding.locale_charmap)
+
+Process.spawn("./encoder", originDir, encodedDir);
 
 # Create HTTP server
 json   = JsonManager.new(channelList, library, config[:upload.to_s], config[:encode.to_s]);
 basic  = BasicApi.new(channelList);
 upload = UploadManager.new(config[:upload.to_s]);
-debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
 stream = Stream.new(channelList, library);
 
