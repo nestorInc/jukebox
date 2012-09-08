@@ -6,6 +6,7 @@ require 'time'
 require 'display.rb'
 require 'playlist.rb'
 require 'mp3.rb'
+require 'id3.rb'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
@@ -75,11 +76,11 @@ class Channel
     @connections.push(s);
     log("Registering channel #{@name} [#{@connections.size()} user(s) connected]");
     if(@currentEntry)
-#      tag = Id3.new();
-#      tag.title  = @currentEntry.title;
-#      tag.artist = @currentEntry.artist;
-#      tag.album  = @currentEntry.album;
-#      s.write(tag.to_s());
+      tag = Id3.new();
+      tag.title  = @currentEntry.title;
+      tag.artist = @currentEntry.artist;
+      tag.album  = @currentEntry.album;
+      s.write(tag.to_s());
     end
   end
 
