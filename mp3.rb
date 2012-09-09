@@ -157,6 +157,8 @@ private
 end
 
 class Mp3File
+  attr_reader :time
+
   def initialize(file)
     @frames         = [];
     @total_duration = 0.0;

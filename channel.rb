@@ -107,7 +107,7 @@ class Channel
 
   def getCurrentSongInfo()
     rsp           = @currentEntry.to_client();
-    rsp[:elapsed] = @currentEntry.duration * @frame / @cur.size;
+    rsp[:elapsed] = @cur.time;
     rsp;
   end
 
@@ -129,7 +129,7 @@ class Channel
 
   def to_client()
     rsp                  = @currentEntry.to_client();
-    rsp[:elapsed]        = @currentEntry.duration * @frame / @cur.size;
+    rsp[:elapsed]        = @cur.time;
     rsp[:listener_count] = @connections.size();
     rsp;
   end
