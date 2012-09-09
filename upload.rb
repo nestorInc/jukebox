@@ -5,7 +5,7 @@ require 'rev'
 require 'http.rb'
 require 'display.rb'
 require 'uri'
-require 'mp3'
+require 'id3.rb'
 
 class UploadManager < HttpNode
   def initialize(conf)
@@ -102,7 +102,7 @@ class UploadManager < HttpNode
     begin
       Dir.foreach(File.join(uploadDirectory, user)) do |current_file| 
         if File.file?(File.join(uploadDirectory, user, current_file))
-          id3info = Mp3File.new(File.join(uploadDirectory, user, current_file));
+          id3info = Id3.decode(File.join(uploadDirectory, user, current_file));
           file = {
             :filename   => current_file,
             :date_upload => File.atime(File.join(uploadDirectory, user, current_file)),
