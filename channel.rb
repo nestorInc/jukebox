@@ -5,6 +5,8 @@ require 'time'
 
 require 'display.rb'
 require 'playlist.rb'
+require 'mp3.rb'
+require 'id3.rb'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
@@ -49,7 +51,6 @@ class Channel
     @timestamp    = 0;
     @time         = 0;
     @nb_songs	  = 0;
-    @remaining    = 0;
 
     log("Creating new channel #{name}");
     set_plugin();
@@ -75,11 +76,11 @@ class Channel
     @connections.push(s);
     log("Registering channel #{@name} [#{@connections.size()} user(s) connected]");
     if(@currentEntry)
-#      tag = Id3.new();
-#      tag.title  = @currentEntry.title;
-#      tag.artist = @currentEntry.artist;
-#      tag.album  = @currentEntry.album;
-#      s.write(tag.to_s());
+      tag = Id3.new();
+      tag.title  = @currentEntry.title;
+      tag.artist = @currentEntry.artist;
+      tag.album  = @currentEntry.album;
+      s.write(tag.to_s());
     end
   end
 
@@ -106,7 +107,7 @@ class Channel
 
   def getCurrentSongInfo()
     rsp           = @currentEntry.to_client();
-    rsp[:elapsed] = @currentEntry.duration * @frame / @cur.size;
+    rsp[:elapsed] = @cur.time;
     rsp;
   end
 
@@ -128,7 +129,7 @@ class Channel
 
   def to_client()
     rsp                  = @currentEntry.to_client();
-    rsp[:elapsed]        = @currentEntry.duration * @frame / @cur.size;
+    rsp[:elapsed]        = @cur.time;
     rsp[:listener_count] = @connections.size();
     rsp;
   end
@@ -141,20 +142,12 @@ class Channel
       @currentEntry = @library.get_file(mid).first;
       file = @currentEntry.dst;
       log("Fetching on channel #{@name}: #{file}");
-      data = File.open(file) { |fd| fd.read; }
-      data.force_encoding("BINARY");
-      pos = 0;
-      @cur = @currentEntry.frames.map { |b|
-        f = data[pos, b];
-        pos += b;
-        f;
-      }
-      @frame = 0;
-#      tag = Id3.new();
-#      tag.title  = @currentEntry.title;
-#      tag.artist = @currentEntry.artist;
-#      tag.album  = @currentEntry.album;
-#      @tag = tag.to_s();
+      @cur = Mp3File.new(file);
+      tag = Id3.new();
+      tag.title  = @currentEntry.title;
+      tag.artist = @currentEntry.artist;
+      tag.album  = @currentEntry.album;
+      @tag = tag.to_s();
       @timestamp = Time.now().to_i();
     rescue => e
       @queue.next() if(@queue[0]);
@@ -164,7 +157,7 @@ class Channel
   end
 
   def sync()
-    data = [];
+    frames = [];
 
     now = Time.now();
     if(@time == 0)
@@ -173,23 +166,18 @@ class Channel
     end
 
     if(@tag)
-      data << @tag;
+      frames << @tag;
       @tag = nil;
     end
 
-    delta = now - @time;
-    @remaining += delta * @currentEntry.bitrate * 1000 / 8;
     begin
-      @cur[@frame..-1].each { |f|
-        data << f;
-        @remaining -= f.bytesize();
-        @frame     += 1;
-        break if(@remaining <= 0)
-      }
+      delta = now - @time;
+      new_frames, delta = @cur.play(delta);
+      frames += new_frames;
+      @time  += delta;
+      self.next() if(@time < now);
+    end while(@time < now)
 
-      self.next() if(@remaining > 0);
-    end while(@remaining > 0)
-    @time  = now;
-    data;
+    frames;
   end
 end
