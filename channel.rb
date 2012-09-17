@@ -53,7 +53,6 @@ class Channel
     @nb_songs	  = 0;
 
     log("Creating new channel #{name}");
-    set_plugin();
     set_nb_songs();
     fetchData();
   end
@@ -109,18 +108,6 @@ class Channel
     rsp;
   end
 
-  def set_plugin(name = "default")
-    begin
-      load "plugins/#{name}.rb"
-      extend Plugin
-      log("Loading default plugin for songs selection")
-      true;
-    rescue LoadError=> e
-      error("Error to load plugin #{name}", true, $error_file);
-      false;
-    end
-  end
- 
   def set_nb_songs()
     @nb_songs = @library.get_nb_songs;
   end
@@ -135,6 +122,19 @@ class Channel
   private
   def fetchData()
     begin
+      nb_preload = 11
+      nb_preload = 1 if(@library.get_nb_songs <=  15) # first we check the number of songs in the database leading to left_side (playlist : <s> s s s *c* s s s)
+      
+      delta     = [ nb_preload - @queue.size, 0 ].max;
+      delta.times {
+        # keep a file from being include twice in the next x songs
+        last_insert = @queue[-nb_preload..-1] || [];
+        begin
+          entry = @library.get_file().first;
+        end while last_insert.include?(entry.mid) # the space we look is (10 + preload) wide (30min) see above
+        pos = @queue.add(entry.mid);
+      }
+
       # move to the next entry
       mid = @queue[0];
       @currentEntry = @library.get_file(mid).first;
