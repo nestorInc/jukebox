@@ -5,8 +5,8 @@ require 'time'
 
 require 'display.rb'
 require 'playlist.rb'
-require 'mp3.rb'
 require 'id3.rb'
+require 'Mp3Stream'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
@@ -64,10 +64,8 @@ class Channel
 
   def cron()
     frames = sync();
-    frames.each { |t|
-      @connections.each { |s|
-        s.write(t.to_s());
-      }
+    @connections.each { |s|
+      s.write(frames);
     }
   end
 
@@ -142,7 +140,8 @@ class Channel
       @currentEntry = @library.get_file(mid).first;
       file = @currentEntry.dst;
       log("Fetching on channel #{@name}: #{file}");
-      @cur = Mp3File.new(file);
+      @start = @time;
+      @cur = Mp3Stream.new(file);
       tag = Id3.new();
       tag.title  = @currentEntry.title;
       tag.artist = @currentEntry.artist;
@@ -157,12 +156,13 @@ class Channel
   end
 
   def sync()
-    frames = [];
+    frames = "";
 
     now = Time.now();
     if(@time == 0)
       delta = 0.2;
       @time = now - delta;
+      self.next()
     end
 
     if(@tag)
@@ -171,12 +171,15 @@ class Channel
     end
 
     begin
-      delta = now - @time;
-      new_frames, delta = @cur.play(delta);
-      frames += new_frames;
-      @time  += delta;
-      self.next() if(@time < now);
-    end while(@time < now)
+      delta = now - @start;
+      buffer = @cur.read(delta);
+      if(buffer)
+        frames << buffer.data;
+        @time  += buffer.duration;
+      else
+        self.next()
+      end
+    end while(buffer == nil)
 
     frames;
   end
