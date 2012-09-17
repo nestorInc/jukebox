@@ -5,8 +5,8 @@ require 'time'
 
 require 'display.rb'
 require 'playlist.rb'
-require 'mp3.rb'
 require 'id3.rb'
+require 'Mp3Stream'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
@@ -53,7 +53,6 @@ class Channel
     @nb_songs	  = 0;
 
     log("Creating new channel #{name}");
-    set_plugin();
     set_nb_songs();
     fetchData();
   end
@@ -64,10 +63,8 @@ class Channel
 
   def cron()
     frames = sync();
-    frames.each { |t|
-      @connections.each { |s|
-        s.write(t.to_s());
-      }
+    @connections.each { |s|
+      s.write(frames);
     }
   end
 
@@ -111,18 +108,6 @@ class Channel
     rsp;
   end
 
-  def set_plugin(name = "default")
-    begin
-      load "plugins/#{name}.rb"
-      extend Plugin
-      log("Loading default plugin for songs selection")
-      true;
-    rescue LoadError=> e
-      error("Error to load plugin #{name}", true, $error_file);
-      false;
-    end
-  end
- 
   def set_nb_songs()
     @nb_songs = @library.get_nb_songs;
   end
@@ -137,12 +122,26 @@ class Channel
   private
   def fetchData()
     begin
+      nb_preload = 11
+      nb_preload = 1 if(@library.get_nb_songs <=  15) # first we check the number of songs in the database leading to left_side (playlist : <s> s s s *c* s s s)
+      
+      delta     = [ nb_preload - @queue.size, 0 ].max;
+      delta.times {
+        # keep a file from being include twice in the next x songs
+        last_insert = @queue[-nb_preload..-1] || [];
+        begin
+          entry = @library.get_file().first;
+        end while last_insert.include?(entry.mid) # the space we look is (10 + preload) wide (30min) see above
+        pos = @queue.add(entry.mid);
+      }
+
       # move to the next entry
       mid = @queue[0];
       @currentEntry = @library.get_file(mid).first;
       file = @currentEntry.dst;
       log("Fetching on channel #{@name}: #{file}");
-      @cur = Mp3File.new(file);
+      @start = @time;
+      @cur = Mp3Stream.new(file);
       tag = Id3.new();
       tag.title  = @currentEntry.title;
       tag.artist = @currentEntry.artist;
@@ -157,12 +156,13 @@ class Channel
   end
 
   def sync()
-    frames = [];
+    frames = "";
 
     now = Time.now();
     if(@time == 0)
       delta = 0.2;
       @time = now - delta;
+      self.next()
     end
 
     if(@tag)
@@ -171,12 +171,15 @@ class Channel
     end
 
     begin
-      delta = now - @time;
-      new_frames, delta = @cur.play(delta);
-      frames += new_frames;
-      @time  += delta;
-      self.next() if(@time < now);
-    end while(@time < now)
+      delta = now - @start;
+      buffer = @cur.read(delta);
+      if(buffer)
+        frames << buffer.data;
+        @time  += buffer.duration;
+      else
+        self.next()
+      end
+    end while(buffer == nil)
 
     frames;
   end

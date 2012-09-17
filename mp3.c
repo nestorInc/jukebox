@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "mp3.h"
 
@@ -323,7 +324,8 @@ static size_t id3_v1_decode(id3_v1_t **info, uint8_t *buf, size_t len)
        tag->tag[2] != 'G')
         return 0;
 
-    *info = tag;
+    if(info)
+        *info = tag;
 
     return sizeof(id3_v1_t);
 }
@@ -566,4 +568,95 @@ void mp3_info_dump(const mp3_info_t *info)
     printf("Track    %i/%i\n", info->track, info->nb_track);
     printf("Years    %i\n",    info->years);
     printf("Duration %f\n",    info->duration);
+}
+
+mp3_stream_t * mp3_stream_open(char *file)
+{
+    return mp3_stream_init(NULL, file);
+}
+
+mp3_stream_t * mp3_stream_init(mp3_stream_t *stream, char *file)
+{
+    int                  fd;
+    char                *buf;
+    struct stat          stat;
+    int                  frame_size;
+
+    assert(file);
+
+    fd = open(file, 0);
+    if(fd == -1)
+        return NULL;
+
+    fstat(fd, &stat);
+    buf = mmap(NULL, stat.st_size, PROT_READ, MAP_SHARED, fd, 0);
+
+    if(stream == NULL)
+        stream = (mp3_stream_t *) malloc(sizeof(mp3_stream_t));
+
+    stream->fd         = fd;
+    stream->buf        = buf;
+    stream->size       = stat.st_size;
+    stream->data_size  = stat.st_size;
+    stream->offset     = 0;
+    stream->pos        = 0.0;
+
+    frame_size = id3_v1_decode(NULL,
+                               (uint8_t *)buf + stat.st_size - sizeof(id3_v1_t),
+                               stat.st_size);
+    if(frame_size)
+        stream->data_size -= frame_size;
+
+    return stream;
+}
+
+void mp3_stream_close(mp3_stream_t *stream)
+{
+    assert(stream);
+
+    munmap(stream->buf, stream->size);
+    close(stream->fd);
+    free(stream);
+}
+
+int mp3_stream_read(mp3_stream_t *stream, float pos, mp3_buffer_t *buf)
+{
+    float                duration;
+    int                  frame_size;
+    mp3_frame_info_t     finfo;
+    char                *begin;
+
+    assert(stream);
+    assert(buf);
+
+    if(pos < stream->pos ||
+       stream->offset == stream->data_size)
+        return -1;
+
+    duration    = 0.0;
+    begin       = stream->buf + stream->offset;
+
+    while(stream->offset != stream->data_size && pos > stream->pos) {
+        frame_size = mp3_frame_decode(&finfo, (uint8_t*)stream->buf + stream->offset,
+                                      stream->data_size - stream->offset);
+        if(frame_size) {
+            stream->pos += finfo.duration;
+            duration    += finfo.duration;
+        } else {
+            frame_size = id3_v2_decode((uint8_t *)stream->buf + stream->offset,
+                                       stream->data_size - stream->offset, NULL, NULL);
+        }
+        if(frame_size == 0) {
+            frame_size = 1;
+            if(stream->pos == 0)
+                return -1;
+        }
+        stream->offset += frame_size;
+    }
+    
+    buf->buf            = begin;
+    buf->size           = stream->buf + stream->offset - begin;
+    buf->duration       = duration;
+
+    return 0;
 }

@@ -155,8 +155,6 @@ class JsonManager < HttpNode
       resp [:uploaded_files] = {
         :action_response        => action_response
       };
-    when "select_plugin"
-      ch.set_plugin(req["plugin_name"]);
     else
       error("Unknown action #{req["name"]}", true, $error_file);
       JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
