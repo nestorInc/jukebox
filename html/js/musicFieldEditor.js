@@ -91,7 +91,7 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 	// Update html
 	if(this.name == "genre")
 	{
-		for(var k = 0; k < genres.length ; ++k)
+		for(var k = 0, len = genres.length; k < len; ++k)
 		{
 			if(firstChildVal == genres[k][1])
 			{
@@ -204,7 +204,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 		select.id = "genre";
 		form.appendChild(select);
 
-		for(i = 0; i < genres.length; ++i)
+		for(i = 0, len = genres.length; i < len; ++i)
 		{
 			var option = document.createElement("option");
 			option.value = genres[i][1];

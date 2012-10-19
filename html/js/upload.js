@@ -294,7 +294,7 @@ var UploadTab = Class.create(Tab,
 		html_uploaded_files += '</td><td>';
 		if(genres.length >= obj.genre)
 		{
-			for(var i = 0; i < genres.length; ++i)
+			for(var i = 0, len = genres.length; i < len; ++i)
 			{
 				if(genres[i][1] == obj.genre)
 				{

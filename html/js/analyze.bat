@@ -14,13 +14,10 @@ SET ajaxmin="C:\Program Files (x86)\Microsoft\Microsoft Ajax Minifier\AjaxMin.ex
 
 %ajaxmin% -analyze genres.js 1>NUL 2>>%log%
 %ajaxmin% -analyze tabs.js ^
-	-global:$,Class ^
+	-global:$,Class,Element ^
 	1>NUL 2>>%log%
-%ajaxmin% -analyze library.js ^
-	-global:$,JSON,Droppables ^
-	1>NUL 2>>%log%%
 %ajaxmin% -analyze search.js ^
-	-global:$,$$,$R,Class,Control,Tab,TableKit,Draggable ^
+	-global:$,$$,$R,Class,Control,Tab,TableKit,Draggable,Element,genres ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze musicFieldEditor.js ^
 	-global:$,$$,Event,TableKit,UploadTab ^
@@ -29,19 +26,16 @@ SET ajaxmin="C:\Program Files (x86)\Microsoft\Microsoft Ajax Minifier\AjaxMin.ex
 	-global:$,$$,JSON,qq,Class,Tab,TableKit,MusicFieldEditor,Notifications ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze debug.js ^
-	-global:$,Class,Tab ^
+	-global:$,Class,Tab,JSON ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze customQueries.js ^
-	-global:$,Class,Tab ^
+	-global:$,Class,Tab,JSON,Notifications ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze notification.js ^
 	-global:$,Element,Effect,Event,Class,Tab ^
 	1>NUL 2>>%log%%
-%ajaxmin% -analyze StreamPlayer.js ^
-	-global:$,Sound,Event ^
-	1>NUL 2>>%log%%
 %ajaxmin% -analyze jukebox.js ^
-	-global:$,$$,Ajax,$F,Event,JSON,Droppables,Draggable,Tabs,SearchTab,UploadTab,DebugTab,Notifications,NotificationTab,CustomQueriesTab ^
+	-global:$,$$,Ajax,$F,Event,Element,JSON,Droppables,Draggable,Tabs,SearchTab,UploadTab,DebugTab,Notifications,NotificationTab,CustomQueriesTab,Sound,genres ^
 	1>NUL 2>>%log%%
 
 ECHO Analysis done in %log%

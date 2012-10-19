@@ -139,7 +139,7 @@ border: 0;
 padding: 0;
 vertical-align: top;
 }
-#btnJoinChannel{
+#btn_join_channel{
 height: 100%;
 vertical-align: top;
 }
@@ -152,7 +152,7 @@ width: 8px;
 background-color: green;
 }
 
-span#expand_collection_button, span#collapse_collection_button{
+span#expand_button, span#collapse_button{
 display: block;
 float: right;
 background-color: white;
@@ -196,7 +196,7 @@ filter: FlipH;
 left: 40px; /* 5 from border + 30 left image + 5 space */
 }
 
-p#player_song_title{
+p#player_song{
 position: absolute;
 left: 70px; /* 30 * 2 + 5 * 2 */
 height: 37px;
@@ -238,6 +238,7 @@ box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
 }
 #progressbar{
 height: 100%;
+width: 0; /* Not 100% at start */
 
 /* Côté gauche arrondi */
 /*-webkit-border-top-left-radius: 20px;
@@ -350,11 +351,11 @@ background: url("../images/icons/play_queue_move_bottom.png") no-repeat left top
 
 
 /* Music collection */
-#music_collection_wrapper{
+#music_wrapper{
 width: 620px; /* 900-280 */
 float: left;
 overflow: hidden;
-display: inline;
+display: none;
 font-size: 80%;
 }
 
@@ -366,7 +367,7 @@ border-bottom: 1px solid black;
 border-left: 1px solid black;
 }
 
-#btnSearch,#btnRefresh,#btnApplyPlugin{
+#btn_search,#btn_refresh,#btn_apply_plugin{
 height: 100%;
 }
 
@@ -592,12 +593,16 @@ span.tab_delete{
 background: url("../images/icons/play_queue_delete.png") no-repeat left top;
 }
 
-#stop_stream{
+span#collapse_button,#stop_stream{
 display: none; /* initial state */
 }
-#volumeBox input{
+#volume_box input{
 height: 100%;
 }
-#streamVolume{
+#stream_volume{
 width: 20px;
+}
+
+.search_table{
+width: 100%;
 }

@@ -1,6 +1,3 @@
-//Tool functions
-//Todo copy it into library
-
 function sort_unique(arr)
 {
 	arr = arr.sort(function(a, b)
@@ -18,178 +15,70 @@ function sort_unique(arr)
 	return ret;
 }
 
-
-function generatePagesLinks(identifier, currentPage, currentSelection, nbPages)
+function FormatTime(t) // TODO: remove this duplicate (jukebox.js)
 {
-	var i,
-		pages = [];
-	// TODO put this constant in a javascript config file
-	var threshold = 5;
-	var result = '';
-
-	// If nb pages to display > 25 we show only first pages, current selection page, and last pages links
-	if(nbPages > 25)
+	var str = null;
+	t = Number(t);
+	if(!isNaN(t))
 	{
-		// TODO put the + 2 in a javascript config file
-		for(i = 1; i < Math.ceil(threshold) + 2; ++i)
-		{
-			if(i > 0 && i <= nbPages)
-			{
-				pages.push(i);
-			}
-		}
+		var h = Math.floor(t / 3600),
+			m = Math.floor(t % 3600 / 60),
+			s = Math.floor(t % 3600 % 60);
+		str = ((h > 0 ? h + ":" : "") + (m > 0 ? (h > 0 && m < 10 ? "0" : "") + m + ":" : "0:") + (s < 10 ? "0" : "") + s);
 	}
-	else
-	{
-		for(i = 1; i <= nbPages; ++i)
-		{
-			pages.push(i);
-		}
-	}
-
-	// If we want to add focus on another variable we juste to add an entry in this array
-	var focusElements = [];
-	focusElements[0] = currentPage;
-	//Just uncomment the next line to show 3 pages links around slider selection page
-	// focusElements[1] = currentSelection;
-	pages.push(currentSelection);
-	// Hide too far pages algorithm
-	for(var k = 0; k < focusElements.length; ++k)
-	{
-		var currentCount = Math.ceil(threshold / 2);
-		for(i = focusElements[k] - Math.ceil(threshold / 2); i < focusElements[k]; ++i)
-		{
-			if(i > 0 && i <= nbPages)
-			{
-				currentCount--;
-				pages.push(i);
-			}
-		}
-
-		pages.push(focusElements[k]);
-		var currentCount2 = Math.ceil(threshold / 2);
-		for(i = focusElements[k] + 1; i < focusElements[k] + Math.ceil(threshold / 2) + 1; ++i)
-		{
-			if(i > 0 && i <= nbPages)
-			{
-				currentCount2--;
-				pages.push(i);
-			}
-		}
-
-		// Add missed before pages at the end of the array
-		if(currentCount > 0)
-		{
-			for(i = focusElements[k] + Math.ceil(threshold / 2); i < focusElements[k] + Math.ceil(threshold); ++i)
-			{
-				if(i > 0 && i <= nbPages)
-				{
-					pages.push(i);
-				}
-			}
-		}
-		else if(currentCount2 > 0)
-		{
-			for(i = focusElements[k] - Math.ceil(threshold); i < focusElements[k] + Math.ceil(threshold / 2); ++i)
-			{
-				if(i > 0 && i <= nbPages)
-				{
-					pages.push(i);
-				}
-			}
-		}
-	}
-
-	for(i = nbPages - Math.ceil(threshold); i <= nbPages; ++i)
-	{
-		if(i > 0 && i <= nbPages)
-		{
-			pages.push(i);
-		}
-	}
-	pages = sort_unique(pages);
-	var lastdisplayedValue = null;
-	for(i = 0; i < pages.length; ++i)
-	{
-		if(lastdisplayedValue != null && lastdisplayedValue != pages[i] - 1)
-		{
-			result += ".....";
-		}
-		result += '<a href="javascript:void(0)" onclick="javascript:tabs.getTabFromUniqueId( ' + identifier + ').goToPage(' + pages[i] + ');" class="';
-
-		if(pages[i] == currentPage)
-		{
-			result += "slider_link_current_page";
-		}
-		else if(pages[i] == currentSelection)
-		{
-			result += "slider_link_current_selection";
-		}
-		else
-		{
-			result += "slider_link";
-		}
-		result += '">' + pages[i] + '</a> ';
-		lastdisplayedValue = pages[i];
-	}
-
-	return result;
+	return str;
 }
+
+//==================================================
 
 var SearchTab = Class.create(Tab,
 {
-	initialize: function(server_results)
+	initialize: function(jukebox, server_results)
 	{
-		// Search parameters
+		this.reloadControllers = true;
+		this.pages = [];
+		this.sliders = [];
+		this.tableKit = null;
+
+		this.jukebox = jukebox;
 		this.identifier = server_results.identifier;
 		this.updateNewSearchInformations(server_results);
-
-		this.reloadControlers = true;
-		this.pages = [];
-		this.resultsSlider = null;
-
-		this.sliders = [];
-
-		this.tableKit = null;
 	},
 
 	updateNewSearchInformations: function(server_results)
 	{
-		// tab name 
-		if(server_results.search_value == '')
+		// Tab name
+		var search = server_results.search_value,
+			field = server_results.search_field;
+		if(search == '')
 		{
-			this.name = "Library";
+			this.name = 'Library';
 		}
-		else if(server_results.search_comparison == 'equal' && server_results.search_field == 'artist')
+		else if(server_results.search_comparison == 'equal')
 		{
-			this.name = server_results.search_value;
-		}
-		else if(server_results.search_comparison == 'equal' && server_results.search_field == 'album')
-		{
-			if(server_results.results.length > 0)
+			if(field == 'artist')
 			{
-				// Caution it could generate errors
-				this.name = server_results.results[0].artist + " - " + server_results.search_value;
+				this.name = 'Artist: ' + search;
 			}
-			else
+			else if(field == 'album')
 			{
-				this.name = server_results.search_value;
+				this.name = 'Album: ' + search;
 			}
-		}
-		else if(server_results.search_comparison == 'equal' && server_results.search_field == 'genre')
-		{
-			for(var i = 0; i < genres.length; ++i)
+			else if(field == 'genre')
 			{
-				if(genres[i][1] == server_results.search_value)
+				for(var i = 0, len = genres.length; i < len; ++i)
 				{
-					this.name = "Genre:" + genres[i][0];
-					break;
+					if(genres[i][1] == search)
+					{
+						this.name = 'Genre: ' + genres[i][0];
+						break;
+					}
 				}
 			}
 		}
 		else
 		{
-			this.name = server_results.search_value;
+			this.name = search;
 		}
 
 		this.select_fields = server_results.select_fields;
@@ -218,39 +107,9 @@ var SearchTab = Class.create(Tab,
 		this.locked = [];
 	},
 
-	// This function is used to add all pages search results in the playqueue
-	// TODO add playqueue identifier to parameters
-	addSearchToPlayQueue: function(play_queue_position)
-	{
-		// Create the JSon request
-		var action = {};
-		action.name = "add_search_to_play_queue";
-		action.play_queue_position = play_queue_position;
-		action.select_fields = "mid";
-		action.search_value = this.search_value;
-		action.search_comparison = this.search_comparison
-		action.search_field = this.search_field;
-		action.order_by = this.order_by;
-
-		if("like" == action.search_comparison)
-		{
-			action.first_result = this.first_result;
-			action.result_count = this.result_count;
-		}
-		else
-		{
-			action.first_result = 0;
-			action.result_count = null;
-		}
-
-		// Send the query to the server
-		query.action = action;
-		updateJukebox();
-	},
-
 	goToPage: function(page)
 	{
-		doSearch((page - 1) * this.result_count,
+		this.jukebox.search((page - 1) * this.result_count,
 			this.identifier,
 			this.select_fields,
 			this.search_value,
@@ -262,7 +121,7 @@ var SearchTab = Class.create(Tab,
 
 	sort: function(order_by)
 	{
-		doSearch(this.page,
+		this.jukebox.search(this.page,
 			this.identifier,
 			this.select_fields,
 			this.search_value,
@@ -274,41 +133,35 @@ var SearchTab = Class.create(Tab,
 
 	updateContent: function()
 	{
-		if(true == this.reloadControlers)
+		if(this.reloadControllers)
 		{
-			// Save in the current instance the targeted tags and needed informations
+			// Clean
 			$$('collection_pagelist_' + this.identifier).each(function(s)
 			{
 				s.remove();
 			});
 
-			if(null != $('collection_content_' + this.identifier))
+			var collection_content = $('collection_content_' + this.identifier);
+			if(collection_content)
 			{
-				$('collection_content_' + this.identifier).remove();
+				collection_content.remove();
 			}
 
-			// pre-init html structure
+			// Pre-init html structure
 			var search_page = '<br/>' +
-			'<div class="collection_pagelist"' +
-			' name="collection_pagelist_' + this.identifier + '"></div>' +
+			'<div class="collection_pagelist" name="collection_pagelist_' + this.identifier + '"></div>' +
 			'<div id="collection_content_' + this.identifier + '"></div>' +
-			'<div class="collection_pagelist"' +
-			' name="collection_pagelist_' + this.identifier + '"></div>';
+			'<div class="collection_pagelist" name="collection_pagelist_' + this.identifier + '"></div>';
 			$('tabContent_' + this.identifier).update(search_page);
 
 			// Display sliders and links and init sliders behvior
 			this.initAndDisplaySearchControllers();
-			this.reloadControlers = false;
+			this.reloadControllers = false;
 		}
 		else
 		{
-			var links = generatePagesLinks(this.identifier, this.current_page, this.current_page, this.page_count);
-
 			// Refresh displayed pages
-			$$('[name=page_links_' + this.identifier + ']').each(function(s)
-			{
-				s.update(links);
-			});
+			this.generatePagesLinks();
 
 			// Refresh slider position
 			for(var k in this.sliders)
@@ -324,32 +177,32 @@ var SearchTab = Class.create(Tab,
 
 		// Display search results and init dragabble items
 		this.initAndDisplaySearchResults();
-
 	},
 
 	// Update sliders and pages
 	initAndDisplaySearchControllers: function()
 	{
-		var pagelist_html = '';
-
-		// Only display slider and pages results links if nb pages > 1
-		if(this.total_results > 0)
-		{
-			pagelist_html += '<p>'
-			if(this.page_count > 1)
-			{
-				pagelist_html += '<div name="results_slider_' + this.getIdentifier() + '"';
-				pagelist_html += ' class="slider" style="width:580px;"><div class="handle"></div></div>';
-				pagelist_html += '<div class="page_links" name="page_links_' + this.getIdentifier() + '"></div>';
-			}
-			pagelist_html += '</p>';
-		}
+		var tabId = this.identifier;
 
 		// Display sliders and links
-		$$('[name=collection_pagelist_' + this.getIdentifier() + ']').each(function(s)
+		var pageListCollection = $$('[name=collection_pagelist_' + tabId + ']');
+		pageListCollection.each(function(s)
 		{
-			s.update(pagelist_html);
+			s.update(); // empty
 		});
+
+		// Only display slider and pages results links if nb pages > 1
+		if(this.total_results > 0 && this.page_count > 1)
+		{
+			var slider = '' +
+			'<div name="results_slider_' + tabId + '" class="slider">' +
+				'<div class="handle"></div>' +
+			'</div>';
+			var links = '<div class="page_links" name="page_links_' + tabId + '"></div>';
+
+			pageListCollection[0].update('<p>' + slider + links + '</p>');
+			pageListCollection[1].update('<p>' + links + slider + '</p>');
+		}
 
 		// Fill the pages array used by sliders
 		for(var k = 0; k < this.page_count; ++k)
@@ -358,34 +211,28 @@ var SearchTab = Class.create(Tab,
 		}
 
 		// Init the link list
-		var links = generatePagesLinks(this.identifier, this.current_page, this.current_page, this.page_count);
-		$$('[name=page_links_' + this.getIdentifier() + ']').each(function(s)
-		{
-			s.update(links);
-		});
+		this.generatePagesLinks();
 
 		// Init each sliders behavior
-		this.resultsSlider = document.getElementsByName('results_slider_' + this.getIdentifier());
-		var tabId = this.getIdentifier();
-		for(var i = 0; i < this.resultsSlider.length; i++)
+		var resultsSlider = $$('[name=results_slider_' + tabId + ']'),
+			that = this,
+			i = -1;
+		resultsSlider.each(function(slider)
 		{
-			var currentSlider = new Control.Slider(this.resultsSlider[i].down('.handle'), this.resultsSlider[i],
+			var currentSlider = new Control.Slider(slider.down('.handle'), slider,
 			{
-				range: $R(1, tabs.getTabFromUniqueId(tabId).pages.length),
-				values: tabs.getTabFromUniqueId(tabId).pages,
-				sliderValue: tabs.getTabFromUniqueId(tabId).current_page || 1,
-				id: i,
+				range: $R(1, that.pages.length),
+				values: that.pages,
+				sliderValue: that.current_page || 1,
+				id: i++,
 				identifier: tabId,
 				timeout: null,
 				lastSelectedValue: null,
-				onSlide: function(values)
+				onSlide: function(value)
 				{
-					var currentTab = tabs.getTabFromUniqueId(this.identifier);
-					$$('[name=page_links_' + this.identifier + ']').each(function(s)
-					{
-						s.update(generatePagesLinks(this.identifier, currentTab.current_page, values, currentTab.page_count));
-					});
+					that.generatePagesLinks(value);
 
+					var currentTab = that;
 					for(var k in currentTab.sliders)
 					{
 						if(k != this.id)
@@ -395,289 +242,244 @@ var SearchTab = Class.create(Tab,
 							if(typeof currentTab.sliders[k].setValue === 'function')
 							{
 								// Caution this instruction fire onChange slider event
-								currentTab.sliders[k].setValue(values);
+								currentTab.sliders[k].setValue(value);
 							}
 							currentTab.locked[k] = false;
 						}
 					}
 
 					// Auto page selection if stuck on a page
-					if(this.lastSelectedValue != values)
+					if(this.lastSelectedValue != value)
 					{
 						clearTimeout(this.timeout);
-						this.timeout = setTimeout("tabs.getTabFromUniqueId('" + this.identifier + "').goToPage(" + values + ");", 400);
+						this.timeout = setTimeout(function()
+						{
+							that.goToPage(value);
+						}, 400);
 					}
 
-					this.lastSelectedValue = values;
+					this.lastSelectedValue = value;
 				},
-				onChange: function(values)
+				onChange: function(value)
 				{
 					// Because we use multi slider we don't want to fire onChange event when sliding the other slider
-					var currentTab = tabs.getTabFromUniqueId(this.identifier);
+					var currentTab = that;
 					if(!currentTab.locked[this.id])
 					{
 						clearTimeout(this.timeout);
-						if(currentTab.current_page != values)
+						if(currentTab.current_page != value)
 						{
-							tabs.getTabFromUniqueId(this.identifier).goToPage(values);
+							currentTab.goToPage(value);
 						}
 					}
 				}
 			});
-			this.sliders.push(currentSlider);
-		}
+			that.sliders.push(currentSlider);
+		});
 	},
 
 	declareTableHeader: function(cellTag)
 	{
-		var songlist_html = '<tr>';
-		songlist_html += '<' + cellTag + ' id="artist" ';
-		if(this.order_by.split(",")[0].indexOf("artist") != -1)
-		{
-			if(this.order_by.split(",")[0].indexOf("DESC") == -1)
-			{
-				songlist_html += 'class="sortcol sortasc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'artist COLLATE NOCASE DESC, album COLLATE NOCASE ASC, track DESC, title COLLATE NOCASE DESC\');"';
-			}
-			else
-			{
-				songlist_html += 'class="sortcol sortdesc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'artist COLLATE NOCASE ASC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
-			}
-		}
-		else
-		{
-			songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-			songlist_html += '.sort( \'artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
-		}
-		songlist_html += '>Artist</' + cellTag + '>';
+		var firstSort = this.order_by.split(",")[0],
+			J = this.jukebox,
+			tr = new Element('tr'),
+			sql;
 
-		songlist_html += '<' + cellTag + ' id="album" ';
-		if(this.order_by.split(",")[0].indexOf("album") != -1)
-		{
-			if(this.order_by.split(",")[0].indexOf("DESC") == -1)
-			{
-				songlist_html += 'class="sortcol sortasc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
-			}
-			else
-			{
-				songlist_html += 'class="sortcol sortdesc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'album COLLATE NOCASE ASC, track DESC, title COLLATE NOCASE DESC\');"';
-			}
-		}
-		else
-		{
-			songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-			songlist_html += '.sort( \'album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
-		}
-		songlist_html += '>Album</' + cellTag + '>';
+		//-----
+		
+		sql = 'artist COLLATE NOCASE ${ORDER}, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
+		addColumn('artist', sql, 'Artist');
 
+		sql = 'album COLLATE NOCASE ${ORDER}, track DESC, title COLLATE NOCASE DESC';
+		addColumn('album', sql, 'Album');
 
-		songlist_html += '<' + cellTag + ' id="title" ';
-		if(this.order_by.split(",")[0].indexOf("title") != -1)
-		{
-			if(this.order_by.split(",")[0].indexOf("DESC") == -1)
-			{
-				songlist_html += 'class="sortcol sortasc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \' title COLLATE NOCASE DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC\');"';
-			}
-			else
-			{
-				songlist_html += 'class="sortcol sortdesc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'title COLLATE NOCASE ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC\');"';
-			}
-		}
-		else
-		{
-			songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-			songlist_html += '.sort( \'title COLLATE NOCASE DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC\');"';
-		}
-		songlist_html += '>Title</' + cellTag + '>';
+		sql = 'title COLLATE NOCASE ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC';
+		addColumn('title', sql, 'Title');
+		
+		sql = 'track ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC';
+		addColumn('track', sql, 'Track');
+		
+		sql = 'genre ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
+		addColumn('genre', sql, 'Genre');
 
-		songlist_html += '<' + cellTag + ' id="track" ';
-		if(this.order_by.split(",")[0].indexOf("track") != -1)
+		sql = 'duration ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
+		addColumn('duration', sql, 'Duration');
+		
+		var that = this;
+		function addColumn(column, sql, text)
 		{
-			if(this.order_by.split(",")[0].indexOf("DESC") == -1)
+			var cell = new Element(cellTag, {id: "duration"}).update(text);
+
+			var order = "DESC";
+			if(firstSort.indexOf(column) != -1)
 			{
-				songlist_html += 'class="sortcol sortasc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'track DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC\');"';
+				if(firstSort.indexOf(order) == -1)
+				{
+					cell.className = "sortcol sortasc";
+				}
+				else
+				{
+					cell.className = "sortcol sortdesc";
+					order = "ASC";
+				}
 			}
-			else
+			sql = sql.replace('${ORDER}', order);
+			cell.on("click", function()
 			{
-				songlist_html += 'class="sortcol sortdesc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'track ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC \');"';
-			}
+				that.sort(sql);
+			});
+
+			tr.insert(cell);
 		}
-		else
+
+		//-----
+		// Controls
+		
+		function funcRandom()
 		{
-			songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-			songlist_html += '.sort( \'track DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC\');"';
+			J.addSearchToPlayQueueRandom(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
 		}
-		songlist_html += '>Track</' + cellTag + '>';
-
-		songlist_html += '<' + cellTag + ' id="genre" ';
-		if(this.order_by.split(",")[0].indexOf("genre") != -1)
+		function funcTop()
 		{
-			if(this.order_by.split(",")[0].indexOf("DESC") == -1)
-			{
-				songlist_html += 'class="sortcol sortasc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'genre DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
-			}
-			else
-			{
-				songlist_html += 'class="sortcol sortdesc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'genre ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC,title COLLATE NOCASE DESC \');"';
-			}
+			J.addSearchToPlayQueueTop(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
 		}
-		else
+		function funcBottom()
 		{
-			songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-			songlist_html += '.sort( \'genre DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
+			J.addSearchToPlayQueueBottom(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
 		}
-		songlist_html += '>Genre</' + cellTag + '>';
+		var cell = this.createControlsCell(cellTag, funcRandom, funcTop, funcBottom);
+		cell.writeAttribute('id', 'actions');
+		tr.insert(cell);
 
-		songlist_html += '<' + cellTag + ' id="duration" '
-		if(this.order_by.split(",")[0].indexOf("duration") != -1)
+		return tr;
+	},
+
+	// Utility to create the 3 buttons in the last cell of each row (standards rows and header row of the table)
+	createControlsCell: function(cellTag, funcRandom, funcTop, funcBottom)
+	{
+		var cell = new Element(cellTag),
+			addRandom = new Element('a').update('<span class="add_to_play_queue_rand"></span>'),
+			addTop = new Element('a').update('<span class="add_to_play_queue_top"></span>'),
+			addBottom = new Element('a').update('<span class="add_to_play_queue_bottom"></span>');
+
+		cell.insert(addTop).insert(
 		{
-			if(this.order_by.split(",")[0].indexOf("DESC") == -1)
-			{
-				songlist_html += 'class="sortcol sortasc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'duration DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
-			}
-			else
-			{
-				songlist_html += 'class="sortcol sortdesc" ';
-				songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-				songlist_html += '.sort( \'duration ASC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC,title COLLATE NOCASE DESC \');"';
-			}
-		}
-		else
-		{
-			songlist_html += ' onclick="javascript:tabs.getTabFromUniqueId( \'' + this.identifier + '\')';
-			songlist_html += '.sort( \'duration DESC, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC\');"';
-		}
-		songlist_html += '>Duration</' + cellTag + '>';
+			top: addRandom,
+			bottom: addBottom
+		});
 
-		songlist_html += '<' + cellTag + ' id="actions">';
-		songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
-		songlist_html += '.addSearchToPlayQueue(\'rand\');return false;"';
-		songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_rand"></span></a>';
+		addRandom.on('click', funcRandom);
+		addTop.on('click', funcTop);
+		addBottom.on('click', funcBottom);
 
-		// Add research to playqueue on tail
-		songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
-		songlist_html += '.addSearchToPlayQueue(\'tail\');return false;"';
-		songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_bottom"></span></a>';
-
-		// Add research page song in the head playqueue
-		songlist_html += '<a onclick="tabs.getTabFromUniqueId(\'' + this.identifier + '\')';
-		songlist_html += '.addSearchToPlayQueue(\'head\');return false;"';
-		songlist_html += 'href="javascript:void(0)"><span class="add_to_play_queue_top"></span></a>';
-
-		songlist_html += '</' + cellTag + '>';
-		songlist_html += '</tr>';
-		return songlist_html;
+		return cell;
 	},
 
 	initAndDisplaySearchResults: function()
 	{
-		var songcell_html = '',
-			songlist_html = '',
-			addToPlayQueuemids = [],
-			add_page_results = '',
-			librarySongs = null,
-			identifier = this.getIdentifier(),
+		var tbody = new Element('tbody'),
 			count = this.result_count,
-			i = 0,
+			$content = $('collection_content_' + this.identifier),
+			k,
+			len,
 			isOdd = true,
-			style = null;
+			style,
+			J = this.jukebox;
+		
+		function doSearch(search, category)
+		{
+			J.search(1, null, null, search.toString(), 'equal', category, 'artist,album,track,title', count, true);
+		}
+		function createLink(text, search, category)
+		{
+			var item = new Element('a', {href: 'javascript:void(0)'}).update(text);
+			item.on('click', function()
+			{
+				doSearch(search, category);
+			});
+			return item;
+		}
+
 		if(this.total_results > 0)
 		{
-			librarySongs = this.server_results;
-
-			librarySongs.each(function(s)
+			var that = this,
+				id = this.identifier,
+				i = 0;
+			this.server_results.each(function(s)
 			{
-				addToPlayQueuemids.push(s.mid);
-				if(isOdd)
-				{
-					style = "rowodd";
-				}
-				else
-				{
-					style = "roweven";
-				}
+				style = isOdd ? "rowodd" : "roweven";
 				isOdd = !isOdd;
-				songcell_html += '' +
-				'<tr id="library_song_' + identifier + '_' + i + '" class="library_draggable ' + style + '">' +
-					'<td>' +
-						'<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'' +
-					s.artist.replace(/'/g, "\\'") + '\', \'equal\',\'artist\',\'artist,album, track, title\',' + count + ' )">' +
-					s.artist + '</a>' +
-					'</td>' +
-					'<td>' +
-						'<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'' +
-					s.album.replace(/'/g, "\\'") + '\', \'equal\',\'album\',\'artist,album, track, title\',' + count + ' )">' +
-					s.album + '</a>' +
-					'</td>' +
-					'<td>' + s.title + '</td>' +
-					'<td>' + s.track + '</td>' +
-					'<td>';
-				for(var j = 0; j < genres.length; ++j)
+
+				var artist = createLink(s.artist, s.artist, 'artist'),
+					album = createLink(s.album, s.album, 'album');
+
+				var tds =
+				[
+					new Element('td').insert(artist),
+					new Element('td').insert(album),
+					new Element('td').update(s.title),
+					new Element('td').update(s.track),
+					new Element('td'), // genre
+					new Element('td').update(FormatTime(s.duration))
+				];
+
+				for(k = 0, len = genres.length; k < len; ++k)
 				{
-					if(s.genre == genres[j][1])
+					if(s.genre == genres[k][1])
 					{
-						songcell_html += '<a href="javascript:void(0)" onclick="doSearch( 1, null, null,\'';
-						songcell_html += s.genre + '\', \'equal\',\'genre\',\'artist,album, track, title\',' + count + ' )">';
-						songcell_html += genres[j][0] + '</a>';
+						var genre = createLink(genres[k][0], s.genre, 'genre');
+						tds[4].insert(genre);
 						break;
 					}
 				}
-				songcell_html += '</td>' +
-					'<td>' + FormatTime(s.duration) + '</td>' +
-					'<td>' +
-						'<a href="javascript:void(0)" onclick="addToPlayQueueRandom(' + s.mid + ');return false;">' +
-							'<span class="add_to_play_queue_rand"></span>' +
-						'</a>' +
-						'<a href="javascript:void(0)" onclick="addToPlayQueue(' + s.mid + ',0);return false;">' +
-							'<span class="add_to_play_queue_top"></span>' +
-						'</a>' +
-						'<a href="javascript:void(0)" onclick="addToPlayQueueBottom(' + s.mid + ');return false;">' +
-							'<span class="add_to_play_queue_bottom"></span>' +
-						'</a>' +
-					'</td>' +
-				'</tr>';
 
-				i++;
+				//---
+				// Controls
+
+				function funcRandom()
+				{
+					J.addToPlayQueueRandom(s.mid);
+				}
+				function funcTop()
+				{
+					J.addToPlayQueueTop(s.mid);
+				}
+				function funcBottom()
+				{
+					J.addToPlayQueueBottom(s.mid);
+				}
+				var controls = that.createControlsCell('td', funcRandom, funcTop, funcBottom);
+				tds.push(controls);
+
+				//---
+
+				var tr = new Element('tr',
+				{
+					id: 'library_song_' + id + '_' + i++
+				}).addClassName('library_draggable ' + style);
+
+				for(k = 0; k < tds.length; ++k)
+				{
+					tr.insert(tds[k]);
+				}
+				tbody.insert(tr);
 			});
 
-			var temp = new Date().getTime();
-			songlist_html = add_page_results +
-			'<table id="results_filelist_' + this.getIdentifier() + '_' + temp + '" class="resizable">' +
-			'<thead>' +
-				this.declareTableHeader('th') +
-			'</thead>' +
-			'<tbody>' +
-				songcell_html +
-			'</tbody>' +
-			'<tfoot>' +
-				this.declareTableHeader('td') +
-			'</tfoot>' +
-			'</table>' +
-			add_page_results;
+			// Compute the table
+			var temp = new Date().getTime(),
+				tableid = 'results_filelist_' + this.identifier + '_' + temp,
+				table = new Element('table', {id: tableid}).addClassName('resizable').addClassName('search_table');
 
-			$('collection_content_' + this.getIdentifier()).update(songlist_html);
-			this.tableKit = new TableKit('results_filelist_' + this.getIdentifier() + '_' + temp,
+			table.insert(tbody).insert(
+			{
+				top: new Element('thead').insert(this.declareTableHeader('th')),
+				bottom: new Element('tfoot').insert(this.declareTableHeader('td'))
+			});
+
+			// Replace the DOM
+			$content.update(table);
+
+			this.tableKit = new TableKit(tableid,
 			{
 				'sortable': false,
 				'editable': false,
@@ -685,19 +487,17 @@ var SearchTab = Class.create(Tab,
 				'keepWidth': true
 			});
 		}
-		else
+		else // this.total_results == 0
 		{
-			// Todo display no results more beautifully
-			songlist_html += "no results found";
-			$('collection_content_' + this.getIdentifier()).update(songlist_html);
+			$content.update("No results found");
 		}
 
-		// Create all draggables, once update is done.
-		if(null != librarySongs)
+		// Create all draggables, once update is done
+		if(this.server_results != null)
 		{
-			for(var k = 0; k < librarySongs.length; k++)
+			for(k = 0; k < this.server_results.length; k++)
 			{
-				new Draggable('library_song_' + this.getIdentifier() + '_' + k,
+				new Draggable('library_song_' + this.identifier + '_' + k,
 				{
 					scroll: window,
 					ghosting: true,
@@ -708,5 +508,152 @@ var SearchTab = Class.create(Tab,
 				});
 			}
 		}
+	},
+
+	generatePagesLinks: function(currentSelection)
+	{
+		var i,
+			len,
+			pages = [],
+			threshold = 5, // TODO put this constant in a javascript config file
+			currentPage = this.current_page,
+			nbPages = this.page_count;
+
+		if(typeof currentSelection == "undefined")
+		{
+			currentSelection = this.current_page;
+		}
+
+		// If nb pages to display > 25 we show only first pages, current selection page, and last pages links
+		if(nbPages > 25)
+		{
+			// TODO put the + 2 in a javascript config file
+			for(i = 1, len = Math.ceil(threshold) + 2; i < len; ++i)
+			{
+				if(i > 0 && i <= nbPages)
+				{
+					pages.push(i);
+				}
+			}
+		}
+		else
+		{
+			for(i = 1; i <= nbPages; ++i)
+			{
+				pages.push(i);
+			}
+		}
+
+		// If we want to add focus on another variable we just need to add an entry in this array
+		var focusElements = [];
+		focusElements[0] = currentPage;
+		
+		// Uncomment the next line to show 3 pages links around slider selection page
+		// focusElements[1] = currentSelection;
+		
+		pages.push(currentSelection);
+		
+		// Hide too far pages algorithm
+		for(var k = 0; k < focusElements.length; ++k)
+		{
+			var currentCount = Math.ceil(threshold / 2),
+				currentCount2 = currentCount;
+
+			for(i = focusElements[k] - currentCount; i < focusElements[k]; ++i)
+			{
+				if(i > 0 && i <= nbPages)
+				{
+					currentCount--;
+					pages.push(i);
+				}
+			}
+
+			pages.push(focusElements[k]);
+
+			for(i = focusElements[k] + 1, len = focusElements[k] + Math.ceil(threshold / 2) + 1; i < len; ++i)
+			{
+				if(i > 0 && i <= nbPages)
+				{
+					currentCount2--;
+					pages.push(i);
+				}
+			}
+
+			// Add missed before pages at the end of the array
+			if(currentCount > 0)
+			{
+				for(i = focusElements[k] + Math.ceil(threshold / 2), len = focusElements[k] + Math.ceil(threshold); i < len; ++i)
+				{
+					if(i > 0 && i <= nbPages)
+					{
+						pages.push(i);
+					}
+				}
+			}
+			else if(currentCount2 > 0)
+			{
+				for(i = focusElements[k] - Math.ceil(threshold), len = focusElements[k] + Math.ceil(threshold / 2); i < len; ++i)
+				{
+					if(i > 0 && i <= nbPages)
+					{
+						pages.push(i);
+					}
+				}
+			}
+		}
+
+		for(i = nbPages - Math.ceil(threshold); i <= nbPages; ++i)
+		{
+			if(i > 0 && i <= nbPages)
+			{
+				pages.push(i);
+			}
+		}
+
+		pages = sort_unique(pages);
+
+		var tab = this;
+		function createLink(num, className)
+		{
+			var item = new Element('a', {href: 'javascript:void(0)'}).addClassName(className).update(num);
+			item.on('click', function()
+			{
+				tab.goToPage(num);
+			});
+			return item;
+		}
+
+		$$('[name=page_links_' + this.identifier + ']').each(function(s)
+		{
+			s.update(); // Remove all childnodes
+
+			var lastdisplayedValue = null;
+			for(i = 0; i < pages.length; ++i)
+			{
+				if(lastdisplayedValue != null && lastdisplayedValue != pages[i] - 1)
+				{
+					s.insert(" ..... ");
+				}
+
+				var className;
+				if(pages[i] == currentPage)
+				{
+					className = "slider_link_current_page";
+				}
+				else if(pages[i] == currentSelection)
+				{
+					className = "slider_link_current_selection";
+				}
+				else
+				{
+					className = "slider_link";
+				}
+
+				var link = createLink(pages[i], className);
+				s.insert(link);
+
+				lastdisplayedValue = pages[i];
+			}
+		});
 	}
 });

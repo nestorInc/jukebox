@@ -172,7 +172,7 @@ this.NotificationTab = Class.create(Tab,
 
 		function addButton(level)
 		{
-			var btn = new Element('input', {'type': 'button', value: 'Test ' + level});
+			var btn = new Element('input', {type: 'button', value: 'Test ' + level});
 			btn.on("click", function()
 			{
 				Notifications.Display(LEVELS[level], "Notification: " + level);

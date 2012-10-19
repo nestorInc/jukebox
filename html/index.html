@@ -16,17 +16,16 @@
 <div role="main" id="page_wrapper">
 
 	<div id="header">
-		Canal : <input type="text" id="channel" /><input type="button" id="btnJoinChannel" value="Rejoindre" />
-		<span id="expand_collection_button">&gt;</span>
-		<span id="collapse_collection_button">&lt;</span>
+		Canal : <input type="text" id="channel" /><input type="button" id="btn_join_channel" value="Rejoindre" />
+		<span id="expand_button">&gt;</span>
+		<span id="collapse_button">&lt;</span>
 		<span id="activity_monitor"></span>
 	</div>
 	
 	<div id="player">
 		<div id="player_controls">
 			<span id="previous_button"></span><span id="next_button"></span>
-			<p id="player_song_title"></p>
-
+			<p id="player_song"><a id="player_song_artist" href="#"></a> - <a id="player_song_album" href="#"></a> - <span id="player_song_title"></span></p>
 			<div id="progressbar_wrapper">
 				<div id="progressbar"></div>
 				<p id="player_song_time"></p>
@@ -38,7 +37,7 @@
 		</div>
 	</div>
 	
-	<div id="music_collection_wrapper">
+	<div id="music_wrapper">
 		<div id="tab_links">
 			<a id="tab_upload">Upload</a>
 			<a id="tab_query">Query</a>
@@ -66,25 +65,26 @@
 				<option value="90">90</option>
 				<option value="100">100</option>
 			</select> 
-			<input id="btnSearch" type="button" value="Rechercher" />
+			<input id="btn_search" type="button" value="Rechercher" />
 		</div>
 		<div id="tabsHeader"></div>
 		<div id="tabscontent"></div>
 	</div>
 	
 	<div id="footer">
-		<input id="btnRefresh" type="button" value="Refresh" />
+		<input id="btn_refresh" type="button" value="Refresh" />
 		<input type="checkbox" value="autorefresh" id="cb_autorefresh" checked="checked" /><label for="cb_autorefresh"> Autorefresh</label>
 		<br />
 		Plugin : <input type="text" id="music_selection_plugin" value="default" style="width: 100px;" />
-		<input id="btnApplyPlugin" type="button" value="Appliquer" />
+		<input id="btn_apply_plugin" type="button" value="Appliquer" />
 	</div>
 	
-	<a id="play_stream">Play stream</a>
-	<a id="stop_stream">Stop stream</a>
-	<br />
-	<span id="volumeBox">
-		<input type="text" id="streamVolume" /><input type="button" id="streamVolumeBtn" value="Set volume (0-100)" />
+	<div>
+		<a id="play_stream">Play stream</a>
+		<a id="stop_stream">Stop stream</a>
+	</div>
+	<span id="volume_box">
+		<input type="text" id="stream_volume" /><input type="button" id="btn_stream_volume" value="Set volume (0-100)" />
 	</span>
 </div>
 
@@ -98,55 +98,62 @@
 <script type="text/javascript" src="js/lib/Sound.js"></script>
 <script type="text/javascript" src="js/tabs.js"></script>
 <script type="text/javascript" src="js/genres.js"></script>
-<script type="text/javascript" src="js/library.js"></script>
 <script type="text/javascript" src="js/search.js"></script>
 <script type="text/javascript" src="js/musicFieldEditor.js"></script>
 <script type="text/javascript" src="js/upload.js"></script>
 <script type="text/javascript" src="js/debug.js"></script>
 <script type="text/javascript" src="js/customQueries.js"></script>
 <script type="text/javascript" src="js/notification.js"></script>
-<script type="text/javascript" src="js/StreamPlayer.js"></script>
 <script type="text/javascript" src="js/jukebox.js"></script>
 <script type="text/javascript">
+var j; // Global, easily accessible from console
 document.observe("dom:loaded", function()
 {
 	try
 	{
-		ExpandCollection();
-		initJukebox();
-
-		// ---------------
-		// Declare listeners
-
-		$("btnJoinChannel").on("click", joinChannel);
-		$("expand_collection_button").on("click", ExpandCollection);
-		$("collapse_collection_button").on("click", CollapseCollection);
-
-		$("previous_button").on("click", previousSong);
-		$("next_button").on("click", nextSong);
-
-		$("tab_upload").on("click", addOrSelectUploadTab);
-		$("tab_query").on("click", addOrSelectCustomQueriesTab);
-		$("tab_notifs").on("click", addOrSelectNotificationTab);
-		$("tab_debug").on("click", addOrSelectDebugTab);
-
-		$("search_field").on("change", selectAndFillGenres);
-		$("btnSearch").on("click", function() // Protects from event args
+		j = new Jukebox("player", {skin: "simple"});
+		j.ready(function() // Wait that .swf player is loaded
 		{
-			doSearch();
-		});
+			j.play();
+			this.volume(5); // `this` also points to the jukebox instance
 
-		$("btnRefresh").on("change", function()
-		{
-			timestamp = 0; //TODO: avoid global
-			updateJukebox();
-		});
+			/*
+			Chaining is possible: j.play().volume(30);
 
-		$("btnApplyPlugin").on("click", setSongSelectionPlugin);
+			// Public data:
+			console.log(j.name, j.stream, j.channel, j.streaming, j.playing, j.song, j.listenersCount);
+
+			j.addSearchToPlayQueueBottom(search, comparison, field, order, first, count);
+			j.addSearchToPlayQueueRandom(search, comparison, field, order, first, count);
+			j.addSearchToPlayQueueTop(search, comparison, field, order, first, count);
+			j.addToPlayQueueBottom(mid);
+			j.addToPlayQueueRandom(mid);
+			j.addToPlayQueueTop(mid);
+			j.autoRefresh(auto);
+			j.joinChannel(channel);
+			j.next();
+			j.play(streamURL);
+			j.playQueueDelete(mid, play_queue_index);
+			j.playQueueMove(mid, play_queue_index, new_play_queue_index);
+			j.playQueueShuffle();
+			j.playQueueSize();
+			j.plugin(name);
+			j.previous();
+			j.ready(callback);
+			j.refresh();
+			j.remaining();
+			j.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
+			j.start();
+			j.status();
+			j.stop();
+			j.stopStreaming();
+			j.volume(volume);
+			*/
+		});
 	}
-	catch(fatalE)
+	catch(fatalEx)
 	{
-		//TODO
+		//console.error(fatalEx);
 	}
 });
 </script>

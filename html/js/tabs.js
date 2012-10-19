@@ -12,7 +12,7 @@ var Tabs = Class.create(
 	{
 		for(var i = 0; i < this.tabs.length; ++i)
 		{
-			if(this.tabs[i].getIdentifier() == identifier)
+			if(this.tabs[i].identifier == identifier)
 			{
 				return this.tabs[i];
 			}
@@ -24,7 +24,7 @@ var Tabs = Class.create(
 	{
 		for(var i = 0; i < this.tabs.length; ++i)
 		{
-			if(this.tabs[i].getIdentifier() == identifier)
+			if(this.tabs[i].identifier == identifier)
 			{
 				return i;
 			}
@@ -59,75 +59,89 @@ var Tabs = Class.create(
 	// Add the tab in the html layout and in the tabs array
 	addTab: function(tab)
 	{
-		var tabContentContainer = '';
-		var tabDisplay = '';
+		var rootClass = tab.constructor;
+		while(rootClass.superclass != null)
+		{
+			rootClass = rootClass.superclass;
+		}
+		if(rootClass != Tab)
+		{
+			throw new Error("Invalid tab instance");
+		}
 
 		// Compute a new valid uniqueid 
-		if(null == this.lastUniqueId)
+		if(this.lastUniqueId == null)
 		{
 			this.lastUniqueId = 0;
 		}
 		else
 		{
-			this.lastUniqueId = this.lastUniqueId + 1;
+			this.lastUniqueId++;
 		}
 
 		// Set the new tab identifier
-		tab.identifier = this.tabsCollectionName + '_' + this.lastUniqueId;
+		var id = tab.identifier = this.tabsCollectionName + '_' + this.lastUniqueId;
 		this.tabs.push(tab);
 
 		// init html containers
-		if(1 == this.tabs.length)
+		if(this.tabs.length == 1)
 		{
 			$('tabsHeader').update('<ul id="tabs_list"></ul>');
 		}
 
 		// Add tab Header
-		tabDisplay += '<li style="margin-left: 1px" id="tabHeader_' + tab.getIdentifier() + '"';
-		if(1 == this.tabs.length)
+		var toggleTab = new Element('a', {href: 'javascript:;'}).update('<span>' + tab.name + '</span>');
+		var removeTab = new Element('a', {href: 'javascript:;'}).update('<span> X </span>');
+
+		var that = this; // Tool for closure
+		toggleTab.on("click", function()
 		{
-			tabDisplay += ' class="tabHeaderActive"';
-		}
-		tabDisplay += '>' +
-		'<a href="javascript:void(0)" onclick="tabs.toggleTab(\'' + tab.getIdentifier() + '\')">' +
-			'<span>' + tab.getName() + '</span>' +
-		'</a>' +
-		'<a href="javascript:void(0)" onclick="tabs.removeTab(\'' + tab.getIdentifier() + '\')">' +
-			'<span> X </span>' +
-		'</a>' +
-		'</li>';
-
-		tabContentContainer += '<div id="tabContent_' + tab.getIdentifier() + '"';
-
-		if(1 == this.tabs.length)
+			that.toggleTab(id);
+		});
+		removeTab.on("click", function()
 		{
-			tabContentContainer += 'style="display:block;"></div>';
-		}
-		else
+			that.removeTab(id);
+		});
+
+		var tabDisplay = new Element('li',
 		{
-			tabContentContainer += 'style="display:none;"></div>';
+			style: 'margin-left: 1px',
+			id: 'tabHeader_' + id
+		}).insert(
+		{
+			top: toggleTab,
+			bottom: removeTab
+		});
+		if(this.tabs.length == 1)
+		{
+			tabDisplay.addClassName('tabHeaderActive');
 		}
 
-		$('tabs_list').insert({'bottom':tabDisplay});
-		$('tabscontent').insert({'bottom':tabContentContainer});
+		var tabContentContainer = new Element('div', {id: 'tabContent_' + id});
+		tabContentContainer.style.display = this.tabs.length == 1 ? 'block' : 'none';
 
-		// start to init static tab content
+		// DOM insertion
+		$('tabs_list').insert({'bottom': tabDisplay});
+		$('tabscontent').insert({'bottom': tabContentContainer});
+
+		// Start to init static tab content
 		if(typeof tab.updateContent === 'function')
 		{
 			tab.updateContent();
 		}
 
-		return tab.identifier;
+		return id;
 	},
 
 	removeTab: function(identifier)
 	{
 		var index = this.getTabIndexFromUniqueId(identifier);
-
-		if(-1 != index)
+		if(index != -1)
 		{
 			// If the tab to delete is the current active tab we want to select the first available tab
-			if($('tabHeader_' + identifier).hasClassName("tabHeaderActive"))
+			var tabHeader = $('tabHeader_' + identifier),
+				tabContent = $('tabContent_' + identifier);
+			if(tabHeader && tabHeader.hasClassName("tabHeaderActive"))
 			{
 				// Find the tabs position index available near from tab
 				if(index != 0)
@@ -143,11 +157,8 @@ var Tabs = Class.create(
 			// Remove the tab
 			this.tabs.splice(index, 1);
 
-			// remove tabHeader
-			$('tabHeader_' + identifier).remove();
-			
-			// remove tabContent
-			$('tabContent_' + identifier).remove();
+			if(tabHeader) {tabHeader.remove();}
+			if(tabContent) {tabContent.remove();}
 		}
 	},
 
@@ -155,26 +166,25 @@ var Tabs = Class.create(
 	{
 		for(var i = 0; i < this.tabs.length; i++)
 		{
-			var temph = 'tabHeader_' + this.tabs[i].identifier;
-			var h = $(temph);
-			if(this.tabs[i].identifier == identifier)
+			var id = this.tabs[i].identifier,
+				tabHeader = $('tabHeader_' + id),
+				tabContent = $('tabContent_' + id);
+			if(id == identifier)
 			{
-				$('tabContent_' + this.tabs[i].identifier ).style.display = 'block';
-				h.addClassName("tabHeaderActive");
+				tabContent.style.display = 'block';
+				tabHeader.addClassName('tabHeaderActive');
 			}
 			else
 			{
-				$('tabContent_' + this.tabs[i].identifier ).style.display = 'none';
-				if(h.hasClassName('tabHeaderActive'))
-				{
-					h.removeClassName('tabHeaderActive');
-				}
+				tabContent.style.display = 'none';
+				tabHeader.removeClassName('tabHeaderActive');
 			}
 		}
 	}
 
 });
 
+//==================================================
 
 var Tab = Class.create(
 {
@@ -187,11 +197,6 @@ var Tab = Class.create(
 	getName: function()
 	{
 		return this.name; 
-	},
-
-	getContent: function()
-	{
-		return '';
 	},
 
 	getIdentifier: function()
