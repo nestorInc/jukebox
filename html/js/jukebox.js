@@ -1666,7 +1666,7 @@ function JukeboxUI(jukebox, element, opts)
 		},
 		joinChannel: function()
 		{
-			this.joinChannel(_$.channel.value);
+			J.joinChannel(_$.channel.value);
 		},
 		previousSong: function()
 		{
