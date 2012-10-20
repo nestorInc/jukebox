@@ -81,7 +81,7 @@ Query.prototype.toJSON = function()
 };
 /**
 * Output an object representing the query.
-* @return {string} The stringified JSON query.
+* @return {object} The query object.
 */
 Query.prototype.valueOf = function()
 {
