@@ -1200,7 +1200,7 @@ function JukeboxUI(jukebox, element, opts)
 		
 		_opts = Extend(true, {}, JukeboxUI.defaults, opts), // Recursively merge options
 
-		J = jukebox, // faster jukebox reference
+		J = jukebox, // short jukebox reference
 		_tabs = new Tabs('tab'),
 		_tabsManager = {},
 		_volumeSlider,
@@ -1552,7 +1552,7 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		_$.music_wrapper.style.display = 'inline';
 		_$.expand_button.hide();
-		_$.collapse_button.style.display = 'block'; // .show is stupid (ignore css)
+		_$.collapse_button.style.display = 'block'; // .show is stupid (ignores css)
 		_$.page_wrapper.setStyle({width: '900px'});
 	}
 

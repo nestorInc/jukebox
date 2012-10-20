@@ -213,9 +213,9 @@ var SearchTab = Class.create(Tab,
 		var resultsSlider = $$('[name=results_slider_' + tabId + ']'),
 			that = this,
 			i = 0;
-		resultsSlider.each(function(slider)
+		resultsSlider.each(function(sliderBox)
 		{
-			var slider = new Control.Slider(slider.down('.handle'), slider,
+			var slider = new Control.Slider(sliderBox.down('.handle'), sliderBox,
 			{
 				range: $R(1, that.pages.length),
 				values: that.pages,
@@ -375,7 +375,6 @@ var SearchTab = Class.create(Tab,
 			count = this.result_count,
 			$content = $('collection_content_' + this.identifier),
 			k,
-			len,
 			isOdd = true,
 			style,
 			J = this.jukebox;
