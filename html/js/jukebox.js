@@ -1110,7 +1110,7 @@ var jukebox_public_methods =
 {
 	status: function()
 	{
-		var status = this.name + ' is ' + (this.streaming ? '':'NOT ') + 'connected to url ' + this.stream + ' and currently ' + (this.playing ? '':'NOT ') + 'playing. Current channel is: ' + this.channel + '. ' + (this.listenersCount == 0 ? 1:this.listenersCount) + ' user' + (this.listenersCount > 1 ? 's are':' is') + ' currently connected. Current song is: ' + this.song.title + ' - ' + this.song.artist + '.';
+		var status = this.name + ' is ' + (this.streaming ? '':'NOT ') + 'connected to url ' + this.stream + ' and currently ' + (this.playing ? '':'NOT ') + 'playing. Current channel is: ' + this.channel + '. ' + this.listenersCount + ' user' + (this.listenersCount > 1 ? 's are':' is') + ' currently listening. Current song is: ' + this.song.title + ' - ' + this.song.artist + '.';
 		return status;
 	},
 	// Time remaining before next song in seconds
