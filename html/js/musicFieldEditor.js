@@ -89,15 +89,9 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 		firstChildVal = firstChild.value;
 
 	// Update html
-	if(this.name == "genre")
+	if(this.name == "genre" && genres[firstChildVal])
 	{
-		for(var k = 0, len = genres.length; k < len; ++k)
-		{
-			if(firstChildVal == genres[k][1])
-			{
-				cell.update(genres[k][0]);
-			}
-		}
+		cell.update(genres[firstChildVal]);
 	}
 	else
 	{
@@ -204,6 +198,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 		select.id = "genre";
 		form.appendChild(select);
 
+		/*TODO: copy _$.search_genres
 		for(i = 0, len = genres.length; i < len; ++i)
 		{
 			var option = document.createElement("option");
@@ -211,6 +206,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 			option.appendChild(document.createTextNode(genres[i][0]));
 			select.appendChild(option);
 		}
+		*/
 
 		for(i = 0; i < UploadTab.uploadedFilesEdition.length; ++i)
 		{

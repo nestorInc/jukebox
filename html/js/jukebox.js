@@ -1713,11 +1713,34 @@ function JukeboxUI(jukebox, element, opts)
 			{
 				if(_$.search_genres.options.length == 0) // Fill it, before display
 				{
-					for(var i = 0, len = genres.length; i < len; ++i)
+					// Only place were we loop through all genres. Else `genres` structure is done to allow direct access.
+					// Because of browsers custom implementation of for(var genre in genres), we have to sort the array.
+					// Note that we do that only once: first call to selectAndFillGenres.
+					
+					var genresArr = [];
+					for(var genre in genres)
 					{
+						genresArr.push({id: genre, name: genres[genre]});
+					}
+					genresArr.sort(function(a, b)
+					{
+						if(a.name < b.name)
+						{
+							return -1;
+						}
+						else if(a.name > b.name)
+						{
+							return 1;
+						}
+						return 0;
+					});
+
+					for(var i = 0, len = genresArr.length; i < len; ++i)
+					{
+						genre = genresArr[i];
 						var option = document.createElement('option');
-						option.value = genres[i][1]; 
-						option.appendChild(document.createTextNode(genres[i][0]));
+						option.value = genre.id;
+						option.appendChild(document.createTextNode(genre.name));
 						_$.search_genres.appendChild(option);
 					}
 				}

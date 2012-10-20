@@ -66,14 +66,7 @@ var SearchTab = Class.create(Tab,
 			}
 			else if(field == 'genre')
 			{
-				for(var i = 0, len = genres.length; i < len; ++i)
-				{
-					if(genres[i][1] == search)
-					{
-						this.name = 'Genre: ' + genres[i][0];
-						break;
-					}
-				}
+				this.name = 'Genre: ' + genres[search];
 			}
 		}
 		else
@@ -423,14 +416,10 @@ var SearchTab = Class.create(Tab,
 					new Element('td').update(FormatTime(s.duration))
 				];
 
-				for(k = 0, len = genres.length; k < len; ++k)
+				if(genres[s.genre])
 				{
-					if(s.genre == genres[k][1])
-					{
-						var genre = createLink(genres[k][0], s.genre, 'genre');
-						tds[4].insert(genre);
-						break;
-					}
+					var genre = createLink(genres[s.genre], s.genre, 'genre');
+					tds[4].insert(genre);
 				}
 
 				//---

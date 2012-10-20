@@ -292,20 +292,13 @@ var UploadTab = Class.create(Tab,
 		if(obj.track.toString().indexOf("/") != -1) {html_uploaded_files += obj.track.split("/")[1];}
 		else {html_uploaded_files += 0;}
 		html_uploaded_files += '</td><td>';
-		if(genres.length >= obj.genre)
+		if(genres[obj.genre]) // TODO: test
 		{
-			for(var i = 0, len = genres.length; i < len; ++i)
-			{
-				if(genres[i][1] == obj.genre)
-				{
-					html_uploaded_files += genres[i][0];
-					break;
-				}
-			}
+			html_uploaded_files += genres[obj.genre];
 		}
 		else
 		{
-			html_uploaded_files += genres[genres.length - 1][0];
+			//html_uploaded_files += genres[genres.length - 1][0];
 		}
 		html_uploaded_files += '</td>' +
 		'<td class="static actions">' +
