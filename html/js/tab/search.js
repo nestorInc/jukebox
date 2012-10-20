@@ -141,7 +141,7 @@ var SearchTab = Class.create(Tab,
 			}
 
 			// Pre-init html structure
-			var search_page = '<br/>' +
+			var search_page = '' +
 			'<div class="collection_pagelist" name="collection_pagelist_' + this.identifier + '"></div>' +
 			'<div id="collection_content_' + this.identifier + '"></div>' +
 			'<div class="collection_pagelist" name="collection_pagelist_' + this.identifier + '"></div>';
@@ -271,11 +271,12 @@ var SearchTab = Class.create(Tab,
 		});
 	},
 
-	declareTableHeader: function(cellTag)
+	declareTableHeader: function()
 	{
 		var firstSort = this.order_by.split(",")[0],
 			J = this.jukebox,
 			tr = new Element('tr'),
+			cellTag = 'th',
 			sql;
 
 		//-----
@@ -461,8 +462,8 @@ var SearchTab = Class.create(Tab,
 
 			table.insert(tbody).insert(
 			{
-				top: new Element('thead').insert(this.declareTableHeader('th')),
-				bottom: new Element('tfoot').insert(this.declareTableHeader('td'))
+				top: new Element('thead').insert(this.declareTableHeader()),
+				bottom: new Element('tfoot').insert(this.declareTableHeader())
 			});
 
 			// Replace the DOM
