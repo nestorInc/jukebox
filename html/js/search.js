@@ -194,8 +194,11 @@ var SearchTab = Class.create(Tab,
 		// Only display slider and pages results links if nb pages > 1
 		if(this.total_results > 0 && this.page_count > 1)
 		{
+			// We have to specified a fixed width, 100% doesn't work : the slider is lost
+			var music_wrapper_width = $('music_wrapper').getWidth();
+
 			var slider = '' +
-			'<div name="results_slider_' + tabId + '" class="slider">' +
+			'<div name="results_slider_' + tabId + '" class="slider" style="width:' + music_wrapper_width + 'px;">' +
 				'<div class="handle"></div>' +
 			'</div>';
 			var links = '<div class="page_links" name="page_links_' + tabId + '"></div>';
@@ -216,35 +219,33 @@ var SearchTab = Class.create(Tab,
 		// Init each sliders behavior
 		var resultsSlider = $$('[name=results_slider_' + tabId + ']'),
 			that = this,
-			i = -1;
+			i = 0;
 		resultsSlider.each(function(slider)
 		{
-			var currentSlider = new Control.Slider(slider.down('.handle'), slider,
+			var slider = new Control.Slider(slider.down('.handle'), slider,
 			{
 				range: $R(1, that.pages.length),
 				values: that.pages,
 				sliderValue: that.current_page || 1,
 				id: i++,
-				identifier: tabId,
 				timeout: null,
 				lastSelectedValue: null,
 				onSlide: function(value)
 				{
 					that.generatePagesLinks(value);
 
-					var currentTab = that;
-					for(var k in currentTab.sliders)
+					// Update others sliders values by setting value with the current slider sliding value
+					for(var k = 0; k < that.sliders; ++k)
 					{
 						if(k != this.id)
 						{
-							// Update others sliders values by setting value with the current slider sliding value
-							currentTab.locked[k] = true;
-							if(typeof currentTab.sliders[k].setValue === 'function')
+							that.locked[k] = true;
+							if(typeof that.sliders[k].setValue === 'function')
 							{
 								// Caution this instruction fire onChange slider event
-								currentTab.sliders[k].setValue(value);
+								that.sliders[k].setValue(value);
 							}
-							currentTab.locked[k] = false;
+							that.locked[k] = false;
 						}
 					}
 
@@ -263,18 +264,17 @@ var SearchTab = Class.create(Tab,
 				onChange: function(value)
 				{
 					// Because we use multi slider we don't want to fire onChange event when sliding the other slider
-					var currentTab = that;
-					if(!currentTab.locked[this.id])
+					if(!that.locked[this.id]) // Current slider not locked
 					{
 						clearTimeout(this.timeout);
-						if(currentTab.current_page != value)
+						if(that.current_page != value)
 						{
-							currentTab.goToPage(value);
+							that.goToPage(value);
 						}
 					}
 				}
 			});
-			that.sliders.push(currentSlider);
+			that.sliders.push(slider);
 		});
 	},
 

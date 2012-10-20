@@ -525,26 +525,25 @@ color: #880000;
 
 /* Sliders */
 div.page_links{
-align: center;
 text-align: center;
 }
 div.slider{
-width:100%;
-margin:15px 0;
-background-color:#ccc;
-height:15px;
+margin: 15px 0;
+background-color: #ccc;
+height: 15px;
 position: relative;
 }
 div.slider div.handle{
-width:25px;
-height:25px;
-background-color:#888;
-cursor: move; position:
-absolute;
-top:-5px;
+width: 25px;
+margin-left: -12px;
+height: 25px;
+background-color: #888;
+cursor: move;
+position: absolute;
+top: -5px;
 }
 div.slider div.handle span{
-height:20px;
+height: 20px;
 }
 a.slider_link_current_page{
 color: #ff0000;
