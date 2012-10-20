@@ -118,6 +118,8 @@ document.observe("dom:loaded", function()
 		j = new Jukebox("player", {skin: "simple"});
 		j.ready(function() // Wait that .swf player is loaded
 		{
+			Notifications.Display(Notifications.LEVELS.info, "Jukebox loaded");
+
 			j.play();
 			this.volume(5); // `this` also points to the jukebox instance
 

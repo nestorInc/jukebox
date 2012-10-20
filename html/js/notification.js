@@ -183,11 +183,4 @@ this.NotificationTab = Class.create(Tab,
 
 });
 
-//==================================================
-
-document.observe("dom:loaded", function()
-{
-	Notifications.Display(LEVELS.info, "Client loaded");
-});
-
 })();
