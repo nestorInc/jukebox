@@ -46,8 +46,8 @@ var DebugTab = Class.create(Tab,
 		var $content = $('tabContent_' + this.identifier);
 		$content.update(debug_display);
 
-		this.$debug1 = $content.select('div:first')[0];
-		this.$debug2 = $content.select('div:last')[0];
+		this.$debug1 = $content.down('div:first');
+		this.$debug2 = $content.down('div:last');
 	}
 });
 

@@ -42,12 +42,12 @@ var CustomQueriesTab = Class.create(Tab,
 		var $content = $('tabContent_' + this.identifier);
 		$content.update(custom_queries_display);
 
-		var $textarea = $content.select('textarea')[0];
+		var $textarea = $content.down('textarea');
 
 		//----------
 		// Combobox
 
-		var $select = $content.select('select')[0];
+		var $select = $content.down('select');
 		$select.on("change", function fillCustomJsonQuery()
 		{
 			var opts = {},
@@ -110,7 +110,7 @@ var CustomQueriesTab = Class.create(Tab,
 		//----------
 		// Button
 
-		var $input = $content.select('input')[0];
+		var $input = $content.down('input');
 		$input.on("click", function checkAndSendJson()
 		{
 			// Check if the textarea is filled
