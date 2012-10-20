@@ -159,7 +159,7 @@ class JsonManager < HttpNode
       ch.set_plugin(req["plugin_name"]);
     else
       error("Unknown action #{req["name"]}", true, $error_file);
-      JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "unknown action #{req["name"]}");
+      JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "Unknown action #{req["name"]}");
     end
   end
 
