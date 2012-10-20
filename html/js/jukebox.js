@@ -1203,6 +1203,7 @@ function JukeboxUI(jukebox, element, opts)
 		J = jukebox, // faster jukebox reference
 		_tabs = new Tabs('tab'),
 		_tabsManager = {},
+		_volumeSlider,
 
 		_refreshSongTimer = null,
 		_lastCurrentSongElapsedTime = null;
@@ -1225,20 +1226,19 @@ function JukeboxUI(jukebox, element, opts)
 		activity_monitor: $('activity_monitor'),
 		play_stream: $('play_stream'),
 		stop_stream: $('stop_stream'),
-		stream_volume: $('stream_volume'),
-		btn_stream_volume: $('btn_stream_volume'),
 		channel: $('channel'),
 		btn_join_channel: $('btn_join_channel'),
 		previous_button: $('previous_button'),
 		next_button: $('next_button'),
 		cb_autorefresh: $('cb_autorefresh'),
-		btn_refresh: $("btn_refresh"),
+		btn_refresh: $('btn_refresh'),
 		player_song_artist: $('player_song_artist'),
 		player_song_album: $('player_song_album'),
 		player_song_title: $('player_song_title'),
 		play_queue_content: $('play_queue_content'),
 		selection_plugin: $('music_selection_plugin'),
-		btn_apply_plugin: $("btn_apply_plugin")
+		btn_apply_plugin: $('btn_apply_plugin'),
+		volume_box_slider: $('volume_box_slider')
 	};
 
 	//---
@@ -1264,7 +1264,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.volume = function(volume)
 	{
-		_$.stream_volume.value = volume;
+		_volumeSlider.setValue(volume);
 	};
 
 	/**
@@ -1654,7 +1654,7 @@ function JukeboxUI(jukebox, element, opts)
 	//---
 	// Events handlers
 
-	var _events =
+	var _events = // UI actions trigger thoses events
 	{
 		expand: function()
 		{
@@ -1684,19 +1684,14 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			J.stop();
 		},
-		volume: function()
+		volume: function(val)
 		{
-			J.volume(_$.stream_volume.value);
-		},
-		volumeKeyPress: function(event)
-		{
-			if(event.keyCode == Event.KEY_RETURN)
+			if(J.volume() != val) // Avoid infinite loop with .onChange
 			{
-				J.volume(_$.stream_volume.value);
-				Event.stop(event);
+				J.volume(val);
 			}
 		},
-		doSearch: function()
+		search: function()
 		{
 			_search(); // no params
 		},
@@ -1763,11 +1758,9 @@ function JukeboxUI(jukebox, element, opts)
 
 		_$.play_stream.on("click", _events.playStream);
 		_$.stop_stream.on("click", _events.stopStream);
-		_$.btn_stream_volume.on("click", _events.volume);
-		_$.stream_volume.on("keypress", _events.volumeKeyPress);
 
 		_$.btn_join_channel.on("click", _events.joinChannel);
-		_$.btn_search.on("click", _events.doSearch);
+		_$.btn_search.on("click", _events.search);
 		_$.search_field.on("change", _events.selectAndFillGenres);
 		_$.search_input.observe("keypress", _events.searchInputKeyPress);
 
@@ -1778,6 +1771,16 @@ function JukeboxUI(jukebox, element, opts)
 		_$.btn_refresh.on("click", _events.refresh);
 
 		_$.btn_apply_plugin.on("click", _events.plugin);
+
+		var range0to100 = $R(0, 100);
+		_volumeSlider = new Control.Slider(_$.volume_box_slider.down('.handle'), _$.volume_box_slider,
+		{
+			range: range0to100,
+			values: range0to100,
+			sliderValue: 100, // Hardcoded because we can't call J.volume() right now (flash not yet loaded)
+			onSlide: _events.volume,
+			onChange: _events.volume // Mostly for click anywhere on the slider
+		});
 
 		(function() // Tabs
 		{

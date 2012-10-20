@@ -596,11 +596,19 @@ background: url("../images/icons/play_queue_delete.png") no-repeat left top;
 span#collapse_button,#stop_stream{
 display: none; /* initial state */
 }
-#volume_box input{
-height: 100%;
+#volume_box span{
+float: left;
+font-size: 13px;
 }
-#stream_volume{
-width: 20px;
+#volume_box_slider{
+float: left;
+width: 120px;
+height: 10px;
+margin: 5px 0;
+}
+#volume_box_slider .handle{
+width: 10px;
+height: 20px;
 }
 
 .search_table{
