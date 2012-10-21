@@ -20,10 +20,10 @@ SET ajaxmin="C:\Program Files (x86)\Microsoft\Microsoft Ajax Minifier\AjaxMin.ex
 	-global:$,$$,$R,Class,Control,Tab,TableKit,Draggable,Element,genres ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze musicFieldEditor.js ^
-	-global:$,$$,Event,TableKit,UploadTab ^
+	-global:$,$$,Event,TableKit,UploadTab,genres,genresOrdered ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze tab/upload.js ^
-	-global:$,$$,JSON,qq,Class,Tab,TableKit,MusicFieldEditor,Notifications ^
+	-global:$,$$,JSON,qq,Class,Tab,TableKit,MusicFieldEditor,Notifications,genres,Element ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze tab/debug.js ^
 	-global:$,Class,Tab,JSON ^
@@ -35,7 +35,7 @@ SET ajaxmin="C:\Program Files (x86)\Microsoft\Microsoft Ajax Minifier\AjaxMin.ex
 	-global:$,Element,Effect,Event,Class,Tab ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze jukebox.js ^
-	-global:$,$$,$R,Control,Ajax,$F,Event,Element,JSON,Droppables,Draggable,Tabs,SearchTab,UploadTab,DebugTab,Notifications,NotificationTab,CustomQueriesTab,Sound,genres ^
+	-global:$,$$,$R,Control,Ajax,$F,Event,Element,JSON,Droppables,Draggable,Tabs,SearchTab,UploadTab,DebugTab,Notifications,NotificationTab,CustomQueriesTab,Sound,genres,genresOrdered ^
 	1>NUL 2>>%log%%
 
 ECHO Analysis done in %log%

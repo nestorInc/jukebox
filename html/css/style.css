@@ -380,12 +380,15 @@ background-color: #660000;
 border-color: black;
 }
 
-table.search_table{
+table.search_table,
+table.upload_table{
 width: 100%;
 }
 
 table.search_table td,
-table.search_table th{
+table.search_table th,
+table.upload_table th,
+table.upload_table td{
 border: 1px solid #CCCCCC;
 max-width: 100px;
 width: auto;
@@ -397,7 +400,9 @@ table.search_table th{
 white-space: pre; /* For buttons column */
 }
 table.search_table thead,
-table.search_table tfoot{
+table.search_table tfoot,
+table.upload_table thead,
+table.upload_table tfoot{
 background-color: #DDD;
 }
 
@@ -534,4 +539,8 @@ margin: 5px 0;
 width: 10px;
 height: 20px;
 margin-left: 0;
+}
+
+.qq-upload-button input{
+height: 30px; /* Height of the button, so that pointer is ok on all height. 100% doesn't work */
 }

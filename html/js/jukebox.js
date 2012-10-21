@@ -146,9 +146,6 @@ function Action(name, opts)
 			this.play_queue_index = opts.play_queue_index;
 			this.new_play_queue_index = opts.new_play_queue_index;
 			break;
-		case "add_search_to_play_queue":
-			Extend(this, opts);
-			break;
 		case "get_news":
 			this.first_result = opts.first_result;
 			this.result_count = opts.result_count;
@@ -159,16 +156,13 @@ function Action(name, opts)
 			this.plugin_name = opts.plugin_name;
 			break;
 		case "search":
+		case "update_uploaded_file":
+		case "add_search_to_play_queue":
 			Extend(this, opts);
 			break;
-		case "update_uploaded_file":
-			//TODO
-			break;
 		case "delete_uploaded_file":
-			//TODO
-			break;
 		case "validate_uploaded_file":
-			//TODO
+			this.file_name = opts.file_name;
 			break;
 		default:
 			throw new Error("Invalid action");
@@ -358,6 +352,7 @@ function Jukebox(element, opts)
 		_query_in_progress = false,
 		_query_timer = null,
 		_waitingQueries = [],
+		_uploadedFiles = {},
 
 		_ui = null; // Graphic interface
 	
@@ -767,6 +762,58 @@ function Jukebox(element, opts)
 		return this;
 	};
 
+	/**
+	* Ask the server for the list of uploaded files
+	* @return {Jukebox} this.
+	*/
+	this.getUploadedFiles = function()
+	{
+		_doAction(new Action("get_uploaded_files"));
+		return this;
+	};
+
+	/**
+	* Get the uploaded files list from last fetch. You have to call getUploadedFiles() first.
+	* @return {Array<File>} Uploaded files.
+	*/
+	this.uploadedFiles = function()
+	{
+		return _uploadedFiles.files ? _uploadedFiles.files.slice() : []; // Cloned: can be setted without impact
+	};
+
+	/**
+	* Delete an uploaded file
+	* @param {string} filename - The upload file to delete
+	* @return {Jukebox} this.
+	*/
+	this.deleteUploadedFile = function(filename)
+	{
+		_doAction(new Action("delete_uploaded_file", {file_name: filename}));
+		return this;
+	};
+
+	/**
+	* Validate an uploaded file
+	* @param {string} filename - The upload file to validate
+	* @return {Jukebox} this.
+	*/
+	this.validateUploadedFile = function(filename)
+	{
+		_doAction(new Action("validate_uploaded_file", {file_name: filename}));
+		return this;
+	};
+
+	/**
+	* Update an uploaded file
+	* @param {object} opts - The update instructions
+	* @return {Jukebox} this.
+	*/
+	this.updateUploadedFile = function(opts)
+	{
+		_doAction(new Action("update_uploaded_file", opts));
+		return this;
+	};
+
 	//-----
 	// [Private] Functions
 
@@ -906,7 +953,8 @@ function Jukebox(element, opts)
 		}
 		if(json.uploaded_files)
 		{
-			//TODO: tabs.getFirstTabByClassName("UploadTab").treatResponse(json.uploaded_files);
+			_uploadedFiles = json.uploaded_files;
+			_ui.displayUploadedFiles(_uploadedFiles);
 		}
 	}
 
@@ -1522,10 +1570,10 @@ function JukeboxUI(jukebox, element, opts)
 
 	this.sendingQuery = function(query)
 	{
-		var identifier = _tabs.getFirstTabIdentifierByClassName("DebugTab");
-		if(identifier != null)
+		var tab = _tabs.getFirstTabByClassName("DebugTab");
+		if(tab)
 		{
-			_tabs.getTabFromUniqueId(identifier).updateSendingQuery(query);
+			tab.updateSendingQuery(query);
 		}
 	};
 
@@ -1538,10 +1586,20 @@ function JukeboxUI(jukebox, element, opts)
 		}
 		*/
 
-		var identifier = _tabs.getFirstTabIdentifierByClassName("DebugTab");
-		if(identifier != null)
+		var tab = _tabs.getFirstTabByClassName("DebugTab");
+		if(tab)
 		{
-			_tabs.getTabFromUniqueId(identifier).updateResponse(response);
+			tab.updateResponse(response);
+		}
+	};
+
+	this.displayUploadedFiles = function(uploaded_files)
+	{
+		//TODO: TabManager.UploadTab
+		var tab = _tabs.getFirstTabByClassName("UploadTab");
+		if(tab)
+		{
+			tab.treatResponse(uploaded_files);
 		}
 	};
 
@@ -1713,31 +1771,9 @@ function JukeboxUI(jukebox, element, opts)
 			{
 				if(_$.search_genres.options.length == 0) // Fill it, before display
 				{
-					// Only place were we loop through all genres. Else `genres` structure is done to allow direct access.
-					// Because of browsers custom implementation of for(var genre in genres), we have to sort the array.
-					// Note that we do that only once: first call to selectAndFillGenres.
-					
-					var genresArr = [];
-					for(var genre in genres)
+					for(var i = 0, len = genresOrdered.length; i < len; ++i)
 					{
-						genresArr.push({id: genre, name: genres[genre]});
-					}
-					genresArr.sort(function(a, b)
-					{
-						if(a.name < b.name)
-						{
-							return -1;
-						}
-						else if(a.name > b.name)
-						{
-							return 1;
-						}
-						return 0;
-					});
-
-					for(var i = 0, len = genresArr.length; i < len; ++i)
-					{
-						genre = genresArr[i];
+						var genre = genresOrdered[i];
 						var option = document.createElement('option');
 						option.value = genre.id;
 						option.appendChild(document.createTextNode(genre.name));
@@ -1847,7 +1883,7 @@ function JukeboxUI(jukebox, element, opts)
 					var identifier = _tabs.getFirstTabIdentifierByClassName(tab.classN);
 					if(identifier == null)
 					{
-						var newTab = new tab.classC(tab.identifier, tab.name);
+						var newTab = new tab.classC(tab.identifier, tab.name, J);
 						identifier = _tabs.addTab(newTab);
 					}
 					_tabs.toggleTab(identifier);

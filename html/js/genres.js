@@ -1,3 +1,4 @@
+// Structure is done to allow direct access, thus reducing loops usage.
 var genres =
 {
 	0: 		"Blues",
@@ -148,3 +149,24 @@ var genres =
 	146: 	"JPop",
 	147: 	"SynthPop"
 };
+
+// Because of browsers custom implementation of for(var genre in genres), we have to sort the array.
+// Note that we do that only once
+
+var genresOrdered = []; // Array of {id:, name:}
+for(var genre in genres)
+{
+	genresOrdered.push({id: genre, name: genres[genre]});
+}
+genresOrdered.sort(function(a, b)
+{
+	if(a.name < b.name)
+	{
+		return -1;
+	}
+	else if(a.name > b.name)
+	{
+		return 1;
+	}
+	return 0;
+});
