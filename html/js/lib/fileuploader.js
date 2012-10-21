@@ -616,7 +616,7 @@ qq.extend(qq.FileUploader.prototype, {
 
         if (result.success){
             //qq.addClass(item, this._classes.success);    
-            Notifications.Display(2,'File ' + fileName + 'successfuly uploaded.');
+            Notifications.Display(2, 'File ' + fileName + ' successfully uploaded');
         } else {
             if( result.error )
                 Notifications.Display(5, result.error );
