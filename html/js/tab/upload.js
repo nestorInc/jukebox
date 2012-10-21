@@ -113,22 +113,23 @@ var UploadTab = Class.create(Tab,
 			Notifications.Display(1, message);
 
 			var lastId = escape(this.lastSendingUpdateIdentifier),
-				selector = 'upload_line_' + lastId;
+				selector = 'upload_line_' + lastId,
+				$selector = $(selector);
 
 			// Delete all modified styles
-			$(selector).select('[class="modified"]').each(function(e)
+			$selector.select('[class="modified"]').each(function(e)
 			{
 				e.removeClassName("modified");
 			});
 
 			// Hide update
-			$(selector).select('[class="update"]').each(function(e)
+			$selector.select('[class="update"]').each(function(e)
 			{
 				e.hide();
 			});
 
 			// Show validate
-			$(selector).select('[class="validate"]').each(function(e)
+			$selector.select('[class="validate"]').each(function(e)
 			{
 				e.show();
 			});
