@@ -15,7 +15,7 @@ var DebugTab = Class.create(Tab,
 
 	updateResponse: function(responseText)
 	{
-		if(!responseText == null)
+		if(!responseText)
 		{
 			this.$debug2.update('<img src="images/server_down.jpg" />');
 		}
