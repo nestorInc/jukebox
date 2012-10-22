@@ -32,7 +32,10 @@ SET ajaxmin="C:\Program Files (x86)\Microsoft\Microsoft Ajax Minifier\AjaxMin.ex
 	-global:$,Class,Tab,JSON,Notifications ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze tab/notification.js ^
-	-global:$,Element,Effect,Event,Class,Tab ^
+	-global:$,Element,Notifications,Class,Tab ^
+	1>NUL 2>>%log%%
+%ajaxmin% -analyze notifications.js ^
+	-global:$,Effect,Event ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze jukebox.js ^
 	-global:$,$$,$R,Control,Ajax,$F,Event,Element,JSON,Droppables,Draggable,Tabs,SearchTab,UploadTab,DebugTab,Notifications,NotificationTab,CustomQueriesTab,Sound,genres,genresOrdered ^

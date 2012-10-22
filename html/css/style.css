@@ -337,7 +337,7 @@ border-top: none;
 }
 
 #notifications{
-position: absolute;
+position: fixed; /* Notifications are visible even if there is a vertical scrollbar */
 top: 0;
 left: 0;
 z-index: 1000;
