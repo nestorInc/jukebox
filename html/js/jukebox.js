@@ -368,7 +368,9 @@ function Jukebox(element, opts)
 	{
 		if(typeof callback !== "function")
 		{
-			throw new Error('Invalid parameter: .ready() needs a function');
+			var msg = "Invalid parameter: .ready() needs a function";
+			Notifications.Display(Notifications.LEVEL.error, msg);
+			throw new Error(msg);
 		}
 
 		function load()
@@ -492,7 +494,9 @@ function Jukebox(element, opts)
 			volume = Number(volume);
 			if(volume < 0 || volume > 100)
 			{
-				throw new Error("Invalid volume level: " + volume + " is not in 0-100 range");
+				var msg = "Invalid volume level: " + volume + " is not in 0-100 range";
+				Notifications.Display(Notifications.LEVEL.error, msg);
+				throw new Error(msg);
 			}
 			else
 			{
@@ -1104,7 +1108,7 @@ function Jukebox(element, opts)
 			}
 			catch(parseResponseEx)
 			{
-				//console.error(parseResponseEx); // TODO: avoid console
+				Notifications.Display(Notifications.LEVELS.error, "Error while parsing server response: " + parseResponseEx.message);
 			}
 
 			if(_waitingQueries.length > 0)
