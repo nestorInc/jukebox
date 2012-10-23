@@ -192,7 +192,7 @@ class UploadManager < HttpNode
               action_response = {
                 :name              => "update_uploaded_file",
                 :return            => "success",
-                :message           => "Id3 informations for #{req["file_name"]} successfuly updated"
+                :message           => "ID3 informations for #{req["file_name"]} successfully updated"
               };
               return action_response;
             rescue Exception=>e
