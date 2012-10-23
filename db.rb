@@ -120,17 +120,17 @@ class Library
   end
   
   def get_total(field, comparison, value)
-    if(field)
+    if(field && value.size > 0)
       if( "like" == comparison)
         req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK} AND #{field} LIKE \"%\" || :name || \"%\"");
       else
         req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK} AND #{field} LIKE :name");
       end
+      res = req.execute!(:name => value);
     else
       req=@db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK}");
+      res = req.execute!();
     end
-    
-    res = req.execute!(:name => value);
     req.close();
     res[0].at(0);
   end
