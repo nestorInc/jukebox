@@ -488,7 +488,6 @@ function Jukebox(element, opts)
 	*/
 	this.stopStreaming = function()
 	{
-		// Then stop the download:
 		// Not clean. Not working if /null is a valid stream url on server side...
 		//TODO: remove flash object?
 		_streamPlayer.loadSound(null, false);
