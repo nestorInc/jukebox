@@ -324,13 +324,18 @@ class HttpSession < Rev::SSLSocket
         end
       }
       v = @req.options["Authorization"];
-      if(v != nil && m_auth != nil)
-        method, code = v.split(" ", 2);
-        if(method == "Basic" && code != nil)
-          @user, pass = code.unpack("m").first.split(":", 2);
-          pass ||= "";
-          @auth = m_auth.call(self, @req, @user, pass);
+      if(m_auth != nil)
+        pass = nil;
+        if(v)
+          method, code = v.split(" ", 2);
+          if(method == "Basic" && code != nil)
+            @user, pass = code.unpack("m").first.split(":", 2);
+            pass ||= "";
+          end
+        else
+          @user = "unknown";
         end
+        @auth = m_auth.call(self, @req, @user, pass) if(@user);
       end
 
       if(m_auth != nil && @auth == nil)
