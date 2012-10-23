@@ -538,10 +538,7 @@ function Jukebox(element, opts)
 	this.search = function(/*page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select*/)
 	{
 		var action = Action.search.apply(0, arguments); // trick to avoid copy/paste of args
-		if(action.search_value)
-		{
-			_doAction(action);
-		}
+		_doAction(action);
 		return this;
 	};
 
@@ -1662,11 +1659,7 @@ function JukeboxUI(jukebox, element, opts)
 		{ 
 			result_count = _$.results_per_page.value;
 		}
-
-		if(search_value)
-		{
-			J.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
-		}
+		J.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
 	}
 
 	function _makePlayQueueSongDroppable(droppable_id, playQueueSongs)
