@@ -72,6 +72,8 @@ class JsonManager < HttpNode
         timestamp = json.delete("timestamp") || 0;
         json.each { |type, value|
           case(type)
+          when "token"
+            resp["token"] = @library.create_token(user, rand(99999999999).to_s);
           when "search"
             parse_search(resp, value);
           when "action"

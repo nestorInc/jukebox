@@ -62,8 +62,22 @@ stream = Stream.new(channelList, library);
 
 main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
-  next "guest" if(user == "guest");
-  next "PAM"   if(authpam(user, pass) == true);
+  if(req.uri.query)
+    form = Hash[URI.decode_www_form(req.uri.query)] ;
+    if(form["token"])
+      token = form["token"];
+      luser = library.check_token(token);
+
+      if(luser)
+        user.replace(luser);
+        next "token"
+      end
+    end
+  end
+  if(pass)
+    next "guest" if(user == "guest");
+    next "PAM"   if(authpam(user, pass) == true);
+  end
   nil;
 }
 
