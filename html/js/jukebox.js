@@ -345,6 +345,7 @@ function Jukebox(element, opts)
 		// http://forums.mediabox.fr/wiki2/documentation/flash/as2/sound
 		_streamPlayer = new Sound(), // the mp3 stream player (Flash/ActionScript)
 		_streamURL = "/stream",
+		_autostopStreaming = null,
 
 		// Utility
 		_last_nb_listening_users = 0,
@@ -433,14 +434,20 @@ function Jukebox(element, opts)
 	*/
 	this.play = function(streamURL)
 	{
-		_streamURL = streamURL ? streamURL : _streamURL;
-		$this.stream = _streamURL; // copy
+		if(this.streaming)
+		{
+			this.start();
+		}
+		else
+		{
+			_streamURL = streamURL ? streamURL : _streamURL;
+			this.stream = _streamURL; // copy
 
-		_streamPlayer.loadSound(_streamURL, /*streaming*/true);
+			_streamPlayer.loadSound(_streamURL, /*streaming*/true);
 
-		$this.streaming = true;
-		_ui.playing($this.playing = true);
-
+			this.streaming = true;
+			_ui.playing(this.playing = true);
+		}
 		return this;
 	};
 
@@ -451,7 +458,8 @@ function Jukebox(element, opts)
 	this.start = function()
 	{
 		_streamPlayer.start();
-		_ui.playing($this.playing = true);
+		_ui.playing(this.playing = true);
+		clearTimeout(_autostopStreaming);
 		return this;
 	};
 
@@ -462,7 +470,15 @@ function Jukebox(element, opts)
 	this.stop = function()
 	{
 		_streamPlayer.stop();
-		_ui.playing($this.playing = false);
+		_ui.playing(this.playing = false);
+
+		// Keep streaming for 30s
+		var that = this;
+		_autostopStreaming = setTimeout(function()
+		{
+			that.stopStreaming();
+		}, 30 * 1000);
+
 		return this;
 	};
 
@@ -472,13 +488,12 @@ function Jukebox(element, opts)
 	*/
 	this.stopStreaming = function()
 	{
-		this.stop(); // Stop the audio
-
 		// Then stop the download:
 		// Not clean. Not working if /null is a valid stream url on server side...
 		//TODO: remove flash object?
 		_streamPlayer.loadSound(null, false);
-		$this.streaming = false;
+		this.streaming = false;
+		_ui.playing(this.playing = false);
 
 		return this;
 	};
