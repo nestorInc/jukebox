@@ -346,6 +346,7 @@ function Jukebox(element, opts)
 		_streamPlayer = new Sound(), // the mp3 stream player (Flash/ActionScript)
 		_streamURL = "/stream",
 		_autostopStreaming = null,
+		_volume = 100,
 
 		// Utility
 		_last_nb_listening_users = 0,
@@ -444,6 +445,9 @@ function Jukebox(element, opts)
 			this.stream = _streamURL; // copy
 
 			_streamPlayer.loadSound(_streamURL, /*streaming*/true);
+			
+			// Restore volume after stream stop & restart
+			this.volume(_volume);
 
 			this.streaming = true;
 			_ui.playing(this.playing = true);
@@ -518,7 +522,7 @@ function Jukebox(element, opts)
 				_ui.volume(volume);
 			}
 		}
-		return _streamPlayer.getVolume();
+		return _volume = _streamPlayer.getVolume();
 	};
 
 	/**
