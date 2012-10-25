@@ -646,14 +646,21 @@ function Jukebox(element, opts)
 	};
 
 	/**
-	* Delete a song from the play queue
+	* Delete a song or all songs from the play queue
 	* @param {int} mid - The song id
 	* @param {int} play_queue_index - Index of the song ; This parameter is used to check for a simultaneous deletion (by another user)
 	* @return {Jukebox} this.
 	*/
 	this.playQueueDelete = function(mid, play_queue_index)
 	{
-		_playQueueDelete(mid, play_queue_index);
+		if(arguments.length == 0)
+		{
+			_playQueueDelete();
+		}
+		else
+		{
+			_playQueueDelete(mid, play_queue_index);
+		}
 		return this;
 	};
 
@@ -1018,7 +1025,7 @@ function Jukebox(element, opts)
 	function _playQueueDelete(mid, play_queue_index)
 	{
 		var action;
-		if(!mid || !play_queue_index)
+		if(arguments.length == 0)
 		{		
 			// Nothing is passed as argument we want to clear all the playlist
 			for(var i = _playQueueSongs.length - 1; i >= 0; --i)
@@ -1509,14 +1516,18 @@ function JukeboxUI(jukebox, element, opts)
 			ul.down('li:last > div').store('mid', song.mid);
 
 			// Declare listeners
+
+			// Artist
 			ul.down('li:last .play_queue_handle a:first').on("click", function()
 			{
 				_search(1, null, null, song.artist, 'equal', 'artist', 'artist,album,track,title', 20, false);
 			});
+			// Album
 			ul.down('li:last .play_queue_handle a:last').on("click", function()
 			{
 				_search(1, null, null, song.album, 'equal', 'album', 'artist,album,track,title', 20, false);
 			});
+
 			var localcurrentPQSongIndex = currentPQSongIndex; // Avoid closure issue
 			ul.down('li:last .play_queue_move_top').on("click", function()
 			{
