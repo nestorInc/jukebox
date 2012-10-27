@@ -89,7 +89,7 @@ function Notification(level, message)
 	var notif = this;
 	Effect.SlideDown('notification' + this.id,
 	{
-	 	duration: 0.6,
+		duration: 0.6,
 		restoreAfterFinish: false,
 		afterFinish: function(effect)
 		{
@@ -143,7 +143,7 @@ Notification.prototype.remove = function()
 	// Stop timer (remove can be called before the timer timeout)
 	clearTimeout(this._timer);
 	this._timer = null;
-}
+};
 
 //==================================================
 

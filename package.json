@@ -1,0 +1,8 @@
+{
+	"name": "Jukebox",
+	"version": "0.0.0",
+	"dependencies" :
+	{
+		"grunt-css":   ">0.0.0"
+	}
+}

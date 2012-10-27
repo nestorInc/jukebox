@@ -1,0 +1,954 @@
+/*! normalize.css v2.0.1 | MIT License | git.io/normalize */
+
+/* ==========================================================================
+   HTML5 display definitions
+   ========================================================================== */
+
+/*
+ * Corrects `block` display not defined in IE 8/9.
+ */
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+nav,
+section,
+summary {
+    display: block;
+}
+
+/*
+ * Corrects `inline-block` display not defined in IE 8/9.
+ */
+
+audio,
+canvas,
+video {
+    display: inline-block;
+}
+
+/*
+ * Prevents modern browsers from displaying `audio` without controls.
+ * Remove excess height in iOS 5 devices.
+ */
+
+audio:not([controls]) {
+    display: none;
+    height: 0;
+}
+
+/*
+ * Addresses styling for `hidden` attribute not present in IE 8/9.
+ */
+
+[hidden] {
+    display: none;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+/*
+ * 1. Sets default font family to sans-serif.
+ * 2. Prevents iOS text size adjust after orientation change, without disabling
+ *    user zoom.
+ */
+
+html {
+    font-family: sans-serif; /* 1 */
+    -webkit-text-size-adjust: 100%; /* 2 */
+    -ms-text-size-adjust: 100%; /* 2 */
+}
+
+/*
+ * Removes default margin.
+ */
+
+body {
+    margin: 0;
+}
+
+/* ==========================================================================
+   Links
+   ========================================================================== */
+
+/*
+ * Addresses `outline` inconsistency between Chrome and other browsers.
+ */
+
+a:focus {
+    outline: thin dotted;
+}
+
+/*
+ * Improves readability when focused and also mouse hovered in all browsers.
+ */
+
+a:active,
+a:hover {
+    outline: 0;
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+/*
+ * Addresses `h1` font sizes within `section` and `article` in Firefox 4+,
+ * Safari 5, and Chrome.
+ */
+
+h1 {
+    font-size: 2em;
+}
+
+/*
+ * Addresses styling not present in IE 8/9, Safari 5, and Chrome.
+ */
+
+abbr[title] {
+    border-bottom: 1px dotted;
+}
+
+/*
+ * Addresses style set to `bolder` in Firefox 4+, Safari 5, and Chrome.
+ */
+
+b,
+strong {
+    font-weight: bold;
+}
+
+/*
+ * Addresses styling not present in Safari 5 and Chrome.
+ */
+
+dfn {
+    font-style: italic;
+}
+
+/*
+ * Addresses styling not present in IE 8/9.
+ */
+
+mark {
+    background: #ff0;
+    color: #000;
+}
+
+
+/*
+ * Corrects font family set oddly in Safari 5 and Chrome.
+ */
+
+code,
+kbd,
+pre,
+samp {
+    font-family: monospace, serif;
+    font-size: 1em;
+}
+
+/*
+ * Improves readability of pre-formatted text in all browsers.
+ */
+
+pre {
+    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/*
+ * Sets consistent quote types.
+ */
+
+q {
+    quotes: "\201C" "\201D" "\2018" "\2019";
+}
+
+/*
+ * Addresses inconsistent and variable font size in all browsers.
+ */
+
+small {
+    font-size: 80%;
+}
+
+/*
+ * Prevents `sub` and `sup` affecting `line-height` in all browsers.
+ */
+
+sub,
+sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+
+sup {
+    top: -0.5em;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+/* ==========================================================================
+   Embedded content
+   ========================================================================== */
+
+/*
+ * Removes border when inside `a` element in IE 8/9.
+ */
+
+img {
+    border: 0;
+}
+
+/*
+ * Corrects overflow displayed oddly in IE 9.
+ */
+
+svg:not(:root) {
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Figures
+   ========================================================================== */
+
+/*
+ * Addresses margin not present in IE 8/9 and Safari 5.
+ */
+
+figure {
+    margin: 0;
+}
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+/*
+ * Define consistent border, margin, and padding.
+ */
+
+fieldset {
+    border: 1px solid #c0c0c0;
+    margin: 0 2px;
+    padding: 0.35em 0.625em 0.75em;
+}
+
+/*
+ * 1. Corrects color not being inherited in IE 8/9.
+ * 2. Remove padding so people aren't caught out if they zero out fieldsets.
+ */
+
+legend {
+    border: 0; /* 1 */
+    padding: 0; /* 2 */
+}
+
+/*
+ * 1. Corrects font family not being inherited in all browsers.
+ * 2. Corrects font size not being inherited in all browsers.
+ * 3. Addresses margins set differently in Firefox 4+, Safari 5, and Chrome
+ */
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit; /* 1 */
+    font-size: 100%; /* 2 */
+    margin: 0; /* 3 */
+}
+
+/*
+ * Addresses Firefox 4+ setting `line-height` on `input` using `!important` in
+ * the UA stylesheet.
+ */
+
+button,
+input {
+    line-height: normal;
+}
+
+/*
+ * 1. Avoid the WebKit bug in Android 4.0.* where (2) destroys native `audio`
+ *    and `video` controls.
+ * 2. Corrects inability to style clickable `input` types in iOS.
+ * 3. Improves usability and consistency of cursor style between image-type
+ *    `input` and others.
+ */
+
+button,
+html input[type="button"], /* 1 */
+input[type="reset"],
+input[type="submit"] {
+    -webkit-appearance: button; /* 2 */
+    cursor: pointer; /* 3 */
+}
+
+/*
+ * Re-set default cursor for disabled elements.
+ */
+
+button[disabled],
+input[disabled] {
+    cursor: default;
+}
+
+/*
+ * 1. Addresses box sizing set to `content-box` in IE 8/9.
+ * 2. Removes excess padding in IE 8/9.
+ */
+
+input[type="checkbox"],
+input[type="radio"] {
+    box-sizing: border-box; /* 1 */
+    padding: 0; /* 2 */
+}
+
+/*
+ * 1. Addresses `appearance` set to `searchfield` in Safari 5 and Chrome.
+ * 2. Addresses `box-sizing` set to `border-box` in Safari 5 and Chrome
+ *    (include `-moz` to future-proof).
+ */
+
+input[type="search"] {
+    -webkit-appearance: textfield; /* 1 */
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box; /* 2 */
+    box-sizing: content-box;
+}
+
+/*
+ * Removes inner padding and search cancel button in Safari 5 and Chrome
+ * on OS X.
+ */
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+}
+
+/*
+ * Removes inner padding and border in Firefox 4+.
+ */
+
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+
+/*
+ * 1. Removes default vertical scrollbar in IE 8/9.
+ * 2. Improves readability and alignment in all browsers.
+ */
+
+textarea {
+    overflow: auto; /* 1 */
+    vertical-align: top; /* 2 */
+}
+
+/* ==========================================================================
+   Tables
+   ========================================================================== */
+
+/*
+ * Remove most spacing between table cells.
+ */
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+﻿input{
+height: 16px;
+}
+select, input[type="button"]{
+height: 20px;
+font-size: 11px;
+}
+p, ol, ul{
+margin: 0;
+font-size: 80%;
+padding-left: 0.5em;
+padding-right: 1em;
+text-align: left;
+text-indent: 0.5em;
+}
+
+a:link, a:active, a:visited, a:hover, #tab_links > a, #play_stream, #stop_stream{
+text-decoration: none;
+font-weight: bold;
+color: #4d67b1;
+}
+a:hover, #tab_links > a:hover, #play_stream:hover, #stop_stream:hover{
+color: #a21919;
+cursor: pointer;
+}
+
+#page_wrapper{
+position: relative;
+margin-top: 25px; /*#notifications height*/
+margin-right: auto;
+margin-left: auto;
+/*width: 960px;*/
+width: 280px;
+border: 1px solid black;
+/*border-radius: 10px;*/
+}
+
+/* Page layout */
+#header{
+background-color: #6B6B6B;
+width: 100%;
+height: 20px;
+/*border-top-left-radius: 10px;
+border-top-right-radius: 10px;*/
+}
+
+#player{
+float: left;
+display: inline;
+width: 280px;
+}
+
+#footer{
+clear: both;
+position: relative;
+width: 100%;
+background-color: #6B6B6B;
+font-size: 85%;
+}
+
+/* Header */
+#channel{
+width: 100px;
+height: 20px; /* #header height */
+border: 0;
+padding: 0;
+vertical-align: top;
+}
+#btn_join_channel{
+height: 100%;
+vertical-align: top;
+}
+
+span#activity_monitor{
+display: block;
+float: right;
+height: 100%;
+width: 8px;
+background-color: green;
+}
+
+span#expand_button, span#collapse_button{
+display: block;
+float: right;
+background-color: white;
+font-weight: bold;
+color: #4D67B1;
+cursor: pointer;
+}
+
+/* CONTROLS */
+#player_controls{
+position: relative;
+background-color: #DEDEDE;
+width: 100%;
+height: 50px;
+overflow:hidden;
+border-right: 1px solid black;
+border-bottom: 1px solid black;
+}
+
+#previous_button,#next_button{
+background: url("../images/next.jpg") no-repeat left top;
+display: block;
+position: absolute;
+width: 30px;
+height: 30px;
+top: 10px;
+cursor: pointer;
+}
+#previous_button{
+left: 5px;
+
+/* Flip */
+-moz-transform: scaleX(-1);
+-o-transform: scaleX(-1);
+-webkit-transform: scaleX(-1);
+transform: scaleX(-1);
+filter: FlipH;
+-ms-filter: "FlipH";
+}
+#next_button{
+left: 40px; /* 5 from border + 30 left image + 5 space */
+}
+
+p#player_song{
+position: absolute;
+left: 70px; /* 30 * 2 + 5 * 2 */
+height: 37px;
+width: 210px; /* 280px - 70px */
+overflow: hidden;
+
+font-size: 70%;
+padding-left: 0;
+padding-right: 0;
+text-align: center;
+text-indent: 0;
+}
+p#player_song_time{
+position: absolute;
+top: 0;
+height: 100%;
+width: 100%;
+
+font-size: 60%;
+padding-left: 0;
+padding-right: 0;
+text-align: center;
+text-indent: 0;
+z-index: 100;
+color: black;
+}
+
+/* Progressbar */
+#progressbar_wrapper{
+position: absolute;
+top: 36px;
+left: 73px; /* 70 + 3 */
+width: 204px; /* 280 - 70 - 3*2 */
+height: 12px;
+
+background-color: white;
+border-radius: 25px;
+box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
+}
+#progressbar{
+height: 100%;
+width: 0; /* Not 100% at start */
+
+/* Côté gauche arrondi */
+/*-webkit-border-top-left-radius: 20px;
+-webkit-border-bottom-left-radius: 20px;
+-moz-border-radius-topleft: 20px;
+-moz-border-radius-bottomleft: 20px;*/
+border-top-left-radius: 20px;
+border-bottom-left-radius: 20px;
+
+/* Color ! */
+background-color: rgb(43,194,83);
+background-image: -webkit-gradient(
+linear,
+left bottom,
+left top,
+color-stop(0, rgb(43,194,83)),
+color-stop(1, rgb(84,240,84))
+);
+background-image: -moz-linear-gradient(
+center bottom,
+rgb(43,194,83) 37%,
+rgb(84,240,84) 69%
+);
+/*-webkit-box-shadow: 
+inset 0 2px 9px  rgba(255,255,255,0.3),
+inset 0 -2px 6px rgba(0,0,0,0.4);
+-moz-box-shadow: 
+inset 0 2px 9px  rgba(255,255,255,0.3),
+inset 0 -2px 6px rgba(0,0,0,0.4);*/
+}
+
+
+/* PLAYLIST */
+#player_playlist{
+padding-top: 2px;
+position: relative;
+background-color: white;
+width: 100%;
+border-right: 1px solid black;
+}
+
+#play_queue_content ul{
+list-style-type: none;
+}
+#play_queue_content li{
+border-top: 1px solid grey;
+}
+#play_queue_content li#play_queue_li_first{
+border-top: 0;
+}
+
+div.play_queue_handle{
+width: 215px;
+overflow: hidden;
+}
+
+span.play_queue_delete, span.play_queue_shuffle, span.play_queue_move_top, span.play_queue_move_bottom, span.nb_listening_users{
+/*display: block;
+float: right;*/
+width: 10px;
+height: 10px;
+position: absolute;
+top: 2px;
+right: 5px;
+background-color: black;
+}
+span.add_to_play_queue_bottom, span.add_to_play_queue_top, span.add_to_play_queue_rand{
+width: 10px;
+height: 10px;
+display: block;
+float: left;
+background-color: black;
+}
+span.count_user_listening{
+width: 10px;
+height: 10px;
+position: absolute;
+top: 2px;
+left: 85px;
+font-size: 10px;
+}
+span.nb_listening_users{
+left: 80px;
+top: 3px;
+background: url("../images/user.png") no-repeat left top;
+}
+span.add_to_play_queue_top{
+right: 20px;
+background: url("../images/icons/add_to_play_queue_top.png") no-repeat left top;
+}
+span.add_to_play_queue_bottom{
+background: url("../images/icons/add_to_play_queue_bottom.png") no-repeat left top;
+}
+span.add_to_play_queue_rand{
+right: 35px;
+background: url("../images/icons/add_to_play_queue_randomly.png") no-repeat left top;
+}
+span.play_queue_delete{
+background: url("../images/icons/play_queue_delete.png") no-repeat left top;
+}
+span.play_queue_shuffle{
+right: 20px;
+background: url("../images/icons/play_queue_shuffle.png") no-repeat left top;
+}
+span.play_queue_move_top{
+right: 35px;
+background: url("../images/icons/play_queue_move_top.png") no-repeat left top;
+}
+span.play_queue_move_bottom{
+right: 20px;
+background: url("../images/icons/play_queue_move_bottom.png") no-repeat left top;
+}
+
+
+/* Music collection */
+#music_wrapper{
+width: 620px; /* 900-280 */
+float: left;
+overflow: hidden;
+display: none;
+font-size: 80%;
+}
+
+#collection_header{
+position: relative;
+background-color: #DEDEDE;
+font-size: 80%;
+border-bottom: 1px solid black;
+border-left: 1px solid black;
+}
+
+#btn_search,#btn_refresh,#btn_apply_plugin{
+height: 100%;
+}
+
+#cb_autorefresh{
+vertical-align: middle;
+}
+
+#tab_links{
+position: relative;
+background-color: #DEDEDE;
+font-size: 80%;
+border-left: 1px solid black;
+}
+
+#page_links{
+text-align: center;
+}
+
+#debug1 p, #debug2 p{
+font-size: 70%;
+}
+
+li.droppable_hover{
+border-bottom:5px solid blue;
+}
+
+li.being_dragged tr.being_dragged{
+height: 0px;
+}
+
+li.being_dragged div{
+border: 1px solid black;
+}
+
+#play_queue_content li.being_dragged tr.being_dragged{
+border-top: none;
+}
+
+#notifications{
+position: fixed; /* Notifications are visible even if there is a vertical scrollbar */
+top: 0;
+left: 0;
+z-index: 1000;
+width: 100%;
+}
+
+div.notification_wrapper{
+position: relative;
+}
+
+div.notification_wrapper_debug, div.notification_wrapper_info, div.notification_wrapper_warning, div.notification_wrapper_error, div.notification_wrapper_fatal{
+position: relative;
+border-style: solid;
+border-width: 2px;
+border-top: 0;
+padding-top: 5px;
+padding-bottom: 2px;
+font-size: 100%;
+font-weight: bold;
+color: white;
+}
+div.notification_wrapper_debug{
+background-color: #999999;
+border-color: #444444;
+}
+div.notification_wrapper_info{
+background-color: #4EA5CD;
+border-color: #3B8EB5;
+}
+div.notification_wrapper_warning{
+background-color: #EAAF51;
+border-color: #D99A36;
+}
+div.notification_wrapper_error{
+background-color: #DE4343;
+border-color: #C43D3D;
+}
+div.notification_wrapper_fatal{
+background-color: #660000;
+border-color: black;
+}
+
+table.search_table,
+table.upload_table{
+width: 100%;
+}
+
+table.search_table td,
+table.search_table th,
+table.upload_table th,
+table.upload_table td{
+border: 1px solid #CCCCCC;
+max-width: 100px;
+width: auto;
+min-width: 5px;
+text-align: left;
+padding-left: 5px;
+}
+table.search_table th{
+white-space: pre; /* For buttons column */
+}
+table.search_table thead,
+table.search_table tfoot,
+table.upload_table thead,
+table.upload_table tfoot{
+background-color: #DDD;
+}
+
+table.search_table tr.rowodd{
+background-color: #FFF;
+}
+table.search_table tr.roweven{
+background-color: #F2F2F2;
+}
+
+table.search_table .sortcol{
+cursor: pointer;
+padding-right: 20px;
+background-repeat: no-repeat;
+background-position: right center;
+}
+table.search_table .sortasc{
+background-color: #DDFFAC;
+background-image: url(../images/up.gif);
+}
+table.search_table .sortdesc{
+background-color: #B9DDFF;
+background-image: url(../images/down.gif);
+}
+table.search_table .nosort{
+cursor: default;
+}
+
+table.search_table th.resize-handle-active{
+cursor: e-resize;
+}
+table.search_table div.resize-handle{
+cursor: e-resize;
+width: 2px;
+border-right: 1px dashed #1E90FF;
+position: absolute;
+top: 0;
+left: 0;
+}
+
+/* Upload */
+
+td form{
+overflow: auto;
+}
+
+td.modified{
+color: #880000;
+}
+
+/* Sliders */
+div.page_links{
+text-align: center;
+}
+div.slider{
+margin: 15px 0;
+background-color: #ccc;
+height: 15px;
+position: relative;
+}
+div.slider div.handle{
+width: 25px;
+margin-left: -12px;
+height: 25px;
+background-color: #888;
+cursor: move;
+position: absolute;
+top: -5px;
+}
+div.slider div.handle span{
+height: 20px;
+}
+a.slider_link_current_page{
+color: #ff0000;
+}
+a.slider_link_current_selection{
+color:#00ff00;
+}
+
+/* tabs */
+#tabsHeader{
+margin-left: 4px;
+padding: 0;
+padding-left: 5px;
+display: inline-block;
+}
+#tabsHeader ul{
+font: bold 11px Arial, Verdana, sans-serif;
+list-style: none;
+}
+#tabsHeader li{
+display: inline;
+}
+#tabsHeader a{
+text-decoration: none;
+}
+#tabsHeader a span{
+float: left;
+display: block;
+}
+#tabsHeader a:hover{
+background-color: #7E94B9;
+color: white;
+}
+#tabsHeader a:hover span{
+background-color: #7E94B9;
+}
+.tabHeaderActive span, .tabHeaderActive a {
+background-color: #42577B;
+color:#fff;
+}
+#tabscontent{
+position: relative;
+border-left: 1px solid black;
+}
+span.tab_delete{
+background: url("../images/icons/play_queue_delete.png") no-repeat left top;
+}
+
+span#collapse_button,#stop_stream{
+display: none; /* initial state */
+}
+#volume_box span{
+float: left;
+font-size: 13px;
+}
+#volume_box_slider{
+float: left;
+width: 120px;
+height: 10px;
+margin: 5px 0;
+}
+#volume_box_slider .handle{
+width: 10px;
+height: 20px;
+margin-left: 0;
+}
+
+.qq-upload-button input{
+height: 30px; /* Height of the button, so that pointer is ok on all height. 100% doesn't work */
+}
+
+.qq-uploader { position:relative; width: 100%;}
+
+.qq-upload-button {
+    display:block; /* or inline-block */
+    width: 105px; padding: 7px 0; text-align:center;    
+    background:#880000; border-bottom:1px solid #ddd;color:#fff;
+}
+.qq-upload-button-hover {background:#cc0000;}
+.qq-upload-button-focus {outline:1px dotted black;}
+
+.qq-upload-drop-area {
+    position:absolute; top:0; left:0; width:100%; height:100%; min-height: 70px; z-index:2;
+    background:#FF9797; text-align:center; 
+}
+.qq-upload-drop-area span {
+    display:block; position:absolute; top: 50%; width:100%; margin-top:-8px; font-size:16px;
+}
+.qq-upload-drop-area-active {background:#FF7171;}
+
+.qq-upload-list {margin:15px 35px; padding:0; list-style:disc;}
+.qq-upload-list li { margin:0; padding:0; line-height:15px; font-size:12px;}
+.qq-upload-file, .qq-upload-spinner, .qq-upload-size, .qq-upload-cancel, .qq-upload-failed-text {
+    margin-right: 7px;
+}
+
+.qq-upload-file {}
+.qq-upload-spinner {display:inline-block; background: url(../images/loading.gif); width:15px; height:15px; vertical-align:text-bottom;}
+.qq-upload-size,.qq-upload-cancel {font-size:11px;}
+
+.qq-upload-failed-text {display:none;}
+.qq-upload-fail .qq-upload-failed-text {display:inline;}

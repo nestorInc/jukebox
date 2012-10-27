@@ -1,36 +1,3 @@
-function sort_unique(arr)
-{
-	arr = arr.sort(function(a, b)
-	{
-		return a * 1 - b * 1;
-	});
-	var ret = [arr[0]];
-	for(var i = 1; i < arr.length; i++)
-	{
-		if(arr[i - 1] !== arr[i])
-		{
-			ret.push(arr[i]);
-		}
-	}
-	return ret;
-}
-
-function FormatTime(t) // TODO: remove this duplicate (jukebox.js)
-{
-	var str = null;
-	t = Number(t);
-	if(!isNaN(t))
-	{
-		var h = Math.floor(t / 3600),
-			m = Math.floor(t % 3600 / 60),
-			s = Math.floor(t % 3600 % 60);
-		str = ((h > 0 ? h + ":" : "") + (m > 0 ? (h > 0 && m < 10 ? "0" : "") + m + ":" : "0:") + (s < 10 ? "0" : "") + s);
-	}
-	return str;
-}
-
-//==================================================
-
 var SearchTab = Class.create(Tab,
 {
 	initialize: function(jukebox, server_results)
