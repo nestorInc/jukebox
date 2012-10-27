@@ -166,158 +166,158 @@ Object.freeze(this.Notifications);
 
 })();
 
-this.Jukebox = (function(){
+(function(){
 
 // Structure is done to allow direct access, thus reducing loops usage.
 var genres =
 {
-	0: 		"Blues",
-	1: 		"Classic Rock",
-	2: 		"Country",
-	3: 		"Dance",
-	4: 		"Disco",
-	5: 		"Funk",
-	6: 		"Grunge",
-	7: 		"Hip-Hop",
-	8: 		"Jazz",
-	9: 		"Metal",
-	10: 	"New Age",
-	11: 	"Oldies",
-	12: 	"Other",
-	13: 	"Pop",
-	14: 	"R&B",
-	15: 	"Rap",
-	16: 	"Reggae",
-	17: 	"Rock",
-	18: 	"Techno",
-	19: 	"Industrial",
-	20: 	"Alternative",
-	21: 	"Ska",
-	22: 	"Death Metal",
-	23: 	"Pranks",
-	24: 	"Soundtrack",
-	25: 	"Euro-Techno",
-	26: 	"Ambient",
-	27: 	"Trip-Hop",
-	28: 	"Vocal",
-	29: 	"Jazz+Funk",
-	30: 	"Fusion",
-	31: 	"Trance",
-	32: 	"Classical",
-	33: 	"Instrumental",
-	34: 	"Acid",
-	35: 	"House",
-	36: 	"Game",
-	37: 	"Sound Clip",
-	38: 	"Gospel",
-	39: 	"Noise",
-	40: 	"Alternative Rock",
-	41: 	"Bass",
-	43: 	"Punk",
-	44: 	"Space",
-	45: 	"Meditative",
-	46: 	"Instrumental Pop",
-	47: 	"Instrumental Rock",
-	48: 	"Ethnic",
-	49: 	"Gothic",
-	50: 	"Darkwave",
-	51: 	"Techno-Industrial",
-	52: 	"Electronic",
-	53: 	"Pop-Folk",
-	54: 	"Eurodance",
-	55: 	"Dream",
-	56: 	"Southern Rock",
-	57: 	"Comedy",
-	58: 	"Cult",
-	59: 	"Gangsta",
-	60: 	"Top 40",
-	61: 	"Christian Rap",
-	62: 	"Pop/Funk",
-	63: 	"Jungle",
-	64: 	"Native US",
-	65: 	"Cabaret",
-	66: 	"New Wave",
-	67: 	"Psychadelic",
-	68: 	"Rave",
-	69: 	"Showtunes",
-	70: 	"Trailer",
-	71: 	"Lo-Fi",
-	72: 	"Tribal",
-	73: 	"Acid Punk",
-	74: 	"Acid Jazz",
-	75: 	"Polka",
-	76: 	"Retro",
-	77: 	"Musical",
-	78: 	"Rock & Roll",
-	79: 	"Hard Rock",
-	80: 	"Folk",
-	81: 	"Folk-Rock",
-	82: 	"National Folk",
-	83: 	"Swing",
-	84: 	"Fast Fusion",
-	85: 	"Bebob",
-	86: 	"Latin",
-	87: 	"Revival",
-	88: 	"Celtic",
-	89: 	"Bluegrass",
-	90: 	"Avantgarde",
-	91: 	"Gothic Rock",
-	92: 	"Progressive Rock",
-	93: 	"Psychedelic Rock",
-	94: 	"Symphonic Rock",
-	95: 	"Slow Rock",
-	96: 	"Big Band",
-	97: 	"Chorus",
-	98: 	"Easy Listening",
-	99: 	"Humour",
-	100: 	"Acoustic",
-	101: 	"Speech",
-	102: 	"Chanson",
-	103: 	"Opera",
-	104: 	"Chamber Music",
-	105: 	"Sonata",
-	106: 	"Symphony",
-	107: 	"Booty Bass",
-	108: 	"Primus",
-	109: 	"Porn Groove",
-	110: 	"Satire",
-	111: 	"Slow Jam",
-	112: 	"Club",
-	113: 	"Tango",
-	114: 	"Samba",
-	115: 	"Folklore",
-	116: 	"Ballad",
-	117: 	"Power Ballad",
-	118: 	"Rhytmic Soul",
-	119: 	"Freestyle",
-	120: 	"Duet",
-	121: 	"Punk Rock",
-	122: 	"Drum Solo",
-	123: 	"Acapella",
-	124: 	"Euro-House",
-	125: 	"Dance Hall",
-	126: 	"Goa",
-	127: 	"Drum & Bass",
-	128: 	"Club-House",
-	129: 	"Hardcore",
-	130: 	"Terror",
-	131: 	"Indie",
-	132: 	"BritPop",
-	133: 	"Negerpunk",
-	134: 	"Polsk Punk",
-	135: 	"Beat",
-	136: 	"Christian Gangsta",
-	137: 	"Heavy Metal",
-	138: 	"Black Metal",
-	139: 	"Crossover",
-	140: 	"Contemporary C",
-	141: 	"Christian Rock",
-	142: 	"Merengue",
-	143: 	"Salsa",
-	144: 	"Thrash Metal",
-	145: 	"Anime",
-	146: 	"JPop",
-	147: 	"SynthPop"
+	0:		"Blues",
+	1:		"Classic Rock",
+	2:		"Country",
+	3:		"Dance",
+	4:		"Disco",
+	5:		"Funk",
+	6:		"Grunge",
+	7:		"Hip-Hop",
+	8:		"Jazz",
+	9:		"Metal",
+	10:		"New Age",
+	11:		"Oldies",
+	12:		"Other",
+	13:		"Pop",
+	14:		"R&B",
+	15:		"Rap",
+	16:		"Reggae",
+	17:		"Rock",
+	18:		"Techno",
+	19:		"Industrial",
+	20:		"Alternative",
+	21:		"Ska",
+	22:		"Death Metal",
+	23:		"Pranks",
+	24:		"Soundtrack",
+	25:		"Euro-Techno",
+	26:		"Ambient",
+	27:		"Trip-Hop",
+	28:		"Vocal",
+	29:		"Jazz+Funk",
+	30:		"Fusion",
+	31:		"Trance",
+	32:		"Classical",
+	33:		"Instrumental",
+	34:		"Acid",
+	35:		"House",
+	36:		"Game",
+	37:		"Sound Clip",
+	38:		"Gospel",
+	39:		"Noise",
+	40:		"Alternative Rock",
+	41:		"Bass",
+	43:		"Punk",
+	44:		"Space",
+	45:		"Meditative",
+	46:		"Instrumental Pop",
+	47:		"Instrumental Rock",
+	48:		"Ethnic",
+	49:		"Gothic",
+	50:		"Darkwave",
+	51:		"Techno-Industrial",
+	52:		"Electronic",
+	53:		"Pop-Folk",
+	54:		"Eurodance",
+	55:		"Dream",
+	56:		"Southern Rock",
+	57:		"Comedy",
+	58:		"Cult",
+	59:		"Gangsta",
+	60:		"Top 40",
+	61:		"Christian Rap",
+	62:		"Pop/Funk",
+	63:		"Jungle",
+	64:		"Native US",
+	65:		"Cabaret",
+	66:		"New Wave",
+	67:		"Psychadelic",
+	68:		"Rave",
+	69:		"Showtunes",
+	70:		"Trailer",
+	71:		"Lo-Fi",
+	72:		"Tribal",
+	73:		"Acid Punk",
+	74:		"Acid Jazz",
+	75:		"Polka",
+	76:		"Retro",
+	77:		"Musical",
+	78:		"Rock & Roll",
+	79:		"Hard Rock",
+	80:		"Folk",
+	81:		"Folk-Rock",
+	82:		"National Folk",
+	83:		"Swing",
+	84:		"Fast Fusion",
+	85:		"Bebob",
+	86:		"Latin",
+	87:		"Revival",
+	88:		"Celtic",
+	89:		"Bluegrass",
+	90:		"Avantgarde",
+	91:		"Gothic Rock",
+	92:		"Progressive Rock",
+	93:		"Psychedelic Rock",
+	94:		"Symphonic Rock",
+	95:		"Slow Rock",
+	96:		"Big Band",
+	97:		"Chorus",
+	98:		"Easy Listening",
+	99:		"Humour",
+	100:	"Acoustic",
+	101:	"Speech",
+	102:	"Chanson",
+	103:	"Opera",
+	104:	"Chamber Music",
+	105:	"Sonata",
+	106:	"Symphony",
+	107:	"Booty Bass",
+	108:	"Primus",
+	109:	"Porn Groove",
+	110:	"Satire",
+	111:	"Slow Jam",
+	112:	"Club",
+	113:	"Tango",
+	114:	"Samba",
+	115:	"Folklore",
+	116:	"Ballad",
+	117:	"Power Ballad",
+	118:	"Rhytmic Soul",
+	119:	"Freestyle",
+	120:	"Duet",
+	121:	"Punk Rock",
+	122:	"Drum Solo",
+	123:	"Acapella",
+	124:	"Euro-House",
+	125:	"Dance Hall",
+	126:	"Goa",
+	127:	"Drum & Bass",
+	128:	"Club-House",
+	129:	"Hardcore",
+	130:	"Terror",
+	131:	"Indie",
+	132:	"BritPop",
+	133:	"Negerpunk",
+	134:	"Polsk Punk",
+	135:	"Beat",
+	136:	"Christian Gangsta",
+	137:	"Heavy Metal",
+	138:	"Black Metal",
+	139:	"Crossover",
+	140:	"Contemporary C",
+	141:	"Christian Rock",
+	142:	"Merengue",
+	143:	"Salsa",
+	144:	"Thrash Metal",
+	145:	"Anime",
+	146:	"JPop",
+	147:	"SynthPop"
 };
 
 // Because of browsers custom implementation of for(var genre in genres), we have to sort the array.
@@ -450,7 +450,15 @@ function sort_unique(arr)
 	}
 	return ret;
 }
-var Tabs = Class.create(
+
+function JsonPrettyPrint(input)
+{
+	var json_hr = JSON.stringify(input, null, "\t");
+	json_hr = json_hr.replace(/\n/g, "<br />");
+	json_hr = json_hr.replace(/\t/g, "&nbsp;&nbsp;&nbsp;");
+	return json_hr;
+}
+this.Tabs = Class.create(
 {
 	initialize: function(tabsCollectionName)
 	{
@@ -488,7 +496,7 @@ var Tabs = Class.create(
 	{
 		for(var i = 0; i < this.tabs.length; ++i)
 		{
-			if(undefined != this.tabs[i].unique && this.tabs[i].unique == tabClassName)
+			if(this.tabs[i].unique !== undefined && this.tabs[i].unique == tabClassName)
 			{
 				return this.tabs[i].identifier;
 			}
@@ -500,7 +508,7 @@ var Tabs = Class.create(
 	{
 		for(var i = 0; i < this.tabs.length; ++i)
 		{
-			if(undefined != this.tabs[i].unique && this.tabs[i].unique == tabClassName)
+			if(this.tabs[i].unique !== undefined && this.tabs[i].unique == tabClassName)
 			{
 				return this.tabs[i];
 			}
@@ -596,7 +604,7 @@ var Tabs = Class.create(
 			if(tabHeader && tabHeader.hasClassName("tabHeaderActive"))
 			{
 				// Find the tabs position index available near from tab
-				if(index != 0)
+				if(index !== 0)
 				{
 					this.toggleTab(this.tabs[index - 1].identifier);
 				}
@@ -638,7 +646,7 @@ var Tabs = Class.create(
 
 //==================================================
 
-var Tab = Class.create(
+this.Tab = Class.create(
 {
 	initialize: function(identifier, name)
 	{
@@ -657,7 +665,7 @@ var Tab = Class.create(
 	}
 });
 
-var SearchTab = Class.create(Tab,
+this.SearchTab = Class.create(Tab,
 {
 	initialize: function(jukebox, server_results)
 	{
@@ -676,7 +684,7 @@ var SearchTab = Class.create(Tab,
 		// Tab name
 		var search = server_results.search_value,
 			field = server_results.search_field;
-		if(search == '')
+		if(search === '')
 		{
 			this.name = 'Library';
 		}
@@ -906,25 +914,7 @@ var SearchTab = Class.create(Tab,
 			sql;
 
 		//-----
-		
-		sql = 'artist COLLATE NOCASE ${ORDER}, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
-		addColumn('artist', sql, 'Artist');
 
-		sql = 'album COLLATE NOCASE ${ORDER}, track DESC, title COLLATE NOCASE DESC';
-		addColumn('album', sql, 'Album');
-
-		sql = 'title COLLATE NOCASE ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC';
-		addColumn('title', sql, 'Title');
-		
-		sql = 'track ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC';
-		addColumn('track', sql, 'Track');
-		
-		sql = 'genre ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
-		addColumn('genre', sql, 'Genre');
-
-		sql = 'duration ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
-		addColumn('duration', sql, 'Duration');
-		
 		var that = this;
 		function addColumn(column, sql, text)
 		{
@@ -951,6 +941,24 @@ var SearchTab = Class.create(Tab,
 
 			tr.insert(cell);
 		}
+
+		sql = 'artist COLLATE NOCASE ${ORDER}, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
+		addColumn('artist', sql, 'Artist');
+
+		sql = 'album COLLATE NOCASE ${ORDER}, track DESC, title COLLATE NOCASE DESC';
+		addColumn('album', sql, 'Album');
+
+		sql = 'title COLLATE NOCASE ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC';
+		addColumn('title', sql, 'Title');
+		
+		sql = 'track ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC';
+		addColumn('track', sql, 'Track');
+		
+		sql = 'genre ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
+		addColumn('genre', sql, 'Genre');
+
+		sql = 'duration ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
+		addColumn('duration', sql, 'Duration');
 
 		//-----
 		// Controls
@@ -1119,7 +1127,7 @@ var SearchTab = Class.create(Tab,
 					revert: function(element)
 					{
 						element.style.position = "relative";
-					},
+					}
 				});
 			}
 		}
@@ -1293,7 +1301,7 @@ var UploadTab = Class.create(Tab,
 
 	deleteUploadedSong: function(file_name)
 	{
-		if(this.lastSendingDeletionIdentifier == null)
+		if(this.lastSendingDeletionIdentifier === null)
 		{
 			var fname = unescape(file_name);
 			this.lastSendingDeletionIdentifier = fname;
@@ -1303,7 +1311,7 @@ var UploadTab = Class.create(Tab,
 
 	getUploadedFileEditionFromFilename: function(file_name)
 	{
-		if(this.uploadedFilesEdition == null)
+		if(this.uploadedFilesEdition === null)
 		{
 			return null;
 		}
@@ -1319,7 +1327,7 @@ var UploadTab = Class.create(Tab,
 
 	updateUploadedSong: function(file_name)
 	{
-		if(this.lastSendingUpdateIdentifier == null)
+		if(this.lastSendingUpdateIdentifier === null)
 		{
 			var fname = unescape(file_name);
 			this.lastSendingUpdateIdentifier = fname;
@@ -1340,7 +1348,7 @@ var UploadTab = Class.create(Tab,
 
 	validateUploadedSong: function(file_name)
 	{
-		if(this.lastSendingValidationIdentifier == null)
+		if(this.lastSendingValidationIdentifier === null)
 		{
 			var fname = unescape(file_name);
 			this.lastSendingValidationIdentifier = fname;
@@ -1352,7 +1360,7 @@ var UploadTab = Class.create(Tab,
 	{
 		if(ret == "success")
 		{
-			if(this.lastSendingDeletionIdentifier != null)
+			if(this.lastSendingDeletionIdentifier !== null)
 			{
 				// Delete entry
 				for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
@@ -1421,7 +1429,7 @@ var UploadTab = Class.create(Tab,
 		if(ret == "success")
 		{
 			Notifications.Display(1, message);
-			if(this.lastSendingValidationIdentifier != null)
+			if(this.lastSendingValidationIdentifier !== null)
 			{
 				// Delete entry
 				for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
@@ -1452,7 +1460,7 @@ var UploadTab = Class.create(Tab,
 	reinitTable: function()
 	{
 		var $uploaded_files = $('uploaded_files');
-		if($uploaded_files.down('tbody').childElementCount == 0)
+		if($uploaded_files.down('tbody').childElementCount === 0)
 		{
 			$uploaded_files.update("No file uploaded yet.");
 			this.uploadedFilesEdition = null;
@@ -1571,10 +1579,10 @@ var UploadTab = Class.create(Tab,
 		*/
 
 		// Insertion when there was no item in the array in the previous state
-		if(this.uploadedFiles == null /*|| this.uploadedFilesEdition == null*/ ||
+		if(this.uploadedFiles === null /*|| this.uploadedFilesEdition == null*/ ||
 			(
-				$uploaded_files_tbody == null ||
-				$uploaded_files_tbody.childElementCount == 0 && uploaded_files.length > 0
+				$uploaded_files_tbody === null ||
+				$uploaded_files_tbody.childElementCount === 0 && uploaded_files.length > 0
 			)
 		)
 		{
@@ -1608,18 +1616,13 @@ var UploadTab = Class.create(Tab,
 				}
 				$uploaded_files.down('table').insert(tbody);
 
-				function MakeCellEditable(name)
-				{
-					var obj = new MusicFieldEditor(name, that.uploadedFiles, that.uploadedFilesEdition);
-					TableKit.Editable.addCellEditor(obj);	
-				}
-				MakeCellEditable("artist");
-				MakeCellEditable("album");
-				MakeCellEditable("title");
-				MakeCellEditable("year");
-				MakeCellEditable("track");
-				MakeCellEditable("trackNb");
-				MakeCellEditable("genre");
+				this.makeCellEditable("artist");
+				this.makeCellEditable("album");
+				this.makeCellEditable("title");
+				this.makeCellEditable("year");
+				this.makeCellEditable("track");
+				this.makeCellEditable("trackNb");
+				this.makeCellEditable("genre");
 
 				this.tableKit = new TableKit('uploaded_filelist_' + this.tableId,
 				{
@@ -1706,11 +1709,17 @@ var UploadTab = Class.create(Tab,
 				this.removeFileFromQQUpload(newLines[i].filename);
 			}
 
-			if(this.uploadedFiles.length != 0 && newLines.length > 0)
+			if(this.uploadedFiles.length !== 0 && newLines.length > 0)
 			{
 				this.reinitTable();
 			}
 		}
+	},
+
+	makeCellEditable: function(name)
+	{
+		var obj = new MusicFieldEditor(name, this.uploadedFiles, this.uploadedFilesEdition);
+		TableKit.Editable.addCellEditor(obj);
 	},
 
 	removeFileFromQQUpload: function(filename)
@@ -1767,7 +1776,7 @@ var UploadTab = Class.create(Tab,
 	}
 });
 
-var DebugTab = Class.create(Tab, 
+this.DebugTab = Class.create(Tab, 
 {
 	initialize: function(identifier, tabName)
 	{
@@ -1820,15 +1829,8 @@ var DebugTab = Class.create(Tab,
 	}
 });
 
-function JsonPrettyPrint(input)
-{
-	var json_hr = JSON.stringify(input, null, "\t");
-	json_hr = json_hr.replace(/\n/g, "<br />");
-	json_hr = json_hr.replace(/\t/g, "&nbsp;&nbsp;&nbsp;");
-	return json_hr;
-}
 
-var CustomQueriesTab = Class.create(Tab,
+this.CustomQueriesTab = Class.create(Tab,
 {
 	initialize: function(identifier, tabName)
 	{
@@ -1944,7 +1946,7 @@ var CustomQueriesTab = Class.create(Tab,
 		$input.on("click", function checkAndSendJson()
 		{
 			// Check if the textarea is filled
-			if($textarea.value == '')
+			if($textarea.value === '')
 			{
 				Notifications.Display(Notifications.LEVELS.warning, 'Please fill the textarea');
 				return;
@@ -1963,7 +1965,7 @@ var CustomQueriesTab = Class.create(Tab,
 	}
 });
 
-var NotificationTab = Class.create(Tab,
+this.NotificationTab = Class.create(Tab,
 {
 	initialize: function(identifier, tabName)
 	{
@@ -1978,11 +1980,6 @@ var NotificationTab = Class.create(Tab,
 		var $tabContent = $('tabContent_' + this.identifier);
 		$tabContent.update('<h1>Notification tests:</h1>');
 
-		for(var level in Notifications.LEVELS)
-		{
-			addButton(level);
-		}
-
 		function addButton(level)
 		{
 			var btn = new Element('input', {type: 'button', value: 'Test ' + level});
@@ -1991,6 +1988,11 @@ var NotificationTab = Class.create(Tab,
 				Notifications.Display(Notifications.LEVELS[level], "Notification: " + level);
 			});
 			$tabContent.insert(btn);
+		}
+
+		for(var level in Notifications.LEVELS)
+		{
+			addButton(level);
 		}
 	}
 });
@@ -2241,7 +2243,7 @@ MusicFieldEditor.prototype._undo = function(e)
 	var cell = Event.findElement(e,'td');
 	Event.stop(e);
 	this.undo(cell);
-}
+};
 MusicFieldEditor.prototype.undo = function(cell)
 {
 	var row = cell.up('tr'),
@@ -2355,8 +2357,8 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 					( this.name == "track" && this.uploadedFiles[i][this.name].split('/')[0] != firstChildVal ) ||
 					( this.name == "trackNb" && this.uploadedFiles[i]["track"].split('/')[1] != firstChildVal ) ||
 					( this.name != "track" && this.name != "trackNb" && firstChildVal != this.uploadedFiles[i][this.name] )
-				)
-				&& !cell.hasClassName("modified"))
+				) &&
+				!cell.hasClassName("modified"))
 			{
 				// Default behaviour
 				cell.addClassName("modified");
@@ -2762,7 +2764,8 @@ function Jukebox(element, opts)
 				_ui.volume(volume);
 			}
 		}
-		return _volume = _streamPlayer.getVolume();
+		_volume = _streamPlayer.getVolume();
+		return _volume;
 	};
 
 	/**
@@ -2893,7 +2896,7 @@ function Jukebox(element, opts)
 	*/
 	this.playQueueDelete = function(mid, play_queue_index)
 	{
-		if(arguments.length == 0)
+		if(arguments.length === 0)
 		{
 			_playQueueDelete();
 		}
@@ -3098,7 +3101,7 @@ function Jukebox(element, opts)
 	{
 		_ui.activity(true);
 		
-		if(_query_in_progress == false)
+		if(_query_in_progress === false)
 		{
 			// Timeout has ended or new query arrived and timeout still in progress
 			if(_query_timer != null)
@@ -3265,7 +3268,7 @@ function Jukebox(element, opts)
 	function _playQueueDelete(mid, play_queue_index)
 	{
 		var action;
-		if(arguments.length == 0)
+		if(arguments.length === 0)
 		{		
 			// Nothing is passed as argument we want to clear all the playlist
 			for(var i = _playQueueSongs.length - 1; i >= 0; --i)
@@ -3355,7 +3358,7 @@ function Jukebox(element, opts)
 				}, _opts.autorefresh_delay);
 			}
 
-			if(response.readyState == 4 && response.status == 0) // No ajax response (server down) 
+			if(response.readyState == 4 && response.status === 0) // No ajax response (server down) 
 			{
 				_ui.gotResponse(null);
 				return;
@@ -3460,6 +3463,8 @@ Jukebox.defaults =
 Object.freeze(Jukebox); // Non-extensible, Non-removable, Non-modifiable
 Object.freeze(Jukebox.prototype); // 1337 strict mode
 
+this.Jukebox = Jukebox; // Expose on global scope
+
 /**
 * Represents a Jukebox graphical interface.
 * @constructor
@@ -3542,7 +3547,7 @@ function JukeboxUI(jukebox, element, opts)
 	this.activity = function(status)
 	{
 		var color = _opts.ActivityMonitorColor.inactive;
-		if(status == true)
+		if(status === true)
 		{
 			color = _opts.ActivityMonitorColor.active;
 		}
@@ -3573,7 +3578,7 @@ function JukeboxUI(jukebox, element, opts)
 		
 		// Rather than calling updateSongTime() every 100ms as before (+when manual call after a json response),
 		// only call when necessary: each time the display needs to be updated = every second (of the song)
-		// 		=> less refresh calls
+		//		=> less refresh calls
 		// default value = refresh frequency when there is no song
 		var nextSongSecondIn = 100; // in ms
 
@@ -3618,18 +3623,13 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		if(songObj)
 		{
-			function doSearch(search, category)
-			{
-				_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, false);
-			}
-
 			_$.player_song_artist.update(songObj.artist).stopObserving().on("click", function()
 			{
-				doSearch(songObj.artist, 'artist');
+				_searchCategory(songObj.artist, 'artist');
 			});
 			_$.player_song_album.update(songObj.album).stopObserving().on("click", function()
 			{
-				doSearch(songObj.album, 'album');
+				_searchCategory(songObj.album, 'album');
 			});
 			_$.player_song_title.update(songObj.title);
 
@@ -3892,6 +3892,11 @@ function JukeboxUI(jukebox, element, opts)
 		J.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
 	}
 
+	function _searchCategory(search, category)
+	{
+		_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, false);
+	}
+
 	function _makePlayQueueSongDroppable(droppable_id, playQueueSongs)
 	{
 		Droppables.add(droppable_id,
@@ -4011,7 +4016,7 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			if(_$.search_field.options[_$.search_field.selectedIndex].value =='genre')
 			{
-				if(_$.search_genres.options.length == 0) // Fill it, before display
+				if(_$.search_genres.options.length === 0) // Fill it, before display
 				{
 					for(var i = 0, len = genresOrdered.length; i < len; ++i)
 					{
@@ -4085,6 +4090,20 @@ function JukeboxUI(jukebox, element, opts)
 
 		(function() // Tabs
 		{
+			function createShowTab(tab)
+			{
+				_tabsManager["Show" + tab.classN] = function()
+				{
+					var identifier = _tabs.getFirstTabIdentifierByClassName(tab.classN);
+					if(identifier == null)
+					{
+						var newTab = new tab.classC(tab.identifier, tab.name, J);
+						identifier = _tabs.addTab(newTab);
+					}
+					_tabs.toggleTab(identifier);
+				};
+			}
+			
 			var possibleTabs =
 			[
 				{
@@ -4116,20 +4135,6 @@ function JukeboxUI(jukebox, element, opts)
 			for(var i = 0; i < possibleTabs.length; ++i)
 			{
 				createShowTab(possibleTabs[i]);
-			}
-
-			function createShowTab(tab)
-			{
-				_tabsManager["Show" + tab.classN] = function()
-				{
-					var identifier = _tabs.getFirstTabIdentifierByClassName(tab.classN);
-					if(identifier == null)
-					{
-						var newTab = new tab.classC(tab.identifier, tab.name, J);
-						identifier = _tabs.addTab(newTab);
-					}
-					_tabs.toggleTab(identifier);
-				};
 			}
 
 			$("tab_upload").on("click", _tabsManager.ShowUploadTab);
@@ -4175,5 +4180,4 @@ JukeboxUI.skins = ["default"/*, "light", "dark"*/];
 Object.freeze(JukeboxUI); // Non-extensible, Non-removable, Non-modifiable
 Object.freeze(JukeboxUI.prototype); // 1337 strict mode
 
-return Jukebox;
 })();

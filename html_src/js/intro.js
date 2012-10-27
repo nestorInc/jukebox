@@ -1,1 +1,1 @@
-this.Jukebox = (function(){
+(function(){

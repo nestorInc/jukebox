@@ -1,4 +1,4 @@
-var Tabs = Class.create(
+this.Tabs = Class.create(
 {
 	initialize: function(tabsCollectionName)
 	{
@@ -36,7 +36,7 @@ var Tabs = Class.create(
 	{
 		for(var i = 0; i < this.tabs.length; ++i)
 		{
-			if(undefined != this.tabs[i].unique && this.tabs[i].unique == tabClassName)
+			if(this.tabs[i].unique !== undefined && this.tabs[i].unique == tabClassName)
 			{
 				return this.tabs[i].identifier;
 			}
@@ -48,7 +48,7 @@ var Tabs = Class.create(
 	{
 		for(var i = 0; i < this.tabs.length; ++i)
 		{
-			if(undefined != this.tabs[i].unique && this.tabs[i].unique == tabClassName)
+			if(this.tabs[i].unique !== undefined && this.tabs[i].unique == tabClassName)
 			{
 				return this.tabs[i];
 			}
@@ -144,7 +144,7 @@ var Tabs = Class.create(
 			if(tabHeader && tabHeader.hasClassName("tabHeaderActive"))
 			{
 				// Find the tabs position index available near from tab
-				if(index != 0)
+				if(index !== 0)
 				{
 					this.toggleTab(this.tabs[index - 1].identifier);
 				}
@@ -186,7 +186,7 @@ var Tabs = Class.create(
 
 //==================================================
 
-var Tab = Class.create(
+this.Tab = Class.create(
 {
 	initialize: function(identifier, name)
 	{

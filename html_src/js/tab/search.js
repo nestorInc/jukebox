@@ -1,4 +1,4 @@
-var SearchTab = Class.create(Tab,
+this.SearchTab = Class.create(Tab,
 {
 	initialize: function(jukebox, server_results)
 	{
@@ -17,7 +17,7 @@ var SearchTab = Class.create(Tab,
 		// Tab name
 		var search = server_results.search_value,
 			field = server_results.search_field;
-		if(search == '')
+		if(search === '')
 		{
 			this.name = 'Library';
 		}
@@ -247,25 +247,7 @@ var SearchTab = Class.create(Tab,
 			sql;
 
 		//-----
-		
-		sql = 'artist COLLATE NOCASE ${ORDER}, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
-		addColumn('artist', sql, 'Artist');
 
-		sql = 'album COLLATE NOCASE ${ORDER}, track DESC, title COLLATE NOCASE DESC';
-		addColumn('album', sql, 'Album');
-
-		sql = 'title COLLATE NOCASE ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC';
-		addColumn('title', sql, 'Title');
-		
-		sql = 'track ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC';
-		addColumn('track', sql, 'Track');
-		
-		sql = 'genre ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
-		addColumn('genre', sql, 'Genre');
-
-		sql = 'duration ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
-		addColumn('duration', sql, 'Duration');
-		
 		var that = this;
 		function addColumn(column, sql, text)
 		{
@@ -292,6 +274,24 @@ var SearchTab = Class.create(Tab,
 
 			tr.insert(cell);
 		}
+
+		sql = 'artist COLLATE NOCASE ${ORDER}, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
+		addColumn('artist', sql, 'Artist');
+
+		sql = 'album COLLATE NOCASE ${ORDER}, track DESC, title COLLATE NOCASE DESC';
+		addColumn('album', sql, 'Album');
+
+		sql = 'title COLLATE NOCASE ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC';
+		addColumn('title', sql, 'Title');
+		
+		sql = 'track ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, title COLLATE NOCASE DESC';
+		addColumn('track', sql, 'Track');
+		
+		sql = 'genre ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
+		addColumn('genre', sql, 'Genre');
+
+		sql = 'duration ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC';
+		addColumn('duration', sql, 'Duration');
 
 		//-----
 		// Controls
@@ -460,7 +460,7 @@ var SearchTab = Class.create(Tab,
 					revert: function(element)
 					{
 						element.style.position = "relative";
-					},
+					}
 				});
 			}
 		}

@@ -1,4 +1,4 @@
-var CustomQueriesTab = Class.create(Tab,
+this.CustomQueriesTab = Class.create(Tab,
 {
 	initialize: function(identifier, tabName)
 	{
@@ -114,7 +114,7 @@ var CustomQueriesTab = Class.create(Tab,
 		$input.on("click", function checkAndSendJson()
 		{
 			// Check if the textarea is filled
-			if($textarea.value == '')
+			if($textarea.value === '')
 			{
 				Notifications.Display(Notifications.LEVELS.warning, 'Please fill the textarea');
 				return;

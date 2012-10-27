@@ -10,6 +10,7 @@ module.exports = function(grunt)
 		{
 			css: 	SRC_DIR + 'css/',
 			js: 	SRC_DIR + 'js/',
+			tab: 	SRC_DIR + 'js/tab/',
 			libs: 	SRC_DIR + 'js/lib/',
 			img: 	SRC_DIR + 'images/',
 		},
@@ -103,8 +104,19 @@ module.exports = function(grunt)
 			notifications: 	SRC.js + 'notifications.js',
 			action: 		SRC.js + 'action.js',
 			query: 			SRC.js + 'query.js',
-			//genres: 		SRC.js + 'genres.js',
-			tools: 			SRC.js + 'tools.js'
+			genres: 		SRC.js + 'genres.js',
+			tools: 			SRC.js + 'tools.js',
+			fieldEditor: 	SRC.js + 'musicFieldEditor.js',
+			jukebox: 		SRC.js + 'jukebox.js',
+			jukeboxui: 		SRC.js + 'jukeboxUI.js',
+
+			// tab/
+			tabs: 				SRC.tab + 'tabs.js',
+			tab_customQueries: 	SRC.tab + 'customQueries.js',
+			tab_debug: 			SRC.tab + 'debug.js',
+			tab_notification: 	SRC.tab + 'notification.js',
+			tab_search: 		SRC.tab + 'search.js',
+			tab_upload: 		SRC.tab + 'upload.js'
 		},
 		jshint:
 		{
@@ -120,13 +132,15 @@ module.exports = function(grunt)
 				undef: true,
 				unused: true,
 				eqnull: true,
-				browser: true
+				browser: true,
+				loopfunc: true,
+				scripturl: true
 			},
 			globals:
 			{
+				// Libs
 				JSON: true,
 				Ajax: true,
-				Notifications: true,
 				Sound: true,
 				Draggable: true,
 				Droppables: true,
@@ -138,7 +152,14 @@ module.exports = function(grunt)
 				Element: true,
 				Event: true,
 				TableKit: true,
-				qq: true
+				qq: true,
+
+				// By our code
+				Notifications: true,
+				Tab: true,
+				genres: true,
+				FormatTime: true,
+				sort_unique: true
 			},
 			notifications:
 			{
@@ -152,13 +173,34 @@ module.exports = function(grunt)
 			{
 				globals: {Action: true}
 			},
-			genres:
-			{
-				options: {smarttabs: true}
-			},
 			tools:
 			{
 				options: {unused: false, eqeqeq: false, eqnull: true}
+			},
+			fieldEditor:
+			{
+				options: {nonstandard: true, loopfunc: true, sub: true},
+				globals: {genres: true, genresOrdered: true}
+			},
+			jukebox:
+			{
+				globals: {Extend: true, Query: true, Action: true, JukeboxUI: true, Sound: true, Notifications: true, Ajax: true}
+			},
+			jukeboxui:
+			{
+				globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true}
+			},
+			tab_customQueries:
+			{
+				globals: {Tab: true, Action: true, Query: true, Class: true, $: true, Notifications: true}
+			},
+			tab_debug:
+			{
+				globals: {JsonPrettyPrint: true, Tab: true, Class: true, $: true}
+			},
+			tab_upload:
+			{
+				options: {nonstandard: true, sub: true}
 			}
 		},
 		copy:
@@ -228,5 +270,5 @@ module.exports = function(grunt)
 		grunt.log.writeln(this.target + " copy done.");
 	});
 
-	grunt.registerTask('default', /*'lint '+*/'concat min cssmin copy');
+	grunt.registerTask('default', 'lint concat min cssmin copy');
 };

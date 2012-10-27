@@ -24,7 +24,7 @@ MusicFieldEditor.prototype._undo = function(e)
 	var cell = Event.findElement(e,'td');
 	Event.stop(e);
 	this.undo(cell);
-}
+};
 MusicFieldEditor.prototype.undo = function(cell)
 {
 	var row = cell.up('tr'),
@@ -138,8 +138,8 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 					( this.name == "track" && this.uploadedFiles[i][this.name].split('/')[0] != firstChildVal ) ||
 					( this.name == "trackNb" && this.uploadedFiles[i]["track"].split('/')[1] != firstChildVal ) ||
 					( this.name != "track" && this.name != "trackNb" && firstChildVal != this.uploadedFiles[i][this.name] )
-				)
-				&& !cell.hasClassName("modified"))
+				) &&
+				!cell.hasClassName("modified"))
 			{
 				// Default behaviour
 				cell.addClassName("modified");

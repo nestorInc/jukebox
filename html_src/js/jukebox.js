@@ -224,7 +224,8 @@ function Jukebox(element, opts)
 				_ui.volume(volume);
 			}
 		}
-		return _volume = _streamPlayer.getVolume();
+		_volume = _streamPlayer.getVolume();
+		return _volume;
 	};
 
 	/**
@@ -355,7 +356,7 @@ function Jukebox(element, opts)
 	*/
 	this.playQueueDelete = function(mid, play_queue_index)
 	{
-		if(arguments.length == 0)
+		if(arguments.length === 0)
 		{
 			_playQueueDelete();
 		}
@@ -560,7 +561,7 @@ function Jukebox(element, opts)
 	{
 		_ui.activity(true);
 		
-		if(_query_in_progress == false)
+		if(_query_in_progress === false)
 		{
 			// Timeout has ended or new query arrived and timeout still in progress
 			if(_query_timer != null)
@@ -727,7 +728,7 @@ function Jukebox(element, opts)
 	function _playQueueDelete(mid, play_queue_index)
 	{
 		var action;
-		if(arguments.length == 0)
+		if(arguments.length === 0)
 		{		
 			// Nothing is passed as argument we want to clear all the playlist
 			for(var i = _playQueueSongs.length - 1; i >= 0; --i)
@@ -817,7 +818,7 @@ function Jukebox(element, opts)
 				}, _opts.autorefresh_delay);
 			}
 
-			if(response.readyState == 4 && response.status == 0) // No ajax response (server down) 
+			if(response.readyState == 4 && response.status === 0) // No ajax response (server down) 
 			{
 				_ui.gotResponse(null);
 				return;
@@ -921,3 +922,5 @@ Jukebox.defaults =
 
 Object.freeze(Jukebox); // Non-extensible, Non-removable, Non-modifiable
 Object.freeze(Jukebox.prototype); // 1337 strict mode
+
+this.Jukebox = Jukebox; // Expose on global scope

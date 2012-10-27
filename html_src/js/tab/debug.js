@@ -1,4 +1,4 @@
-var DebugTab = Class.create(Tab, 
+this.DebugTab = Class.create(Tab, 
 {
 	initialize: function(identifier, tabName)
 	{
@@ -51,10 +51,3 @@ var DebugTab = Class.create(Tab,
 	}
 });
 
-function JsonPrettyPrint(input)
-{
-	var json_hr = JSON.stringify(input, null, "\t");
-	json_hr = json_hr.replace(/\n/g, "<br />");
-	json_hr = json_hr.replace(/\t/g, "&nbsp;&nbsp;&nbsp;");
-	return json_hr;
-}

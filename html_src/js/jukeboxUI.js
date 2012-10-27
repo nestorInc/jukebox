@@ -80,7 +80,7 @@ function JukeboxUI(jukebox, element, opts)
 	this.activity = function(status)
 	{
 		var color = _opts.ActivityMonitorColor.inactive;
-		if(status == true)
+		if(status === true)
 		{
 			color = _opts.ActivityMonitorColor.active;
 		}
@@ -111,7 +111,7 @@ function JukeboxUI(jukebox, element, opts)
 		
 		// Rather than calling updateSongTime() every 100ms as before (+when manual call after a json response),
 		// only call when necessary: each time the display needs to be updated = every second (of the song)
-		// 		=> less refresh calls
+		//		=> less refresh calls
 		// default value = refresh frequency when there is no song
 		var nextSongSecondIn = 100; // in ms
 
@@ -156,18 +156,13 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		if(songObj)
 		{
-			function doSearch(search, category)
-			{
-				_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, false);
-			}
-
 			_$.player_song_artist.update(songObj.artist).stopObserving().on("click", function()
 			{
-				doSearch(songObj.artist, 'artist');
+				_searchCategory(songObj.artist, 'artist');
 			});
 			_$.player_song_album.update(songObj.album).stopObserving().on("click", function()
 			{
-				doSearch(songObj.album, 'album');
+				_searchCategory(songObj.album, 'album');
 			});
 			_$.player_song_title.update(songObj.title);
 
@@ -430,6 +425,11 @@ function JukeboxUI(jukebox, element, opts)
 		J.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
 	}
 
+	function _searchCategory(search, category)
+	{
+		_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, false);
+	}
+
 	function _makePlayQueueSongDroppable(droppable_id, playQueueSongs)
 	{
 		Droppables.add(droppable_id,
@@ -549,7 +549,7 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			if(_$.search_field.options[_$.search_field.selectedIndex].value =='genre')
 			{
-				if(_$.search_genres.options.length == 0) // Fill it, before display
+				if(_$.search_genres.options.length === 0) // Fill it, before display
 				{
 					for(var i = 0, len = genresOrdered.length; i < len; ++i)
 					{
@@ -623,6 +623,20 @@ function JukeboxUI(jukebox, element, opts)
 
 		(function() // Tabs
 		{
+			function createShowTab(tab)
+			{
+				_tabsManager["Show" + tab.classN] = function()
+				{
+					var identifier = _tabs.getFirstTabIdentifierByClassName(tab.classN);
+					if(identifier == null)
+					{
+						var newTab = new tab.classC(tab.identifier, tab.name, J);
+						identifier = _tabs.addTab(newTab);
+					}
+					_tabs.toggleTab(identifier);
+				};
+			}
+			
 			var possibleTabs =
 			[
 				{
@@ -654,20 +668,6 @@ function JukeboxUI(jukebox, element, opts)
 			for(var i = 0; i < possibleTabs.length; ++i)
 			{
 				createShowTab(possibleTabs[i]);
-			}
-
-			function createShowTab(tab)
-			{
-				_tabsManager["Show" + tab.classN] = function()
-				{
-					var identifier = _tabs.getFirstTabIdentifierByClassName(tab.classN);
-					if(identifier == null)
-					{
-						var newTab = new tab.classC(tab.identifier, tab.name, J);
-						identifier = _tabs.addTab(newTab);
-					}
-					_tabs.toggleTab(identifier);
-				};
 			}
 
 			$("tab_upload").on("click", _tabsManager.ShowUploadTab);
