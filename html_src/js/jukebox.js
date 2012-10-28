@@ -1,4 +1,5 @@
-var uniqid = 0;
+var uniqid = 0,
+	sendQueryProxy;
 
 /**
 * Represents a Jukebox controller.
@@ -605,6 +606,13 @@ function Jukebox(element, opts)
 			onComplete: _events.queryComplete
 		});
 	}
+
+	// Expose _sendQuery in current scope for customQueries.js
+	sendQueryProxy = function(query)
+	{
+		_nextQuery = query; // current value of _nextQuery is lost
+		_update();
+	};
 
 	/**
 	* Parse a server response. In a way, does the opposite of new Action().

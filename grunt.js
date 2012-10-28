@@ -208,7 +208,7 @@ module.exports = function(grunt)
 			},
 			tab_customQueries:
 			{
-				globals: {Tab: true, Action: true, Query: true, Class: true, $: true, Notifications: true}
+				globals: {Tab: true, Action: true, Query: true, Class: true, $: true, Notifications: true, sendQueryProxy: true}
 			},
 			tab_debug:
 			{
