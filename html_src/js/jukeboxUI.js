@@ -40,33 +40,33 @@ function JukeboxUI(jukebox, element, opts)
 	var _$ =
 	{
 		elem: $(element),
-		music_wrapper: $('music_wrapper'), // TODO: replace thoses id by (sub)classes
-		expand_button: $('expand_button'),
-		collapse_button: $('collapse_button'),
-		page_wrapper: $('page_wrapper'),
-		search_input: $('search_input'),
-		search_field: $('search_field'),
-		search_genres: $('search_genres'),
-		results_per_page: $('results_per_page'),
-		btn_search: $('btn_search'),
+		music_wrapper: $('music-wrapper'), // TODO: replace thoses id by (sub)classes
+		expand_button: $('expand-button'),
+		collapse_button: $('collapse-button'),
+		page_wrapper: $('page-wrapper'),
+		search_input: $('search-input'),
+		search_field: $('search-field'),
+		search_genres: $('search-genres'),
+		results_per_page: $('results-per-page'),
+		btn_search: $('btn-search'),
 		progressbar: $('progressbar'),
-		player_song_time: $('player_song_time'),
-		activity_monitor: $('activity_monitor'),
-		play_stream: $('play_stream'),
-		stop_stream: $('stop_stream'),
+		player_song_time: $('player-song-time'),
+		activity_monitor: $('activity-monitor'),
+		play_stream: $('play-stream'),
+		stop_stream: $('stop-stream'),
 		channel: $('channel'),
-		btn_join_channel: $('btn_join_channel'),
-		previous_button: $('previous_button'),
-		next_button: $('next_button'),
-		cb_autorefresh: $('cb_autorefresh'),
-		btn_refresh: $('btn_refresh'),
-		player_song_artist: $('player_song_artist'),
-		player_song_album: $('player_song_album'),
-		player_song_title: $('player_song_title'),
-		play_queue_content: $('play_queue_content'),
-		selection_plugin: $('music_selection_plugin'),
-		btn_apply_plugin: $('btn_apply_plugin'),
-		volume_box_slider: $('volume_box_slider')
+		btn_join_channel: $('btn-join-channel'),
+		previous_button: $('previous-button'),
+		next_button: $('next-button'),
+		cb_autorefresh: $('cb-autorefresh'),
+		btn_refresh: $('btn-refresh'),
+		player_song_artist: $('player-song-artist'),
+		player_song_album: $('player-song-album'),
+		player_song_title: $('player-song-title'),
+		play_queue_content: $('play-queue-content'),
+		selection_plugin: $('music-selection-plugin'),
+		btn_apply_plugin: $('btn-apply-plugin'),
+		volume_box_slider: $('volume-box-slider')
 	};
 
 	//---
@@ -180,7 +180,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.updateNbUsers = function(count)
 	{
-		var items = $$('span.count_user_listening');
+		var items = $$('span.count-user-listening');
 		if(items.length > 0)
 		{
 			items.each(function(e)
@@ -213,7 +213,7 @@ function JukeboxUI(jukebox, element, opts)
 		var len = _$.play_queue_content.select('li').length - 1;
 		for(var i = 0; i < len; ++i)
 		{
-			Droppables.remove('play_queue_song_' + i);
+			Droppables.remove('play-queue-song-' + i);
 		}
 	};
 
@@ -221,21 +221,21 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		var ul = new Element('ul');
 		var li = '' +
-		'<li id="play_queue_li_first" class="droppable">Play queue' +
+		'<li id="play-queue-li-first" class="droppable">Play queue' +
 			'<div>' +
-				'<span class="nb_listening_users"></span>' +
-				'<span class="count_user_listening">' + J.listenersCount + '</span>' +
+				'<span class="nb-listening-users"></span>' +
+				'<span class="count-user-listening">' + J.listenersCount + '</span>' +
 			'</div>' +
-			'<a><span class="play_queue_shuffle"></span></a>' +
-			'<a><span class="play_queue_delete"></span></a>' +
+			'<a><span class="play-queue-shuffle"></span></a>' +
+			'<a><span class="play-queue-delete"></span></a>' +
 		'</li>';
 		ul.insert(li);
 
-		ul.down(".play_queue_shuffle").on("click", function()
+		ul.down(".play-queue-shuffle").on("click", function()
 		{
 			J.playQueueShuffle();
 		});
-		ul.down(".play_queue_delete").on("click", function()
+		ul.down(".play-queue-delete").on("click", function()
 		{
 			J.playQueueDelete();  // no args = all
 		});
@@ -245,18 +245,18 @@ function JukeboxUI(jukebox, element, opts)
 		playQueueSongs.each(function(song)
 		{
 			li = '' +
-			'<li id="play_queue_li_' + currentPQSongIndex + '" class="droppable">' +
-				'<div id="play_queue_song_' + currentPQSongIndex + '" class="play_queue_draggable">' +
-					'<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">' +
+			'<li id="play-queue-li-' + currentPQSongIndex + '" class="droppable">' +
+				'<div id="play-queue-song-' + currentPQSongIndex + '" class="play-queue-draggable">' +
+					'<div id="play-queue-handle-' + currentPQSongIndex + '" class="play-queue-handle">' +
 						'<a href="javascript:void(0)">' + song.artist + '</a>' +
 						' - ' +
 						'<a href="javascript:void(0)">' + song.album + '</a>' +
 						' - ' +
 						song.title + ' (' + FormatTime(song.duration) + ')' +
 					'</div>' +
-					'<a><span class="play_queue_move_top"></span></a>' +
-					'<a><span class="play_queue_move_bottom"></span></a>' +
-					'<a><span class="play_queue_delete"></span></a>' +
+					'<a><span class="play-queue-move-top"></span></a>' +
+					'<a><span class="play-queue-move-bottom"></span></a>' +
+					'<a><span class="play-queue-delete"></span></a>' +
 				'</div>' +
 			'</li>';
 			ul.insert(li);
@@ -267,26 +267,26 @@ function JukeboxUI(jukebox, element, opts)
 			// Declare listeners
 
 			// Artist
-			ul.down('li:last .play_queue_handle a:first').on("click", function()
+			ul.down('li:last .play-queue-handle a:first').on("click", function()
 			{
 				_search(1, null, null, song.artist, 'equal', 'artist', 'artist,album,track,title', 20, false);
 			});
 			// Album
-			ul.down('li:last .play_queue_handle a:last').on("click", function()
+			ul.down('li:last .play-queue-handle a:last').on("click", function()
 			{
 				_search(1, null, null, song.album, 'equal', 'album', 'artist,album,track,title', 20, false);
 			});
 
 			var localcurrentPQSongIndex = currentPQSongIndex; // Avoid closure issue
-			ul.down('li:last .play_queue_move_top').on("click", function()
+			ul.down('li:last .play-queue-move-top').on("click", function()
 			{
 				J.playQueueMove(1, localcurrentPQSongIndex, 0);
 			});
-			ul.down('li:last .play_queue_move_bottom').on("click", function()
+			ul.down('li:last .play-queue-move-bottom').on("click", function()
 			{
 				J.playQueueMove(1, localcurrentPQSongIndex, lastPQIndex);
 			});
-			ul.down('li:last .play_queue_delete').on("click", function()
+			ul.down('li:last .play-queue-delete').on("click", function()
 			{
 				J.playQueueDelete(1, localcurrentPQSongIndex);
 			});
@@ -299,28 +299,28 @@ function JukeboxUI(jukebox, element, opts)
 		// Create all draggables, once update is done.
 		for(var i = 0, len = playQueueSongs.length; i < len; i++)
 		{
-			new Draggable('play_queue_song_' + i,
+			new Draggable('play-queue-song-' + i,
 			{
 				scroll: window,
 				constraint: 'vertical',
 				revert: true,
-				handle: 'play_queue_handle_' + i,
+				handle: 'play-queue-handle-' + i,
 				onStart: function(dragged)
 				{
 					var id = dragged.element.id;
 					id = id.substring(16);
-					$('play_queue_li_' + id).addClassName('being_dragged');
+					$('play-queue-li-' + id).addClassName('being-dragged');
 				},
 				onEnd: function(dragged)
 				{
 					var id = dragged.element.id;
 					id = id.substring(16);
-					$('play_queue_li_' + id).removeClassName('being_dragged');
+					$('play-queue-li-' + id).removeClassName('being-dragged');
 				}
 			});
-			_makePlayQueueSongDroppable('play_queue_li_' + i, playQueueSongs);
+			_makePlayQueueSongDroppable('play-queue-li-' + i, playQueueSongs);
 		}
-		_makePlayQueueSongDroppable('play_queue_li_first', playQueueSongs);
+		_makePlayQueueSongDroppable('play-queue-li-first', playQueueSongs);
 	};
 
 	this.displaySearchResults = function(results)
@@ -434,20 +434,20 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		Droppables.add(droppable_id,
 		{ 
-			accept: ['play_queue_draggable', 'library_draggable'],
+			accept: ['play-queue-draggable', 'library-draggable'],
 			overlap: 'vertical',
-			hoverclass: 'droppable_hover',
+			hoverclass: 'droppable-hover',
 			onDrop: function(dragged, dropped/*, event*/)
 			{
 				var old_index,
 					song_mid;
-				if(dragged.hasClassName("play_queue_draggable"))
+				if(dragged.hasClassName("play-queue-draggable"))
 				{
 					old_index = parseInt(dragged.id.substring(16), 10);
 					song_mid = dragged.retrieve('mid');
 					
 					var new_index = -1;
-					if(dropped.id != "play_queue_li_first")
+					if(dropped.id != "play-queue-li-first")
 					{
 						new_index = parseInt(dropped.id.substring(14), 10);
 					}
@@ -466,15 +466,16 @@ function JukeboxUI(jukebox, element, opts)
 						$this.displayPlayQueue(playQueueSongs);
 					}
 				}
-				else if(dragged.hasClassName("library_draggable"))
+				else if(dragged.hasClassName("library-draggable"))
 				{
-					var tab_index = dragged.id.replace(/.*_([^_]*_[^_]*)_[0-9]*/, "$1");
-					old_index = parseInt(dragged.id.replace(/.*_[^_]*_[^_]*_([0-9]*)/, "$1"), 10);
+					var idregexp = new RegExp(".*-([^\\-]*-[^\\-]*)-([0-9]*)");
+					var tab_index = dragged.id.replace(idregexp, "$1");
+					old_index = parseInt(dragged.id.replace(idregexp, "$2"), 10);
 					var song = _tabs.getTabFromUniqueId(tab_index).server_results[old_index];
 					song_mid = song.mid;
 					
 					var play_queue_index = -1;
-					if(dropped.id != "play_queue_li_first")
+					if(dropped.id != "play-queue-li-first")
 					{
 						play_queue_index = parseInt(dropped.id.substring(14), 10);
 					}
@@ -670,10 +671,10 @@ function JukeboxUI(jukebox, element, opts)
 				createShowTab(possibleTabs[i]);
 			}
 
-			$("tab_upload").on("click", _tabsManager.ShowUploadTab);
-			$("tab_query").on("click", _tabsManager.ShowCustomQueriesTab);
-			$("tab_notifs").on("click", _tabsManager.ShowNotificationTab);
-			$("tab_debug").on("click", _tabsManager.ShowDebugTab);
+			$("tab-upload").on("click", _tabsManager.ShowUploadTab);
+			$("tab-query").on("click", _tabsManager.ShowCustomQueriesTab);
+			$("tab-notifs").on("click", _tabsManager.ShowNotificationTab);
+			$("tab-debug").on("click", _tabsManager.ShowDebugTab);
 		})();
 	}
 	_initialize();

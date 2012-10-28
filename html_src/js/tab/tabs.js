@@ -101,13 +101,13 @@ this.Tabs = Class.create(
 		}
 
 		// Set the new tab identifier
-		var id = tab.identifier = this.tabsCollectionName + '_' + this.lastUniqueId;
+		var id = tab.identifier = this.tabsCollectionName + '-' + this.lastUniqueId;
 		this.tabs.push(tab);
 
 		// init html containers
 		if(this.tabs.length == 1)
 		{
-			$('tabsHeader').update('<ul id="tabs_list"></ul>');
+			$('tabsHeader').update('<ul id="tabs-list"></ul>');
 		}
 
 		// Add tab Header
@@ -127,7 +127,7 @@ this.Tabs = Class.create(
 		var tabDisplay = new Element('li',
 		{
 			style: 'margin-left: 1px',
-			id: 'tabHeader_' + id
+			id: 'tabHeader-' + id
 		}).insert(
 		{
 			top: toggleTab,
@@ -138,11 +138,11 @@ this.Tabs = Class.create(
 			tabDisplay.addClassName('tabHeaderActive');
 		}
 
-		var tabContentContainer = new Element('div', {id: 'tabContent_' + id});
+		var tabContentContainer = new Element('div', {id: 'tabContent-' + id});
 		tabContentContainer.style.display = this.tabs.length == 1 ? 'block' : 'none';
 
 		// DOM insertion
-		$('tabs_list').insert({'bottom': tabDisplay});
+		$('tabs-list').insert({'bottom': tabDisplay});
 		$('tabscontent').insert({'bottom': tabContentContainer});
 
 		// Start to init static tab content
@@ -160,8 +160,8 @@ this.Tabs = Class.create(
 		if(index != -1)
 		{
 			// If the tab to delete is the current active tab we want to select the first available tab
-			var tabHeader = $('tabHeader_' + identifier),
-				tabContent = $('tabContent_' + identifier);
+			var tabHeader = $('tabHeader-' + identifier),
+				tabContent = $('tabContent-' + identifier);
 			if(tabHeader && tabHeader.hasClassName("tabHeaderActive"))
 			{
 				// Find the tabs position index available near from tab
@@ -188,8 +188,8 @@ this.Tabs = Class.create(
 		for(var i = 0; i < this.tabs.length; i++)
 		{
 			var id = this.tabs[i].identifier,
-				tabHeader = $('tabHeader_' + id),
-				tabContent = $('tabContent_' + id);
+				tabHeader = $('tabHeader-' + id),
+				tabContent = $('tabContent-' + id);
 			if(id == identifier)
 			{
 				tabContent.style.display = 'block';
@@ -202,5 +202,4 @@ this.Tabs = Class.create(
 			}
 		}
 	}
-
 });

@@ -39,7 +39,7 @@ this.CustomQueriesTab = Class.create(Tab,
 			'<td><input type="button" value="send custom query"/></td>' +
 		'</tr>' +
 		'</table>';
-		var $content = $('tabContent_' + this.identifier);
+		var $content = $('tabContent-' + this.identifier);
 		$content.update(custom_queries_display);
 
 		var $textarea = $content.down('textarea');

@@ -34,10 +34,10 @@ MusicFieldEditor.prototype.undo = function(cell)
 	for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
 	{
 		var fname = escape(this.uploadedFiles[i].filename);
-		if("upload_line_" + fname == identifier)
+		if("upload-line-" + fname == identifier)
 		{
 			// Show validate
-			var selector = 'upload_line_' + fname,
+			var selector = 'upload-line-' + fname,
 				$selector = $(selector);
 			if($selector.select('[class="modified"]').length == 1)
 			{
@@ -100,7 +100,7 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 	{
 		var fileE = this.uploadedFilesEdition[i],
 			fname = escape(fileE.filename);
-		if("upload_line_" + fname == identifier)
+		if("upload-line-" + fname == identifier)
 		{
 			if(this.name == "genre")
 			{
@@ -144,7 +144,7 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 				// Default behaviour
 				cell.addClassName("modified");
 
-				var $selector = $('upload_line_' + fname);
+				var $selector = $('upload-line-' + fname);
 				$selector.select('[class="update"]').each(function(e){e.show();});
 				$selector.select('[class="validate"]').each(function(e){e.hide();});
 
@@ -203,7 +203,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 
 		for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 		{
-			if("upload_line_" + escape(this.uploadedFilesEdition[i].filename) == identifier)
+			if("upload-line-" + escape(this.uploadedFilesEdition[i].filename) == identifier)
 			{
 				if(this.uploadedFilesEdition[i]["genre"] != this.uploadedFiles[i]["genre"])
 				{
@@ -221,7 +221,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 		for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 		{
 			var fileE = this.uploadedFilesEdition[i];
-			if("upload_line_" + escape(fileE.filename) == identifier)
+			if("upload-line-" + escape(fileE.filename) == identifier)
 			{
 				if(this.name == "track")
 				{
@@ -271,7 +271,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	var okButton = document.createElement("input");
 	okButton.type = "submit";
 	okButton.value = "submit";
-	okButton.className = 'editor_ok_button';
+	okButton.className = 'editor-ok-button';
 	form.appendChild(okButton);
 
 	if(modified)
@@ -280,7 +280,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 		undoLink.href = "#";
 		undoLink.appendChild(document.createTextNode("undo "));
 		undoLink.onclick = this._undo.bindAsEventListener(this);
-		undoLink.className = 'editor_undo';      
+		undoLink.className = 'editor-undo';      
 		form.appendChild(undoLink);
 		form.appendChild(document.createTextNode(" "));
 	}
@@ -289,7 +289,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	cancelLink.href = "#";
 	cancelLink.appendChild(document.createTextNode("cancel"));
 	cancelLink.onclick = this._cancel.bindAsEventListener(this);
-	cancelLink.className = 'editor_cancel';      
+	cancelLink.className = 'editor-cancel';      
 	form.appendChild(cancelLink);
 
 	cell.innerHTML = '';
@@ -298,7 +298,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	// Update new value
 	for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 	{
-		if("upload_line_" + escape(this.uploadedFilesEdition[i].filename) == identifier)
+		if("upload-line-" + escape(this.uploadedFilesEdition[i].filename) == identifier)
 		{
 			// Automatically select genre
 			var options = $$('select#genre option');

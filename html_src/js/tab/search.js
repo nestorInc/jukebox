@@ -96,12 +96,12 @@ this.SearchTab = Class.create(Tab,
 		if(this.reloadControllers)
 		{
 			// Clean
-			$$('collection_pagelist_' + this.identifier).each(function(s)
+			$$('collection-pagelist-' + this.identifier).each(function(s)
 			{
 				s.remove();
 			});
 
-			var collection_content = $('collection_content_' + this.identifier);
+			var collection_content = $('collection-content-' + this.identifier);
 			if(collection_content)
 			{
 				collection_content.remove();
@@ -109,10 +109,10 @@ this.SearchTab = Class.create(Tab,
 
 			// Pre-init html structure
 			var search_page = '' +
-			'<div class="collection_pagelist" name="collection_pagelist_' + this.identifier + '"></div>' +
-			'<div id="collection_content_' + this.identifier + '"></div>' +
-			'<div class="collection_pagelist" name="collection_pagelist_' + this.identifier + '"></div>';
-			$('tabContent_' + this.identifier).update(search_page);
+			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>' +
+			'<div id="collection-content-' + this.identifier + '"></div>' +
+			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>';
+			$('tabContent-' + this.identifier).update(search_page);
 
 			// Display sliders and links and init sliders behvior
 			this.initAndDisplaySearchControllers();
@@ -145,7 +145,7 @@ this.SearchTab = Class.create(Tab,
 		var tabId = this.identifier;
 
 		// Display sliders and links
-		var pageListCollection = $$('[name=collection_pagelist_' + tabId + ']');
+		var pageListCollection = $$('[name=collection-pagelist-' + tabId + ']');
 		pageListCollection.each(function(s)
 		{
 			s.update(); // empty
@@ -155,13 +155,13 @@ this.SearchTab = Class.create(Tab,
 		if(this.total_results > 0 && this.page_count > 1)
 		{
 			// We have to specified a fixed width, 100% doesn't work : the slider is lost
-			var music_wrapper_width = $('music_wrapper').getWidth();
+			var music_wrapper_width = $('music-wrapper').getWidth();
 
 			var slider = '' +
-			'<div name="results_slider_' + tabId + '" class="slider" style="width:' + music_wrapper_width + 'px;">' +
+			'<div name="results-slider-' + tabId + '" class="slider" style="width:' + music_wrapper_width + 'px;">' +
 				'<div class="handle"></div>' +
 			'</div>';
-			var links = '<div class="page_links" name="page_links_' + tabId + '"></div>';
+			var links = '<div class="page-links" name="page-links-' + tabId + '"></div>';
 
 			pageListCollection[0].update('<p>' + slider + links + '</p>');
 			pageListCollection[1].update('<p>' + links + slider + '</p>');
@@ -177,7 +177,7 @@ this.SearchTab = Class.create(Tab,
 		this.generatePagesLinks();
 
 		// Init each sliders behavior
-		var resultsSlider = $$('[name=results_slider_' + tabId + ']'),
+		var resultsSlider = $$('[name=results-slider-' + tabId + ']'),
 			that = this,
 			i = 0;
 		resultsSlider.each(function(sliderBox)
@@ -319,9 +319,9 @@ this.SearchTab = Class.create(Tab,
 	createControlsCell: function(cellTag, funcRandom, funcTop, funcBottom)
 	{
 		var cell = new Element(cellTag),
-			addRandom = new Element('a').update('<span class="add_to_play_queue_rand"></span>'),
-			addTop = new Element('a').update('<span class="add_to_play_queue_top"></span>'),
-			addBottom = new Element('a').update('<span class="add_to_play_queue_bottom"></span>');
+			addRandom = new Element('a').update('<span class="add-to-play-queue-rand"></span>'),
+			addTop = new Element('a').update('<span class="add-to-play-queue-top"></span>'),
+			addBottom = new Element('a').update('<span class="add-to-play-queue-bottom"></span>');
 
 		cell.insert(addTop).insert(
 		{
@@ -340,7 +340,7 @@ this.SearchTab = Class.create(Tab,
 	{
 		var tbody = new Element('tbody'),
 			count = this.result_count,
-			$content = $('collection_content_' + this.identifier),
+			$content = $('collection-content-' + this.identifier),
 			k,
 			isOdd = true,
 			style,
@@ -411,8 +411,8 @@ this.SearchTab = Class.create(Tab,
 
 				var tr = new Element('tr',
 				{
-					id: 'library_song_' + id + '_' + i++
-				}).addClassName('library_draggable ' + style);
+					id: 'library-song-' + id + '-' + i++
+				}).addClassName('library-draggable ' + style);
 
 				for(k = 0; k < tds.length; ++k)
 				{
@@ -423,8 +423,8 @@ this.SearchTab = Class.create(Tab,
 
 			// Compute the table
 			var temp = new Date().getTime(),
-				tableid = 'results_filelist_' + this.identifier + '_' + temp,
-				table = new Element('table', {id: tableid}).addClassName('resizable').addClassName('search_table');
+				tableid = 'results-filelist-' + this.identifier + '-' + temp,
+				table = new Element('table', {id: tableid}).addClassName('resizable').addClassName('search-table');
 
 			table.insert(tbody).insert(
 			{
@@ -453,7 +453,7 @@ this.SearchTab = Class.create(Tab,
 		{
 			for(k = 0; k < this.server_results.length; k++)
 			{
-				new Draggable('library_song_' + this.identifier + '_' + k,
+				new Draggable('library-song-' + this.identifier + '-' + k,
 				{
 					scroll: window,
 					ghosting: true,
@@ -579,7 +579,7 @@ this.SearchTab = Class.create(Tab,
 			return item;
 		}
 
-		$$('[name=page_links_' + this.identifier + ']').each(function(s)
+		$$('[name=page-links-' + this.identifier + ']').each(function(s)
 		{
 			s.update(); // Remove all childnodes
 
@@ -594,15 +594,15 @@ this.SearchTab = Class.create(Tab,
 				var className;
 				if(pages[i] == currentPage)
 				{
-					className = "slider_link_current_page";
+					className = "slider-link-current-page";
 				}
 				else if(pages[i] == currentSelection)
 				{
-					className = "slider_link_current_selection";
+					className = "slider-link-current-selection";
 				}
 				else
 				{
-					className = "slider_link";
+					className = "slider-link";
 				}
 
 				var link = createLink(pages[i], className);

@@ -41,7 +41,7 @@ function Notification(level, message)
 	this.id = new Date().getTime() + "." + Math.round(Math.random()*100000);
 	
 	// Assign correct style and time according to given level.
-	var style = "notification_wrapper_";
+	var style = "notification-wrapper-";
 	switch(level)
 	{
 	case LEVELS.debug:
@@ -73,8 +73,8 @@ function Notification(level, message)
 	
 	// Insert notification wrapper in the page
 	var html = '' +
-	'<div class="notification_wrapper" id="notification' + this.id + '">' +
-		'<div class="' + style + '" id="notification_content' + this.id + '">' +
+	'<div class="notification-wrapper" id="notification-' + this.id + '">' +
+		'<div class="' + style + '" id="notification-content-' + this.id + '">' +
 			'<p>' + message + ' </p>' +
 		'</div>' +
 	'</div>';
@@ -84,10 +84,10 @@ function Notification(level, message)
 	this.endTime = null; // Declare property for Object.seal
 
 	// Hide notification, then make it appear with an animation
-	$('notification' + this.id).hide();
+	$('notification-' + this.id).hide();
 
 	var notif = this;
-	Effect.SlideDown('notification' + this.id,
+	Effect.SlideDown('notification-' + this.id,
 	{
 		duration: 0.6,
 		restoreAfterFinish: false,
@@ -117,7 +117,7 @@ Notification.prototype.remove = function()
 	if(!this._timer) {return;}
 
 	var notif = this;
-	Effect.SlideUp('notification' + this.id,
+	Effect.SlideUp('notification-' + this.id,
 	{
 		duration: 0.4,
 		afterFinish: function(effect)
@@ -561,13 +561,13 @@ this.Tabs = Class.create(
 		}
 
 		// Set the new tab identifier
-		var id = tab.identifier = this.tabsCollectionName + '_' + this.lastUniqueId;
+		var id = tab.identifier = this.tabsCollectionName + '-' + this.lastUniqueId;
 		this.tabs.push(tab);
 
 		// init html containers
 		if(this.tabs.length == 1)
 		{
-			$('tabsHeader').update('<ul id="tabs_list"></ul>');
+			$('tabsHeader').update('<ul id="tabs-list"></ul>');
 		}
 
 		// Add tab Header
@@ -587,7 +587,7 @@ this.Tabs = Class.create(
 		var tabDisplay = new Element('li',
 		{
 			style: 'margin-left: 1px',
-			id: 'tabHeader_' + id
+			id: 'tabHeader-' + id
 		}).insert(
 		{
 			top: toggleTab,
@@ -598,11 +598,11 @@ this.Tabs = Class.create(
 			tabDisplay.addClassName('tabHeaderActive');
 		}
 
-		var tabContentContainer = new Element('div', {id: 'tabContent_' + id});
+		var tabContentContainer = new Element('div', {id: 'tabContent-' + id});
 		tabContentContainer.style.display = this.tabs.length == 1 ? 'block' : 'none';
 
 		// DOM insertion
-		$('tabs_list').insert({'bottom': tabDisplay});
+		$('tabs-list').insert({'bottom': tabDisplay});
 		$('tabscontent').insert({'bottom': tabContentContainer});
 
 		// Start to init static tab content
@@ -620,8 +620,8 @@ this.Tabs = Class.create(
 		if(index != -1)
 		{
 			// If the tab to delete is the current active tab we want to select the first available tab
-			var tabHeader = $('tabHeader_' + identifier),
-				tabContent = $('tabContent_' + identifier);
+			var tabHeader = $('tabHeader-' + identifier),
+				tabContent = $('tabContent-' + identifier);
 			if(tabHeader && tabHeader.hasClassName("tabHeaderActive"))
 			{
 				// Find the tabs position index available near from tab
@@ -648,8 +648,8 @@ this.Tabs = Class.create(
 		for(var i = 0; i < this.tabs.length; i++)
 		{
 			var id = this.tabs[i].identifier,
-				tabHeader = $('tabHeader_' + id),
-				tabContent = $('tabContent_' + id);
+				tabHeader = $('tabHeader-' + id),
+				tabContent = $('tabContent-' + id);
 			if(id == identifier)
 			{
 				tabContent.style.display = 'block';
@@ -662,7 +662,6 @@ this.Tabs = Class.create(
 			}
 		}
 	}
-
 });
 
 this.SearchTab = Class.create(Tab,
@@ -763,12 +762,12 @@ this.SearchTab = Class.create(Tab,
 		if(this.reloadControllers)
 		{
 			// Clean
-			$$('collection_pagelist_' + this.identifier).each(function(s)
+			$$('collection-pagelist-' + this.identifier).each(function(s)
 			{
 				s.remove();
 			});
 
-			var collection_content = $('collection_content_' + this.identifier);
+			var collection_content = $('collection-content-' + this.identifier);
 			if(collection_content)
 			{
 				collection_content.remove();
@@ -776,10 +775,10 @@ this.SearchTab = Class.create(Tab,
 
 			// Pre-init html structure
 			var search_page = '' +
-			'<div class="collection_pagelist" name="collection_pagelist_' + this.identifier + '"></div>' +
-			'<div id="collection_content_' + this.identifier + '"></div>' +
-			'<div class="collection_pagelist" name="collection_pagelist_' + this.identifier + '"></div>';
-			$('tabContent_' + this.identifier).update(search_page);
+			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>' +
+			'<div id="collection-content-' + this.identifier + '"></div>' +
+			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>';
+			$('tabContent-' + this.identifier).update(search_page);
 
 			// Display sliders and links and init sliders behvior
 			this.initAndDisplaySearchControllers();
@@ -812,7 +811,7 @@ this.SearchTab = Class.create(Tab,
 		var tabId = this.identifier;
 
 		// Display sliders and links
-		var pageListCollection = $$('[name=collection_pagelist_' + tabId + ']');
+		var pageListCollection = $$('[name=collection-pagelist-' + tabId + ']');
 		pageListCollection.each(function(s)
 		{
 			s.update(); // empty
@@ -822,13 +821,13 @@ this.SearchTab = Class.create(Tab,
 		if(this.total_results > 0 && this.page_count > 1)
 		{
 			// We have to specified a fixed width, 100% doesn't work : the slider is lost
-			var music_wrapper_width = $('music_wrapper').getWidth();
+			var music_wrapper_width = $('music-wrapper').getWidth();
 
 			var slider = '' +
-			'<div name="results_slider_' + tabId + '" class="slider" style="width:' + music_wrapper_width + 'px;">' +
+			'<div name="results-slider-' + tabId + '" class="slider" style="width:' + music_wrapper_width + 'px;">' +
 				'<div class="handle"></div>' +
 			'</div>';
-			var links = '<div class="page_links" name="page_links_' + tabId + '"></div>';
+			var links = '<div class="page-links" name="page-links-' + tabId + '"></div>';
 
 			pageListCollection[0].update('<p>' + slider + links + '</p>');
 			pageListCollection[1].update('<p>' + links + slider + '</p>');
@@ -844,7 +843,7 @@ this.SearchTab = Class.create(Tab,
 		this.generatePagesLinks();
 
 		// Init each sliders behavior
-		var resultsSlider = $$('[name=results_slider_' + tabId + ']'),
+		var resultsSlider = $$('[name=results-slider-' + tabId + ']'),
 			that = this,
 			i = 0;
 		resultsSlider.each(function(sliderBox)
@@ -986,9 +985,9 @@ this.SearchTab = Class.create(Tab,
 	createControlsCell: function(cellTag, funcRandom, funcTop, funcBottom)
 	{
 		var cell = new Element(cellTag),
-			addRandom = new Element('a').update('<span class="add_to_play_queue_rand"></span>'),
-			addTop = new Element('a').update('<span class="add_to_play_queue_top"></span>'),
-			addBottom = new Element('a').update('<span class="add_to_play_queue_bottom"></span>');
+			addRandom = new Element('a').update('<span class="add-to-play-queue-rand"></span>'),
+			addTop = new Element('a').update('<span class="add-to-play-queue-top"></span>'),
+			addBottom = new Element('a').update('<span class="add-to-play-queue-bottom"></span>');
 
 		cell.insert(addTop).insert(
 		{
@@ -1007,7 +1006,7 @@ this.SearchTab = Class.create(Tab,
 	{
 		var tbody = new Element('tbody'),
 			count = this.result_count,
-			$content = $('collection_content_' + this.identifier),
+			$content = $('collection-content-' + this.identifier),
 			k,
 			isOdd = true,
 			style,
@@ -1078,8 +1077,8 @@ this.SearchTab = Class.create(Tab,
 
 				var tr = new Element('tr',
 				{
-					id: 'library_song_' + id + '_' + i++
-				}).addClassName('library_draggable ' + style);
+					id: 'library-song-' + id + '-' + i++
+				}).addClassName('library-draggable ' + style);
 
 				for(k = 0; k < tds.length; ++k)
 				{
@@ -1090,8 +1089,8 @@ this.SearchTab = Class.create(Tab,
 
 			// Compute the table
 			var temp = new Date().getTime(),
-				tableid = 'results_filelist_' + this.identifier + '_' + temp,
-				table = new Element('table', {id: tableid}).addClassName('resizable').addClassName('search_table');
+				tableid = 'results-filelist-' + this.identifier + '-' + temp,
+				table = new Element('table', {id: tableid}).addClassName('resizable').addClassName('search-table');
 
 			table.insert(tbody).insert(
 			{
@@ -1120,7 +1119,7 @@ this.SearchTab = Class.create(Tab,
 		{
 			for(k = 0; k < this.server_results.length; k++)
 			{
-				new Draggable('library_song_' + this.identifier + '_' + k,
+				new Draggable('library-song-' + this.identifier + '-' + k,
 				{
 					scroll: window,
 					ghosting: true,
@@ -1246,7 +1245,7 @@ this.SearchTab = Class.create(Tab,
 			return item;
 		}
 
-		$$('[name=page_links_' + this.identifier + ']').each(function(s)
+		$$('[name=page-links-' + this.identifier + ']').each(function(s)
 		{
 			s.update(); // Remove all childnodes
 
@@ -1261,15 +1260,15 @@ this.SearchTab = Class.create(Tab,
 				var className;
 				if(pages[i] == currentPage)
 				{
-					className = "slider_link_current_page";
+					className = "slider-link-current-page";
 				}
 				else if(pages[i] == currentSelection)
 				{
-					className = "slider_link_current_selection";
+					className = "slider-link-current-selection";
 				}
 				else
 				{
-					className = "slider_link";
+					className = "slider-link";
 				}
 
 				var link = createLink(pages[i], className);
@@ -1374,7 +1373,7 @@ var UploadTab = Class.create(Tab,
 				}
 
 				// Delete html part
-				$('upload_line_' + escape(this.lastSendingDeletionIdentifier)).remove();
+				$('upload-line-' + escape(this.lastSendingDeletionIdentifier)).remove();
 				Notifications.Display(2, "Song " + this.lastSendingDeletionIdentifier + " sucessfully deleted");
 
 				this.lastSendingDeletionIdentifier = null;
@@ -1396,7 +1395,7 @@ var UploadTab = Class.create(Tab,
 			Notifications.Display(1, message);
 
 			var lastId = escape(this.lastSendingUpdateIdentifier),
-				selector = 'upload_line_' + lastId,
+				selector = 'upload-line-' + lastId,
 				$selector = $(selector);
 
 			// Delete all modified styles
@@ -1443,7 +1442,7 @@ var UploadTab = Class.create(Tab,
 				}
 
 				// Delete html part
-				$('upload_line_' + escape(this.lastSendingValidationIdentifier)).remove();
+				$('upload-line-' + escape(this.lastSendingValidationIdentifier)).remove();
 
 				this.lastSendingValidationIdentifier = null;
 
@@ -1459,7 +1458,7 @@ var UploadTab = Class.create(Tab,
 
 	reinitTable: function()
 	{
-		var $uploaded_files = $('uploaded_files');
+		var $uploaded_files = $('uploaded-files');
 		if($uploaded_files.down('tbody').childElementCount === 0)
 		{
 			$uploaded_files.update("No file uploaded yet.");
@@ -1469,9 +1468,9 @@ var UploadTab = Class.create(Tab,
 		else
 		{
 			var temp = new Date().getTime();
-			$('uploaded_filelist_' + this.tableId).id = 'uploaded_filelist_' + temp;
+			$('uploaded-filelist-' + this.tableId).id = 'uploaded-filelist-' + temp;
 			this.tableId = temp;
-			this.tableKit = new TableKit('uploaded_filelist_' + this.tableId,
+			this.tableKit = new TableKit('uploaded-filelist-' + this.tableId,
 			{
 				'sortable': true,
 				'editable': true,
@@ -1545,7 +1544,7 @@ var UploadTab = Class.create(Tab,
 		'</td>';
 
 		var fname = escape(obj.filename),
-			tr = new Element('tr', {'id': 'upload_line_' + fname}).update(html),
+			tr = new Element('tr', {'id': 'upload-line-' + fname}).update(html),
 			divs = tr.select('div'),
 			that = this;
 		
@@ -1561,7 +1560,7 @@ var UploadTab = Class.create(Tab,
 		var i, j,
 			len,
 			found,
-			$uploaded_files = $('uploaded_files'),
+			$uploaded_files = $('uploaded-files'),
 			$uploaded_files_tbody = $uploaded_files.down('tbody'),
 			that = this;
 
@@ -1592,7 +1591,7 @@ var UploadTab = Class.create(Tab,
 				this.uploadedFiles = JSON.parse(JSON.stringify(uploaded_files));
 				this.uploadedFilesEdition = JSON.parse(JSON.stringify(uploaded_files));
 
-				var html = '<table id="uploaded_filelist_' + this.tableId + '" class="sortable resizable editable upload_table">';
+				var html = '<table id="uploaded-filelist-' + this.tableId + '" class="sortable resizable editable upload-table">';
 				var tr = '<tr>' +
 					'<th>Filename</th>' +
 					'<th class="artist">Artist</th>' +
@@ -1624,7 +1623,7 @@ var UploadTab = Class.create(Tab,
 				this.makeCellEditable("trackNb");
 				this.makeCellEditable("genre");
 
-				this.tableKit = new TableKit('uploaded_filelist_' + this.tableId,
+				this.tableKit = new TableKit('uploaded-filelist-' + this.tableId,
 				{
 					'sortable': true,
 					'editable': true,
@@ -1674,7 +1673,7 @@ var UploadTab = Class.create(Tab,
 				}
 
 				// Remove the html Element
-				$('upload_line_' + escape(deleteLines[i])).remove();
+				$('upload-line-' + escape(deleteLines[i])).remove();
 			}
 		}
 		else if(this.uploadedFiles.length < uploaded_files.length)
@@ -1704,7 +1703,7 @@ var UploadTab = Class.create(Tab,
 				//TODO: clone with Extend(true, {}, object);
 				this.uploadedFiles.push(JSON.parse(JSON.stringify(newLines[i])));
 				this.uploadedFilesEdition.push(JSON.parse(JSON.stringify(newLines[i])));
-				$('uploaded_filelist_' + this.tableId).down('tbody').insert(this.getUploadedFileHtml(newLines[i]));
+				$('uploaded-filelist-' + this.tableId).down('tbody').insert(this.getUploadedFileHtml(newLines[i]));
 
 				this.removeFileFromQQUpload(newLines[i].filename);
 			}
@@ -1755,9 +1754,9 @@ var UploadTab = Class.create(Tab,
 	{
 		var upload_form = '<div id="file-uploader' + this.identifier + '"></div>' +
 			'<h2>Uploaded files</h2>' +
-			'<div id="uploaded_files" style="overflow:auto;"></div>';
+			'<div id="uploaded-files" style="overflow:auto;"></div>';
 
-		$('tabContent_' + this.identifier).update(upload_form);
+		$('tabContent-' + this.identifier).update(upload_form);
 
 		// Init upload button behavior
 		this.uploader = new qq.FileUploader(
@@ -1821,7 +1820,7 @@ this.DebugTab = Class.create(Tab,
 			'</td>' +
 		'</tr>' +
 		'</table>';
-		var $content = $('tabContent_' + this.identifier);
+		var $content = $('tabContent-' + this.identifier);
 		$content.update(debug_display);
 
 		this.$debug1 = $content.down('div:first');
@@ -1871,7 +1870,7 @@ this.CustomQueriesTab = Class.create(Tab,
 			'<td><input type="button" value="send custom query"/></td>' +
 		'</tr>' +
 		'</table>';
-		var $content = $('tabContent_' + this.identifier);
+		var $content = $('tabContent-' + this.identifier);
 		$content.update(custom_queries_display);
 
 		var $textarea = $content.down('textarea');
@@ -1977,7 +1976,7 @@ this.NotificationTab = Class.create(Tab,
 
 	updateContent: function()
 	{
-		var $tabContent = $('tabContent_' + this.identifier);
+		var $tabContent = $('tabContent-' + this.identifier);
 		$tabContent.update('<h1>Notification tests:</h1>');
 
 		function addButton(level)
@@ -2253,10 +2252,10 @@ MusicFieldEditor.prototype.undo = function(cell)
 	for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
 	{
 		var fname = escape(this.uploadedFiles[i].filename);
-		if("upload_line_" + fname == identifier)
+		if("upload-line-" + fname == identifier)
 		{
 			// Show validate
-			var selector = 'upload_line_' + fname,
+			var selector = 'upload-line-' + fname,
 				$selector = $(selector);
 			if($selector.select('[class="modified"]').length == 1)
 			{
@@ -2319,7 +2318,7 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 	{
 		var fileE = this.uploadedFilesEdition[i],
 			fname = escape(fileE.filename);
-		if("upload_line_" + fname == identifier)
+		if("upload-line-" + fname == identifier)
 		{
 			if(this.name == "genre")
 			{
@@ -2363,7 +2362,7 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 				// Default behaviour
 				cell.addClassName("modified");
 
-				var $selector = $('upload_line_' + fname);
+				var $selector = $('upload-line-' + fname);
 				$selector.select('[class="update"]').each(function(e){e.show();});
 				$selector.select('[class="validate"]').each(function(e){e.hide();});
 
@@ -2422,7 +2421,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 
 		for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 		{
-			if("upload_line_" + escape(this.uploadedFilesEdition[i].filename) == identifier)
+			if("upload-line-" + escape(this.uploadedFilesEdition[i].filename) == identifier)
 			{
 				if(this.uploadedFilesEdition[i]["genre"] != this.uploadedFiles[i]["genre"])
 				{
@@ -2440,7 +2439,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 		for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 		{
 			var fileE = this.uploadedFilesEdition[i];
-			if("upload_line_" + escape(fileE.filename) == identifier)
+			if("upload-line-" + escape(fileE.filename) == identifier)
 			{
 				if(this.name == "track")
 				{
@@ -2490,7 +2489,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	var okButton = document.createElement("input");
 	okButton.type = "submit";
 	okButton.value = "submit";
-	okButton.className = 'editor_ok_button';
+	okButton.className = 'editor-ok-button';
 	form.appendChild(okButton);
 
 	if(modified)
@@ -2499,7 +2498,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 		undoLink.href = "#";
 		undoLink.appendChild(document.createTextNode("undo "));
 		undoLink.onclick = this._undo.bindAsEventListener(this);
-		undoLink.className = 'editor_undo';      
+		undoLink.className = 'editor-undo';      
 		form.appendChild(undoLink);
 		form.appendChild(document.createTextNode(" "));
 	}
@@ -2508,7 +2507,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	cancelLink.href = "#";
 	cancelLink.appendChild(document.createTextNode("cancel"));
 	cancelLink.onclick = this._cancel.bindAsEventListener(this);
-	cancelLink.className = 'editor_cancel';      
+	cancelLink.className = 'editor-cancel';      
 	form.appendChild(cancelLink);
 
 	cell.innerHTML = '';
@@ -2517,7 +2516,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	// Update new value
 	for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 	{
-		if("upload_line_" + escape(this.uploadedFilesEdition[i].filename) == identifier)
+		if("upload-line-" + escape(this.uploadedFilesEdition[i].filename) == identifier)
 		{
 			// Automatically select genre
 			var options = $$('select#genre option');
@@ -3507,33 +3506,33 @@ function JukeboxUI(jukebox, element, opts)
 	var _$ =
 	{
 		elem: $(element),
-		music_wrapper: $('music_wrapper'), // TODO: replace thoses id by (sub)classes
-		expand_button: $('expand_button'),
-		collapse_button: $('collapse_button'),
-		page_wrapper: $('page_wrapper'),
-		search_input: $('search_input'),
-		search_field: $('search_field'),
-		search_genres: $('search_genres'),
-		results_per_page: $('results_per_page'),
-		btn_search: $('btn_search'),
+		music_wrapper: $('music-wrapper'), // TODO: replace thoses id by (sub)classes
+		expand_button: $('expand-button'),
+		collapse_button: $('collapse-button'),
+		page_wrapper: $('page-wrapper'),
+		search_input: $('search-input'),
+		search_field: $('search-field'),
+		search_genres: $('search-genres'),
+		results_per_page: $('results-per-page'),
+		btn_search: $('btn-search'),
 		progressbar: $('progressbar'),
-		player_song_time: $('player_song_time'),
-		activity_monitor: $('activity_monitor'),
-		play_stream: $('play_stream'),
-		stop_stream: $('stop_stream'),
+		player_song_time: $('player-song-time'),
+		activity_monitor: $('activity-monitor'),
+		play_stream: $('play-stream'),
+		stop_stream: $('stop-stream'),
 		channel: $('channel'),
-		btn_join_channel: $('btn_join_channel'),
-		previous_button: $('previous_button'),
-		next_button: $('next_button'),
-		cb_autorefresh: $('cb_autorefresh'),
-		btn_refresh: $('btn_refresh'),
-		player_song_artist: $('player_song_artist'),
-		player_song_album: $('player_song_album'),
-		player_song_title: $('player_song_title'),
-		play_queue_content: $('play_queue_content'),
-		selection_plugin: $('music_selection_plugin'),
-		btn_apply_plugin: $('btn_apply_plugin'),
-		volume_box_slider: $('volume_box_slider')
+		btn_join_channel: $('btn-join-channel'),
+		previous_button: $('previous-button'),
+		next_button: $('next-button'),
+		cb_autorefresh: $('cb-autorefresh'),
+		btn_refresh: $('btn-refresh'),
+		player_song_artist: $('player-song-artist'),
+		player_song_album: $('player-song-album'),
+		player_song_title: $('player-song-title'),
+		play_queue_content: $('play-queue-content'),
+		selection_plugin: $('music-selection-plugin'),
+		btn_apply_plugin: $('btn-apply-plugin'),
+		volume_box_slider: $('volume-box-slider')
 	};
 
 	//---
@@ -3647,7 +3646,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.updateNbUsers = function(count)
 	{
-		var items = $$('span.count_user_listening');
+		var items = $$('span.count-user-listening');
 		if(items.length > 0)
 		{
 			items.each(function(e)
@@ -3680,7 +3679,7 @@ function JukeboxUI(jukebox, element, opts)
 		var len = _$.play_queue_content.select('li').length - 1;
 		for(var i = 0; i < len; ++i)
 		{
-			Droppables.remove('play_queue_song_' + i);
+			Droppables.remove('play-queue-song-' + i);
 		}
 	};
 
@@ -3688,21 +3687,21 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		var ul = new Element('ul');
 		var li = '' +
-		'<li id="play_queue_li_first" class="droppable">Play queue' +
+		'<li id="play-queue-li-first" class="droppable">Play queue' +
 			'<div>' +
-				'<span class="nb_listening_users"></span>' +
-				'<span class="count_user_listening">' + J.listenersCount + '</span>' +
+				'<span class="nb-listening-users"></span>' +
+				'<span class="count-user-listening">' + J.listenersCount + '</span>' +
 			'</div>' +
-			'<a><span class="play_queue_shuffle"></span></a>' +
-			'<a><span class="play_queue_delete"></span></a>' +
+			'<a><span class="play-queue-shuffle"></span></a>' +
+			'<a><span class="play-queue-delete"></span></a>' +
 		'</li>';
 		ul.insert(li);
 
-		ul.down(".play_queue_shuffle").on("click", function()
+		ul.down(".play-queue-shuffle").on("click", function()
 		{
 			J.playQueueShuffle();
 		});
-		ul.down(".play_queue_delete").on("click", function()
+		ul.down(".play-queue-delete").on("click", function()
 		{
 			J.playQueueDelete();  // no args = all
 		});
@@ -3712,18 +3711,18 @@ function JukeboxUI(jukebox, element, opts)
 		playQueueSongs.each(function(song)
 		{
 			li = '' +
-			'<li id="play_queue_li_' + currentPQSongIndex + '" class="droppable">' +
-				'<div id="play_queue_song_' + currentPQSongIndex + '" class="play_queue_draggable">' +
-					'<div id="play_queue_handle_' + currentPQSongIndex + '" class="play_queue_handle">' +
+			'<li id="play-queue-li-' + currentPQSongIndex + '" class="droppable">' +
+				'<div id="play-queue-song-' + currentPQSongIndex + '" class="play-queue-draggable">' +
+					'<div id="play-queue-handle-' + currentPQSongIndex + '" class="play-queue-handle">' +
 						'<a href="javascript:void(0)">' + song.artist + '</a>' +
 						' - ' +
 						'<a href="javascript:void(0)">' + song.album + '</a>' +
 						' - ' +
 						song.title + ' (' + FormatTime(song.duration) + ')' +
 					'</div>' +
-					'<a><span class="play_queue_move_top"></span></a>' +
-					'<a><span class="play_queue_move_bottom"></span></a>' +
-					'<a><span class="play_queue_delete"></span></a>' +
+					'<a><span class="play-queue-move-top"></span></a>' +
+					'<a><span class="play-queue-move-bottom"></span></a>' +
+					'<a><span class="play-queue-delete"></span></a>' +
 				'</div>' +
 			'</li>';
 			ul.insert(li);
@@ -3734,26 +3733,26 @@ function JukeboxUI(jukebox, element, opts)
 			// Declare listeners
 
 			// Artist
-			ul.down('li:last .play_queue_handle a:first').on("click", function()
+			ul.down('li:last .play-queue-handle a:first').on("click", function()
 			{
 				_search(1, null, null, song.artist, 'equal', 'artist', 'artist,album,track,title', 20, false);
 			});
 			// Album
-			ul.down('li:last .play_queue_handle a:last').on("click", function()
+			ul.down('li:last .play-queue-handle a:last').on("click", function()
 			{
 				_search(1, null, null, song.album, 'equal', 'album', 'artist,album,track,title', 20, false);
 			});
 
 			var localcurrentPQSongIndex = currentPQSongIndex; // Avoid closure issue
-			ul.down('li:last .play_queue_move_top').on("click", function()
+			ul.down('li:last .play-queue-move-top').on("click", function()
 			{
 				J.playQueueMove(1, localcurrentPQSongIndex, 0);
 			});
-			ul.down('li:last .play_queue_move_bottom').on("click", function()
+			ul.down('li:last .play-queue-move-bottom').on("click", function()
 			{
 				J.playQueueMove(1, localcurrentPQSongIndex, lastPQIndex);
 			});
-			ul.down('li:last .play_queue_delete').on("click", function()
+			ul.down('li:last .play-queue-delete').on("click", function()
 			{
 				J.playQueueDelete(1, localcurrentPQSongIndex);
 			});
@@ -3766,28 +3765,28 @@ function JukeboxUI(jukebox, element, opts)
 		// Create all draggables, once update is done.
 		for(var i = 0, len = playQueueSongs.length; i < len; i++)
 		{
-			new Draggable('play_queue_song_' + i,
+			new Draggable('play-queue-song-' + i,
 			{
 				scroll: window,
 				constraint: 'vertical',
 				revert: true,
-				handle: 'play_queue_handle_' + i,
+				handle: 'play-queue-handle-' + i,
 				onStart: function(dragged)
 				{
 					var id = dragged.element.id;
 					id = id.substring(16);
-					$('play_queue_li_' + id).addClassName('being_dragged');
+					$('play-queue-li-' + id).addClassName('being-dragged');
 				},
 				onEnd: function(dragged)
 				{
 					var id = dragged.element.id;
 					id = id.substring(16);
-					$('play_queue_li_' + id).removeClassName('being_dragged');
+					$('play-queue-li-' + id).removeClassName('being-dragged');
 				}
 			});
-			_makePlayQueueSongDroppable('play_queue_li_' + i, playQueueSongs);
+			_makePlayQueueSongDroppable('play-queue-li-' + i, playQueueSongs);
 		}
-		_makePlayQueueSongDroppable('play_queue_li_first', playQueueSongs);
+		_makePlayQueueSongDroppable('play-queue-li-first', playQueueSongs);
 	};
 
 	this.displaySearchResults = function(results)
@@ -3901,20 +3900,20 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		Droppables.add(droppable_id,
 		{ 
-			accept: ['play_queue_draggable', 'library_draggable'],
+			accept: ['play-queue-draggable', 'library-draggable'],
 			overlap: 'vertical',
-			hoverclass: 'droppable_hover',
+			hoverclass: 'droppable-hover',
 			onDrop: function(dragged, dropped/*, event*/)
 			{
 				var old_index,
 					song_mid;
-				if(dragged.hasClassName("play_queue_draggable"))
+				if(dragged.hasClassName("play-queue-draggable"))
 				{
 					old_index = parseInt(dragged.id.substring(16), 10);
 					song_mid = dragged.retrieve('mid');
 					
 					var new_index = -1;
-					if(dropped.id != "play_queue_li_first")
+					if(dropped.id != "play-queue-li-first")
 					{
 						new_index = parseInt(dropped.id.substring(14), 10);
 					}
@@ -3933,15 +3932,16 @@ function JukeboxUI(jukebox, element, opts)
 						$this.displayPlayQueue(playQueueSongs);
 					}
 				}
-				else if(dragged.hasClassName("library_draggable"))
+				else if(dragged.hasClassName("library-draggable"))
 				{
-					var tab_index = dragged.id.replace(/.*_([^_]*_[^_]*)_[0-9]*/, "$1");
-					old_index = parseInt(dragged.id.replace(/.*_[^_]*_[^_]*_([0-9]*)/, "$1"), 10);
+					var idregexp = new RegExp(".*-([^\\-]*-[^\\-]*)-([0-9]*)");
+					var tab_index = dragged.id.replace(idregexp, "$1");
+					old_index = parseInt(dragged.id.replace(idregexp, "$2"), 10);
 					var song = _tabs.getTabFromUniqueId(tab_index).server_results[old_index];
 					song_mid = song.mid;
 					
 					var play_queue_index = -1;
-					if(dropped.id != "play_queue_li_first")
+					if(dropped.id != "play-queue-li-first")
 					{
 						play_queue_index = parseInt(dropped.id.substring(14), 10);
 					}
@@ -4137,10 +4137,10 @@ function JukeboxUI(jukebox, element, opts)
 				createShowTab(possibleTabs[i]);
 			}
 
-			$("tab_upload").on("click", _tabsManager.ShowUploadTab);
-			$("tab_query").on("click", _tabsManager.ShowCustomQueriesTab);
-			$("tab_notifs").on("click", _tabsManager.ShowNotificationTab);
-			$("tab_debug").on("click", _tabsManager.ShowDebugTab);
+			$("tab-upload").on("click", _tabsManager.ShowUploadTab);
+			$("tab-query").on("click", _tabsManager.ShowCustomQueriesTab);
+			$("tab-notifs").on("click", _tabsManager.ShowNotificationTab);
+			$("tab-debug").on("click", _tabsManager.ShowDebugTab);
 		})();
 	}
 	_initialize();

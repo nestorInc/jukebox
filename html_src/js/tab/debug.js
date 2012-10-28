@@ -43,7 +43,7 @@ this.DebugTab = Class.create(Tab,
 			'</td>' +
 		'</tr>' +
 		'</table>';
-		var $content = $('tabContent_' + this.identifier);
+		var $content = $('tabContent-' + this.identifier);
 		$content.update(debug_display);
 
 		this.$debug1 = $content.down('div:first');

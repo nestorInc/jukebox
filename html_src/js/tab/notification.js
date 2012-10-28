@@ -10,7 +10,7 @@ this.NotificationTab = Class.create(Tab,
 
 	updateContent: function()
 	{
-		var $tabContent = $('tabContent_' + this.identifier);
+		var $tabContent = $('tabContent-' + this.identifier);
 		$tabContent.update('<h1>Notification tests:</h1>');
 
 		function addButton(level)

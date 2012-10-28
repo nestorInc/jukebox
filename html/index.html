@@ -20,47 +20,47 @@
 	<div id="notifications"></div>
 </header>
 
-<div role="main" id="page_wrapper">
+<div role="main" id="page-wrapper">
 
 	<div id="header">
-		Canal : <input type="text" id="channel" /><input type="button" id="btn_join_channel" value="Rejoindre" />
-		<span id="expand_button">&gt;</span>
-		<span id="collapse_button">&lt;</span>
-		<span id="activity_monitor"></span>
+		Canal : <input type="text" id="channel" /><input type="button" id="btn-join-channel" value="Rejoindre" />
+		<span id="expand-button">&gt;</span>
+		<span id="collapse-button">&lt;</span>
+		<span id="activity-monitor"></span>
 	</div>
 	
 	<div id="player">
-		<div id="player_controls">
-			<span id="previous_button"></span><span id="next_button"></span>
-			<p id="player_song"><a id="player_song_artist" href="#"></a> - <a id="player_song_album" href="#"></a> - <span id="player_song_title"></span></p>
-			<div id="progressbar_wrapper">
+		<div id="player-controls">
+			<span id="previous-button"></span><span id="next-button"></span>
+			<p id="player-song"><a id="player-song-artist" href="#"></a> - <a id="player-song-album" href="#"></a> - <span id="player-song-title"></span></p>
+			<div id="progressbar-wrapper">
 				<div id="progressbar"></div>
-				<p id="player_song_time"></p>
+				<p id="player-song-time"></p>
 			</div>
 		</div>
 
-		<div id="player_playlist">
-			<div id="play_queue_content"></div>
+		<div id="player-playlist">
+			<div id="play-queue-content"></div>
 		</div>
 	</div>
 	
-	<div id="music_wrapper">
-		<div id="tab_links">
-			<a id="tab_upload">Upload</a>
-			<a id="tab_query">Query</a>
-			<a id="tab_notifs">Notifications</a>
-			<a id="tab_debug">Debug</a>
+	<div id="music-wrapper">
+		<div id="tab-links">
+			<a id="tab-upload">Upload</a>
+			<a id="tab-query">Query</a>
+			<a id="tab-notifs">Notifications</a>
+			<a id="tab-debug">Debug</a>
 		</div>
-		<div id="collection_header">
-			Rechercher : <input type="text" id="search_input" />
-			<select id="search_genres" style="display:none;"></select>
-			<select id="search_field">
+		<div id="collection-header">
+			Rechercher : <input type="text" id="search-input" />
+			<select id="search-genres" style="display:none;"></select>
+			<select id="search-field">
 				<option value="artist">artiste</option>
 				<option value="title">title</option>
 				<option value="album">album</option>
 				<option value="genre">genre</option>
 			</select> 
-			<select id="results_per_page">
+			<select id="results-per-page">
 				<option value="10">10</option>
 				<option value="20" selected="selected">20</option>
 				<option value="30">30</option>
@@ -72,27 +72,27 @@
 				<option value="90">90</option>
 				<option value="100">100</option>
 			</select> 
-			<input id="btn_search" type="button" value="Rechercher" />
+			<input id="btn-search" type="button" value="Rechercher" />
 		</div>
 		<div id="tabsHeader"></div>
 		<div id="tabscontent"></div>
 	</div>
 	
 	<div id="footer">
-		<input id="btn_refresh" type="button" value="Refresh" />
-		<input type="checkbox" value="autorefresh" id="cb_autorefresh" checked="checked" /><label for="cb_autorefresh"> Autorefresh</label>
+		<input id="btn-refresh" type="button" value="Refresh" />
+		<input type="checkbox" value="autorefresh" id="cb-autorefresh" checked="checked" /><label for="cb-autorefresh"> Autorefresh</label>
 		<br />
-		Plugin : <input type="text" id="music_selection_plugin" value="default" style="width: 100px;" />
-		<input id="btn_apply_plugin" type="button" value="Appliquer" />
+		Plugin : <input type="text" id="music-selection-plugin" value="default" style="width: 100px;" />
+		<input id="btn-apply-plugin" type="button" value="Appliquer" />
 	</div>
 	
 	<div>
-		<a id="play_stream">Play stream</a>
-		<a id="stop_stream">Stop stream</a>
+		<a id="play-stream">Play stream</a>
+		<a id="stop-stream">Stop stream</a>
 	</div>
-	<span id="volume_box">
+	<span id="volume-box">
 		<span>Volume :&nbsp;</span>
-		<div id="volume_box_slider" class="slider">
+		<div id="volume-box-slider" class="slider">
 			<div class="handle"></div>
 		</div>
 		<br clear="all" />

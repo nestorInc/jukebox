@@ -41,7 +41,7 @@ function Notification(level, message)
 	this.id = new Date().getTime() + "." + Math.round(Math.random()*100000);
 	
 	// Assign correct style and time according to given level.
-	var style = "notification_wrapper_";
+	var style = "notification-wrapper-";
 	switch(level)
 	{
 	case LEVELS.debug:
@@ -73,8 +73,8 @@ function Notification(level, message)
 	
 	// Insert notification wrapper in the page
 	var html = '' +
-	'<div class="notification_wrapper" id="notification' + this.id + '">' +
-		'<div class="' + style + '" id="notification_content' + this.id + '">' +
+	'<div class="notification-wrapper" id="notification-' + this.id + '">' +
+		'<div class="' + style + '" id="notification-content-' + this.id + '">' +
 			'<p>' + message + ' </p>' +
 		'</div>' +
 	'</div>';
@@ -84,10 +84,10 @@ function Notification(level, message)
 	this.endTime = null; // Declare property for Object.seal
 
 	// Hide notification, then make it appear with an animation
-	$('notification' + this.id).hide();
+	$('notification-' + this.id).hide();
 
 	var notif = this;
-	Effect.SlideDown('notification' + this.id,
+	Effect.SlideDown('notification-' + this.id,
 	{
 		duration: 0.6,
 		restoreAfterFinish: false,
@@ -117,7 +117,7 @@ Notification.prototype.remove = function()
 	if(!this._timer) {return;}
 
 	var notif = this;
-	Effect.SlideUp('notification' + this.id,
+	Effect.SlideUp('notification-' + this.id,
 	{
 		duration: 0.4,
 		afterFinish: function(effect)
