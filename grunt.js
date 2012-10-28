@@ -8,19 +8,19 @@ module.exports = function(grunt)
 	var SRC_DIR = 'html_src/',
 		SRC =
 		{
-			css: 	SRC_DIR + 'css/',
-			js: 	SRC_DIR + 'js/',
-			tab: 	SRC_DIR + 'js/tab/',
-			libs: 	SRC_DIR + 'js/lib/',
-			img: 	SRC_DIR + 'images/',
+			css:	SRC_DIR + 'css/',
+			js:		SRC_DIR + 'js/',
+			tab:	SRC_DIR + 'js/tab/',
+			libs:	SRC_DIR + 'js/lib/',
+			img:	SRC_DIR + 'images/'
 		},
 
 		OUT_DIR = 'html/',
 		OUT =
 		{
-			css: 	OUT_DIR + 'css/',
-			js: 	OUT_DIR + 'js/',
-			libs: 	OUT_DIR + 'js/lib/'
+			css:	OUT_DIR + 'css/',
+			js:		OUT_DIR + 'js/',
+			libs:	OUT_DIR + 'js/lib/'
 		};
 
 	grunt.initConfig(
@@ -86,10 +86,20 @@ module.exports = function(grunt)
 					SRC.libs + 'json2.js',
 					SRC.libs + 'tablekit.js',
 					SRC.libs + 'fileuploader.js',
-					SRC.libs + 'Sound.js'
+					SRC.libs + 'Sound.js',
+
+					// scriptaculous dependancies
+					SRC.libs + 'slider.js',
+					SRC.libs + 'effects.js',
+					SRC.libs + 'dragdrop.js' // dragdrop needs effects
 				],
 				dest: OUT.libs + 'libs.min.js'
-			}
+			}/*,
+			prototype: // prototypejs website doesn't provide a minified version => use our own
+			{
+				src: SRC.libs + 'prototype.js',
+				dest: OUT.libs + 'prototype.min.js' // doesn't works :(
+			}*/
 		},
 		cssmin:
 		{
@@ -101,22 +111,24 @@ module.exports = function(grunt)
 		},
 		lint:
 		{
-			notifications: 	SRC.js + 'notifications.js',
-			action: 		SRC.js + 'action.js',
-			query: 			SRC.js + 'query.js',
-			genres: 		SRC.js + 'genres.js',
-			tools: 			SRC.js + 'tools.js',
-			fieldEditor: 	SRC.js + 'musicFieldEditor.js',
-			jukebox: 		SRC.js + 'jukebox.js',
-			jukeboxui: 		SRC.js + 'jukeboxUI.js',
+			grunt: "grunt.js",
+
+			notifications:	SRC.js + 'notifications.js',
+			action:			SRC.js + 'action.js',
+			query:			SRC.js + 'query.js',
+			genres:			SRC.js + 'genres.js',
+			tools:			SRC.js + 'tools.js',
+			fieldEditor:	SRC.js + 'musicFieldEditor.js',
+			jukebox:		SRC.js + 'jukebox.js',
+			jukeboxui:		SRC.js + 'jukeboxUI.js',
 
 			// tab/
-			tabs: 				SRC.tab + 'tabs.js',
-			tab_customQueries: 	SRC.tab + 'customQueries.js',
-			tab_debug: 			SRC.tab + 'debug.js',
-			tab_notification: 	SRC.tab + 'notification.js',
-			tab_search: 		SRC.tab + 'search.js',
-			tab_upload: 		SRC.tab + 'upload.js'
+			tabs:				SRC.tab + 'tabs.js',
+			tab_customQueries:	SRC.tab + 'customQueries.js',
+			tab_debug:			SRC.tab + 'debug.js',
+			tab_notification:	SRC.tab + 'notification.js',
+			tab_search:			SRC.tab + 'search.js',
+			tab_upload:			SRC.tab + 'upload.js'
 		},
 		jshint:
 		{
@@ -160,6 +172,10 @@ module.exports = function(grunt)
 				genres: true,
 				FormatTime: true,
 				sort_unique: true
+			},
+			grunt:
+			{
+				globals: {module: true}
 			},
 			notifications:
 			{
@@ -230,11 +246,12 @@ module.exports = function(grunt)
 			{
 				src:
 				[
-					SRC.libs + 'prototype.js',
-					SRC.libs + 'scriptaculous.js'
+					SRC.libs + 'require.min.js',
+					SRC.libs + 'prototype.js'/*,
+					SRC.libs + 'scriptaculous.js' // No more used */
 				],
 				dest: OUT_DIR
-			},
+			}/* Not required since thoses are integrated now into libs.min.js,
 			scriptaculous:
 			{
 				src:
@@ -244,7 +261,7 @@ module.exports = function(grunt)
 					SRC.libs + 'effects.js'
 				],
 				dest: OUT_DIR
-			}
+			}*/
 		}
 	});
 

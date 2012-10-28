@@ -458,6 +458,27 @@ function JsonPrettyPrint(input)
 	json_hr = json_hr.replace(/\t/g, "&nbsp;&nbsp;&nbsp;");
 	return json_hr;
 }
+var Tab = this.Tab = Class.create(
+{
+	initialize: function(identifier, name)
+	{
+		this.identifier = identifier;
+		this.name = name;
+	},
+
+	getName: function()
+	{
+		return this.name; 
+	},
+
+	getIdentifier: function()
+	{
+		return this.identifier;
+	}
+});
+
+//==================================================
+
 this.Tabs = Class.create(
 {
 	initialize: function(tabsCollectionName)
@@ -642,27 +663,6 @@ this.Tabs = Class.create(
 		}
 	}
 
-});
-
-//==================================================
-
-this.Tab = Class.create(
-{
-	initialize: function(identifier, name)
-	{
-		this.identifier = identifier;
-		this.name = name;
-	},
-
-	getName: function()
-	{
-		return this.name; 
-	},
-
-	getIdentifier: function()
-	{
-		return this.identifier;
-	}
 });
 
 this.SearchTab = Class.create(Tab,

@@ -58,9 +58,17 @@ basic  = BasicApi.new(channelList);
 upload = UploadManager.new(config[:upload.to_s]);
 debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
+main_src = HttpNodeMapping.new("html_src");
 stream = Stream.new(channelList, library);
 
 main.addAuth() { |s, req, user, pass|
+#  next nil if(s.ssl != true);
+  next "guest" if(user == "guest");
+  next "PAM"   if(authpam(user, pass) == true);
+  nil;
+}
+
+main_src.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
   next "guest" if(user == "guest");
   next "PAM"   if(authpam(user, pass) == true);
@@ -71,6 +79,7 @@ root = HttpRootNode.new({ "/api/json" => json,
                           "/api"      => basic,
                           "/upload"   => upload,
                           "/"         => main,
+                          "/src"      => main_src,
                           "/stream"   => stream});
 #                          "/debug"    => debug,
 

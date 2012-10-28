@@ -101,14 +101,19 @@
 
 <footer></footer>
 
-<script type="text/javascript" src="js/lib/prototype.js"></script>
-<script type="text/javascript" src="js/lib/scriptaculous.js?load=effects,dragdrop,slider"></script>
+<script type="text/javascript" src="js/lib/require.min.js"></script>
 
-<!-- RELEASE -->
+<!-- Common to RELEASE and DEBUG
+<script type="text/javascript" src="js/lib/prototype.js"></script>
+-->
+
+<!-- RELEASE
 <script type="text/javascript" src="js/lib/libs.min.js"></script>
 <script type="text/javascript" src="js/jukebox.min.js"></script>
+-->
 
 <!-- DEBUG
+<script type="text/javascript" src="js/lib/scriptaculous.js?load=effects,dragdrop,slider"></script>
 <script type="text/javascript" src="js/lib/json2.js"></script>
 <script type="text/javascript" src="js/lib/tablekit.js"></script>
 <script type="text/javascript" src="js/lib/fileuploader.js"></script>
@@ -130,59 +135,138 @@
 -->
 
 <script type="text/javascript">
-var j; // Global, easily accessible from console
-document.observe("dom:loaded", function()
-{
-	try
+var hrefLower = window.location.href.toLowerCase(),
+	DEBUG = (hrefLower.indexOf('#debug') != -1 || hrefLower.indexOf('/src') != -1),
+
+	// requirejs specifics (RELEASE)
+	requirejsConfig =
 	{
-		j = new Jukebox("player", {skin: "default"});
-		j.ready(function() // Wait that .swf player is loaded
+		baseUrl: 'js/',
+		shim: // Dependencies
 		{
-			Notifications.Display(Notifications.LEVELS.info, "Jukebox loaded");
+			'jukebox.min': ['lib/prototype', 'lib/libs.min'],
+			'lib/libs.min': ['lib/prototype']
+		}
+	},
+	requirejsScripts = ['lib/prototype', 'lib/libs.min', 'jukebox.min'],
 
-			if(window.location.href.indexOf('#noPlay') == -1)
-			{
-				j.play();
-			}
+	j; // The jukebox instance ; Global, easily accessible from console
 
-			/*
-			Chaining is possible: j.play().volume(30);
-			`this` also points to the jukebox instance: this.volume(50);
-
-			// Public data:
-			console.log(j.name, j.stream, j.channel, j.streaming, j.playing, j.song, j.listenersCount);
-
-			j.addSearchToPlayQueueBottom(search, comparison, field, order, first, count);
-			j.addSearchToPlayQueueRandom(search, comparison, field, order, first, count);
-			j.addSearchToPlayQueueTop(search, comparison, field, order, first, count);
-			j.addToPlayQueueBottom(mid);
-			j.addToPlayQueueRandom(mid);
-			j.addToPlayQueueTop(mid);
-			j.autoRefresh(auto);
-			j.joinChannel(channel);
-			j.next();
-			j.play(streamURL);
-			j.playQueueDelete(mid, play_queue_index);
-			j.playQueueMove(mid, play_queue_index, new_play_queue_index);
-			j.playQueueShuffle();
-			j.playQueueSize();
-			j.plugin(name);
-			j.previous();
-			j.ready(callback);
-			j.refresh();
-			j.remaining();
-			j.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
-			j.start();
-			j.status();
-			j.stop();
-			j.stopStreaming();
-			j.volume(volume);
-			*/
-		});
-	}
-	catch(fatalEx)
+if(DEBUG)
+{
+	requirejsConfig =
 	{
-		Notifications.Display(Notifications.LEVELS.fatal, "Fatal error at startup: " + fatalEx.message);
+		baseUrl: 'src/js/',
+		shim: // Dependencies
+		{
+			'jukebox': ['query', 'action', 'tools', 'notifications', 'jukeboxUI', 'lib/Sound'],
+			'jukeboxUI': ['lib/prototype', 'tools', 'genres', 'tab/tabs', 'tab/search', 'tab/upload', 'tab/debug', 'tab/customQueries', 'tab/notification', 'lib/slider', 'lib/dragdrop'],
+			'musicFieldEditor': ['lib/prototype', 'genres', 'lib/tablekit'],
+			'notifications': ['lib/prototype', 'lib/effects'],
+			'query': ['action'],
+			'action': ['tools'],
+			'tools': ['lib/json2'],
+			'tab/tabs': ['lib/prototype'],
+			'tab/notification': ['lib/prototype', 'tab/tabs', 'lib/json2', 'notifications', 'action', 'query'],
+			'tab/customQueries': ['lib/prototype', 'tab/tabs', 'notifications'],
+			'tab/debug': ['lib/prototype', 'tab/tabs', 'tools'],
+			'tab/upload': ['lib/prototype', 'tab/tabs', 'lib/json2', 'lib/fileuploader', 'lib/tablekit', 'musicFieldEditor', 'notifications', 'genres'],
+			'tab/search': ['lib/prototype', 'tab/tabs', 'lib/tablekit', 'genres', 'tools', 'lib/dragdrop'],
+			'lib/tablekit': ['lib/prototype'],
+			'lib/effects': ['lib/prototype'],
+			'lib/slider': ['lib/prototype'],
+			'lib/dragdrop': ['lib/prototype', 'lib/effects']
+		}
+	};
+	requirejsScripts =
+	[
+		'lib/prototype',
+		'lib/json2',
+		'lib/tablekit',
+		'lib/fileuploader',
+		'lib/Sound',
+		'tab/tabs',
+		'tab/search',
+		'tab/upload',
+		'tab/debug',
+		'tab/customQueries',
+		'tab/notification',
+		'notifications',
+		'musicFieldEditor',
+		'genres',
+		'action',
+		'query',
+		'tools',
+		'jukebox',
+		'jukeboxUI'
+	];
+}
+
+requirejs.config(requirejsConfig);
+requirejs(requirejsScripts, function()
+{
+	function main()
+	{
+		try
+		{
+			j = new Jukebox("player", {skin: "default"});
+			j.ready(function() // Wait that .swf player is loaded
+			{
+				Notifications.Display(Notifications.LEVELS.info, "Jukebox loaded");
+
+				if(hrefLower.indexOf('#noplay') == -1)
+				{
+					j.play();
+				}
+
+				/*
+				Chaining is possible: j.play().volume(30);
+				`this` also points to the jukebox instance: this.volume(50);
+
+				// Public data:
+				console.log(j.name, j.stream, j.channel, j.streaming, j.playing, j.song, j.listenersCount);
+
+				j.addSearchToPlayQueueBottom(search, comparison, field, order, first, count);
+				j.addSearchToPlayQueueRandom(search, comparison, field, order, first, count);
+				j.addSearchToPlayQueueTop(search, comparison, field, order, first, count);
+				j.addToPlayQueueBottom(mid);
+				j.addToPlayQueueRandom(mid);
+				j.addToPlayQueueTop(mid);
+				j.autoRefresh(auto);
+				j.joinChannel(channel);
+				j.next();
+				j.play(streamURL);
+				j.playQueueDelete(mid, play_queue_index);
+				j.playQueueMove(mid, play_queue_index, new_play_queue_index);
+				j.playQueueShuffle();
+				j.playQueueSize();
+				j.plugin(name);
+				j.previous();
+				j.ready(callback);
+				j.refresh();
+				j.remaining();
+				j.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
+				j.start();
+				j.status();
+				j.stop();
+				j.stopStreaming();
+				j.volume(volume);
+				*/
+			});
+		}
+		catch(fatalEx)
+		{
+			Notifications.Display(Notifications.LEVELS.fatal, "Fatal error at startup: " + fatalEx.message);
+		}
+	}
+
+	if(document.loaded)
+	{
+		main();
+	}
+	else
+	{
+		document.observe("dom:loaded", main);
 	}
 });
 </script>

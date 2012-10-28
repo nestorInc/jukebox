@@ -1,3 +1,24 @@
+var Tab = this.Tab = Class.create(
+{
+	initialize: function(identifier, name)
+	{
+		this.identifier = identifier;
+		this.name = name;
+	},
+
+	getName: function()
+	{
+		return this.name; 
+	},
+
+	getIdentifier: function()
+	{
+		return this.identifier;
+	}
+});
+
+//==================================================
+
 this.Tabs = Class.create(
 {
 	initialize: function(tabsCollectionName)
@@ -182,25 +203,4 @@ this.Tabs = Class.create(
 		}
 	}
 
-});
-
-//==================================================
-
-this.Tab = Class.create(
-{
-	initialize: function(identifier, name)
-	{
-		this.identifier = identifier;
-		this.name = name;
-	},
-
-	getName: function()
-	{
-		return this.name; 
-	},
-
-	getIdentifier: function()
-	{
-		return this.identifier;
-	}
 });
