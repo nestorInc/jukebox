@@ -68,13 +68,6 @@ main.addAuth() { |s, req, user, pass|
   nil;
 }
 
-main_src.addAuth() { |s, req, user, pass|
-#  next nil if(s.ssl != true);
-  next "guest" if(user == "guest");
-  next "PAM"   if(authpam(user, pass) == true);
-  nil;
-}
-
 root = HttpRootNode.new({ "/api/json" => json,
                           "/api"      => basic,
                           "/upload"   => upload,
