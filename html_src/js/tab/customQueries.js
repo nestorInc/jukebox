@@ -1,4 +1,4 @@
-var CustomQueriesTab = Class.create(Tab,
+this.CustomQueriesTab = Class.create(Tab,
 {
 	initialize: function(identifier, tabName)
 	{
@@ -39,10 +39,12 @@ var CustomQueriesTab = Class.create(Tab,
 			'<td><input type="button" value="send custom query"/></td>' +
 		'</tr>' +
 		'</table>';
-		var $content = $('tabContent_' + this.identifier);
+		var $content = $('tabContent-' + this.identifier);
 		$content.update(custom_queries_display);
 
-		var $textarea = $content.down('textarea');
+		var $textarea = $content.down('textarea'),
+			query,
+			actions;
 
 		//----------
 		// Combobox
@@ -99,8 +101,8 @@ var CustomQueriesTab = Class.create(Tab,
 				opts.new_play_queue_index = 0;		
 			}
 
-			var actions = value == "empty" ? [] : [new Action(value, opts)];
-			var query = new Query(1317675258, actions);	
+			actions = value == "empty" ? [] : [new Action(value, opts)];
+			query = new Query(1317675258, actions);	
 			$textarea.value = JSON.stringify(query.valueOf(), null, "\t"); // query.toJSON(); doesn't support custom indentation
 			this.selectedIndex = 1;
 
@@ -114,20 +116,33 @@ var CustomQueriesTab = Class.create(Tab,
 		$input.on("click", function checkAndSendJson()
 		{
 			// Check if the textarea is filled
-			if($textarea.value == '')
+			if($textarea.value === '')
 			{
 				Notifications.Display(Notifications.LEVELS.warning, 'Please fill the textarea');
 				return;
 			}
 
-			// Check if the textarea contains a valid json query ; TODO: better check by reusing Query constructor?
-			var action = JSON.parse($textarea.value);
-			if(action)
+			// Check if the textarea contains a valid json query
+			var json = JSON.parse($textarea.value);
+			if(json && json.action)
 			{
-				//TODO _sendQuery(query); But it is a private method...
-				//TODO new Ajax.Request(_URL,) ? No! Jukebox won't analyze response and update ui...
-				//
-				// Anyway Query and Action are not available here so this tab isn't working for now.
+				query = new Query(json.timestamp ? json.timestamp : 0);
+				if(Object.isArray(json.action))
+				{
+					actions = json.action;
+				}
+				else
+				{
+					actions = [json.action];
+				}
+
+				for(var i = 0; i < actions.length; ++i)
+				{
+					var action = new Action(actions[i].name, actions[i]);
+					query.addAction(action);
+				}
+
+				sendQueryProxy(query);
 			}
 		});
 	}

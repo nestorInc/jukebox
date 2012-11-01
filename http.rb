@@ -471,6 +471,7 @@ class HttpNodeMapping < HttpNode
     @dir = dir;
     st   = File.stat(@dir);
     raise "Not directory" if(st.directory? != true);
+    super();
   end
 
   def on_request(s, req)

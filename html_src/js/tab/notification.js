@@ -1,4 +1,4 @@
-var NotificationTab = Class.create(Tab,
+this.NotificationTab = Class.create(Tab,
 {
 	initialize: function(identifier, tabName)
 	{
@@ -10,13 +10,8 @@ var NotificationTab = Class.create(Tab,
 
 	updateContent: function()
 	{
-		var $tabContent = $('tabContent_' + this.identifier);
+		var $tabContent = $('tabContent-' + this.identifier);
 		$tabContent.update('<h1>Notification tests:</h1>');
-
-		for(var level in Notifications.LEVELS)
-		{
-			addButton(level);
-		}
 
 		function addButton(level)
 		{
@@ -26,6 +21,11 @@ var NotificationTab = Class.create(Tab,
 				Notifications.Display(Notifications.LEVELS[level], "Notification: " + level);
 			});
 			$tabContent.insert(btn);
+		}
+
+		for(var level in Notifications.LEVELS)
+		{
+			addButton(level);
 		}
 	}
 });

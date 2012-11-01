@@ -18,7 +18,7 @@ var UploadTab = Class.create(Tab,
 
 	deleteUploadedSong: function(file_name)
 	{
-		if(this.lastSendingDeletionIdentifier == null)
+		if(this.lastSendingDeletionIdentifier === null)
 		{
 			var fname = unescape(file_name);
 			this.lastSendingDeletionIdentifier = fname;
@@ -28,7 +28,7 @@ var UploadTab = Class.create(Tab,
 
 	getUploadedFileEditionFromFilename: function(file_name)
 	{
-		if(this.uploadedFilesEdition == null)
+		if(this.uploadedFilesEdition === null)
 		{
 			return null;
 		}
@@ -44,7 +44,7 @@ var UploadTab = Class.create(Tab,
 
 	updateUploadedSong: function(file_name)
 	{
-		if(this.lastSendingUpdateIdentifier == null)
+		if(this.lastSendingUpdateIdentifier === null)
 		{
 			var fname = unescape(file_name);
 			this.lastSendingUpdateIdentifier = fname;
@@ -65,7 +65,7 @@ var UploadTab = Class.create(Tab,
 
 	validateUploadedSong: function(file_name)
 	{
-		if(this.lastSendingValidationIdentifier == null)
+		if(this.lastSendingValidationIdentifier === null)
 		{
 			var fname = unescape(file_name);
 			this.lastSendingValidationIdentifier = fname;
@@ -77,7 +77,7 @@ var UploadTab = Class.create(Tab,
 	{
 		if(ret == "success")
 		{
-			if(this.lastSendingDeletionIdentifier != null)
+			if(this.lastSendingDeletionIdentifier !== null)
 			{
 				// Delete entry
 				for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
@@ -91,7 +91,7 @@ var UploadTab = Class.create(Tab,
 				}
 
 				// Delete html part
-				$('upload_line_' + escape(this.lastSendingDeletionIdentifier)).remove();
+				$('upload-line-' + escape(this.lastSendingDeletionIdentifier)).remove();
 				Notifications.Display(2, "Song " + this.lastSendingDeletionIdentifier + " sucessfully deleted");
 
 				this.lastSendingDeletionIdentifier = null;
@@ -113,7 +113,7 @@ var UploadTab = Class.create(Tab,
 			Notifications.Display(1, message);
 
 			var lastId = escape(this.lastSendingUpdateIdentifier),
-				selector = 'upload_line_' + lastId,
+				selector = 'upload-line-' + lastId,
 				$selector = $(selector);
 
 			// Delete all modified styles
@@ -146,7 +146,7 @@ var UploadTab = Class.create(Tab,
 		if(ret == "success")
 		{
 			Notifications.Display(1, message);
-			if(this.lastSendingValidationIdentifier != null)
+			if(this.lastSendingValidationIdentifier !== null)
 			{
 				// Delete entry
 				for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
@@ -160,7 +160,7 @@ var UploadTab = Class.create(Tab,
 				}
 
 				// Delete html part
-				$('upload_line_' + escape(this.lastSendingValidationIdentifier)).remove();
+				$('upload-line-' + escape(this.lastSendingValidationIdentifier)).remove();
 
 				this.lastSendingValidationIdentifier = null;
 
@@ -176,8 +176,8 @@ var UploadTab = Class.create(Tab,
 
 	reinitTable: function()
 	{
-		var $uploaded_files = $('uploaded_files');
-		if($uploaded_files.down('tbody').childElementCount == 0)
+		var $uploaded_files = $('uploaded-files');
+		if($uploaded_files.down('tbody').childElementCount === 0)
 		{
 			$uploaded_files.update("No file uploaded yet.");
 			this.uploadedFilesEdition = null;
@@ -186,9 +186,9 @@ var UploadTab = Class.create(Tab,
 		else
 		{
 			var temp = new Date().getTime();
-			$('uploaded_filelist_' + this.tableId).id = 'uploaded_filelist_' + temp;
+			$('uploaded-filelist-' + this.tableId).id = 'uploaded-filelist-' + temp;
 			this.tableId = temp;
-			this.tableKit = new TableKit('uploaded_filelist_' + this.tableId,
+			this.tableKit = new TableKit('uploaded-filelist-' + this.tableId,
 			{
 				'sortable': true,
 				'editable': true,
@@ -262,7 +262,7 @@ var UploadTab = Class.create(Tab,
 		'</td>';
 
 		var fname = escape(obj.filename),
-			tr = new Element('tr', {'id': 'upload_line_' + fname}).update(html),
+			tr = new Element('tr', {'id': 'upload-line-' + fname}).update(html),
 			divs = tr.select('div'),
 			that = this;
 		
@@ -278,7 +278,7 @@ var UploadTab = Class.create(Tab,
 		var i, j,
 			len,
 			found,
-			$uploaded_files = $('uploaded_files'),
+			$uploaded_files = $('uploaded-files'),
 			$uploaded_files_tbody = $uploaded_files.down('tbody'),
 			that = this;
 
@@ -296,10 +296,10 @@ var UploadTab = Class.create(Tab,
 		*/
 
 		// Insertion when there was no item in the array in the previous state
-		if(this.uploadedFiles == null /*|| this.uploadedFilesEdition == null*/ ||
+		if(this.uploadedFiles === null /*|| this.uploadedFilesEdition == null*/ ||
 			(
-				$uploaded_files_tbody == null ||
-				$uploaded_files_tbody.childElementCount == 0 && uploaded_files.length > 0
+				$uploaded_files_tbody === null ||
+				$uploaded_files_tbody.childElementCount === 0 && uploaded_files.length > 0
 			)
 		)
 		{
@@ -309,7 +309,7 @@ var UploadTab = Class.create(Tab,
 				this.uploadedFiles = JSON.parse(JSON.stringify(uploaded_files));
 				this.uploadedFilesEdition = JSON.parse(JSON.stringify(uploaded_files));
 
-				var html = '<table id="uploaded_filelist_' + this.tableId + '" class="sortable resizable editable upload_table">';
+				var html = '<table id="uploaded-filelist-' + this.tableId + '" class="sortable resizable editable upload-table">';
 				var tr = '<tr>' +
 					'<th>Filename</th>' +
 					'<th class="artist">Artist</th>' +
@@ -333,20 +333,15 @@ var UploadTab = Class.create(Tab,
 				}
 				$uploaded_files.down('table').insert(tbody);
 
-				function MakeCellEditable(name)
-				{
-					var obj = new MusicFieldEditor(name, that.uploadedFiles, that.uploadedFilesEdition);
-					TableKit.Editable.addCellEditor(obj);	
-				}
-				MakeCellEditable("artist");
-				MakeCellEditable("album");
-				MakeCellEditable("title");
-				MakeCellEditable("year");
-				MakeCellEditable("track");
-				MakeCellEditable("trackNb");
-				MakeCellEditable("genre");
+				this.makeCellEditable("artist");
+				this.makeCellEditable("album");
+				this.makeCellEditable("title");
+				this.makeCellEditable("year");
+				this.makeCellEditable("track");
+				this.makeCellEditable("trackNb");
+				this.makeCellEditable("genre");
 
-				this.tableKit = new TableKit('uploaded_filelist_' + this.tableId,
+				this.tableKit = new TableKit('uploaded-filelist-' + this.tableId,
 				{
 					'sortable': true,
 					'editable': true,
@@ -396,7 +391,7 @@ var UploadTab = Class.create(Tab,
 				}
 
 				// Remove the html Element
-				$('upload_line_' + escape(deleteLines[i])).remove();
+				$('upload-line-' + escape(deleteLines[i])).remove();
 			}
 		}
 		else if(this.uploadedFiles.length < uploaded_files.length)
@@ -426,16 +421,22 @@ var UploadTab = Class.create(Tab,
 				//TODO: clone with Extend(true, {}, object);
 				this.uploadedFiles.push(JSON.parse(JSON.stringify(newLines[i])));
 				this.uploadedFilesEdition.push(JSON.parse(JSON.stringify(newLines[i])));
-				$('uploaded_filelist_' + this.tableId).down('tbody').insert(this.getUploadedFileHtml(newLines[i]));
+				$('uploaded-filelist-' + this.tableId).down('tbody').insert(this.getUploadedFileHtml(newLines[i]));
 
 				this.removeFileFromQQUpload(newLines[i].filename);
 			}
 
-			if(this.uploadedFiles.length != 0 && newLines.length > 0)
+			if(this.uploadedFiles.length !== 0 && newLines.length > 0)
 			{
 				this.reinitTable();
 			}
 		}
+	},
+
+	makeCellEditable: function(name)
+	{
+		var obj = new MusicFieldEditor(name, this.uploadedFiles, this.uploadedFilesEdition);
+		TableKit.Editable.addCellEditor(obj);
 	},
 
 	removeFileFromQQUpload: function(filename)
@@ -471,9 +472,9 @@ var UploadTab = Class.create(Tab,
 	{
 		var upload_form = '<div id="file-uploader' + this.identifier + '"></div>' +
 			'<h2>Uploaded files</h2>' +
-			'<div id="uploaded_files" style="overflow:auto;"></div>';
+			'<div id="uploaded-files" style="overflow:auto;"></div>';
 
-		$('tabContent_' + this.identifier).update(upload_form);
+		$('tabContent-' + this.identifier).update(upload_form);
 
 		// Init upload button behavior
 		this.uploader = new qq.FileUploader(

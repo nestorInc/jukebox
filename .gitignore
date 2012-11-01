@@ -7,3 +7,4 @@ jukebox.cfg
 jukebox.db
 mp3/
 uploads/
+node_modules/

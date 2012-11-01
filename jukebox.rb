@@ -58,6 +58,7 @@ basic  = BasicApi.new(channelList);
 upload = UploadManager.new(config[:upload.to_s]);
 debug  = DebugPage.new();
 main   = HttpNodeMapping.new("html");
+main_src = HttpNodeMapping.new("html_src");
 stream = Stream.new(channelList, library);
 
 main.addAuth() { |s, req, user, pass|
@@ -85,6 +86,7 @@ root = HttpRootNode.new({ "/api/json" => json,
                           "/api"      => basic,
                           "/upload"   => upload,
                           "/"         => main,
+                          "/src"      => main_src,
                           "/stream"   => stream});
 #                          "/debug"    => debug,
 
