@@ -235,7 +235,7 @@ this.SearchTab = Class.create(Tab,
 				}
 			});
 
-			// Workaround to get correct handle position, whether current tab is visible or nor
+			// Workaround to get correct handle position, whether current tab is visible or not
 			// The following methods all return 0 when tab is created in background (display:none)
 			/*var h = sliderBox.down('.handle');
 			console.log(h.getWidth());
