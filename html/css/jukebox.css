@@ -841,7 +841,6 @@ position: relative;
 }
 div.slider div.handle{
 width: 25px;
-margin-left: -12px;
 height: 25px;
 background-color: #888;
 cursor: move;
