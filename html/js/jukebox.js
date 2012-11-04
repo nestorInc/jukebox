@@ -900,6 +900,12 @@ this.SearchTab = Class.create(Tab,
 					}
 				}
 			});
+
+			// Workaround to get correct handle position on the far right, whatever tab we're in
+			// sliderBox.down('.handle').getWidth(); might be 0 if a parent is display:none
+			// See CSS div.slider div.handle{}
+			slider.handleLength = 0;
+
 			that.sliders.push(slider);
 		});
 	},
@@ -1953,7 +1959,7 @@ this.CustomQueriesTab = Class.create(Tab,
 				return;
 			}
 
-			// Check if the textarea contains a valid json query ; TODO: better check by reusing Query constructor?
+			// Check if the textarea contains a valid json query
 			var json = JSON.parse($textarea.value);
 			if(json && json.action)
 			{

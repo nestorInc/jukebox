@@ -234,6 +234,12 @@ this.SearchTab = Class.create(Tab,
 					}
 				}
 			});
+
+			// Workaround to get correct handle position on the far right, whatever tab we're in
+			// sliderBox.down('.handle').getWidth(); might be 0 if a parent is display:none
+			// See CSS div.slider div.handle{}
+			slider.handleLength = 0;
+
 			that.sliders.push(slider);
 		});
 	},
