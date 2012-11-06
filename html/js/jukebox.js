@@ -900,6 +900,18 @@ this.SearchTab = Class.create(Tab,
 					}
 				}
 			});
+
+			// Workaround to get correct handle position, whether current tab is visible or nor
+			// The following methods all return 0 when tab is created in background (display:none)
+			/*var h = sliderBox.down('.handle');
+			console.log(h.getWidth());
+			console.log(h.measure('width'));
+			console.log(h.getLayout().get('width'));
+			console.log(h.clientWidth);
+			*/
+			// So we have to hard code the width specified in CSS div.slider div.handle{}
+			slider.handleLength = 25;			
+
 			that.sliders.push(slider);
 		});
 	},
@@ -1953,7 +1965,7 @@ this.CustomQueriesTab = Class.create(Tab,
 				return;
 			}
 
-			// Check if the textarea contains a valid json query ; TODO: better check by reusing Query constructor?
+			// Check if the textarea contains a valid json query
 			var json = JSON.parse($textarea.value);
 			if(json && json.action)
 			{

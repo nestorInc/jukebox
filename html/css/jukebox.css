@@ -841,7 +841,6 @@ position: relative;
 }
 div.slider div.handle{
 width: 25px;
-margin-left: -12px;
 height: 25px;
 background-color: #888;
 cursor: move;
@@ -855,7 +854,7 @@ a.slider-link-current-page{
 color: #ff0000;
 }
 a.slider-link-current-selection{
-color:#00ff00;
+color: #00ff00;
 }
 
 /* tabs */
