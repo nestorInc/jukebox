@@ -901,7 +901,7 @@ this.SearchTab = Class.create(Tab,
 				}
 			});
 
-			// Workaround to get correct handle position, whether current tab is visible or nor
+			// Workaround to get correct handle position, whether current tab is visible or not
 			// The following methods all return 0 when tab is created in background (display:none)
 			/*var h = sliderBox.down('.handle');
 			console.log(h.getWidth());
@@ -2586,7 +2586,7 @@ function Jukebox(element, opts)
 	//---
 	// [Public] Variables
 
-	this.name = "Jukebox" + (++uniqid);
+	this.id = "Jukebox" + (++uniqid);
 	this.stream = "";
 	this.channel = "";
 	this.song = null; // Mapped to _current_song
@@ -2609,11 +2609,8 @@ function Jukebox(element, opts)
 		_playQueueSongs = [], // songs in current playlist
 		_current_song = null,
 
-		// http://jssoundkit.sourceforge.net/
-		// http://help.adobe.com/en_US/AS2LCR/Flash_10.0/help.html?content=00001523.html
-		// http://forums.mediabox.fr/wiki2/documentation/flash/as2/sound
-		_streamPlayer = new Sound(), // the mp3 stream player (Flash/ActionScript)
-		_streamURL = "/stream",
+		// http://www.schillmania.com/projects/soundmanager2/
+		_streamPlayer = null, // mp3 stream player (Flash/ActionScript)
 		_autostopStreaming = null,
 		_volume = 100,
 
@@ -2624,6 +2621,7 @@ function Jukebox(element, opts)
 		_query_timer = null,
 		_waitingQueries = [],
 		_uploadedFiles = {},
+		_readyCallback = null,
 
 		_ui = null; // Graphic interface
 	
@@ -2644,20 +2642,12 @@ function Jukebox(element, opts)
 			throw new Error(msg);
 		}
 
-		function load()
+		_readyCallback = callback;
+
+		if(soundManager.enabled)
 		{
-			// We have to wait that SoundBridge.swf is loaded... else ".proxyMethods" does not exists yet on flash object
-			// TODO: use a better .swf lib that trigger an event/a callback when the .swf is ready
-			if(typeof Sound.__thisMovie(_streamPlayer.object_id).proxyMethods == "function") // consider .swf ready
-			{
-				callback.call($this);
-			}
-			else
-			{
-				setTimeout(load, 100); // Retry in 100ms ; Note that .ready() will return before
-			}
+			_startCallback();
 		}
-		load();
 
 		return this;
 	};
@@ -2698,37 +2688,10 @@ function Jukebox(element, opts)
 	};
 
 	/**
-	* Start the audio stream for a specific url
-	* @param {string} [streamURL] - Facultative stream URL, overriding default.
-	* @return {Jukebox} this.
-	*/
-	this.play = function(streamURL)
-	{
-		if(this.streaming)
-		{
-			this.start();
-		}
-		else
-		{
-			_streamURL = streamURL ? streamURL : _streamURL;
-			this.stream = _streamURL; // copy
-
-			_streamPlayer.loadSound(_streamURL, /*streaming*/true);
-			
-			// Restore volume after stream stop & restart
-			this.volume(_volume);
-
-			this.streaming = true;
-			_ui.playing(this.playing = true);
-		}
-		return this;
-	};
-
-	/**
 	* (Re-)Start the audio stream
 	* @return {Jukebox} this.
 	*/
-	this.start = function()
+	this.play = function()
 	{
 		_streamPlayer.start();
 		_ui.playing(this.playing = true);
@@ -2761,9 +2724,7 @@ function Jukebox(element, opts)
 	*/
 	this.stopStreaming = function()
 	{
-		// Not clean. Not working if /null is a valid stream url on server side...
-		//TODO: remove flash object?
-		_streamPlayer.loadSound(null, false);
+		_streamPlayer.unload();
 		this.streaming = false;
 		_ui.playing(this.playing = false);
 
@@ -2791,7 +2752,7 @@ function Jukebox(element, opts)
 				_ui.volume(volume);
 			}
 		}
-		_volume = _streamPlayer.getVolume();
+		_volume = _streamPlayer.volume;
 		return _volume;
 	};
 
@@ -3374,6 +3335,14 @@ function Jukebox(element, opts)
 		_doAction(new Action("add_search_to_play_queue", opts));
 	}
 
+	function _startCallback()
+	{
+		if(typeof _readyCallback == "function")
+		{
+			_readyCallback.call($this);
+		}
+	}
+
 	//---
 	// Events handlers
 	
@@ -3439,6 +3408,35 @@ function Jukebox(element, opts)
 	{
 		Object.seal($this); // Non-extensible, Non-removable
 
+		soundManager.setup(
+		{
+			url: _opts.SM2Folder,
+			flashVersion: 9, // 8 doesn't work with flash 11.4 & FF16/IE9
+			useFlashBlock: true, // Allow recovery from flash blockers,
+			debugMode: false,
+			onready: function()
+			{
+				_streamPlayer = soundManager.createSound(
+				{
+					id: $this.id,
+					url: _opts.streamURL
+				});
+				
+				if(_streamPlayer.isHTML5)
+				{
+					Notifications.Display(Notifications.LEVEL.info, "Using HTML5 audio player");
+				}
+
+				_startCallback();
+			},
+			ontimeout: function()
+			{
+				var msg = "SM2 could not start";
+				Notifications.Display(Notifications.LEVEL.error, msg);
+				throw new Error(msg);
+			}
+		});
+
 		_ui = new JukeboxUI($this, element,
 		{
 			replaceTitle: _opts.replaceTitle
@@ -3461,7 +3459,7 @@ var jukebox_public_methods =
 {
 	status: function()
 	{
-		var status = this.name + ' is ' + (this.streaming ? '':'NOT ') + 'connected to url ' + this.stream + ' and currently ' + (this.playing ? '':'NOT ') + 'playing. Current channel is: ' + this.channel + '. ' + this.listenersCount + ' user' + (this.listenersCount > 1 ? 's are':' is') + ' currently listening. Current song is: ' + this.song.title + ' - ' + this.song.artist + '.';
+		var status = this.id + ' is ' + (this.streaming ? '':'NOT ') + 'connected to url ' + this.stream + ' and currently ' + (this.playing ? '':'NOT ') + 'playing. Current channel is: ' + this.channel + '. ' + this.listenersCount + ' user' + (this.listenersCount > 1 ? 's are':' is') + ' currently listening. Current song is: ' + this.song.title + ' - ' + this.song.artist + '.';
 		return status;
 	},
 	// Time remaining before next song in seconds
@@ -3489,6 +3487,7 @@ Jukebox.defaults =
 {
 	URL: '/api/json',
 	streamURL: '/stream',
+	SM2Folder: '/',
 	autorefresh: true,
 	autorefresh_delay: 3000,
 	replaceTitle: true

@@ -6,12 +6,13 @@
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 
 	<!-- RELEASE -->
-	<link rel="stylesheet" type="text/css" href="css/jukebox.min.css" />
+	<link rel="stylesheet" type="text/css" href="/css/jukebox.min.css" />
 
 	<!-- DEBUG
-	<link rel="stylesheet" type="text/css" href="src/css/normalize.css" />
-	<link rel="stylesheet" type="text/css" href="src/css/style.css" />
-	<link rel="stylesheet" type="text/css" href="src/css/fileuploader.css" />
+	<link rel="stylesheet" type="text/css" href="/src/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" href="/src/css/style.css" />
+	<link rel="stylesheet" type="text/css" href="/src/css/fileuploader.css" />
+	<link rel="stylesheet" type="text/css" href="/src/css/flashblock.css" />
 	-->
 </head>
 <body>
@@ -141,14 +142,21 @@ var hrefLower = window.location.href.toLowerCase(),
 	// requirejs specifics (RELEASE)
 	requirejsConfig =
 	{
-		baseUrl: 'js/',
+		baseUrl: '/js/',
 		shim: // Dependencies
 		{
-			'jukebox.min': ['lib/prototype', 'lib/libs.min'],
+			'jukebox.min': ['lib/prototype', 'lib/libs.min', 'lib/soundmanager2-nodebug-jsmin'],
 			'lib/libs.min': ['lib/prototype']
 		}
 	},
-	requirejsScripts = ['lib/prototype', 'lib/libs.min', 'jukebox.min'],
+	requirejsScripts =
+	[
+		'lib/domReady.min!',
+		'lib/prototype',
+		'lib/soundmanager2-nodebug-jsmin',
+		'lib/libs.min',
+		'jukebox.min'
+	],
 
 	j; // The jukebox instance ; Global, easily accessible from console
 
@@ -156,10 +164,10 @@ if(DEBUG)
 {
 	requirejsConfig =
 	{
-		baseUrl: 'src/js/',
+		baseUrl: '/src/js/',
 		shim: // Dependencies
 		{
-			'jukebox': ['query', 'action', 'tools', 'notifications', 'jukeboxUI', 'lib/Sound'],
+			'jukebox': ['query', 'action', 'tools', 'notifications', 'jukeboxUI', 'lib/soundmanager2'],
 			'jukeboxUI': ['lib/prototype', 'tools', 'genres', 'tab/tabs', 'tab/search', 'tab/upload', 'tab/debug', 'tab/customQueries', 'tab/notification', 'lib/slider', 'lib/dragdrop'],
 			'musicFieldEditor': ['lib/prototype', 'genres', 'lib/tablekit'],
 			'notifications': ['lib/prototype', 'lib/effects'],
@@ -180,11 +188,17 @@ if(DEBUG)
 	};
 	requirejsScripts =
 	[
+		// Ensure clean start for Chrome,Firefox,IE
+		// I had trouble using document.observe("dom:loaded", ...); inside requirejs load
+		// Prototypejs wasn't fireing the event for IE :-(
+		// This plugin works properly for everyone!
+		'lib/domReady!',
+
 		'lib/prototype',
 		'lib/json2',
 		'lib/tablekit',
 		'lib/fileuploader',
-		'lib/Sound',
+		'lib/soundmanager2',
 		'tab/tabs',
 		'tab/search',
 		'tab/upload',
@@ -205,68 +219,60 @@ if(DEBUG)
 requirejs.config(requirejsConfig);
 requirejs(requirejsScripts, function()
 {
-	function main()
+	try
 	{
-		try
+		j = new Jukebox("player",
 		{
-			j = new Jukebox("player", {skin: "default"});
-			j.ready(function() // Wait that .swf player is loaded
+			skin: "default",
+			SM2Folder: DEBUG ? '/src/' : '/'
+		});
+		j.ready(function() // Wait that .swf player is loaded
+		{
+			Notifications.Display(Notifications.LEVELS.info, "Jukebox loaded");
+
+			if(hrefLower.indexOf('#noplay') == -1)
 			{
-				Notifications.Display(Notifications.LEVELS.info, "Jukebox loaded");
+				j.play();
+			}
 
-				if(hrefLower.indexOf('#noplay') == -1)
-				{
-					j.play();
-				}
+			/*
+			Chaining is possible: j.play().volume(30);
+			`this` also points to the jukebox instance: this.volume(50);
 
-				/*
-				Chaining is possible: j.play().volume(30);
-				`this` also points to the jukebox instance: this.volume(50);
+			// Public data:
+			console.log(j.name, j.stream, j.channel, j.streaming, j.playing, j.song, j.listenersCount);
 
-				// Public data:
-				console.log(j.name, j.stream, j.channel, j.streaming, j.playing, j.song, j.listenersCount);
-
-				j.addSearchToPlayQueueBottom(search, comparison, field, order, first, count);
-				j.addSearchToPlayQueueRandom(search, comparison, field, order, first, count);
-				j.addSearchToPlayQueueTop(search, comparison, field, order, first, count);
-				j.addToPlayQueueBottom(mid);
-				j.addToPlayQueueRandom(mid);
-				j.addToPlayQueueTop(mid);
-				j.autoRefresh(auto);
-				j.joinChannel(channel);
-				j.next();
-				j.play(streamURL);
-				j.playQueueDelete(mid, play_queue_index);
-				j.playQueueMove(mid, play_queue_index, new_play_queue_index);
-				j.playQueueShuffle();
-				j.playQueueSize();
-				j.plugin(name);
-				j.previous();
-				j.ready(callback);
-				j.refresh();
-				j.remaining();
-				j.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
-				j.start();
-				j.status();
-				j.stop();
-				j.stopStreaming();
-				j.volume(volume);
-				*/
-			});
-		}
-		catch(fatalEx)
-		{
-			Notifications.Display(Notifications.LEVELS.fatal, "Fatal error at startup: " + fatalEx.message);
-		}
+			j.addSearchToPlayQueueBottom(search, comparison, field, order, first, count);
+			j.addSearchToPlayQueueRandom(search, comparison, field, order, first, count);
+			j.addSearchToPlayQueueTop(search, comparison, field, order, first, count);
+			j.addToPlayQueueBottom(mid);
+			j.addToPlayQueueRandom(mid);
+			j.addToPlayQueueTop(mid);
+			j.autoRefresh(auto);
+			j.joinChannel(channel);
+			j.next();
+			j.play();
+			j.playQueueDelete(mid, play_queue_index);
+			j.playQueueMove(mid, play_queue_index, new_play_queue_index);
+			j.playQueueShuffle();
+			j.playQueueSize();
+			j.plugin(name);
+			j.previous();
+			j.ready(callback);
+			j.refresh();
+			j.remaining();
+			j.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
+			j.start();
+			j.status();
+			j.stop();
+			j.stopStreaming();
+			j.volume(volume);
+			*/
+		});
 	}
-
-	if(document.loaded)
+	catch(fatalEx)
 	{
-		main();
-	}
-	else
-	{
-		document.observe("dom:loaded", main);
+		Notifications.Display(Notifications.LEVELS.fatal, "Fatal error at startup: " + fatalEx.message);
 	}
 });
 </script>

@@ -66,7 +66,8 @@ module.exports = function(grunt)
 				[
 					SRC.css + 'normalize.css',
 					SRC.css + 'style.css',
-					SRC.css + 'fileuploader.css'
+					SRC.css + 'fileuploader.css',
+					SRC.css + 'flashblock.css'
 				],
 				dest: OUT.css + 'jukebox.css'
 			}
@@ -78,6 +79,11 @@ module.exports = function(grunt)
 				src: '<config:concat.js.dest>',
 				dest: OUT.js + 'jukebox.min.js'
 			},
+			domReady:
+			{
+				src: SRC.libs + 'domReady.js',
+				dest: OUT.libs + 'domReady.min.js'
+			},
 			libs:
 			{
 				src:
@@ -86,7 +92,6 @@ module.exports = function(grunt)
 					SRC.libs + 'json2.js',
 					SRC.libs + 'tablekit.js',
 					SRC.libs + 'fileuploader.js',
-					SRC.libs + 'Sound.js',
 
 					// scriptaculous dependancies
 					SRC.libs + 'slider.js',
@@ -153,7 +158,6 @@ module.exports = function(grunt)
 				// Libs
 				JSON: true,
 				Ajax: true,
-				Sound: true,
 				Draggable: true,
 				Droppables: true,
 				$R: true,
@@ -200,7 +204,7 @@ module.exports = function(grunt)
 			},
 			jukebox:
 			{
-				globals: {Extend: true, Query: true, Action: true, JukeboxUI: true, Sound: true, Notifications: true, Ajax: true}
+				globals: {Extend: true, Query: true, Action: true, JukeboxUI: true, soundManager: true, Notifications: true, Ajax: true}
 			},
 			jukeboxui:
 			{
@@ -227,7 +231,7 @@ module.exports = function(grunt)
 				[
 					SRC_DIR + 'favicon.ico',
 					SRC_DIR + 'index.html',
-					SRC_DIR + 'SoundBridge.swf'
+					SRC_DIR + 'soundmanager2_flash9.swf'
 				],
 				dest: OUT_DIR
 			},
@@ -247,6 +251,7 @@ module.exports = function(grunt)
 				src:
 				[
 					SRC.libs + 'require.min.js',
+					SRC.libs + 'soundmanager2-nodebug-jsmin.js',
 					SRC.libs + 'prototype.js'/*,
 					SRC.libs + 'scriptaculous.js' // No more used */
 				],
