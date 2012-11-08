@@ -45,7 +45,6 @@ function Jukebox(element, opts)
 
 		// http://www.schillmania.com/projects/soundmanager2/
 		_streamPlayer = null, // mp3 stream player (Flash/ActionScript)
-		_autostopStreaming = null,
 		_volume = 100,
 
 		// Utility
@@ -125,11 +124,11 @@ function Jukebox(element, opts)
 	* (Re-)Start the audio stream
 	* @return {Jukebox} this.
 	*/
-	this.play = function()
+	this.start = function()
 	{
-		_streamPlayer.start();
+		_streamPlayer.play();
+		this.streaming = true;
 		_ui.playing(this.playing = true);
-		clearTimeout(_autostopStreaming);
 		return this;
 	};
 
@@ -139,29 +138,9 @@ function Jukebox(element, opts)
 	*/
 	this.stop = function()
 	{
-		_streamPlayer.stop();
-		_ui.playing(this.playing = false);
-
-		// Keep streaming for 30s
-		var that = this;
-		_autostopStreaming = setTimeout(function()
-		{
-			that.stopStreaming();
-		}, 30 * 1000);
-
-		return this;
-	};
-
-	/**
-	* Stop the download.
-	* @return {Jukebox} this.
-	*/
-	this.stopStreaming = function()
-	{
 		_streamPlayer.unload();
 		this.streaming = false;
 		_ui.playing(this.playing = false);
-
 		return this;
 	};
 
@@ -848,6 +827,8 @@ function Jukebox(element, opts)
 			flashVersion: 9, // 8 doesn't work with flash 11.4 & FF16/IE9
 			useFlashBlock: true, // Allow recovery from flash blockers,
 			debugMode: false,
+			useHTML5Audio: true,
+			preferFlash: false,
 			onready: function()
 			{
 				_streamPlayer = soundManager.createSound(
@@ -858,7 +839,7 @@ function Jukebox(element, opts)
 				
 				if(_streamPlayer.isHTML5)
 				{
-					Notifications.Display(Notifications.LEVEL.info, "Using HTML5 audio player");
+					Notifications.Display(Notifications.LEVELS.info, "Using HTML5 audio player");
 				}
 
 				_startCallback();
@@ -866,7 +847,7 @@ function Jukebox(element, opts)
 			ontimeout: function()
 			{
 				var msg = "SM2 could not start";
-				Notifications.Display(Notifications.LEVEL.error, msg);
+				Notifications.Display(Notifications.LEVELS.error, msg);
 				throw new Error(msg);
 			}
 		});

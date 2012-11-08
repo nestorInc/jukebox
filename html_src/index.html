@@ -232,7 +232,7 @@ requirejs(requirejsScripts, function()
 
 			if(hrefLower.indexOf('#noplay') == -1)
 			{
-				j.play();
+				j.start();
 			}
 
 			/*
@@ -251,7 +251,6 @@ requirejs(requirejsScripts, function()
 			j.autoRefresh(auto);
 			j.joinChannel(channel);
 			j.next();
-			j.play();
 			j.playQueueDelete(mid, play_queue_index);
 			j.playQueueMove(mid, play_queue_index, new_play_queue_index);
 			j.playQueueShuffle();
