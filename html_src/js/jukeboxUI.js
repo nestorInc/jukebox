@@ -517,7 +517,7 @@ function JukeboxUI(jukebox, element, opts)
 		},
 		playStream: function()
 		{
-			J.play();
+			J.start();
 		},
 		stopStream: function()
 		{
