@@ -36,6 +36,7 @@ function Query(lastTimestamp, actions)
 * We do not check if the very same action is already in the list.
 * The action is not cloned. Therefore you can modify it even after a call to this method.
 * @param {Action} action - The action to add.
+* @throws {Error} Action is invalid
 */
 Query.prototype.addAction = function(action)
 {

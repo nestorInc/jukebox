@@ -63,7 +63,7 @@ function Jukebox(element, opts)
 	// (Publicly exposed with private data & methods access)
 
 	/**
-	* @param {function} callback - Execute callback when the jukebox is ready (.swf fully loaded). Might be immediately. Only last registered callback works.
+	* @param {function} callback - Execute callback when the jukebox is ready. Might be immediately. Only last registered callback works.
 	* @return {Jukebox} this.
 	*/
 	this.ready = function(callback)
@@ -489,7 +489,7 @@ function Jukebox(element, opts)
 
 	/**
 	* A little helper to add an action to the next query and do the query immediately
-	* @param {Action} action - The action to add.
+	* @param {Action} action - The action to add
 	*/
 	function _doAction(action)
 	{
@@ -497,7 +497,9 @@ function Jukebox(element, opts)
 		_update();
 	}
 
-	// Prepare an AJAX query
+	/**
+	* Prepare an AJAX query
+	*/
 	function _update()
 	{
 		_ui.activity(true);
@@ -526,7 +528,10 @@ function Jukebox(element, opts)
 		_sendQuery(query);
 	}
 
-	// Send an AJAX query
+	/**
+	* Send an AJAX query
+	* @param {Query} query - The query to send
+	*/
 	function _sendQuery(query)
 	{
 		query.setTimestamp(_timestamp);
@@ -748,6 +753,9 @@ function Jukebox(element, opts)
 		_doAction(new Action("add_search_to_play_queue", opts));
 	}
 
+	/**
+	* Execute ready callback
+	*/
 	function _startCallback()
 	{
 		if(typeof _readyCallback == "function")
@@ -756,9 +764,9 @@ function Jukebox(element, opts)
 		}
 	}
 
-	//---
+	//--
 	// Events handlers
-	
+
 	var _events =
 	{
 		// AJAX response
@@ -811,13 +819,10 @@ function Jukebox(element, opts)
 		}
 	};
 	
-	//---
-	// Constructor
-	
 	/**
-	* @constructor
+	* @constructs
 	*/
-	function _initialize()
+	(function()
 	{
 		Object.seal($this); // Non-extensible, Non-removable
 
@@ -898,8 +903,7 @@ function Jukebox(element, opts)
 		{
 			_update();
 		}
-	}
-	_initialize();
+	})();
 }
 
 //---
@@ -928,13 +932,17 @@ var jukebox_public_methods =
 };
 
 // Add them nicely to the prototype
-/*for(var jmethod in jukebox_public_methods)
-{
-	Jukebox.prototype[jmethod] = jukebox_public_methods[jmethod];
-}*/
 Extend(Jukebox.prototype, jukebox_public_methods);
 
-// [Static] Variables
+/**
+* [Static] Variables
+* @property {string} URL - URL of the web service to fetch JSON infos
+* @property {string} streamURL - URL of the stream
+* @property {string} SM2Folder - .swf folder for SM2
+* @property {bool} autorefresh - Activate autorefresh or not
+* @property {int} autorefresh_delay - Delay to get updates from server
+* @property {bool} replaceTitle - Change the page title to display current song
+*/
 Jukebox.defaults =
 {
 	URL: '/api/json',

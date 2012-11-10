@@ -578,7 +578,7 @@ this.SearchTab = Class.create(Tab,
 			}
 		}
 
-		pages = sort_unique(pages);
+		pages = SortUnique(pages);
 
 		var tab = this;
 		function createLink(num, className)

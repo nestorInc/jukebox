@@ -3,7 +3,7 @@
 * Inspired from jQuery.extend
 * Keep in mind that the target object (first argument) will be modified, and will also be returned.
 * If, however, we want to preserve both of the original objects, we can do so by passing an empty object as the target.
-* 
+* @function
 * @param {bool} [deep] - If true, the merge becomes recursive (aka. deep copy).
 * @param {object} target - An object that will receive the new properties.
 * @param {object} obj1 - An object containing additional properties to merge in.
@@ -75,6 +75,7 @@ function Extend(/*deep, */target/*, obj1, obj2, obj3, objN*/)
 /**
 * Format a timestamp to a string in the format: [h:]m:s
 * 0 are only added to minutes and seconds if necessary.
+* @function
 * @param {string|number} t - The timestamp.
 * @return {string} The formatted timestamp.
 */
@@ -92,7 +93,12 @@ function FormatTime(t)
 	return str;
 }
 
-function sort_unique(arr)
+/**
+* Sort + unique
+* @function
+* @param {Array} arr
+*/
+function SortUnique(arr)
 {
 	arr = arr.sort(function(a, b)
 	{
@@ -109,6 +115,11 @@ function sort_unique(arr)
 	return ret;
 }
 
+/**
+* Return a formatted HTML string of a JSON string
+* @function
+* @param {string} input
+*/
 function JsonPrettyPrint(input)
 {
 	var json_hr = JSON.stringify(input, null, "\t");

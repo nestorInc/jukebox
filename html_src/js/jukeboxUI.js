@@ -217,6 +217,10 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
+	/**
+	* Render the current play queue
+	* @param {Array<song>} playQueueSongs - The current play queue
+	*/
 	this.displayPlayQueue = function(playQueueSongs)
 	{
 		var ul = new Element('ul');
@@ -323,6 +327,10 @@ function JukeboxUI(jukebox, element, opts)
 		_makePlayQueueSongDroppable('play-queue-li-first', playQueueSongs);
 	};
 
+	/**
+	* Render results of a search
+	* @param {object} results - Results sent by server
+	*/
 	this.displaySearchResults = function(results)
 	{
 		// A new search could be initiated from the left pannel so we must automatically expand the right pannel
@@ -347,6 +355,10 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
+	/**
+	* Update the debug tab when sending a query
+	* @param {Query} query - The query we're going to send
+	*/
 	this.sendingQuery = function(query)
 	{
 		var tab = _tabs.getFirstTabByClassName("DebugTab");
@@ -356,6 +368,10 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
+	/**
+	* Update the debug tab when receiving a query
+	* @param {object} response - AJAX response
+	*/
 	this.gotResponse = function(response)
 	{
 		/*TODO: use syntax like that?
@@ -372,6 +388,10 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
+	/**
+	* Display uploaded files
+	* @param {Array<file>} uploaded_files - The files that have been uploaded
+	*/
 	this.displayUploadedFiles = function(uploaded_files)
 	{
 		//TODO: TabManager.UploadTab
@@ -385,6 +405,9 @@ function JukeboxUI(jukebox, element, opts)
 	//-----
 	// [Private] Functions
 	
+	/**
+	* Show full player
+	*/
 	function _expand()
 	{
 		_$.music_wrapper.style.display = 'inline';
@@ -393,6 +416,9 @@ function JukeboxUI(jukebox, element, opts)
 		_$.page_wrapper.setStyle({width: '900px'});
 	}
 
+	/**
+	* Show mini player
+	*/
 	function _collapse()
 	{
 		_$.music_wrapper.hide();
@@ -401,6 +427,9 @@ function JukeboxUI(jukebox, element, opts)
 		_$.page_wrapper.setStyle({width: '280px'});
 	}
 
+	/**
+	* Do a search
+	*/
 	function _search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select)
 	{
 		if(!search_field)
@@ -425,11 +454,21 @@ function JukeboxUI(jukebox, element, opts)
 		J.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
 	}
 
+	/**
+	 * Helper to do a search in a specific category
+	 * @param {string} search - The text search
+	 * @param {string} category - artist or album
+	 */
 	function _searchCategory(search, category)
 	{
 		_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, false);
 	}
 
+	/**
+	* Make play queue songs droppables
+	* @param {int} droppable_id - The element id to make droppable (same as draggable)
+	* @param {Array<song>} playQueueSongs - The play queue
+	*/
 	function _makePlayQueueSongDroppable(droppable_id, playQueueSongs)
 	{
 		Droppables.add(droppable_id,
@@ -585,10 +624,10 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 	
-	//---
-	// Constructor
-	
-	function _initialize()
+	/**
+	* @constructs
+	*/
+	(function()
 	{
 		Object.seal($this); // Non-extensible, Non-removable
 
@@ -676,36 +715,21 @@ function JukeboxUI(jukebox, element, opts)
 			$("tab-notifs").on("click", _tabsManager.ShowNotificationTab);
 			$("tab-debug").on("click", _tabsManager.ShowDebugTab);
 		})();
-	}
-	_initialize();
+	})();
 }
 
 //---
-// [Public] Functions
-// (No access to private data and methods)
-// (Access to public members/methods and privileged methods)
 
-/*
-var jukeboxui_public_methods =
-{
-
-};
-
-// Add them nicely to the prototype
-Extend(JukeboxUI.prototype, jukeboxui_public_methods);
+/** [Static] Variables
+* @property {string} ActivityMonitorColor.active - Monitor color when active
+* @property {string} ActivityMonitorColor.inactive - Monitor color when inactive
 */
-
-// [Static] Variables
 JukeboxUI.defaults =
 {
 	ActivityMonitorColor:
 	{
 		active: "orange",
 		inactive: "green"
-	},
-	css:
-	{
-
 	}
 };
 

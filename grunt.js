@@ -175,7 +175,7 @@ module.exports = function(grunt)
 				Tab: true,
 				genres: true,
 				FormatTime: true,
-				sort_unique: true
+				SortUnique: true
 			},
 			grunt:
 			{
