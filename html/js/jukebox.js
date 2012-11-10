@@ -3397,16 +3397,53 @@ function Jukebox(element, opts)
 			preferFlash: false,
 			onready: function()
 			{
-				_streamPlayer = soundManager.createSound(
+				var bufferchangeCount = 0,
+					lastbufferChange = new Date();
+
+				(function createNewSound(autoplay)
 				{
-					id: $this.id,
-					url: _opts.streamURL
-				});
+					_streamPlayer = soundManager.createSound(
+					{
+						id: $this.id,
+						url: _opts.streamURL + '?t=' + new Date().getTime(), // Has to be unique, else SM2 re-use previous stream...
+						autoPlay: autoplay,
+						onbufferchange: function()
+						{
+							// Check for too many calls to onbufferchange.
+							// If we have more than 2 calls in 2 seconds, then something's wrong.
+							// (happens on song change for browsers using the flash player)
+							// => reload the stream
+							// This is also interesting because it allows to free memory at the end of each song.
+							
+							bufferchangeCount++;
+							if(bufferchangeCount > 2)
+							{
+								setTimeout(function() // Wait that onbufferchange is finished
+								{
+									bufferchangeCount = 0; // Reset counter
+
+									var currentVolume = _streamPlayer.volume;
+
+									// Reload the steam
+									// [Note that .unload().play() isn't enough]									
+									_streamPlayer.destruct(); // Good for memory
+									createNewSound(true);
+
+									_streamPlayer.setVolume(currentVolume); // Restore volume
+								}, 0); // Immediately after current stack
+							}
+
+							var now = new Date();
+							if(now.getTime() - lastbufferChange.getTime() > 2000)
+							{
+								bufferchangeCount = 0;
+								lastbufferChange = now;
+							}
+						}
+					});
+				})(false);
 				
-				if(_streamPlayer.isHTML5)
-				{
-					Notifications.Display(Notifications.LEVELS.info, "Using HTML5 audio player");
-				}
+				Notifications.Display(Notifications.LEVELS.debug, "Using " + (_streamPlayer.isHTML5 ? "HTML5" : "flash") + " audio player");
 
 				_startCallback();
 			},
