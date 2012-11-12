@@ -240,6 +240,10 @@ class HttpSession < Rev::SSLSocket
     @_io.remote_address();
   end
 
+  def local_address()
+    @_io.local_address();
+  end
+
   private
   def log(str)
     if(@@logfd == nil)
