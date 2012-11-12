@@ -1010,7 +1010,14 @@ this.SearchTab = Class.create(Tab,
 		{
 			J.addSearchToPlayQueueBottom(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
 		}
-		var cell = this.createControlsCell(cellTag, funcRandom, funcTop, funcBottom);
+
+		var title = 'Add search to play queue [Full]'; // See jukebox.js : _addSearchToPlayQueue
+		if(this.search_comparison == 'like')
+		{
+			title = 'Add search to play queue [Current page]';
+		}
+
+		var cell = this.createControlsCell(cellTag, funcRandom, funcTop, funcBottom, title);
 		cell.writeAttribute('id', 'actions');
 		tr.insert(cell);
 
@@ -1018,12 +1025,19 @@ this.SearchTab = Class.create(Tab,
 	},
 
 	// Utility to create the 3 buttons in the last cell of each row (standards rows and header row of the table)
-	createControlsCell: function(cellTag, funcRandom, funcTop, funcBottom)
+	createControlsCell: function(cellTag, funcRandom, funcTop, funcBottom, title)
 	{
 		var cell = new Element(cellTag),
 			addRandom = new Element('a').update('<span class="add-to-play-queue-rand"></span>'),
 			addTop = new Element('a').update('<span class="add-to-play-queue-top"></span>'),
 			addBottom = new Element('a').update('<span class="add-to-play-queue-bottom"></span>');
+
+		if(title)
+		{
+			addRandom.writeAttribute('title', title + ' [RANDOM]');
+			addTop.writeAttribute('title', title + ' [TOP]');
+			addBottom.writeAttribute('title', title + ' [BOTTOM]');
+		}
 
 		cell.insert(addTop).insert(
 		{
