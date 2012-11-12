@@ -1,6 +1,10 @@
 (function(){ // Protect scope
 
-// Notifications levels
+/**
+* Notifications levels
+* @readonly
+* @enum {number}
+*/
 var LEVELS =
 {
 	debug: 1,
@@ -19,8 +23,13 @@ var passedNotifications = [];
 
 //==================================================
 
-// Main class containing notification stuff.
-// It is capable of appearing, updating its content, and disappearing.
+/**
+* Notification controller.
+* A notification is capable of appearing, updating its content, and disappearing.
+* @constructor
+* @param {number} level Message level
+* @param {string} message Text to display
+*/
 function Notification(level, message)
 {
 	if(!level || !message)
@@ -110,7 +119,9 @@ function Notification(level, message)
 	Object.seal(this); // Non-extensible, Non-removable
 }
 
-// Make a notification disappear
+/**
+* Make a notification disappear
+*/
 Notification.prototype.remove = function()
 {
 	// Handle case where somebody still got a reference on this notif and call remove() again
@@ -147,7 +158,9 @@ Notification.prototype.remove = function()
 
 //==================================================
 
-// Expose a Notifications object on global scope
+/** Expose a Notifications object on global scope
+* @global
+*/
 this.Notifications =
 {
 	LEVELS: LEVELS,
@@ -345,7 +358,7 @@ genresOrdered.sort(function(a, b)
 * Inspired from jQuery.extend
 * Keep in mind that the target object (first argument) will be modified, and will also be returned.
 * If, however, we want to preserve both of the original objects, we can do so by passing an empty object as the target.
-* 
+* @function
 * @param {bool} [deep] - If true, the merge becomes recursive (aka. deep copy).
 * @param {object} target - An object that will receive the new properties.
 * @param {object} obj1 - An object containing additional properties to merge in.
@@ -417,6 +430,7 @@ function Extend(/*deep, */target/*, obj1, obj2, obj3, objN*/)
 /**
 * Format a timestamp to a string in the format: [h:]m:s
 * 0 are only added to minutes and seconds if necessary.
+* @function
 * @param {string|number} t - The timestamp.
 * @return {string} The formatted timestamp.
 */
@@ -434,7 +448,12 @@ function FormatTime(t)
 	return str;
 }
 
-function sort_unique(arr)
+/**
+* Sort + unique
+* @function
+* @param {Array} arr
+*/
+function SortUnique(arr)
 {
 	arr = arr.sort(function(a, b)
 	{
@@ -451,6 +470,11 @@ function sort_unique(arr)
 	return ret;
 }
 
+/**
+* Return a formatted HTML string of a JSON string
+* @function
+* @param {string} input
+*/
 function JsonPrettyPrint(input)
 {
 	var json_hr = JSON.stringify(input, null, "\t");
@@ -1244,7 +1268,7 @@ this.SearchTab = Class.create(Tab,
 			}
 		}
 
-		pages = sort_unique(pages);
+		pages = SortUnique(pages);
 
 		var tab = this;
 		function createLink(num, className)
@@ -2125,6 +2149,15 @@ Action.search = function(page, identifier, select_fields, search_value, search_c
 	return new Action('search', searchOpts);
 };
 
+/**
+* @property {string} search_value			- The text to search. Empty = full library
+* @property {string} search_comparison		- The comparison operator (strict, like, equal)
+* @property {string} search_field			- The field to search into (title, artist, album)
+* @property {string} order_by				- Sort in a specific order (artist,album,track,title)
+* @property {string} select_fields			- Fetch a precise list of fields
+* @property {number} first_result			- Start at a specific result
+* @property {number} result_count			- How much results.
+*/
 Action.search.defaultOptions =
 {
 	search_value: '',
@@ -2174,6 +2207,7 @@ function Query(lastTimestamp, actions)
 * We do not check if the very same action is already in the list.
 * The action is not cloned. Therefore you can modify it even after a call to this method.
 * @param {Action} action - The action to add.
+* @throws {Error} Action is invalid
 */
 Query.prototype.addAction = function(action)
 {
@@ -2629,7 +2663,7 @@ function Jukebox(element, opts)
 	// (Publicly exposed with private data & methods access)
 
 	/**
-	* @param {function} callback - Execute callback when the jukebox is ready (.swf fully loaded). Might be immediately. Only last registered callback works.
+	* @param {function} callback - Execute callback when the jukebox is ready. Might be immediately. Only last registered callback works.
 	* @return {Jukebox} this.
 	*/
 	this.ready = function(callback)
@@ -3055,7 +3089,7 @@ function Jukebox(element, opts)
 
 	/**
 	* A little helper to add an action to the next query and do the query immediately
-	* @param {Action} action - The action to add.
+	* @param {Action} action - The action to add
 	*/
 	function _doAction(action)
 	{
@@ -3063,7 +3097,9 @@ function Jukebox(element, opts)
 		_update();
 	}
 
-	// Prepare an AJAX query
+	/**
+	* Prepare an AJAX query
+	*/
 	function _update()
 	{
 		_ui.activity(true);
@@ -3092,7 +3128,10 @@ function Jukebox(element, opts)
 		_sendQuery(query);
 	}
 
-	// Send an AJAX query
+	/**
+	* Send an AJAX query
+	* @param {Query} query - The query to send
+	*/
 	function _sendQuery(query)
 	{
 		query.setTimestamp(_timestamp);
@@ -3314,6 +3353,9 @@ function Jukebox(element, opts)
 		_doAction(new Action("add_search_to_play_queue", opts));
 	}
 
+	/**
+	* Execute ready callback
+	*/
 	function _startCallback()
 	{
 		if(typeof _readyCallback == "function")
@@ -3322,9 +3364,9 @@ function Jukebox(element, opts)
 		}
 	}
 
-	//---
+	//--
 	// Events handlers
-	
+
 	var _events =
 	{
 		// AJAX response
@@ -3377,13 +3419,10 @@ function Jukebox(element, opts)
 		}
 	};
 	
-	//---
-	// Constructor
-	
 	/**
-	* @constructor
+	* @constructs
 	*/
-	function _initialize()
+	(function()
 	{
 		Object.seal($this); // Non-extensible, Non-removable
 
@@ -3464,8 +3503,7 @@ function Jukebox(element, opts)
 		{
 			_update();
 		}
-	}
-	_initialize();
+	})();
 }
 
 //---
@@ -3494,13 +3532,17 @@ var jukebox_public_methods =
 };
 
 // Add them nicely to the prototype
-/*for(var jmethod in jukebox_public_methods)
-{
-	Jukebox.prototype[jmethod] = jukebox_public_methods[jmethod];
-}*/
 Extend(Jukebox.prototype, jukebox_public_methods);
 
-// [Static] Variables
+/**
+* [Static] Variables
+* @property {string} URL - URL of the web service to fetch JSON infos
+* @property {string} streamURL - URL of the stream
+* @property {string} SM2Folder - .swf folder for SM2
+* @property {bool} autorefresh - Activate autorefresh or not
+* @property {int} autorefresh_delay - Delay to get updates from server
+* @property {bool} replaceTitle - Change the page title to display current song
+*/
 Jukebox.defaults =
 {
 	URL: '/api/json',
@@ -3735,6 +3777,10 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
+	/**
+	* Render the current play queue
+	* @param {Array<song>} playQueueSongs - The current play queue
+	*/
 	this.displayPlayQueue = function(playQueueSongs)
 	{
 		var ul = new Element('ul');
@@ -3841,6 +3887,10 @@ function JukeboxUI(jukebox, element, opts)
 		_makePlayQueueSongDroppable('play-queue-li-first', playQueueSongs);
 	};
 
+	/**
+	* Render results of a search
+	* @param {object} results - Results sent by server
+	*/
 	this.displaySearchResults = function(results)
 	{
 		// A new search could be initiated from the left pannel so we must automatically expand the right pannel
@@ -3865,6 +3915,10 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
+	/**
+	* Update the debug tab when sending a query
+	* @param {Query} query - The query we're going to send
+	*/
 	this.sendingQuery = function(query)
 	{
 		var tab = _tabs.getFirstTabByClassName("DebugTab");
@@ -3874,6 +3928,10 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
+	/**
+	* Update the debug tab when receiving a query
+	* @param {object} response - AJAX response
+	*/
 	this.gotResponse = function(response)
 	{
 		/*TODO: use syntax like that?
@@ -3890,6 +3948,10 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
+	/**
+	* Display uploaded files
+	* @param {Array<file>} uploaded_files - The files that have been uploaded
+	*/
 	this.displayUploadedFiles = function(uploaded_files)
 	{
 		//TODO: TabManager.UploadTab
@@ -3903,6 +3965,9 @@ function JukeboxUI(jukebox, element, opts)
 	//-----
 	// [Private] Functions
 	
+	/**
+	* Show full player
+	*/
 	function _expand()
 	{
 		_$.music_wrapper.style.display = 'inline';
@@ -3911,6 +3976,9 @@ function JukeboxUI(jukebox, element, opts)
 		_$.page_wrapper.setStyle({width: '900px'});
 	}
 
+	/**
+	* Show mini player
+	*/
 	function _collapse()
 	{
 		_$.music_wrapper.hide();
@@ -3919,6 +3987,9 @@ function JukeboxUI(jukebox, element, opts)
 		_$.page_wrapper.setStyle({width: '280px'});
 	}
 
+	/**
+	* Do a search
+	*/
 	function _search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select)
 	{
 		if(!search_field)
@@ -3943,11 +4014,21 @@ function JukeboxUI(jukebox, element, opts)
 		J.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
 	}
 
+	/**
+	 * Helper to do a search in a specific category
+	 * @param {string} search - The text search
+	 * @param {string} category - artist or album
+	 */
 	function _searchCategory(search, category)
 	{
 		_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, false);
 	}
 
+	/**
+	* Make play queue songs droppables
+	* @param {int} droppable_id - The element id to make droppable (same as draggable)
+	* @param {Array<song>} playQueueSongs - The play queue
+	*/
 	function _makePlayQueueSongDroppable(droppable_id, playQueueSongs)
 	{
 		Droppables.add(droppable_id,
@@ -4103,10 +4184,10 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 	
-	//---
-	// Constructor
-	
-	function _initialize()
+	/**
+	* @constructs
+	*/
+	(function()
 	{
 		Object.seal($this); // Non-extensible, Non-removable
 
@@ -4194,36 +4275,21 @@ function JukeboxUI(jukebox, element, opts)
 			$("tab-notifs").on("click", _tabsManager.ShowNotificationTab);
 			$("tab-debug").on("click", _tabsManager.ShowDebugTab);
 		})();
-	}
-	_initialize();
+	})();
 }
 
 //---
-// [Public] Functions
-// (No access to private data and methods)
-// (Access to public members/methods and privileged methods)
 
-/*
-var jukeboxui_public_methods =
-{
-
-};
-
-// Add them nicely to the prototype
-Extend(JukeboxUI.prototype, jukeboxui_public_methods);
+/** [Static] Variables
+* @property {string} ActivityMonitorColor.active - Monitor color when active
+* @property {string} ActivityMonitorColor.inactive - Monitor color when inactive
 */
-
-// [Static] Variables
 JukeboxUI.defaults =
 {
 	ActivityMonitorColor:
 	{
 		active: "orange",
 		inactive: "green"
-	},
-	css:
-	{
-
 	}
 };
 

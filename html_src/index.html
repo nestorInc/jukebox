@@ -142,6 +142,7 @@ var hrefLower = window.location.href.toLowerCase(),
 	// requirejs specifics (RELEASE)
 	requirejsConfig =
 	{
+		waitSeconds: 20,
 		baseUrl: '/js/',
 		shim: // Dependencies
 		{
@@ -164,6 +165,7 @@ if(DEBUG)
 {
 	requirejsConfig =
 	{
+		waitSeconds: 30,
 		baseUrl: '/src/js/',
 		shim: // Dependencies
 		{
