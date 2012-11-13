@@ -2998,17 +2998,92 @@ function Jukebox(element, opts)
 		return this;
 	};
 
-	/*TODO; html5storage?
-	Ability to save playlist and share them could be interesting
-	this.savePlayList = function(name)
+	/**
+	* Save current play queue. Overwrite previous record with same identifier.
+	* @param {string} name - Identifier
+	* @return {Jukebox} this.
+	*/
+	this.savePlayQueue = function(name)
 	{
-		
-	}
+		if(_supportsHTML5Storage())
+		{
+			var playqueues = _getHTML5Storage("playqueues") || {};
 
-	this.restorePlayList = function(name)
+			// Only store id
+			var ids = [];
+			for(var i = 0, len = _playQueueSongs.length; i < len; ++i)
+			{
+				ids[i] = _playQueueSongs[i].mid;
+			}
+
+			playqueues[name] = ids; // Add current play queue
+
+			localStorage["playqueues"] = JSON.stringify(playqueues); // Save
+		}
+		else
+		{
+			Notifications.Display(Notifications.LEVELS.warning, "Cannot save playqueue: HTML5 storage not supported!");
+		}
+		return this;
+	};
+
+	/**
+	* Restore a specific play queue by adding at the bottom
+	* @param {string} name - Identifier
+	* @param {string} [position] - rand | head | tail ; default = tail
+	* @return {Jukebox} this.
+	*/
+	this.restorePlayQueue = function(name, position)
 	{
-		
-	}*/
+		if(_supportsHTML5Storage())
+		{
+			var playqueues = _getHTML5Storage("playqueues"),
+				error = false;
+
+			if(playqueues !== null)
+			{
+				var ids = playqueues[name],
+					start = position == 'head' ? 0 : position == 'rand' ? Math.floor(Math.random() * _playQueueSongs.length) : _playQueueSongs.length;
+				if(ids)
+				{
+					_addToPlayQueue(ids, $R(start, start + ids.length).toArray());
+				}
+				else
+				{
+					error = true;
+				}
+			}
+			else
+			{
+				error = true;
+			}
+
+			if(error)
+			{
+				Notifications.Display(Notifications.LEVELS.warning, "Unknown play queue in storage!");
+			}
+		}
+		return this;
+	};
+
+	/**
+	* Free up HTML5 storage
+	* @param {string} name - Identifier
+	* @return {Jukebox} this.
+	*/
+	this.deletePlayQueue = function(name)
+	{
+		if(_supportsHTML5Storage())
+		{
+			var playqueues = _getHTML5Storage("playqueues");
+			if(playqueues)
+			{
+				delete playqueues[name];
+				localStorage["playqueues"] = JSON.stringify(playqueues); // Save
+			}
+		}
+		return this;
+	};
 
 	/**
 	* Go to the next song
@@ -3256,7 +3331,7 @@ function Jukebox(element, opts)
 
 	/**
 	* Add a song to the play queue at a certain position
-	* @param {int} mid - The song id
+	* @param {int|Array<int>} mid - The song id, or an array of song id
 	* @param {int} play_queue_index - Index to put the song to
 	*/
 	function _addToPlayQueue(mid, play_queue_index)
@@ -3376,6 +3451,48 @@ function Jukebox(element, opts)
 		{
 			_readyCallback.call($this);
 		}
+	}
+
+	/**
+	* Detect if HTML5 storage is supported
+	* @return {bool} true if HTML5 storage is supported, false otherwise
+	*/
+	function _supportsHTML5Storage()
+	{
+		try
+		{
+			return 'localStorage' in window && window['localStorage'] !== null;
+		}
+		catch(e)
+		{
+			return false;
+		}
+	}
+
+	/**
+	* Fetch data from HTML5 storage + parse it into an object
+	* @param {string} key - Storage identifier
+	* @return {object} Saved object, or null
+	*/
+	function _getHTML5Storage(key)
+	{
+		var obj = localStorage[key];
+		if(obj)
+		{
+			try
+			{
+				obj = JSON.parse(obj);
+			}
+			catch(e)
+			{
+				obj = null;
+			}
+		}
+		else
+		{
+			obj = null;
+		}
+		return obj;
 	}
 
 	//--
