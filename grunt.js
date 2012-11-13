@@ -204,7 +204,7 @@ module.exports = function(grunt)
 			},
 			jukebox:
 			{
-				globals: {Extend: true, Query: true, Action: true, JukeboxUI: true, soundManager: true, Notifications: true, Ajax: true}
+				globals: {Extend: true, Query: true, Action: true, JukeboxUI: true, soundManager: true, Notifications: true, Ajax: true, $R: true}
 			},
 			jukeboxui:
 			{
