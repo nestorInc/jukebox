@@ -20,6 +20,7 @@ require 'json_api.rb'
 require 'upload.rb'
 require 'basic_api.rb'
 require 'web_debug.rb'
+require 'token_api.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
@@ -57,6 +58,7 @@ json   = JsonManager.new(channelList, library, config[:upload.to_s], config[:enc
 basic  = BasicApi.new(channelList);
 upload = UploadManager.new(config[:upload.to_s]);
 debug  = DebugPage.new();
+token  = TokenManager.new(library);
 main   = HttpNodeMapping.new("html");
 main_src = HttpNodeMapping.new("html_src");
 stream = Stream.new(channelList, library);
@@ -82,12 +84,13 @@ main.addAuth() { |s, req, user, pass|
   nil;
 }
 
-root = HttpRootNode.new({ "/api/json" => json,
-                          "/api"      => basic,
-                          "/upload"   => upload,
-                          "/"         => main,
-                          "/src"      => main_src,
-                          "/stream"   => stream});
+root = HttpRootNode.new({ "/api/json"  => json,
+                          "/api"       => basic,
+                          "/upload"    => upload,
+                          "/"          => main,
+                          "/src"       => main_src,
+                          "/api/token" => token,
+                          "/stream"    => stream});
 #                          "/debug"    => debug,
 
 if(config[:server.to_s] == nil)
