@@ -178,10 +178,10 @@ class HttpResponse
     HttpResponse.generateError(req, 500, "Internal Server Error");
   end
 
-  def setData(data, contentType = "text/html")
-    @options["Connection"]     = "keep-alive";
-    @options["Content-Length"] = data.bytesize();
-    @options["Content-Type"]   = contentType;
+  def setData(data, contentType = nil)
+    @options["Connection"]     ||= "keep-alive";
+    @options["Content-Length"]   = data.bytesize();
+    @options["Content-Type"]     = contentType || @options["Content-Type"] || "text/html";
 
     @data = data;
   end
@@ -238,6 +238,10 @@ class HttpSession < Rev::SSLSocket
 
   def remote_address()
     @_io.remote_address();
+  end
+
+  def local_address()
+    @_io.local_address();
   end
 
   private
