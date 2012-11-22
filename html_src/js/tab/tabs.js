@@ -77,6 +77,11 @@ this.Tabs = Class.create(
 		return null;
 	},
 
+	setRootNode: function(node)
+	{
+		this.DOM = node;
+	},
+
 	// Add the tab in the html layout and in the tabs array
 	addTab: function(tab)
 	{
@@ -107,7 +112,7 @@ this.Tabs = Class.create(
 		// init html containers
 		if(this.tabs.length == 1)
 		{
-			$('tabsHeader').update('<ul id="tabs-list"></ul>');
+			this.DOM.down('.jukebox-tabs-header').update('<ul class="jukebox-tabs-list"></ul>');
 		}
 
 		// Add tab Header
@@ -138,12 +143,12 @@ this.Tabs = Class.create(
 			tabDisplay.addClassName('tabHeaderActive');
 		}
 
-		var tabContentContainer = new Element('div', {id: 'tabContent-' + id});
+		var tabContentContainer = new Element('div', {id: 'tabContent-' + id}); // todo: use classes to not pollute ids
 		tabContentContainer.style.display = this.tabs.length == 1 ? 'block' : 'none';
 
 		// DOM insertion
-		$('tabs-list').insert({'bottom': tabDisplay});
-		$('tabscontent').insert({'bottom': tabContentContainer});
+		this.DOM.down('.jukebox-tabs-list').insert({bottom: tabDisplay});
+		this.DOM.down('.jukebox-tabs-content').insert({bottom: tabContentContainer});
 
 		// Start to init static tab content
 		if(typeof tab.updateContent === 'function')
