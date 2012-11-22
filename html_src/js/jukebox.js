@@ -71,7 +71,7 @@ function Jukebox(element, opts)
 		if(typeof callback !== "function")
 		{
 			var msg = "Invalid parameter: .ready() needs a function";
-			Notifications.Display(Notifications.LEVEL.error, msg);
+			Notifications.Display(Notifications.LEVELS.error, msg);
 			throw new Error(msg);
 		}
 
@@ -156,7 +156,7 @@ function Jukebox(element, opts)
 			if(volume < 0 || volume > 100)
 			{
 				var msg = "Invalid volume level: " + volume + " is not in 0-100 range";
-				Notifications.Display(Notifications.LEVEL.error, msg);
+				Notifications.Display(Notifications.LEVELS.error, msg);
 				throw new Error(msg);
 			}
 			else
