@@ -1,6 +1,6 @@
 this.SearchTab = Class.create(Tab,
 {
-	initialize: function(jukebox, server_results)
+	initialize: function(jukebox, domContainer, server_results)
 	{
 		this.reloadControllers = true;
 		this.pages = [];
@@ -8,6 +8,7 @@ this.SearchTab = Class.create(Tab,
 		this.tableKit = null;
 
 		this.jukebox = jukebox;
+		this.dom = domContainer;
 		this.identifier = server_results.identifier;
 		this.updateNewSearchInformations(server_results);
 	},
@@ -96,7 +97,7 @@ this.SearchTab = Class.create(Tab,
 		if(this.reloadControllers)
 		{
 			// Clean
-			$$('collection-pagelist-' + this.identifier).each(function(s)
+			this.dom.select('collection-pagelist-' + this.identifier).each(function(s)
 			{
 				s.remove();
 			});
@@ -112,7 +113,7 @@ this.SearchTab = Class.create(Tab,
 			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>' +
 			'<div id="collection-content-' + this.identifier + '"></div>' +
 			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>';
-			$('tabContent-' + this.identifier).update(search_page);
+			this.dom.down('#tabContent-' + this.identifier).update(search_page);
 
 			// Display sliders and links and init sliders behvior
 			this.initAndDisplaySearchControllers();
@@ -155,7 +156,7 @@ this.SearchTab = Class.create(Tab,
 		if(this.total_results > 0 && this.page_count > 1)
 		{
 			// We have to specified a fixed width, 100% doesn't work : the slider is lost
-			var music_wrapper_width = $('music-wrapper').getWidth();
+			var music_wrapper_width = this.dom.getWidth();
 
 			var slider = '' +
 			'<div name="results-slider-' + tabId + '" class="slider" style="width:' + music_wrapper_width + 'px;">' +
