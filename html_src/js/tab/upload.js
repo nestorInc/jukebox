@@ -24,6 +24,10 @@ var UploadTab = Class.create(Tab,
 			this.lastSendingDeletionIdentifier = fname;
 			this.jukebox.deleteUploadedFile(fname);
 		}
+		else
+		{
+			Notifications.Display(3, "Please retry after the following song has been deleted: " + this.lastSendingDeletionIdentifier);
+		}
 	},
 
 	getUploadedFileEditionFromFilename: function(file_name)
@@ -61,6 +65,10 @@ var UploadTab = Class.create(Tab,
 			};
 			this.jukebox.updateUploadedFile(opts);
 		}
+		else
+		{
+			Notifications.Display(3, "Please retry after the following song has been updated: " + this.lastSendingUpdateIdentifier);
+		}
 	},
 
 	validateUploadedSong: function(file_name)
@@ -71,18 +79,27 @@ var UploadTab = Class.create(Tab,
 			this.lastSendingValidationIdentifier = fname;
 			this.jukebox.validateUploadedFile(fname);
 		}
+		else
+		{
+			Notifications.Display(3, "Please retry after the following song has been validated: " + this.lastSendingValidationIdentifier);
+		}
 	},
 
 	deletionResponse: function(ret, message)
 	{
+		var id = this.lastSendingDeletionIdentifier;
+
+		// Wether success or error, reset the last sending identifier to allow a new deletion
+		this.lastSendingDeletionIdentifier = null;
+
 		if(ret == "success")
 		{
-			if(this.lastSendingDeletionIdentifier !== null)
+			if(id !== null)
 			{
 				// Delete entry
 				for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
 				{
-					if(this.uploadedFiles[i].filename == this.lastSendingDeletionIdentifier)
+					if(this.uploadedFiles[i].filename == id)
 					{
 						this.uploadedFiles.splice(i, 1);
 						this.uploadedFilesEdition.splice(i, 1); // at same index
@@ -91,17 +108,14 @@ var UploadTab = Class.create(Tab,
 				}
 
 				// Delete html part
-				$('upload-line-' + escape(this.lastSendingDeletionIdentifier)).remove();
-				Notifications.Display(2, "Song " + this.lastSendingDeletionIdentifier + " sucessfully deleted");
-
-				this.lastSendingDeletionIdentifier = null;
+				$('upload-line-' + escape(id)).remove();
+				Notifications.Display(2, "Song " + id + " sucessfully deleted");
 
 				this.reinitTable();
 			}
 		}
 		else if(ret == "error")
 		{
-			this.lastSendingDeletionIdentifier = null;
 			Notifications.Display(4, message);
 		}
 	},
@@ -143,15 +157,20 @@ var UploadTab = Class.create(Tab,
 
 	validationResponse: function(ret, message)
 	{
+		var id = this.lastSendingValidationIdentifier;
+
+		// Wether success or error, reset the last sending identifier to allow a new validation
+		this.lastSendingValidationIdentifier = null;
+
 		if(ret == "success")
 		{
 			Notifications.Display(1, message);
-			if(this.lastSendingValidationIdentifier !== null)
+			if(id !== null)
 			{
 				// Delete entry
 				for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
 				{
-					if(this.uploadedFiles[i].filename == this.lastSendingValidationIdentifier)
+					if(this.uploadedFiles[i].filename == id)
 					{
 						this.uploadedFiles.splice(i, 1);
 						this.uploadedFilesEdition.splice(i, 1); // at same index
@@ -160,16 +179,13 @@ var UploadTab = Class.create(Tab,
 				}
 
 				// Delete html part
-				$('upload-line-' + escape(this.lastSendingValidationIdentifier)).remove();
-
-				this.lastSendingValidationIdentifier = null;
+				$('upload-line-' + escape(id)).remove();
 
 				this.reinitTable();
 			}
 		}
 		else if(ret == "error")
 		{
-			this.lastSendingValidationIdentifier = null;
 			Notifications.Display(4, message);
 		}
 	},
@@ -282,7 +298,7 @@ var UploadTab = Class.create(Tab,
 			$uploaded_files_tbody = $uploaded_files.down('tbody'),
 			that = this;
 
-		// Check for new files every 5 seconds
+		// Check for new files in 5 seconds
 		clearTimeout(this.refresher);
 		this.refresher = setTimeout(function()
 		{

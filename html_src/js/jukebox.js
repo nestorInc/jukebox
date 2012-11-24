@@ -591,8 +591,11 @@ function Jukebox(element, opts)
 		else
 		{
 			// Query is being sent and new query has arrived
-			_waitingQueries.push(_nextQuery);
-			_nextQuery = new Query(); // Create a new nextQuery, that will not contain actions for previous _update()
+			if(_nextQuery.actions.length > 0)
+			{
+				_waitingQueries.push(_nextQuery);
+				_nextQuery = new Query();
+			}
 			return;
 		}
 
@@ -906,23 +909,7 @@ function Jukebox(element, opts)
 			}
 
 			_ui.gotResponse(response.responseText);
-
-			try
-			{
-				var json = response.responseText.evalJSON();
-				_parseJSONResponse(json);
-			}
-			catch(parseResponseEx)
-			{
-				Notifications.Display(Notifications.LEVELS.error, "Error while parsing server response: " + parseResponseEx.message);
-			}
-
-			if(_waitingQueries.length > 0)
-			{
-				// Only do latest request?
-				_waitingQueries = []; // Actions of queries referenced in the array are lost
-				_update(); // Will use latest _nextQuery
-			}
+			_parseJSONResponse(response.responseJSON);
 		},
 		queryFailure: function()
 		{
@@ -933,6 +920,20 @@ function Jukebox(element, opts)
 		{
 			_query_in_progress = false;
 			_ui.activity(false);
+
+			if(_waitingQueries.length > 0)
+			{
+				// Progressively send waiting queries in order
+
+				if(_nextQuery.actions.length > 0)
+				{
+					_waitingQueries.push(_nextQuery);
+				}
+				var oldestQuery = _waitingQueries.splice(0, 1)[0]; // Remove the oldest
+				_nextQuery = oldestQuery; // Send it
+
+				_update();
+			}
 		}
 	};
 	
