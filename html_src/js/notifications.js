@@ -1,6 +1,10 @@
 (function(){ // Protect scope
 
-// Notifications levels
+/**
+* Notifications levels
+* @readonly
+* @enum {number}
+*/
 var LEVELS =
 {
 	debug: 1,
@@ -19,8 +23,13 @@ var passedNotifications = [];
 
 //==================================================
 
-// Main class containing notification stuff.
-// It is capable of appearing, updating its content, and disappearing.
+/**
+* Notification controller.
+* A notification is capable of appearing, updating its content, and disappearing.
+* @constructor
+* @param {number} level Message level
+* @param {string} message Text to display
+*/
 function Notification(level, message)
 {
 	if(!level || !message)
@@ -110,7 +119,9 @@ function Notification(level, message)
 	Object.seal(this); // Non-extensible, Non-removable
 }
 
-// Make a notification disappear
+/**
+* Make a notification disappear
+*/
 Notification.prototype.remove = function()
 {
 	// Handle case where somebody still got a reference on this notif and call remove() again
@@ -147,7 +158,9 @@ Notification.prototype.remove = function()
 
 //==================================================
 
-// Expose a Notifications object on global scope
+/** Expose a Notifications object on global scope
+* @global
+*/
 this.Notifications =
 {
 	LEVELS: LEVELS,

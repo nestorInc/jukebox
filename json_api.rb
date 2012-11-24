@@ -24,8 +24,8 @@ class JsonManager < HttpNode
 
   def on_request(s, req)
     ch  = @list[s.user];
-    rep = HttpResponse.new(req.proto, 200, "OK",
-                           "Content-Type" => "application/json");
+    rep = HttpResponse.new(req.proto, 200, "OK");
+
     res = "";
     debug(req.data);
     if(ch == nil)
@@ -34,7 +34,7 @@ class JsonManager < HttpNode
     else
       res = parse(req.data, ch, s.user);
     end
-    rep.setData(res);
+    rep.setData(res, "application/json");
     s.write(rep.to_s);
   end
 

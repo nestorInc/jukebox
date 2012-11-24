@@ -100,6 +100,15 @@ Action.search = function(page, identifier, select_fields, search_value, search_c
 	return new Action('search', searchOpts);
 };
 
+/**
+* @property {string} search_value			- The text to search. Empty = full library
+* @property {string} search_comparison		- The comparison operator (strict, like, equal)
+* @property {string} search_field			- The field to search into (title, artist, album)
+* @property {string} order_by				- Sort in a specific order (artist,album,track,title)
+* @property {string} select_fields			- Fetch a precise list of fields
+* @property {number} first_result			- Start at a specific result
+* @property {number} result_count			- How much results.
+*/
 Action.search.defaultOptions =
 {
 	search_value: '',

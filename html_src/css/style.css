@@ -14,19 +14,23 @@ text-align: left;
 text-indent: 0.5em;
 }
 
-a:link, a:active, a:visited, a:hover, #tab-links > a, #play-stream, #stop-stream{
+footer{
+text-align: center;
+}
+
+a:link, a:active, a:visited, a:hover, .jukebox-tabs-links > a, .jukebox-stream-play, .jukebox-stream-stop{
 text-decoration: none;
 font-weight: bold;
 color: #4d67b1;
 }
-a:hover, #tab-links > a:hover, #play-stream:hover, #stop-stream:hover{
+a:hover, .jukebox-tabs-links > a:hover, .jukebox-stream-play:hover, .jukebox-stream-stop:hover{
 color: #a21919;
 cursor: pointer;
 }
 
-#page-wrapper{
+.jukebox{
 position: relative;
-margin-top: 25px; /*#notifications height*/
+margin-top: 25px; /* 1 notification height*/
 margin-right: auto;
 margin-left: auto;
 /*width: 960px;*/
@@ -36,7 +40,7 @@ border: 1px solid black;
 }
 
 /* Page layout */
-#header{
+.jukebox-header{
 background-color: #6B6B6B;
 width: 100%;
 height: 20px;
@@ -44,13 +48,13 @@ height: 20px;
 border-top-right-radius: 10px;*/
 }
 
-#player{
+.jukebox-main{
 float: left;
 display: inline;
 width: 280px;
 }
 
-#footer{
+.jukebox-footer{
 clear: both;
 position: relative;
 width: 100%;
@@ -59,19 +63,19 @@ font-size: 85%;
 }
 
 /* Header */
-#channel{
+.jukebox-channel{
 width: 100px;
 height: 20px; /* #header height */
 border: 0;
 padding: 0;
 vertical-align: top;
 }
-#btn-join-channel{
+.jukebox-channel-button{
 height: 100%;
 vertical-align: top;
 }
 
-span#activity-monitor{
+span.jukebox-activity-monitor{
 display: block;
 float: right;
 height: 100%;
@@ -79,7 +83,7 @@ width: 8px;
 background-color: green;
 }
 
-span#expand-button, span#collapse-button{
+span.jukebox-expand-button, span.jukebox-collapse-button{
 display: block;
 float: right;
 background-color: white;
@@ -89,7 +93,7 @@ cursor: pointer;
 }
 
 /* CONTROLS */
-#player-controls{
+.jukebox-controls{
 position: relative;
 background-color: #DEDEDE;
 width: 100%;
@@ -99,7 +103,7 @@ border-right: 1px solid black;
 border-bottom: 1px solid black;
 }
 
-#previous-button,#next-button{
+.jukebox-previous-button,.jukebox-next-button{
 background: url("../images/next.jpg") no-repeat left top;
 display: block;
 position: absolute;
@@ -108,7 +112,7 @@ height: 30px;
 top: 10px;
 cursor: pointer;
 }
-#previous-button{
+.jukebox-previous-button{
 left: 5px;
 
 /* Flip */
@@ -119,11 +123,11 @@ transform: scaleX(-1);
 filter: FlipH;
 -ms-filter: "FlipH";
 }
-#next-button{
+.jukebox-next-button{
 left: 40px; /* 5 from border + 30 left image + 5 space */
 }
 
-p#player-song{
+p.jukebox-song{
 position: absolute;
 left: 70px; /* 30 * 2 + 5 * 2 */
 height: 37px;
@@ -136,7 +140,7 @@ padding-right: 0;
 text-align: center;
 text-indent: 0;
 }
-p#player-song-time{
+p.jukebox-song-time{
 position: absolute;
 top: 0;
 height: 100%;
@@ -152,7 +156,7 @@ color: black;
 }
 
 /* Progressbar */
-#progressbar-wrapper{
+.jukebox-progressbar-wrapper{
 position: absolute;
 top: 36px;
 left: 73px; /* 70 + 3 */
@@ -163,7 +167,7 @@ background-color: white;
 border-radius: 25px;
 box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
 }
-#progressbar{
+.jukebox-progressbar{
 height: 100%;
 width: 0; /* Not 100% at start */
 
@@ -199,7 +203,7 @@ inset 0 -2px 6px rgba(0,0,0,0.4);*/
 
 
 /* PLAYLIST */
-#player-playlist{
+.jukebox-playqueue{
 padding-top: 2px;
 position: relative;
 background-color: white;
@@ -207,13 +211,13 @@ width: 100%;
 border-right: 1px solid black;
 }
 
-#play-queue-content ul{
+.jukebox-playqueue-content ul{
 list-style-type: none;
 }
-#play-queue-content li{
+.jukebox-playqueue-content li{
 border-top: 1px solid grey;
 }
-#play-queue-content li#play-queue-li-first{
+.jukebox-playqueue-content li#play-queue-li-first{
 border-top: 0;
 }
 
@@ -281,7 +285,7 @@ background: url("../images/icons/play_queue_move_bottom.png") no-repeat left top
 
 
 /* Music collection */
-#music-wrapper{
+.jukebox-tabs{
 width: 620px; /* 900-280 */
 float: left;
 overflow: hidden;
@@ -289,7 +293,7 @@ display: none;
 font-size: 80%;
 }
 
-#collection-header{
+.jukebox-tabs-head{
 position: relative;
 background-color: #DEDEDE;
 font-size: 80%;
@@ -297,22 +301,22 @@ border-bottom: 1px solid black;
 border-left: 1px solid black;
 }
 
-#btn-search,#btn-refresh,#btn-apply-plugin{
+.jukebox-search-button,.jukebox-refresh-button,.jukebox-plugin-button{
 height: 100%;
 }
 
-#cb-autorefresh{
+.jukebox-autorefresh{
 vertical-align: middle;
 }
 
-#tab-links{
+.jukebox-tabs-links{
 position: relative;
 background-color: #DEDEDE;
 font-size: 80%;
 border-left: 1px solid black;
 }
 
-#page-links{
+.page-links{
 text-align: center;
 }
 
@@ -332,7 +336,7 @@ li.being-dragged div{
 border: 1px solid black;
 }
 
-#play-queue-content li.being-dragged tr.being-dragged{
+.jukebox-playqueue-content li.being-dragged tr.being-dragged{
 border-top: none;
 }
 
@@ -482,38 +486,38 @@ color: #00ff00;
 }
 
 /* tabs */
-#tabsHeader{
+.jukebox-tabs-header{
 margin-left: 4px;
 padding: 0;
 padding-left: 5px;
 display: inline-block;
 }
-#tabsHeader ul{
+.jukebox-tabs-header ul{
 font: bold 11px Arial, Verdana, sans-serif;
 list-style: none;
 }
-#tabsHeader li{
+.jukebox-tabs-header li{
 display: inline;
 }
-#tabsHeader a{
+.jukebox-tabs-header a{
 text-decoration: none;
 }
-#tabsHeader a span{
+.jukebox-tabs-header a span{
 float: left;
 display: block;
 }
-#tabsHeader a:hover{
+.jukebox-tabs-header a:hover{
 background-color: #7E94B9;
 color: white;
 }
-#tabsHeader a:hover span{
+.jukebox-tabs-header a:hover span{
 background-color: #7E94B9;
 }
 .tabHeaderActive span, .tabHeaderActive a {
 background-color: #42577B;
 color:#fff;
 }
-#tabscontent{
+.jukebox-tabs-content{
 position: relative;
 border-left: 1px solid black;
 }
@@ -521,20 +525,20 @@ span.tab-delete{
 background: url("../images/icons/play_queue_delete.png") no-repeat left top;
 }
 
-span#collapse-button,#stop-stream{
+span.jukebox-collapse-button,.jukebox-stream-stop{
 display: none; /* initial state */
 }
-#volume-box span{
+.jukebox-volume span{
 float: left;
 font-size: 13px;
 }
-#volume-box-slider{
+div.jukebox-volume-slider{
 float: left;
 width: 120px;
 height: 10px;
 margin: 5px 0;
 }
-#volume-box-slider .handle{
+div.jukebox-volume-slider div.jukebox-volume-handle{
 width: 10px;
 height: 20px;
 margin-left: 0;
