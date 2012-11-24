@@ -208,6 +208,7 @@ module.exports = function(grunt)
 			},
 			jukeboxui:
 			{
+				options: {multistr: true},
 				globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true}
 			},
 			tab_customQueries:

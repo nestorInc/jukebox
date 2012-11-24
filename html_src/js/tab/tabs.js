@@ -1,9 +1,11 @@
 var Tab = this.Tab = Class.create(
 {
-	initialize: function(identifier, name)
+	initialize: function(identifier, name, jukebox, domContainer)
 	{
 		this.identifier = identifier;
 		this.name = name;
+		this.jukebox = jukebox;
+		this.dom = domContainer;
 	},
 
 	getName: function()

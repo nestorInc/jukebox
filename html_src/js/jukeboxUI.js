@@ -102,7 +102,7 @@ function JukeboxUI(jukebox, element, opts)
 				currentSongElapsedTime = song.duration;
 			}
 		 
-			if(_lastCurrentSongElapsedTime == null || currentSongElapsedTime > _lastCurrentSongElapsedTime)
+			if(_lastCurrentSongElapsedTime === null || currentSongElapsedTime > _lastCurrentSongElapsedTime)
 			{
 				var percent = Math.round(currentSongElapsedTime / song.duration * 100);
 				_$.progressbar.setStyle({width: percent + '%'});
@@ -276,6 +276,20 @@ function JukeboxUI(jukebox, element, opts)
 		});
 		
 		_$.play_queue_content.update(ul);
+
+		function dragStart(dragged)
+		{
+			var id = dragged.element.id;
+			id = id.substring(16);
+			$('play-queue-li-' + id).addClassName('being-dragged');
+		}
+
+		function dragEnd(dragged)
+		{
+			var id = dragged.element.id;
+			id = id.substring(16);
+			$('play-queue-li-' + id).removeClassName('being-dragged');
+		}
 		
 		// Create all draggables, once update is done.
 		for(var i = 0, len = playQueueSongs.length; i < len; i++)
@@ -286,18 +300,8 @@ function JukeboxUI(jukebox, element, opts)
 				constraint: 'vertical',
 				revert: true,
 				handle: 'play-queue-handle-' + i,
-				onStart: function(dragged)
-				{
-					var id = dragged.element.id;
-					id = id.substring(16);
-					$('play-queue-li-' + id).addClassName('being-dragged');
-				},
-				onEnd: function(dragged)
-				{
-					var id = dragged.element.id;
-					id = id.substring(16);
-					$('play-queue-li-' + id).removeClassName('being-dragged');
-				}
+				onStart: dragStart,
+				onEnd: dragEnd
 			});
 			_makePlayQueueSongDroppable('play-queue-li-' + i, playQueueSongs);
 		}
@@ -653,34 +657,34 @@ function JukeboxUI(jukebox, element, opts)
 			$JB = $elem.down('.' + _opts.rootClass);
 		_$ =
 		{
-			jukebox: 			$JB,
-			tabs: 				$JB.down(rootClass+'tabs'),
-			expand_button: 		$JB.down(rootClass+'expand-button'),
-			collapse_button: 	$JB.down(rootClass+'collapse-button'),
-			search_input: 		$JB.down(rootClass+'search-input'),
-			search_field: 		$JB.down(rootClass+'search-field'),
-			search_genres: 		$JB.down(rootClass+'search-genres'),
-			results_per_page: 	$JB.down(rootClass+'results-per-page'),
-			btn_search: 		$JB.down(rootClass+'search-button'),
-			progressbar: 		$JB.down(rootClass+'progressbar'),
-			player_song_time: 	$JB.down(rootClass+'song-time'),
-			activity_monitor: 	$JB.down(rootClass+'activity-monitor'),
-			play_stream: 		$JB.down(rootClass+'stream-play'),
-			stop_stream: 		$JB.down(rootClass+'stream-stop'),
-			channel: 			$JB.down(rootClass+'channel'),
-			btn_join_channel: 	$JB.down(rootClass+'channel-button'),
-			previous_button: 	$JB.down(rootClass+'previous-button'),
-			next_button: 		$JB.down(rootClass+'next-button'),
-			cb_autorefresh: 	$JB.down(rootClass+'autorefresh'),
-			btn_refresh: 		$JB.down(rootClass+'refresh-button'),
+			jukebox:			$JB,
+			tabs:				$JB.down(rootClass+'tabs'),
+			expand_button:		$JB.down(rootClass+'expand-button'),
+			collapse_button:	$JB.down(rootClass+'collapse-button'),
+			search_input:		$JB.down(rootClass+'search-input'),
+			search_field:		$JB.down(rootClass+'search-field'),
+			search_genres:		$JB.down(rootClass+'search-genres'),
+			results_per_page:	$JB.down(rootClass+'results-per-page'),
+			btn_search:			$JB.down(rootClass+'search-button'),
+			progressbar:		$JB.down(rootClass+'progressbar'),
+			player_song_time:	$JB.down(rootClass+'song-time'),
+			activity_monitor:	$JB.down(rootClass+'activity-monitor'),
+			play_stream:		$JB.down(rootClass+'stream-play'),
+			stop_stream:		$JB.down(rootClass+'stream-stop'),
+			channel:			$JB.down(rootClass+'channel'),
+			btn_join_channel:	$JB.down(rootClass+'channel-button'),
+			previous_button:	$JB.down(rootClass+'previous-button'),
+			next_button:		$JB.down(rootClass+'next-button'),
+			cb_autorefresh:		$JB.down(rootClass+'autorefresh'),
+			btn_refresh:		$JB.down(rootClass+'refresh-button'),
 			player_song_artist: $JB.down(rootClass+'song-artist'),
-			player_song_album: 	$JB.down(rootClass+'song-album'),
-			player_song_title: 	$JB.down(rootClass+'song-title'),
+			player_song_album:	$JB.down(rootClass+'song-album'),
+			player_song_title:	$JB.down(rootClass+'song-title'),
 			play_queue_content: $JB.down(rootClass+'playqueue-content'),
-			selection_plugin: 	$JB.down(rootClass+'plugin'),
-			btn_apply_plugin: 	$JB.down(rootClass+'plugin-button'),
-			volume_box_slider: 	$JB.down(rootClass+'volume-slider'),
-			tabs_links: 		$JB.down(rootClass+'tabs-links')
+			selection_plugin:	$JB.down(rootClass+'plugin'),
+			btn_apply_plugin:	$JB.down(rootClass+'plugin-button'),
+			volume_box_slider:	$JB.down(rootClass+'volume-slider'),
+			tabs_links:			$JB.down(rootClass+'tabs-links')
 		};
 
 		_tabs.setRootNode(_$.tabs);
@@ -722,9 +726,9 @@ function JukeboxUI(jukebox, element, opts)
 				_tabsManager["Show" + tab.classN] = function()
 				{
 					var identifier = _tabs.getFirstTabIdentifierByClassName(tab.classN);
-					if(identifier == null)
+					if(identifier === null)
 					{
-						var newTab = new tab.classC(tab.identifier, tab.name, J);
+						var newTab = new tab.classC(tab.identifier, tab.name, _$.tabs, J);
 						identifier = _tabs.addTab(newTab);
 					}
 					_tabs.toggleTab(identifier);
