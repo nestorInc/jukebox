@@ -63,7 +63,7 @@ function Jukebox(element, opts)
 	// (Publicly exposed with private data & methods access)
 
 	/**
-	* @param {function} callback - Execute callback when the jukebox is ready (.swf fully loaded). Might be immediately. Only last registered callback works.
+	* @param {function} callback - Execute callback when the jukebox is ready. Might be immediately. Only last registered callback works.
 	* @return {Jukebox} this.
 	*/
 	this.ready = function(callback)
@@ -71,7 +71,7 @@ function Jukebox(element, opts)
 		if(typeof callback !== "function")
 		{
 			var msg = "Invalid parameter: .ready() needs a function";
-			Notifications.Display(Notifications.LEVEL.error, msg);
+			Notifications.Display(Notifications.LEVELS.error, msg);
 			throw new Error(msg);
 		}
 
@@ -156,7 +156,7 @@ function Jukebox(element, opts)
 			if(volume < 0 || volume > 100)
 			{
 				var msg = "Invalid volume level: " + volume + " is not in 0-100 range";
-				Notifications.Display(Notifications.LEVEL.error, msg);
+				Notifications.Display(Notifications.LEVELS.error, msg);
 				throw new Error(msg);
 			}
 			else
@@ -384,17 +384,92 @@ function Jukebox(element, opts)
 		return this;
 	};
 
-	/*TODO; html5storage?
-	Ability to save playlist and share them could be interesting
-	this.savePlayList = function(name)
+	/**
+	* Save current play queue. Overwrite previous record with same identifier.
+	* @param {string} name - Identifier
+	* @return {Jukebox} this.
+	*/
+	this.savePlayQueue = function(name)
 	{
-		
-	}
+		if(_supportsHTML5Storage())
+		{
+			var playqueues = _getHTML5Storage("playqueues") || {};
 
-	this.restorePlayList = function(name)
+			// Only store id
+			var ids = [];
+			for(var i = 0, len = _playQueueSongs.length; i < len; ++i)
+			{
+				ids[i] = _playQueueSongs[i].mid;
+			}
+
+			playqueues[name] = ids; // Add current play queue
+
+			localStorage["playqueues"] = JSON.stringify(playqueues); // Save
+		}
+		else
+		{
+			Notifications.Display(Notifications.LEVELS.warning, "Cannot save playqueue: HTML5 storage not supported!");
+		}
+		return this;
+	};
+
+	/**
+	* Restore a specific play queue by adding at the bottom
+	* @param {string} name - Identifier
+	* @param {string} [position] - rand | head | tail ; default = tail
+	* @return {Jukebox} this.
+	*/
+	this.restorePlayQueue = function(name, position)
 	{
-		
-	}*/
+		if(_supportsHTML5Storage())
+		{
+			var playqueues = _getHTML5Storage("playqueues"),
+				error = false;
+
+			if(playqueues !== null)
+			{
+				var ids = playqueues[name],
+					start = position == 'head' ? 0 : position == 'rand' ? Math.floor(Math.random() * _playQueueSongs.length) : _playQueueSongs.length;
+				if(ids)
+				{
+					_addToPlayQueue(ids, $R(start, start + ids.length).toArray());
+				}
+				else
+				{
+					error = true;
+				}
+			}
+			else
+			{
+				error = true;
+			}
+
+			if(error)
+			{
+				Notifications.Display(Notifications.LEVELS.warning, "Unknown play queue in storage!");
+			}
+		}
+		return this;
+	};
+
+	/**
+	* Free up HTML5 storage
+	* @param {string} name - Identifier
+	* @return {Jukebox} this.
+	*/
+	this.deletePlayQueue = function(name)
+	{
+		if(_supportsHTML5Storage())
+		{
+			var playqueues = _getHTML5Storage("playqueues");
+			if(playqueues)
+			{
+				delete playqueues[name];
+				localStorage["playqueues"] = JSON.stringify(playqueues); // Save
+			}
+		}
+		return this;
+	};
 
 	/**
 	* Go to the next song
@@ -489,7 +564,7 @@ function Jukebox(element, opts)
 
 	/**
 	* A little helper to add an action to the next query and do the query immediately
-	* @param {Action} action - The action to add.
+	* @param {Action} action - The action to add
 	*/
 	function _doAction(action)
 	{
@@ -497,7 +572,9 @@ function Jukebox(element, opts)
 		_update();
 	}
 
-	// Prepare an AJAX query
+	/**
+	* Prepare an AJAX query
+	*/
 	function _update()
 	{
 		_ui.activity(true);
@@ -514,8 +591,11 @@ function Jukebox(element, opts)
 		else
 		{
 			// Query is being sent and new query has arrived
-			_waitingQueries.push(_nextQuery);
-			_nextQuery = new Query(); // Create a new nextQuery, that will not contain actions for previous _update()
+			if(_nextQuery.actions.length > 0)
+			{
+				_waitingQueries.push(_nextQuery);
+				_nextQuery = new Query();
+			}
 			return;
 		}
 
@@ -526,7 +606,10 @@ function Jukebox(element, opts)
 		_sendQuery(query);
 	}
 
-	// Send an AJAX query
+	/**
+	* Send an AJAX query
+	* @param {Query} query - The query to send
+	*/
 	function _sendQuery(query)
 	{
 		query.setTimestamp(_timestamp);
@@ -637,7 +720,7 @@ function Jukebox(element, opts)
 
 	/**
 	* Add a song to the play queue at a certain position
-	* @param {int} mid - The song id
+	* @param {int|Array<int>} mid - The song id, or an array of song id
 	* @param {int} play_queue_index - Index to put the song to
 	*/
 	function _addToPlayQueue(mid, play_queue_index)
@@ -748,6 +831,9 @@ function Jukebox(element, opts)
 		_doAction(new Action("add_search_to_play_queue", opts));
 	}
 
+	/**
+	* Execute ready callback
+	*/
 	function _startCallback()
 	{
 		if(typeof _readyCallback == "function")
@@ -756,9 +842,51 @@ function Jukebox(element, opts)
 		}
 	}
 
-	//---
+	/**
+	* Detect if HTML5 storage is supported
+	* @return {bool} true if HTML5 storage is supported, false otherwise
+	*/
+	function _supportsHTML5Storage()
+	{
+		try
+		{
+			return 'localStorage' in window && window['localStorage'] !== null;
+		}
+		catch(e)
+		{
+			return false;
+		}
+	}
+
+	/**
+	* Fetch data from HTML5 storage + parse it into an object
+	* @param {string} key - Storage identifier
+	* @return {object} Saved object, or null
+	*/
+	function _getHTML5Storage(key)
+	{
+		var obj = localStorage[key];
+		if(obj)
+		{
+			try
+			{
+				obj = JSON.parse(obj);
+			}
+			catch(e)
+			{
+				obj = null;
+			}
+		}
+		else
+		{
+			obj = null;
+		}
+		return obj;
+	}
+
+	//--
 	// Events handlers
-	
+
 	var _events =
 	{
 		// AJAX response
@@ -781,23 +909,7 @@ function Jukebox(element, opts)
 			}
 
 			_ui.gotResponse(response.responseText);
-
-			try
-			{
-				var json = response.responseText.evalJSON();
-				_parseJSONResponse(json);
-			}
-			catch(parseResponseEx)
-			{
-				Notifications.Display(Notifications.LEVELS.error, "Error while parsing server response: " + parseResponseEx.message);
-			}
-
-			if(_waitingQueries.length > 0)
-			{
-				// Only do latest request?
-				_waitingQueries = []; // Actions of queries referenced in the array are lost
-				_update(); // Will use latest _nextQuery
-			}
+			_parseJSONResponse(response.responseJSON);
 		},
 		queryFailure: function()
 		{
@@ -808,16 +920,27 @@ function Jukebox(element, opts)
 		{
 			_query_in_progress = false;
 			_ui.activity(false);
+
+			if(_waitingQueries.length > 0)
+			{
+				// Progressively send waiting queries in order
+
+				if(_nextQuery.actions.length > 0)
+				{
+					_waitingQueries.push(_nextQuery);
+				}
+				var oldestQuery = _waitingQueries.splice(0, 1)[0]; // Remove the oldest
+				_nextQuery = oldestQuery; // Send it
+
+				_update();
+			}
 		}
 	};
 	
-	//---
-	// Constructor
-	
 	/**
-	* @constructor
+	* @constructs
 	*/
-	function _initialize()
+	(function()
 	{
 		Object.seal($this); // Non-extensible, Non-removable
 
@@ -898,8 +1021,7 @@ function Jukebox(element, opts)
 		{
 			_update();
 		}
-	}
-	_initialize();
+	})();
 }
 
 //---
@@ -928,13 +1050,17 @@ var jukebox_public_methods =
 };
 
 // Add them nicely to the prototype
-/*for(var jmethod in jukebox_public_methods)
-{
-	Jukebox.prototype[jmethod] = jukebox_public_methods[jmethod];
-}*/
 Extend(Jukebox.prototype, jukebox_public_methods);
 
-// [Static] Variables
+/**
+* [Static] Variables
+* @property {string} URL - URL of the web service to fetch JSON infos
+* @property {string} streamURL - URL of the stream
+* @property {string} SM2Folder - .swf folder for SM2
+* @property {bool} autorefresh - Activate autorefresh or not
+* @property {int} autorefresh_delay - Delay to get updates from server
+* @property {bool} replaceTitle - Change the page title to display current song
+*/
 Jukebox.defaults =
 {
 	URL: '/api/json',

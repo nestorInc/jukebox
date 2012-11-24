@@ -16,7 +16,7 @@ SET ajaxmin="C:\Program Files (x86)\Microsoft\Microsoft Ajax Minifier\AjaxMin.ex
 	-global:$,Class,Element ^
 	1>NUL 2>>%log%
 %ajaxmin% -analyze tab/search.js ^
-	-global:$,$$,$R,Class,Control,Tab,TableKit,Draggable,Element,genres,FormatTime,sort_unique ^
+	-global:$,$$,$R,Class,Control,Tab,TableKit,Draggable,Element,genres,FormatTime,SortUnique ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze tab/upload.js ^
 	-global:$,$$,JSON,qq,Class,Tab,TableKit,MusicFieldEditor,Notifications,genres,Element ^
@@ -42,7 +42,7 @@ SET ajaxmin="C:\Program Files (x86)\Microsoft\Microsoft Ajax Minifier\AjaxMin.ex
 	-global:$,$$,Event,TableKit,genres,genresOrdered ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze jukebox.js ^
-	-global:Query,Ajax,Extend,Notifications,Action,JukeboxUI,soundManager ^
+	-global:Query,Ajax,Extend,Notifications,Action,JukeboxUI,soundManager,JSON,$R ^
 	1>NUL 2>>%log%%
 %ajaxmin% -analyze jukeboxUI.js ^
 	-global:$,$$,$R,Control,Extend,Event,Element,Droppables,Draggable,Tabs,SearchTab,UploadTab,DebugTab,NotificationTab,CustomQueriesTab,FormatTime,genresOrdered ^

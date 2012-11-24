@@ -1,10 +1,11 @@
 this.CustomQueriesTab = Class.create(Tab,
 {
-	initialize: function(identifier, tabName)
+	initialize: function(identifier, tabName, domContainer)
 	{
 		this.identifier = identifier;
 		this.name = tabName;
 		this.unique = 'CustomQueriesTab';
+		this.dom = domContainer;
 	},
 
 	updateContent: function()
@@ -39,7 +40,7 @@ this.CustomQueriesTab = Class.create(Tab,
 			'<td><input type="button" value="send custom query"/></td>' +
 		'</tr>' +
 		'</table>';
-		var $content = $('tabContent-' + this.identifier);
+		var $content = this.dom.down('#tabContent-' + this.identifier);
 		$content.update(custom_queries_display);
 
 		var $textarea = $content.down('textarea'),

@@ -1,14 +1,15 @@
 this.SearchTab = Class.create(Tab,
 {
-	initialize: function(jukebox, server_results)
+	initialize: function($super, jukebox, domContainer, server_results)
 	{
 		this.reloadControllers = true;
 		this.pages = [];
 		this.sliders = [];
 		this.tableKit = null;
 
-		this.jukebox = jukebox;
-		this.identifier = server_results.identifier;
+		var id = server_results.identifier;
+		$super(id, id, jukebox, domContainer);
+		
 		this.updateNewSearchInformations(server_results);
 	},
 
@@ -96,7 +97,7 @@ this.SearchTab = Class.create(Tab,
 		if(this.reloadControllers)
 		{
 			// Clean
-			$$('collection-pagelist-' + this.identifier).each(function(s)
+			this.dom.select('collection-pagelist-' + this.identifier).each(function(s)
 			{
 				s.remove();
 			});
@@ -112,7 +113,7 @@ this.SearchTab = Class.create(Tab,
 			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>' +
 			'<div id="collection-content-' + this.identifier + '"></div>' +
 			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>';
-			$('tabContent-' + this.identifier).update(search_page);
+			this.dom.down('#tabContent-' + this.identifier).update(search_page);
 
 			// Display sliders and links and init sliders behvior
 			this.initAndDisplaySearchControllers();
@@ -155,7 +156,7 @@ this.SearchTab = Class.create(Tab,
 		if(this.total_results > 0 && this.page_count > 1)
 		{
 			// We have to specified a fixed width, 100% doesn't work : the slider is lost
-			var music_wrapper_width = $('music-wrapper').getWidth();
+			var music_wrapper_width = this.dom.getWidth();
 
 			var slider = '' +
 			'<div name="results-slider-' + tabId + '" class="slider" style="width:' + music_wrapper_width + 'px;">' +
@@ -320,7 +321,14 @@ this.SearchTab = Class.create(Tab,
 		{
 			J.addSearchToPlayQueueBottom(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
 		}
-		var cell = this.createControlsCell(cellTag, funcRandom, funcTop, funcBottom);
+
+		var title = 'Add search to play queue [Full]'; // See jukebox.js : _addSearchToPlayQueue
+		if(this.search_comparison == 'like')
+		{
+			title = 'Add search to play queue [Current page]';
+		}
+
+		var cell = this.createControlsCell(cellTag, funcRandom, funcTop, funcBottom, title);
 		cell.writeAttribute('id', 'actions');
 		tr.insert(cell);
 
@@ -328,12 +336,19 @@ this.SearchTab = Class.create(Tab,
 	},
 
 	// Utility to create the 3 buttons in the last cell of each row (standards rows and header row of the table)
-	createControlsCell: function(cellTag, funcRandom, funcTop, funcBottom)
+	createControlsCell: function(cellTag, funcRandom, funcTop, funcBottom, title)
 	{
 		var cell = new Element(cellTag),
 			addRandom = new Element('a').update('<span class="add-to-play-queue-rand"></span>'),
 			addTop = new Element('a').update('<span class="add-to-play-queue-top"></span>'),
 			addBottom = new Element('a').update('<span class="add-to-play-queue-bottom"></span>');
+
+		if(title)
+		{
+			addRandom.writeAttribute('title', title + ' [RANDOM]');
+			addTop.writeAttribute('title', title + ' [TOP]');
+			addBottom.writeAttribute('title', title + ' [BOTTOM]');
+		}
 
 		cell.insert(addTop).insert(
 		{
@@ -578,7 +593,7 @@ this.SearchTab = Class.create(Tab,
 			}
 		}
 
-		pages = sort_unique(pages);
+		pages = SortUnique(pages);
 
 		var tab = this;
 		function createLink(num, className)
