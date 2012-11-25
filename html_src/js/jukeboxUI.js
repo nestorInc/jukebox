@@ -157,14 +157,11 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.updateNbUsers = function(count)
 	{
-		var items = $$('span.count-user-listening');
-		if(items.length > 0)
+		var items = _$.jukebox.select('span.count-user-listening');
+		items.each(function(e)
 		{
-			items.each(function(e)
-			{
-				e.update(count.toString());
-			});
-		}
+			e.update(count.toString());
+		});
 	};
 
 	/**
@@ -185,89 +182,83 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
-	this.cleanupPlayQueue = function()
-	{
-		var len = _$.play_queue_content.select('li').length - 1;
-		for(var i = 0; i < len; ++i)
-		{
-			Droppables.remove('play-queue-song-' + i);
-		}
-	};
-
 	/**
 	* Render the current play queue
 	* @param {Array<song>} playQueueSongs - The current play queue
 	*/
 	this.displayPlayQueue = function(playQueueSongs)
 	{
-		var ul = new Element('ul');
-		var li = '' +
-		'<li id="play-queue-li-first" class="droppable">Play queue' +
-			'<div>' +
-				'<span class="nb-listening-users"></span>' +
-				'<span class="count-user-listening">' + J.listenersCount + '</span>' +
-			'</div>' +
-			'<a><span class="play-queue-shuffle"></span></a>' +
-			'<a><span class="play-queue-delete"></span></a>' +
-		'</li>';
-		ul.insert(li);
+		_cleanupPlayQueue();
 
-		ul.down(".play-queue-shuffle").on("click", function()
+		// Playqueue header template
+		var skin = JukeboxUI.skins[_opts.skin],
+		playQueueTpl = new Template(skin.templates.playQueue),
+		playQueueTplVars =
+		{
+			root: _opts.rootClass,
+			playQueue: 'Play queue',
+			listenersCount: J.listenersCount
+		};
+		
+		// Create playqueue header
+		var ul = new Element('ul').insert(playQueueTpl.evaluate(playQueueTplVars));
+
+		// Declare listeners
+		var rootClass = '.' + _opts.rootClass + '-';
+		ul.down(rootClass+"playqueue-shuffle").on("click", function()
 		{
 			J.playQueueShuffle();
 		});
-		ul.down(".play-queue-delete").on("click", function()
+		ul.down(rootClass+"playqueue-delete").on("click", function()
 		{
 			J.playQueueDelete();  // no args = all
 		});
 
+		// Each song template
 		var currentPQSongIndex = 0,
 			lastPQIndex = playQueueSongs.length - 1;
 		playQueueSongs.each(function(song)
 		{
-			li = '' +
-			'<li id="play-queue-li-' + currentPQSongIndex + '" class="droppable">' +
-				'<div id="play-queue-song-' + currentPQSongIndex + '" class="play-queue-draggable">' +
-					'<div id="play-queue-handle-' + currentPQSongIndex + '" class="play-queue-handle">' +
-						'<a href="javascript:void(0)">' + song.artist + '</a>' +
-						' - ' +
-						'<a href="javascript:void(0)">' + song.album + '</a>' +
-						' - ' +
-						song.title + ' (' + FormatTime(song.duration) + ')' +
-					'</div>' +
-					'<a><span class="play-queue-move-top"></span></a>' +
-					'<a><span class="play-queue-move-bottom"></span></a>' +
-					'<a><span class="play-queue-delete"></span></a>' +
-				'</div>' +
-			'</li>';
-			ul.insert(li);
-
-			// Store mid
-			ul.down('li:last > div').store('mid', song.mid);
+			// Playqueue song template
+			var playQueueSongTpl = new Template(skin.templates.playQueueSong),
+			playQueueSongTplVars =
+			{
+				root: _opts.rootClass,
+				index: currentPQSongIndex,
+				artist: song.artist,
+				album: song.album,
+				title: song.title,
+				duration: FormatTime(song.duration)
+			};
+			ul.insert(playQueueSongTpl.evaluate(playQueueSongTplVars));
 
 			// Declare listeners
+			var li = ul.down('li:last');
+
+			// Store mid
+			li.down('> div').store('mid', song.mid);
 
 			// Artist
-			ul.down('li:last .play-queue-handle a:first').on("click", function()
+			li.down(rootClass+'playqueue-handle a:first').on("click", function()
 			{
 				_search(1, null, null, song.artist, 'equal', 'artist', 'artist,album,track,title', 20, false);
 			});
 			// Album
-			ul.down('li:last .play-queue-handle a:last').on("click", function()
+			li.down(rootClass+'playqueue-handle a:last').on("click", function()
 			{
 				_search(1, null, null, song.album, 'equal', 'album', 'artist,album,track,title', 20, false);
 			});
 
 			var localcurrentPQSongIndex = currentPQSongIndex; // Avoid closure issue
-			ul.down('li:last .play-queue-move-top').on("click", function()
+			li.down(rootClass+'playqueue-move-top').on("click", function()
 			{
 				J.playQueueMove(1, localcurrentPQSongIndex, 0);
 			});
-			ul.down('li:last .play-queue-move-bottom').on("click", function()
+			li.down(rootClass+'playqueue-move-bottom').on("click", function()
 			{
 				J.playQueueMove(1, localcurrentPQSongIndex, lastPQIndex);
 			});
-			ul.down('li:last .play-queue-delete').on("click", function()
+			li.down(rootClass+'playqueue-delete').on("click", function()
 			{
 				J.playQueueDelete(1, localcurrentPQSongIndex);
 			});
@@ -279,33 +270,41 @@ function JukeboxUI(jukebox, element, opts)
 
 		function dragStart(dragged)
 		{
-			var id = dragged.element.id;
-			id = id.substring(16);
-			$('play-queue-li-' + id).addClassName('being-dragged');
+			var id = _findDraggedId(dragged.element);
+			if(id !== null)
+			{
+				ul.down(rootClass+'playqueue-' + id).addClassName(_opts.rootClass+'-being-dragged');
+			}
 		}
 
 		function dragEnd(dragged)
 		{
-			var id = dragged.element.id;
-			id = id.substring(16);
-			$('play-queue-li-' + id).removeClassName('being-dragged');
+			var id = _findDraggedId(dragged.element);
+			if(id !== null)
+			{
+				ul.down(rootClass+'playqueue-' + id).removeClassName(_opts.rootClass+'-being-dragged');
+			}
 		}
 		
 		// Create all draggables, once update is done.
 		for(var i = 0, len = playQueueSongs.length; i < len; i++)
 		{
-			new Draggable('play-queue-song-' + i,
+			var droppable = ul.down(rootClass+'playqueue-' + i),
+				draggable = droppable.down(rootClass+'playqueue-song-' + i),
+				handle = draggable.down(rootClass+'playqueue-handle-' + i);
+
+			new Draggable(draggable,
 			{
 				scroll: window,
 				constraint: 'vertical',
 				revert: true,
-				handle: 'play-queue-handle-' + i,
+				handle: handle,
 				onStart: dragStart,
 				onEnd: dragEnd
 			});
-			_makePlayQueueSongDroppable('play-queue-li-' + i, playQueueSongs);
+			_makePlayQueueSongDroppable(droppable, playQueueSongs);
 		}
-		_makePlayQueueSongDroppable('play-queue-li-first', playQueueSongs);
+		_makePlayQueueSongDroppable(ul.down(rootClass+'playqueue-first'), playQueueSongs);
 	};
 
 	/**
@@ -383,6 +382,17 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
+	/**
+	* Change current skin
+	* @param {string} name Name of the skin to apply
+	*/
+	this.setSkin = function(name)
+	{
+		//TODO:
+		//close tabs?
+		//CSS
+	};
+
 	//-----
 	// [Private] Functions
 	
@@ -436,40 +446,76 @@ function JukeboxUI(jukebox, element, opts)
 	}
 
 	/**
-	 * Helper to do a search in a specific category
-	 * @param {string} search - The text search
-	 * @param {string} category - artist or album
-	 */
+	* Helper to do a search in a specific category
+	* @param {string} search - The text search
+	* @param {string} category - artist or album
+	*/
 	function _searchCategory(search, category)
 	{
 		_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, false);
 	}
 
 	/**
+	* Remove droppability for playqueue items
+	*/
+	function _cleanupPlayQueue()
+	{
+		_$.play_queue_content.select('.'+_opts.rootClass+'-playqueue-droppable').each(function(e)
+		{
+			Droppables.remove(e);
+		});
+	}
+
+	/**
+	* Helper to get the id of a playqueue item
+	* @param {DOM} element Item to get id from
+	* @param {bool} [drop] Is the element a droppable?
+	* @return {string} id extracted from css jukebox-song-<id>, null if not found
+	*/
+	function _findDraggedId(element, drop)
+	{
+		var classes = element.className.split(' '),
+			str = drop ? _opts.rootClass+'-playqueue-' : _opts.rootClass+'-playqueue-song-',
+			id = null;
+		for(var i = 0; i < classes.length; ++i)
+		{
+			if(classes[i].indexOf(str) != -1)
+			{
+				id = classes[i].substring(str.length);
+				break;
+			}
+		}
+		return id;
+	}
+
+	/**
 	* Make play queue songs droppables
-	* @param {int} droppable_id - The element id to make droppable (same as draggable)
+	* @param {int} droppable - The element to make droppable (same as draggable)
 	* @param {Array<song>} playQueueSongs - The play queue
 	*/
-	function _makePlayQueueSongDroppable(droppable_id, playQueueSongs)
+	function _makePlayQueueSongDroppable(droppable, playQueueSongs)
 	{
-		Droppables.add(droppable_id,
+		Droppables.add(droppable,
 		{ 
-			accept: ['play-queue-draggable', 'library-draggable'],
+			accept: [_opts.rootClass+'-playqueue-draggable', 'library-draggable'],
 			overlap: 'vertical',
-			hoverclass: 'droppable-hover',
-			onDrop: function(dragged, dropped/*, event*/)
+			hoverclass: _opts.rootClass+'-droppable-hover',
+			onDrop: function(dragged, dropped)
 			{
 				var old_index,
 					song_mid;
-				if(dragged.hasClassName("play-queue-draggable"))
+				if(dragged.hasClassName(_opts.rootClass+'-playqueue-draggable'))
 				{
-					old_index = parseInt(dragged.id.substring(16), 10);
+					var draggedId = _findDraggedId(dragged);
+
+					old_index = parseInt(draggedId, 10);
 					song_mid = dragged.retrieve('mid');
 					
 					var new_index = -1;
-					if(dropped.id != "play-queue-li-first")
+					if(!dropped.hasClassName(_opts.rootClass+'-playqueue-first'))
 					{
-						new_index = parseInt(dropped.id.substring(14), 10);
+						var droppedId = _findDraggedId(dropped, true);
+						new_index = parseInt(droppedId, 10);
 					}
 					if(new_index <= old_index)
 					{
@@ -479,7 +525,7 @@ function JukeboxUI(jukebox, element, opts)
 					{
 						J.playQueueMove(song_mid, old_index, new_index);
 						
-						$this.cleanupPlayQueue();
+						_cleanupPlayQueue();
 						var tmp = playQueueSongs[old_index];
 						playQueueSongs.splice(old_index, 1);
 						playQueueSongs.splice(new_index, 0, tmp);						
@@ -495,9 +541,10 @@ function JukeboxUI(jukebox, element, opts)
 					song_mid = song.mid;
 					
 					var play_queue_index = -1;
-					if(dropped.id != "play-queue-li-first")
+					if(!dropped.hasClassName(_opts.rootClass+'-playqueue-first'))
 					{
-						play_queue_index = parseInt(dropped.id.substring(14), 10);
+						var droppedId2 = _findDraggedId(dropped, true);
+						play_queue_index = parseInt(droppedId2, 10);
 					}
 					play_queue_index++;
 
@@ -618,10 +665,15 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			var skin = JukeboxUI.skins[_opts.skin],
 			songTpl = new Template(skin.templates.song),
+			songTplVars =
+			{
+				root: _opts.rootClass
+			},
 			jukeboxTpl = new Template(skin.templates.player),
 			jukeboxTplVars =
 			{
-				currentSong: songTpl.evaluate(),
+				root: _opts.rootClass,
+				currentSong: songTpl.evaluate(songTplVars),
 				canalLabel: 'Canal :',
 				canalValue: 'Rejoindre',
 				searchLabel: 'Rechercher :',
@@ -769,10 +821,10 @@ function JukeboxUI(jukebox, element, opts)
 			}
 
 			var TL = _$.tabs_links;
-			TL.down('.tab-upload').on("click", _tabsManager.ShowUploadTab);
-			TL.down('.tab-query').on("click", _tabsManager.ShowCustomQueriesTab);
-			TL.down('.tab-notifs').on("click", _tabsManager.ShowNotificationTab);
-			TL.down('.tab-debug').on("click", _tabsManager.ShowDebugTab);
+			TL.down(rootClass+'tab-upload').on("click", _tabsManager.ShowUploadTab);
+			TL.down(rootClass+'tab-query').on("click", _tabsManager.ShowCustomQueriesTab);
+			TL.down(rootClass+'tab-notifs').on("click", _tabsManager.ShowNotificationTab);
+			TL.down(rootClass+'tab-debug').on("click", _tabsManager.ShowDebugTab);
 		})();
 	})();
 }
@@ -801,44 +853,44 @@ JukeboxUI.skins =
 		templates:
 		{
 			player:
-'<div class="jukebox">\
-	<div class="jukebox-header">\
-		#{canalLabel} <input type="text" class="jukebox-channel" /><input type="button" class="jukebox-channel-button" value="#{canalValue}" />\
-		<span class="jukebox-expand-button">&gt;</span>\
-		<span class="jukebox-collapse-button">&lt;</span>\
-		<span class="jukebox-activity-monitor"></span>\
+'<div class="#{root}">\
+	<div class="#{root}-header">\
+		#{canalLabel} <input type="text" class="#{root}-channel" /><input type="button" class="#{root}-channel-button" value="#{canalValue}" />\
+		<span class="#{root}-expand-button">&gt;</span>\
+		<span class="#{root}-collapse-button">&lt;</span>\
+		<span class="#{root}-activity-monitor"></span>\
 	</div>\
-	<div class="jukebox-main">\
-		<div class="jukebox-controls">\
-			<span class="jukebox-previous-button"></span><span class="jukebox-next-button"></span>\
+	<div class="#{root}-main">\
+		<div class="#{root}-controls">\
+			<span class="#{root}-previous-button"></span><span class="#{root}-next-button"></span>\
 			#{currentSong}\
-			<div class="jukebox-progressbar-wrapper">\
-				<div class="jukebox-progressbar"></div>\
-				<p class="jukebox-song-time"></p>\
+			<div class="#{root}-progressbar-wrapper">\
+				<div class="#{root}-progressbar"></div>\
+				<p class="#{root}-song-time"></p>\
 			</div>\
 		</div>\
-		<div class="jukebox-playqueue">\
-			<div class="jukebox-playqueue-content"></div>\
+		<div class="#{root}-playqueue">\
+			<div class="#{root}-playqueue-content"></div>\
 		</div>\
 	</div>\
 	\
-	<div class="jukebox-tabs">\
-		<div class="jukebox-tabs-links">\
-			<a class="tab-upload">#{UploadTabName}</a>\
-			<a class="tab-query">#{QueryTabName}</a>\
-			<a class="tab-notifs">#{NotificationsTabName}</a>\
-			<a class="tab-debug">#{DebugTabName}</a>\
+	<div class="#{root}-tabs">\
+		<div class="#{root}-tabs-links">\
+			<a class="#{root}-tab-upload">#{UploadTabName}</a>\
+			<a class="#{root}-tab-query">#{QueryTabName}</a>\
+			<a class="#{root}-tab-notifs">#{NotificationsTabName}</a>\
+			<a class="#{root}-tab-debug">#{DebugTabName}</a>\
 		</div>\
-		<div class="jukebox-tabs-head">\
-			#{searchLabel} <input type="text" class="jukebox-search-input" />\
-			<select class="jukebox-search-genres" style="display:none;"></select>\
-			<select class="jukebox-search-field">\
+		<div class="#{root}-tabs-head">\
+			#{searchLabel} <input type="text" class="#{root}-search-input" />\
+			<select class="#{root}-search-genres" style="display:none;"></select>\
+			<select class="#{root}-search-field">\
 				<option value="artist">#{artiste}</option>\
 				<option value="title">#{title}</option>\
 				<option value="album">#{album}</option>\
 				<option value="genre">#{genre}</option>\
 			</select> \
-			<select class="jukebox-results-per-page">\
+			<select class="#{root}-results-per-page">\
 				<option value="10">10</option>\
 				<option value="20" selected="selected">20</option>\
 				<option value="30">30</option>\
@@ -850,40 +902,60 @@ JukeboxUI.skins =
 				<option value="90">90</option>\
 				<option value="100">100</option>\
 			</select> \
-			<input type="button" class="jukebox-search-button" value="#{searchButton}" />\
+			<input type="button" class="#{root}-search-button" value="#{searchButton}" />\
 		</div>\
-		<div class="jukebox-tabs-header"></div>\
-		<div class="jukebox-tabs-content"></div>\
+		<div class="#{root}-tabs-header"></div>\
+		<div class="#{root}-tabs-content"></div>\
 	</div>\
 	\
-	<div class="jukebox-footer">\
-		<input type="button" class="jukebox-refresh-button" value="#{refreshButton}" />\
-		<input type="checkbox" name="jukebox-autorefresh" class="jukebox-autorefresh" checked="checked" value="autorefresh" /><label for="jukebox-autorefresh"> #{refreshLabel}</label>\
+	<div class="#{root}-footer">\
+		<input type="button" class="#{root}-refresh-button" value="#{refreshButton}" />\
+		<input type="checkbox" name="#{root}-autorefresh" class="#{root}-autorefresh" checked="checked" value="autorefresh" /><label for="#{root}-autorefresh"> #{refreshLabel}</label>\
 		<br />\
-		#{pluginLabel} <input type="text" class="jukebox-plugin" value="#{pluginDefault}" style="width: 100px;" />\
-		<input type="button" class="jukebox-plugin-button" value="#{pluginButton}" />\
+		#{pluginLabel} <input type="text" class="#{root}-plugin" value="#{pluginDefault}" style="width: 100px;" />\
+		<input type="button" class="#{root}-plugin-button" value="#{pluginButton}" />\
 	</div>\
 	\
-	<div class="jukebox-stream">\
-		<a class="jukebox-stream-play">#{play}</a>\
-		<a class="jukebox-stream-stop">#{stop}</a>\
+	<div class="#{root}-stream">\
+		<a class="#{root}-stream-play">#{play}</a>\
+		<a class="#{root}-stream-stop">#{stop}</a>\
 	</div>\
-	<span class="jukebox-volume">\
+	<span class="#{root}-volume">\
 		<span>#{volume}&nbsp;</span>\
-		<div class="jukebox-volume-slider slider">\
-			<div class="jukebox-volume-handle handle"></div>\
+		<div class="#{root}-volume-slider slider">\
+			<div class="#{root}-volume-handle handle"></div>\
 		</div>\
 		<br clear="all" />\
 	</span>\
 </div>',
 			song:
-'<p class="jukebox-song">\
-	<a class="jukebox-song-artist" href="#">#{artist}</a> - \
-	<a class="jukebox-song-album" href="#">#{album}</a> - \
-	<span class="jukebox-song-title">#{song}</span>\
+'<p class="#{root}-song">\
+	<a class="#{root}-song-artist" href="#">#{artist}</a> - \
+	<a class="#{root}-song-album" href="#">#{album}</a> - \
+	<span class="#{root}-song-title">#{song}</span>\
 </p>',
-			playQueue: '',
-			playQueueSongs: ''
+			playQueue:
+'<li class="#{root}-playqueue-first #{root}-playqueue-droppable">#{playQueue}\
+	<div>\
+		<span class="#{root}-nb-listening-users"></span>\
+		<span class="#{root}-count-user-listening">#{listenersCount}</span>\
+	</div>\
+	<a><span class="#{root}-playqueue-shuffle"></span></a>\
+	<a><span class="#{root}-playqueue-delete"></span></a>\
+</li>',
+			playQueueSong:
+'<li class="#{root}-playqueue-#{index} #{root}-playqueue-droppable">\
+	<div class="#{root}-playqueue-song-#{index} #{root}-playqueue-draggable">\
+		<div class="#{root}-playqueue-handle-#{index} #{root}-playqueue-handle">\
+			<a href="javascript:void(0)">#{artist}</a> - \
+			<a href="javascript:void(0)">#{album}</a> - \
+			#{title} (#{duration})\
+		</div>\
+		<a><span class="#{root}-playqueue-move-top"></span></a>\
+		<a><span class="#{root}-playqueue-move-bottom"></span></a>\
+		<a><span class="#{root}-playqueue-delete"></span></a>\
+	</div>\
+</li>'
 		}
 	}
 };

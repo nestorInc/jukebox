@@ -559,6 +559,15 @@ function Jukebox(element, opts)
 		return this;
 	};
 
+	/**
+	* Change current skin
+	* @param {string} name Name of the skin to apply
+	*/
+	this.setSkin = function(name)
+	{
+		_ui.setSkin(name);
+	};
+
 	//-----
 	// [Private] Functions
 
@@ -689,9 +698,7 @@ function Jukebox(element, opts)
 		}
 		if(json.play_queue)
 		{
-			_ui.cleanupPlayQueue();
 			_playQueueSongs = json.play_queue.songs;
-
 			var clone = Extend(true, [], _playQueueSongs); // Clone: can be setted (inside ui) without impact
 			_ui.displayPlayQueue(clone, _last_nb_listening_users);
 		}

@@ -217,16 +217,16 @@ list-style-type: none;
 .jukebox-playqueue-content li{
 border-top: 1px solid grey;
 }
-.jukebox-playqueue-content li#play-queue-li-first{
+.jukebox-playqueue-content li.jukebox-playqueue-first{
 border-top: 0;
 }
 
-div.play-queue-handle{
+div.jukebox-playqueue-handle{
 width: 215px;
 overflow: hidden;
 }
 
-span.play-queue-delete, span.play-queue-shuffle, span.play-queue-move-top, span.play-queue-move-bottom, span.nb-listening-users{
+span.jukebox-playqueue-delete, span.jukebox-playqueue-shuffle, span.jukebox-playqueue-move-top, span.jukebox-playqueue-move-bottom, span.jukebox-nb-listening-users{
 /*display: block;
 float: right;*/
 width: 10px;
@@ -243,7 +243,7 @@ display: block;
 float: left;
 background-color: black;
 }
-span.count-user-listening{
+span.jukebox-count-user-listening{
 width: 10px;
 height: 10px;
 position: absolute;
@@ -251,7 +251,7 @@ top: 2px;
 left: 85px;
 font-size: 10px;
 }
-span.nb-listening-users{
+span.jukebox-nb-listening-users{
 left: 80px;
 top: 3px;
 background: url("../images/user.png") no-repeat left top;
@@ -267,18 +267,18 @@ span.add-to-play-queue-rand{
 right: 35px;
 background: url("../images/icons/add_to_play_queue_randomly.png") no-repeat left top;
 }
-span.play-queue-delete{
+span.jukebox-playqueue-delete{
 background: url("../images/icons/play_queue_delete.png") no-repeat left top;
 }
-span.play-queue-shuffle{
+span.jukebox-playqueue-shuffle{
 right: 20px;
 background: url("../images/icons/play_queue_shuffle.png") no-repeat left top;
 }
-span.play-queue-move-top{
+span.jukebox-playqueue-move-top{
 right: 35px;
 background: url("../images/icons/play_queue_move_top.png") no-repeat left top;
 }
-span.play-queue-move-bottom{
+span.jukebox-playqueue-move-bottom{
 right: 20px;
 background: url("../images/icons/play_queue_move_bottom.png") no-repeat left top;
 }
@@ -324,19 +324,19 @@ text-align: center;
 font-size: 70%;
 }
 
-li.droppable-hover{
+li.jukebox-droppable-hover{
 border-bottom:5px solid blue;
 }
 
-li.being-dragged tr.being-dragged{
+li.jukebox-being-dragged tr.jukebox-being-dragged{
 height: 0px;
 }
 
-li.being-dragged div{
+li.jukebox-being-dragged div{
 border: 1px solid black;
 }
 
-.jukebox-playqueue-content li.being-dragged tr.being-dragged{
+.jukebox-playqueue-content li.jukebox-being-dragged tr.jukebox-being-dragged{
 border-top: none;
 }
 
