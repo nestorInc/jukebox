@@ -157,7 +157,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.updateNbUsers = function(count)
 	{
-		var items = _$.jukebox.select('span.count-user-listening');
+		var items = _$.jukebox.select('span.'+_opts.rootClass+'-count-user-listening');
 		items.each(function(e)
 		{
 			e.update(count.toString());
