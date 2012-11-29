@@ -178,10 +178,10 @@ class HttpResponse
     HttpResponse.generateError(req, 500, "Internal Server Error");
   end
 
-  def setData(data, contentType = "text/html")
-    @options["Connection"]     = "keep-alive";
-    @options["Content-Length"] = data.bytesize();
-    @options["Content-Type"]   = contentType;
+  def setData(data, contentType = nil)
+    @options["Connection"]     ||= "keep-alive";
+    @options["Content-Length"]   = data.bytesize();
+    @options["Content-Type"]     = contentType || @options["Content-Type"] || "text/html";
 
     @data = data;
   end
@@ -238,6 +238,10 @@ class HttpSession < Rev::SSLSocket
 
   def remote_address()
     @_io.remote_address();
+  end
+
+  def local_address()
+    @_io.local_address();
   end
 
   private
@@ -324,13 +328,18 @@ class HttpSession < Rev::SSLSocket
         end
       }
       v = @req.options["Authorization"];
-      if(v != nil && m_auth != nil)
-        method, code = v.split(" ", 2);
-        if(method == "Basic" && code != nil)
-          @user, pass = code.unpack("m").first.split(":", 2);
-          pass ||= "";
-          @auth = m_auth.call(self, @req, @user, pass);
+      if(m_auth != nil)
+        pass = nil;
+        if(v)
+          method, code = v.split(" ", 2);
+          if(method == "Basic" && code != nil)
+            @user, pass = code.unpack("m").first.split(":", 2);
+            pass ||= "";
+          end
+        else
+          @user = "unknown";
         end
+        @auth = m_auth.call(self, @req, @user, pass) if(@user);
       end
 
       if(m_auth != nil && @auth == nil)
