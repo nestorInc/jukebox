@@ -5,15 +5,17 @@
 	<title>Jukebox Reloaded</title>
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 
-	<!-- RELEASE -->
-	<link rel="stylesheet" type="text/css" href="/css/jukebox.min.css" />
+	<!-- RELEASE
+	<link rel="stylesheet" type="text/css" href="/css/jukebox.min.css" /> -->
 
-	<!-- DEBUG
+	<!-- DEBUG -->
 	<link rel="stylesheet" type="text/css" href="/src/css/normalize.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/style.css" />
 	<link rel="stylesheet" type="text/css" href="/src/css/fileuploader.css" />
 	<link rel="stylesheet" type="text/css" href="/src/css/flashblock.css" />
-	-->
+	<link rel="stylesheet" type="text/css" href="/src/css/style.css" />
+	<link rel="stylesheet" type="text/css" href="/src/css/skin/default.css" />
+	<link rel="stylesheet" type="text/css" href="/src/css/skin/light.css" />
+	
 </head>
 <body>
 
@@ -150,7 +152,8 @@ requirejs(requirejsScripts, function()
 	{
 		j = new Jukebox("player",
 		{
-			skin: "default",
+			skin: "light",
+			theme: "blue",
 			SM2Folder: DEBUG ? '/src/' : '/'
 		});
 		j.ready(function() // Wait that .swf player is loaded
@@ -191,7 +194,6 @@ requirejs(requirejsScripts, function()
 			j.start();
 			j.status();
 			j.stop();
-			j.stopStreaming();
 			j.volume(volume);
 			*/
 		});

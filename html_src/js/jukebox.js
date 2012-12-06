@@ -145,6 +145,7 @@ function Jukebox(element, opts)
 	};
 
 	/**
+	* Get/Set the volume
 	* @param {int|string} [volume] - The volume to set in the [0-100] range.
 	* @return {int} The volume in the [0-100] range.
 	*/
@@ -557,15 +558,6 @@ function Jukebox(element, opts)
 	{
 		_doAction(new Action("update_uploaded_file", opts));
 		return this;
-	};
-
-	/**
-	* Change current skin
-	* @param {string} name Name of the skin to apply
-	*/
-	this.setSkin = function(name)
-	{
-		_ui.setSkin(name);
 	};
 
 	//-----
@@ -1021,7 +1013,9 @@ function Jukebox(element, opts)
 
 		_ui = new JukeboxUI($this, element,
 		{
-			replaceTitle: _opts.replaceTitle
+			replaceTitle: _opts.replaceTitle,
+			skin: _opts.skin,
+			theme: _opts.theme
 		});
 
 		if(_opts.autorefresh)
