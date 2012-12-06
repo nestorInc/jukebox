@@ -72,6 +72,13 @@ module.exports = function(grunt)
 				dest: OUT.css + 'jukebox.css'
 			}
 		},
+		uglify:
+		{
+			mangle:
+			{
+				except:['$super']
+			}
+		},
 		min:
 		{
 			js:
