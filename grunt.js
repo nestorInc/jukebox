@@ -9,6 +9,7 @@ module.exports = function(grunt)
 		SRC =
 		{
 			css:	SRC_DIR + 'css/',
+			skin:	SRC_DIR + 'css/skin/',
 			js:		SRC_DIR + 'js/',
 			tab:	SRC_DIR + 'js/tab/',
 			libs:	SRC_DIR + 'js/lib/',
@@ -19,6 +20,7 @@ module.exports = function(grunt)
 		OUT =
 		{
 			css:	OUT_DIR + 'css/',
+			skin:	OUT_DIR + 'css/skin/',
 			js:		OUT_DIR + 'js/',
 			libs:	OUT_DIR + 'js/lib/'
 		};
@@ -119,6 +121,11 @@ module.exports = function(grunt)
 			{
 				src: '<config:concat.css.dest>',
 				dest: OUT.css + 'jukebox.min.css'
+			},
+			cssSkins: // For now, concat all skins inside a single minified file
+			{
+				src: [SRC.skin + 'default.css', SRC.skin + 'light.css'],
+				dest: OUT.skin + 'jukebox-skins.min.css'
 			}
 		},
 		lint:
