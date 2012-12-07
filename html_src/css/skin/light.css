@@ -191,6 +191,10 @@ border-top: 1px solid black;
 display: block;
 }
 
+.jukebox-light-playqueue-content table{
+width: 100%;
+}
+
 /* BLUE theme specifics */
 .jukebox-light-theme-blue{
 border: 1px solid blue;
