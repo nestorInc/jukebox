@@ -741,7 +741,7 @@ function JukeboxUI(jukebox, element, opts)
 				QueryTabName: 'Query',
 				NotificationsTabName: 'Notifications',
 				DebugTabName: 'Debug',
-				artiste: 'artiste',
+				artist: 'artiste',
 				title: 'title',
 				album: 'album',
 				genre: 'genre',
@@ -961,7 +961,7 @@ JukeboxUI.skins =
 			#{searchLabel} <input type="text" class="#{root}-search-input" />\
 			<select class="#{root}-search-genres" style="display:none;"></select>\
 			<select class="#{root}-search-field">\
-				<option value="artist">#{artiste}</option>\
+				<option value="artist">#{artist}</option>\
 				<option value="title">#{title}</option>\
 				<option value="album">#{album}</option>\
 				<option value="genre">#{genre}</option>\
