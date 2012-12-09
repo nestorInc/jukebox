@@ -114,7 +114,7 @@ class Channel
     begin
       load "plugins/#{name}.rb"
       extend Plugin
-      log("Loading default plugin for songs selection")
+      log("Loading #{name} plugin for songs selection")
       true;
     rescue LoadError=> e
       error("Error to load plugin #{name}", true, $error_file);
