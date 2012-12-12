@@ -1,4 +1,4 @@
-module Plugin
+module ChannelMixin
   def fetchData()
     nb_preload = 11
     nb_preload = 1 if(@nb_songs <=  15) # first we check the number of songs in the database leading to left_side (playlist : <s> s s s *c* s s s)
@@ -14,4 +14,7 @@ module Plugin
     }
     super();
   end
+end
+
+module SongQueueMixin
 end
