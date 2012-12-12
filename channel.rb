@@ -22,7 +22,7 @@ class ChannelsCron < Rev::TimerWatcher
     log("Cron unregister channel #{ch.name()} [#{@channels.size()}]");
   end
 
-  private 
+  private
   def on_timer
     @channels.each { |c|
       c.cron();
@@ -113,7 +113,12 @@ class Channel
   def set_plugin(name = "default")
     begin
       load "plugins/#{name}.rb"
-      extend Plugin
+      self.extend(ChannelMixin)
+      @queue.extend(SongQueueMixin)
+      #XXXdlet: til I figure something better
+      if SongQueueMixin.method_defined? :setlib
+        @queue.setlib(@library)
+      end
       log("Loading #{name} plugin for songs selection")
       true;
     rescue LoadError=> e
