@@ -12,19 +12,17 @@ module ChannelMixin
       begin
         entry = @library.get_file().first;
       end while last_insert.include?(entry.mid) # the space we look is (10 + preload) wide (30min) see above
-      pos = @queue.add(entry.mid);
+      pos = @queue.add(entry.mid, :log => false);
     }
     super();
   end
 
-
-  #XXXdlet: overrinding Channel next function. is it ruby's way ?
+  #XXXdlet: overriding Channel next function. is it ruby's way ?
   def next()
     super
     log("uber plugin talking")
     log_action(__method__)
   end
-
 
   # log any action on current entry to channel_action.log file
   def log_action(action)
@@ -51,20 +49,18 @@ module SongQueueMixin
     @library = library
   end
 
-  def add(pos = nil, mid)
+  def add(pos = nil, mid, opt = { :log => true})
     super(pos, mid);
-    log_action(__method__, mid)
+    log_action(__method__, mid) if(opt[:log]);
   end
 
   def del(pos)
     mid = super(pos);
-    log_action(__method__, mids)
-    mid
+    log_action(__method__, mid)
   end
 
   # log any action on current entry to channel_action.log file
   def log_action(action, mid)
-    puts mid
     song = @library.get_file(mid).first
 
     filename = "channel_action.log"

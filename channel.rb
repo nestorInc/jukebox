@@ -92,6 +92,12 @@ class Channel
     log("Unregistering channel #{@name} [#{@connections.size()} user(s) connected]");
   end
 
+  def _next()
+    log("Auto next on channel #{@name}");
+    @queue.next();
+    fetchData();
+  end
+
   def next()
     log("Next on channel #{@name}");
     @queue.next();
@@ -162,7 +168,7 @@ class Channel
       @tag = tag.to_s();
       @timestamp = Time.now().to_i();
     rescue => e
-      @queue.next() if(@queue[0]);
+      @queue._next() if(@queue[0]);
       error("Can't load mid=#{mid}: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
       retry;
     end
@@ -192,7 +198,7 @@ class Channel
         break if(@remaining <= 0)
       }
 
-      self.next() if(@remaining > 0);
+      self._next() if(@remaining > 0);
     end while(@remaining > 0)
     @time  = now;
     data;
