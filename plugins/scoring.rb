@@ -78,3 +78,63 @@ module SongQueueMixin
     end
   end
 end
+
+class Classifier
+  attr_writer :scores
+  attr_writer :indexes
+  attr_writer :entries
+  attr_writer :total_sum
+
+  # scores   = [ (mid, score), ... ]
+  # indexes  = { :artists = {name, [score_item0, ....]},
+  #              :genre   = ...
+
+  def initialize(db)
+    @scores = []
+    @indexes = {
+      :artists => Hash.new { |hash, key| hash[key] = [] },
+      :albums => Hash.new { |hash, key| hash[key] = [] },
+      :genres => Hash.new { |hash, key| hash[key] = [] },
+    }
+    @entries = 0
+
+    # populate scores with null values for each song
+    # from db ?
+
+    songs = db.request(fieldsSelection="mid, artist, album, genre")
+    songs.each do |song|
+      register_song(song)
+    end
+
+  end
+
+  def register_song(song)
+    # scores.push([mid, score])
+    # Score=Struct.new :mid, :score
+    score = [song.mid, 0]
+    scores << score
+    # add ref(mid, score) to indexes.artists, album, genre
+    @indexes[:artists] = song.artist
+    @indexes[:albums] = song.album
+    @indexes[:genres] = song.genre
+  end
+
+  def promote()
+    # +1
+    # join on artist, album, genre
+  end
+
+  def demote()
+    # /2
+    # join on artist, album, genre
+  end
+
+  def dump()
+    # dump this class
+  end
+
+  def load()
+    # load up previous learning
+  end
+
+end
