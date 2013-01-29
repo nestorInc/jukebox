@@ -49,7 +49,7 @@ module SongQueueMixin
     @library = library
   end
 
-  def add(pos = nil, mid, opt = { :log => true})
+  def add(pos = nil, mid = 0, opt={:log => true})
     super(pos, mid);
     log_action(__method__, mid) if(opt[:log]);
   end
@@ -80,10 +80,10 @@ module SongQueueMixin
 end
 
 class Classifier
-  attr_writer :scores
-  attr_writer :indexes
-  attr_writer :entries
-  attr_writer :total_sum
+  attr_accessor :scores
+  attr_accessor :indexes
+  attr_accessor :entries
+  attr_accessor :total_sum
 
   # scores   = [ (mid, score), ... ]
   # indexes  = { :artists = {name, [score_item0, ....]},
@@ -101,7 +101,7 @@ class Classifier
     # populate scores with null values for each song
     # from db ?
 
-    songs = db.request(fieldsSelection="mid, artist, album, genre")
+    songs = db.request("mid, artist, album, genre",  nil, nil, nil, nil, nil)
     songs.each do |song|
       register_song(song)
     end
@@ -112,11 +112,11 @@ class Classifier
     # scores.push([mid, score])
     # Score=Struct.new :mid, :score
     score = [song.mid, 0]
-    scores << score
+    @scores << score
     # add ref(mid, score) to indexes.artists, album, genre
-    @indexes[:artists] = song.artist
-    @indexes[:albums] = song.album
-    @indexes[:genres] = song.genre
+    @indexes[:artists][song.artist].push(score)
+    @indexes[:albums][song.album].push(score)
+    @indexes[:genres][song.genre].push(score)
   end
 
   def promote()
