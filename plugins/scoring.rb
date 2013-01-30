@@ -119,9 +119,20 @@ class Classifier
     @indexes[:genres][song.genre].push(score)
   end
 
-  def promote()
+  def promote(mid, db)
     # +1
     # join on artist, album, genre
+    song = db.request("mid, artist, album, genre",  mid.to_s, "mid", nil, nil, nil).first
+
+    indexes[:artists][song.artist].each do |score|
+      score[1] += 1
+    end
+    indexes[:albums][song.album].each do |score|
+      score[1] += 1
+    end
+    indexes[:genres][song.genre].each do |score|
+      score[1] += 1
+    end
   end
 
   def demote()
@@ -138,3 +149,20 @@ class Classifier
   end
 
 end
+
+=begin
+
+$: << ".."
+require "db.rb"
+require "plugins/scoring.rb"
+
+library = Library.new();
+classifier = Classifier.new(library)
+
+classifier.promote(2, library)
+
+puts classifier.scores[0].to_s
+puts classifier.scores[1].to_s
+puts classifier.scores[2].to_s
+
+=end
