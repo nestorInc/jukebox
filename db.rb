@@ -215,11 +215,15 @@ class Library
            request << "LIMIT #{resultCount}";
       end
     end
-    
+
     #warning("Querying database : #{request}");
     begin
       req = @db.prepare(request);
-      res = req.execute(:name => value).map(&Song.from_db);
+      if(value != nil)
+        res = req.execute(:name => value).map(&Song.from_db);
+      else
+        res = req.execute().map(&Song.from_db);
+      end
       req.close();
     rescue => e
       error("#{e}. Query #{request}");
