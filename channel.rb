@@ -5,6 +5,7 @@ require 'time'
 
 require 'display.rb'
 require 'playlist.rb'
+require 'plugable.rb'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
@@ -34,6 +35,7 @@ $channelsCron = ChannelsCron.new();
 $channelsCron.attach(Rev::Loop.default)
 
 class Channel
+  include Plugable
   attr_reader   :name
   attr_reader   :timestamp
   attr_reader   :queue
@@ -118,9 +120,11 @@ class Channel
 
   def set_plugin(name = "default")
     begin
+      self.remove ChannelMixin
+      @queue.remove SongQueueMixin
       load "plugins/#{name}.rb"
-      self.extend(ChannelMixin)
-      @queue.extend(SongQueueMixin)
+      self.extend ChannelMixin
+      @queue.extend SongQueueMixin
       #XXXdlet: til I figure something better
       if SongQueueMixin.method_defined? :setlib
         @queue.setlib(@library)

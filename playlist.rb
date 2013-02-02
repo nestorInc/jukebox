@@ -1,4 +1,7 @@
+require 'plugable.rb'
+
 class Playlist
+  include Plugable
   attr_reader :list;
 
   def initialize(params = {})
