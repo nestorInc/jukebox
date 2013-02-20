@@ -120,15 +120,25 @@ class Channel
 
   def set_plugin(name = "default")
     begin
-      self.remove ChannelMixin
-      @queue.remove SongQueueMixin
+      # remove previous plugin
+      self.remove ChannelMixin if defined? ChannelMixin
+      @queue.remove SongQueueMixin if defined? SongQueueMixin
+      # and clean up namespace
+      Object.send(:remove_const, :ChannelMixin) if defined? ChannelMixin
+      Object.send(:remove_const, :SongQueueMixin) if defined? SongQueueMixin
+
+      # now load it
       load "plugins/#{name}.rb"
       self.extend ChannelMixin
       @queue.extend SongQueueMixin
+
+      # and set a little config
       #XXXdlet: til I figure something better
       if SongQueueMixin.method_defined? :setlib
         @queue.setlib(@library)
       end
+
+      # we're good
       log("Loading #{name} plugin for songs selection")
       true;
     rescue LoadError=> e

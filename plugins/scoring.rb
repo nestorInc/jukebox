@@ -12,7 +12,7 @@ module ChannelMixin
       begin
         entry = @library.get_file().first;
       end while last_insert.include?(entry.mid) # the space we look is (10 + preload) wide (30min) see above
-      pos = @queue.add(entry.mid, :log => false);
+      pos = @queue.add(nil, entry.mid, :log => false);
     }
     super();
   end
@@ -21,23 +21,7 @@ module ChannelMixin
   def next()
     super
     log("uber plugin talking")
-    log_action(__method__)
-  end
-
-  # log any action on current entry to channel_action.log file
-  def log_action(action)
-    log_store ||= YAML::Store.new "channel_action.log"
-
-    action_object = [action,
-                     ["artist" => @currentEntry.artist,
-                      "album" => @currentEntry.album,
-                      "genre" => @currentEntry.genre]]
-
-    puts action_object.to_yaml
-
-    log_store.transaction do
-      log_store['actions'] += action_object
-    end
+    log_action(__method__, @currentEntry)
   end
 
 end
@@ -47,33 +31,21 @@ module SongQueueMixin
     @library = library
   end
 
-  def add(pos = nil, mid = 0, opt={:log => true})
+  def add(pos = nil, mid=0, opt={:log => true})
     super(pos, mid);
-    log_action(__method__, mid) if(opt[:log]);
+    song = @library.get_file(mid).first
+    log_action(__method__, song) if(opt[:log]);
+    pos;
   end
 
   def del(pos)
     mid = super(pos);
-    log_action(__method__, mid)
-  end
-
-  # log any action on current entry to channel_action.log file
-  def log_action(action, mid)
-    log_store ||= YAML::Store.new "channel_action.log"
     song = @library.get_file(mid).first
-
-    action_object = [action,
-                     ["artist" => song.artist,
-                      "album" => song.album,
-                      "genre" => song.genre]]
-
-    puts action_object.to_yaml
-
-    log_store.transaction do
-      log_store['actions'] += action_object
-    end
+    log_action(__method__, song)
+    mid;
   end
 end
+
 
 class Classifier
   attr_accessor :scores
