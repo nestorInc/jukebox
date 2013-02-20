@@ -9,7 +9,7 @@ module Plugable
 
   def remove mod
     mod_clone = @ancestors[mod]
-    mod_clone.instance_methods.each {|m|
+    mod_clone.instance_methods(false).each {|m|
       mod_clone.module_eval { remove_method m }
     }
     @ancestors[mod] = nil

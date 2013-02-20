@@ -1,6 +1,31 @@
 require 'yaml/store'
 
+module YamlLogger
+
+  # log any action on current entry to channel_action.log file
+  def log_action(action, song)
+    @@log_store ||= YAML::Store.new "channel_action.log"
+    @@log_store.transaction do
+      @@log_store['actions'] ||= []
+    end
+
+    action_object = [action,
+                     ["artist" => song.artist,
+                      "album" => song.album,
+                      "genre" => song.genre]]
+
+    puts action_object.to_yaml
+
+    @@log_store.transaction do
+      @@log_store['actions'] += action_object
+    end
+  end
+end
+
+
 module ChannelMixin
+  include YamlLogger
+
   def fetchData()
     nb_preload = 11
     nb_preload = 1 if(@nb_songs <=  15) # first we check the number of songs in the database leading to left_side (playlist : <s> s s s *c* s s s)
@@ -27,6 +52,8 @@ module ChannelMixin
 end
 
 module SongQueueMixin
+  include YamlLogger
+
   def setlib(library)
     @library = library
   end
