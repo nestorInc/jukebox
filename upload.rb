@@ -116,7 +116,6 @@ class UploadManager < HttpNode
             };
             files.push(file);
           rescue Exception=>e
-            id3info = Id3.decode(File.join(uploadDirectory, user, current_file));
             file = {
               :filename   => current_file,
               :date_upload => File.atime(File.join(uploadDirectory, user, current_file)),
