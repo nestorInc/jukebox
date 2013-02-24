@@ -1,4 +1,4 @@
-module Plugin
+module ChannelMixin
   def muse()
     display("Using <<muse>> plugin loader on channel #{@name}")
     if(@nb_songs > 10)
@@ -28,4 +28,7 @@ module Plugin
       end 
     end 
   end
+end
+
+module SongQueueMixin
 end
