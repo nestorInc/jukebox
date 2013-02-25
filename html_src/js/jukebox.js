@@ -615,7 +615,11 @@ function Jukebox(element, opts)
 	{
 		query.setTimestamp(_timestamp);
 
-		_ui.sendingQuery(query.valueOf());
+		try
+		{
+			_ui.sendingQuery(query.valueOf());
+		}
+		catch(e){} // Prevent ajax stop in case of UI failure
 
 		var query_json = query.toJSON();
 		new Ajax.Request(_opts.URL,
