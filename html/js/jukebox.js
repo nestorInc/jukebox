@@ -484,22 +484,12 @@ function JsonPrettyPrint(input)
 }
 var Tab = this.Tab = Class.create(
 {
-	initialize: function(identifier, name, jukebox, domContainer)
+	initialize: function(name, jukebox, domContainer, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = name;
 		this.jukebox = jukebox;
-		this.dom = domContainer;
-	},
-
-	getName: function()
-	{
-		return this.name; 
-	},
-
-	getIdentifier: function()
-	{
-		return this.identifier;
+		this.DOM = domContainer;
+		this.rootCSS = rootCSS;
 	}
 });
 
@@ -507,9 +497,9 @@ var Tab = this.Tab = Class.create(
 
 this.Tabs = Class.create(
 {
-	initialize: function(tabsCollectionName)
+	initialize: function(rootCSS)
 	{
-		this.tabsCollectionName = tabsCollectionName;
+		this.rootCSS = rootCSS;
 		this.tabs = [];
 		this.currentTabUniqueId = -1;
 		this.lastUniqueId = null;
@@ -517,7 +507,7 @@ this.Tabs = Class.create(
 
 	getTabFromUniqueId: function(identifier)
 	{
-		for(var i = 0; i < this.tabs.length; ++i)
+		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
 			if(this.tabs[i].identifier == identifier)
 			{
@@ -529,7 +519,7 @@ this.Tabs = Class.create(
 
 	getTabIndexFromUniqueId: function(identifier)
 	{
-		for(var i = 0; i < this.tabs.length; ++i)
+		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
 			if(this.tabs[i].identifier == identifier)
 			{
@@ -538,24 +528,12 @@ this.Tabs = Class.create(
 		}
 		return -1;
 	},
-	
-	getFirstTabIdentifierByClassName: function(tabClassName)
-	{
-		for(var i = 0; i < this.tabs.length; ++i)
-		{
-			if(this.tabs[i].unique !== undefined && this.tabs[i].unique == tabClassName)
-			{
-				return this.tabs[i].identifier;
-			}
-		}
-		return null;
-	},
 
-	getFirstTabByClassName: function(tabClassName)
+	getFirstTabByClass: function(tabClass)
 	{
 		for(var i = 0; i < this.tabs.length; ++i)
 		{
-			if(this.tabs[i].unique !== undefined && this.tabs[i].unique == tabClassName)
+			if(this.tabs[i] instanceof tabClass)
 			{
 				return this.tabs[i];
 			}
@@ -571,6 +549,7 @@ this.Tabs = Class.create(
 	// Add the tab in the html layout and in the tabs array
 	addTab: function(tab)
 	{
+		// Check tab class
 		var rootClass = tab.constructor;
 		while(rootClass.superclass != null)
 		{
@@ -591,19 +570,20 @@ this.Tabs = Class.create(
 			this.lastUniqueId++;
 		}
 
-		// Set the new tab identifier
-		var id = tab.identifier = this.tabsCollectionName + '-' + this.lastUniqueId;
+		// Set the new tab identifier and add tab
+		var id = tab.identifier = this.lastUniqueId;
 		this.tabs.push(tab);
 
-		// init html containers
+		// Init html containers
 		if(this.tabs.length == 1)
 		{
-			this.DOM.down('.jukebox-tabs-header').update('<ul class="jukebox-tabs-list"></ul>');
+			this.DOM.down('.'+this.rootCSS+'-tabs-header').update('<ul class="'+this.rootCSS+'-tabs-list"></ul>');
 		}
 
 		// Add tab Header
-		var toggleTab = new Element('a', {href: 'javascript:;'}).update('<span>' + tab.name + '</span>');
-		var removeTab = new Element('a', {href: 'javascript:;'}).update('<span> X </span>');
+		var noHref = 'javascript:;',
+			toggleTab = new Element('a', {href: noHref}).update('<span>' + tab.name + '</span>'),
+			removeTab = new Element('a', {href: noHref}).update('<span> X </span>');
 
 		var that = this; // Tool for closure
 		toggleTab.on("click", function()
@@ -615,28 +595,27 @@ this.Tabs = Class.create(
 			that.removeTab(id);
 		});
 
-		var tabDisplay = new Element('li',
-		{
-			style: 'margin-left: 1px',
-			id: 'tabHeader-' + id
-		}).insert(
+		var tabDisplay = new Element('li', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
 		{
 			top: toggleTab,
 			bottom: removeTab
 		});
 		if(this.tabs.length == 1)
 		{
-			tabDisplay.addClassName('tabHeaderActive');
+			tabDisplay.addClassName(this.rootCSS+'-tabs-active');
 		}
 
-		var tabContentContainer = new Element('div', {id: 'tabContent-' + id}); // todo: use classes to not pollute ids
-		tabContentContainer.style.display = this.tabs.length == 1 ? 'block' : 'none';
+		var tabContentContainer = new Element('div', {"class": this.rootCSS + '-tabContent-' + id});
+		if(this.tabs.length > 1)
+		{
+			tabContentContainer.hide();
+		}
 
 		// DOM insertion
-		this.DOM.down('.jukebox-tabs-list').insert({bottom: tabDisplay});
-		this.DOM.down('.jukebox-tabs-content').insert({bottom: tabContentContainer});
+		this.DOM.down('.'+this.rootCSS+'-tabs-list').insert(tabDisplay);
+		this.DOM.down('.'+this.rootCSS+'-tabs-content').insert(tabContentContainer);
 
-		// Start to init static tab content
+		// Init tab content
 		if(typeof tab.updateContent === 'function')
 		{
 			tab.updateContent();
@@ -651,9 +630,9 @@ this.Tabs = Class.create(
 		if(index != -1)
 		{
 			// If the tab to delete is the current active tab we want to select the first available tab
-			var tabHeader = $('tabHeader-' + identifier),
-				tabContent = $('tabContent-' + identifier);
-			if(tabHeader && tabHeader.hasClassName("tabHeaderActive"))
+			var tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+identifier),
+				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+identifier);
+			if(tabHeader && tabHeader.hasClassName(this.rootCSS + '-tabs-active'))
 			{
 				// Find the tabs position index available near from tab
 				if(index !== 0)
@@ -676,20 +655,21 @@ this.Tabs = Class.create(
 
 	toggleTab: function(identifier)
 	{
-		for(var i = 0; i < this.tabs.length; i++)
+		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
-			var id = this.tabs[i].identifier,
-				tabHeader = $('tabHeader-' + id),
-				tabContent = $('tabContent-' + id);
-			if(id == identifier)
+			var tab = this.tabs[i],
+				id = tab.identifier,
+				tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id),
+				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+id);
+			if(tab.identifier == identifier)
 			{
-				tabContent.style.display = 'block';
-				tabHeader.addClassName('tabHeaderActive');
+				tabContent.show();
+				tabHeader.addClassName(this.rootCSS + '-tabs-active');
 			}
 			else
 			{
-				tabContent.style.display = 'none';
-				tabHeader.removeClassName('tabHeaderActive');
+				tabContent.hide();
+				tabHeader.removeClassName(this.rootCSS + '-tabs-active');
 			}
 		}
 	}
@@ -697,7 +677,7 @@ this.Tabs = Class.create(
 
 this.SearchTab = Class.create(Tab,
 {
-	initialize: function($super, jukebox, domContainer, server_results)
+	initialize: function($super, jukebox, domContainer, server_results, rootCSS)
 	{
 		this.reloadControllers = true;
 		this.pages = [];
@@ -705,7 +685,7 @@ this.SearchTab = Class.create(Tab,
 		this.tableKit = null;
 
 		var id = server_results.identifier;
-		$super(id, id, jukebox, domContainer);
+		$super(id, jukebox, domContainer, rootCSS);
 		
 		this.updateNewSearchInformations(server_results);
 	},
@@ -794,7 +774,7 @@ this.SearchTab = Class.create(Tab,
 		if(this.reloadControllers)
 		{
 			// Clean
-			this.dom.select('collection-pagelist-' + this.identifier).each(function(s)
+			this.DOM.select('collection-pagelist-' + this.identifier).each(function(s)
 			{
 				s.remove();
 			});
@@ -810,7 +790,7 @@ this.SearchTab = Class.create(Tab,
 			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>' +
 			'<div id="collection-content-' + this.identifier + '"></div>' +
 			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>';
-			this.dom.down('#tabContent-' + this.identifier).update(search_page);
+			this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier).update(search_page);
 
 			// Display sliders and links and init sliders behvior
 			this.initAndDisplaySearchControllers();
@@ -1340,12 +1320,10 @@ this.SearchTab = Class.create(Tab,
 
 var UploadTab = Class.create(Tab,
 {
-	initialize: function(identifier, tabName, domContainer, jukebox)
+	initialize: function(tabName, DOM, rootCSS, jukebox)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
 		this.uploader = null;
-		this.unique = "UploadTab";
 		this.uploadedFiles = null;
 		this.uploadedFilesEdition = null;
 		this.lastSendingDeletionIdentifier = null;
@@ -1353,7 +1331,8 @@ var UploadTab = Class.create(Tab,
 		this.lastSendingValidationIdentifier = null;
 		this.refresher = null;
 		this.tableId = new Date().getTime();
-		this.dom = domContainer;
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
 	},
 
@@ -1831,7 +1810,7 @@ var UploadTab = Class.create(Tab,
 			'<h2>Uploaded files</h2>' +
 			'<div id="uploaded-files" style="overflow:auto;"></div>';
 
-		this.dom.down('#tabContent-' + this.identifier).update(upload_form);
+		this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier).update(upload_form);
 
 		// Init upload button behavior
 		this.uploader = new qq.FileUploader(
@@ -1852,11 +1831,11 @@ var UploadTab = Class.create(Tab,
 
 this.DebugTab = Class.create(Tab, 
 {
-	initialize: function(identifier, tabName)
+	initialize: function(tabName, DOM, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
-		this.unique = 'DebugTab';
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 	},
 
 	updateSendingQuery: function(query)
@@ -1895,7 +1874,7 @@ this.DebugTab = Class.create(Tab,
 			'</td>' +
 		'</tr>' +
 		'</table>';
-		var $content = $('tabContent-' + this.identifier);
+		var $content = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
 		$content.update(debug_display);
 
 		this.$debug1 = $content.down('div:first');
@@ -1906,12 +1885,11 @@ this.DebugTab = Class.create(Tab,
 
 this.CustomQueriesTab = Class.create(Tab,
 {
-	initialize: function(identifier, tabName, domContainer)
+	initialize: function(tabName, DOM, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
-		this.unique = 'CustomQueriesTab';
-		this.dom = domContainer;
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 	},
 
 	updateContent: function()
@@ -1946,7 +1924,7 @@ this.CustomQueriesTab = Class.create(Tab,
 			'<td><input type="button" value="send custom query"/></td>' +
 		'</tr>' +
 		'</table>';
-		var $content = this.dom.down('#tabContent-' + this.identifier);
+		var $content = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
 		$content.update(custom_queries_display);
 
 		var $textarea = $content.down('textarea'),
@@ -2057,17 +2035,17 @@ this.CustomQueriesTab = Class.create(Tab,
 
 this.NotificationTab = Class.create(Tab,
 {
-	initialize: function(identifier, tabName)
+	initialize: function(tabName, DOM, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
 		this.uploader = null;
-		this.unique = "NotificationTab";
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 	},
 
 	updateContent: function()
 	{
-		var $tabContent = $('tabContent-' + this.identifier);
+		var $tabContent = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
 		$tabContent.update('<h1>Notification tests:</h1>');
 
 		function addButton(level)
@@ -3255,7 +3233,11 @@ function Jukebox(element, opts)
 	{
 		query.setTimestamp(_timestamp);
 
-		_ui.sendingQuery(query.valueOf());
+		try
+		{
+			_ui.sendingQuery(query.valueOf());
+		}
+		catch(e){} // Prevent ajax stop in case of UI failure
 
 		var query_json = query.toJSON();
 		new Ajax.Request(_opts.URL,
@@ -3749,8 +3731,7 @@ function JukeboxUI(jukebox, element, opts)
 		_opts = Extend(true, {}, JukeboxUI.defaults, opts), // Recursively merge options
 
 		J = jukebox, // short jukebox reference
-		_tabs = new Tabs('tab'),
-		_tabsManager = {},
+		_tabs = null,
 		_skin = JukeboxUI.skins[_opts.skin],
 		_volumeSlider,
 		_$, // Selectors cache
@@ -4093,7 +4074,7 @@ function JukeboxUI(jukebox, element, opts)
 		if(!results.identifier)
 		{
 			// Adds the new created tab to the tabs container
-			var searchTab = new SearchTab(J, _$.tabs, results);
+			var searchTab = new SearchTab(J, _$.tabs, results, _opts.rootClass);
 			var id = _tabs.addTab(searchTab);
 			if(results.select !== false)
 			{
@@ -4114,7 +4095,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.sendingQuery = function(query)
 	{
-		var tab = _tabs.getFirstTabByClassName("DebugTab");
+		var tab = _tabs.getFirstTabByClass(DebugTab);
 		if(tab)
 		{
 			tab.updateSendingQuery(query);
@@ -4134,7 +4115,7 @@ function JukeboxUI(jukebox, element, opts)
 		}
 		*/
 
-		var tab = _tabs.getFirstTabByClassName("DebugTab");
+		var tab = _tabs.getFirstTabByClass(DebugTab);
 		if(tab)
 		{
 			tab.updateResponse(response);
@@ -4147,8 +4128,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.displayUploadedFiles = function(uploaded_files)
 	{
-		//TODO: TabManager.UploadTab
-		var tab = _tabs.getFirstTabByClassName("UploadTab");
+		var tab = _tabs.getFirstTabByClass(UploadTab);
 		if(tab)
 		{
 			tab.treatResponse(uploaded_files);
@@ -4460,7 +4440,7 @@ function JukeboxUI(jukebox, element, opts)
 				QueryTabName: 'Query',
 				NotificationsTabName: 'Notifications',
 				DebugTabName: 'Debug',
-				artiste: 'artiste',
+				artist: 'artiste',
 				title: 'title',
 				album: 'album',
 				genre: 'genre',
@@ -4532,6 +4512,7 @@ function JukeboxUI(jukebox, element, opts)
 			}
 		}
 
+		_tabs = new Tabs(_opts.rootClass);
 		_tabs.setRootNode(_$.tabs);
 
 		// Register listeners
@@ -4566,44 +4547,41 @@ function JukeboxUI(jukebox, element, opts)
 
 		(function() // Tabs
 		{
+			var tabsManager = {};
 			function createShowTab(tab)
 			{
-				_tabsManager["Show" + tab.classN] = function()
+				tabsManager["Show" + tab.classN] = function()
 				{
-					var identifier = _tabs.getFirstTabIdentifierByClassName(tab.classN);
-					if(identifier === null)
+					var search = _tabs.getFirstTabByClass(tab.classC);
+					if(search === null)
 					{
-						var newTab = new tab.classC(tab.identifier, tab.name, _$.tabs, J);
-						identifier = _tabs.addTab(newTab);
+						var newTab = new tab.classC(tab.name, _$.tabs, _opts.rootClass, J);
+						search = _tabs.addTab(newTab);
 					}
-					_tabs.toggleTab(identifier);
+					_tabs.toggleTab(search);
 				};
 			}
-			
+
 			var possibleTabs =
 			[
 				{
 					classN: "UploadTab",
 					classC: UploadTab,
-					identifier: "Uploader",
 					name: "Uploader"
 				},
 				{
 					classN: "DebugTab",
 					classC: DebugTab,
-					identifier: "Debug",
 					name: "Debug"
 				},
 				{
 					classN: "NotificationTab",
 					classC: NotificationTab,
-					identifier: "Notifications",
 					name: "Notifications"
 				},
 				{
 					classN: "CustomQueriesTab",
 					classC: CustomQueriesTab,
-					identifier: "Custom queries",
 					name: "Custom queries"
 				}
 			];
@@ -4616,10 +4594,10 @@ function JukeboxUI(jukebox, element, opts)
 			var TL = _$.tabs_links;
 			if(!TL.empty()) // For skins without tabs links
 			{
-				TL.down(rootClass+'tab-upload').on("click", _tabsManager.ShowUploadTab);
-				TL.down(rootClass+'tab-query').on("click", _tabsManager.ShowCustomQueriesTab);
-				TL.down(rootClass+'tab-notifs').on("click", _tabsManager.ShowNotificationTab);
-				TL.down(rootClass+'tab-debug').on("click", _tabsManager.ShowDebugTab);
+				TL.down(rootClass+'tab-upload').on("click", tabsManager.ShowUploadTab);
+				TL.down(rootClass+'tab-query').on("click", tabsManager.ShowCustomQueriesTab);
+				TL.down(rootClass+'tab-notifs').on("click", tabsManager.ShowNotificationTab);
+				TL.down(rootClass+'tab-debug').on("click", tabsManager.ShowDebugTab);
 			}
 		})();
 	})();
@@ -4680,7 +4658,7 @@ JukeboxUI.skins =
 			#{searchLabel} <input type="text" class="#{root}-search-input" />\
 			<select class="#{root}-search-genres" style="display:none;"></select>\
 			<select class="#{root}-search-field">\
-				<option value="artist">#{artiste}</option>\
+				<option value="artist">#{artist}</option>\
 				<option value="title">#{title}</option>\
 				<option value="album">#{album}</option>\
 				<option value="genre">#{genre}</option>\
