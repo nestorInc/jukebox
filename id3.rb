@@ -66,7 +66,7 @@ private
     case(enc)
     when 0x01
       bom = data.slice!(0..1);
-      if(bom == "\xFF\xFE")
+      if(bom <=> "\xFF\xFE")
         data.force_encoding("UTF-16LE");
       else  
         data.force_encoding("UTF-16BE");
