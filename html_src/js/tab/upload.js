@@ -1,11 +1,9 @@
 var UploadTab = Class.create(Tab,
 {
-	initialize: function(identifier, tabName, domContainer, jukebox)
+	initialize: function(tabName, DOM, rootCSS, jukebox)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
 		this.uploader = null;
-		this.unique = "UploadTab";
 		this.uploadedFiles = null;
 		this.uploadedFilesEdition = null;
 		this.lastSendingDeletionIdentifier = null;
@@ -13,7 +11,8 @@ var UploadTab = Class.create(Tab,
 		this.lastSendingValidationIdentifier = null;
 		this.refresher = null;
 		this.tableId = new Date().getTime();
-		this.dom = domContainer;
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
 	},
 
@@ -491,7 +490,7 @@ var UploadTab = Class.create(Tab,
 			'<h2>Uploaded files</h2>' +
 			'<div id="uploaded-files" style="overflow:auto;"></div>';
 
-		this.dom.down('#tabContent-' + this.identifier).update(upload_form);
+		this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier).update(upload_form);
 
 		// Init upload button behavior
 		this.uploader = new qq.FileUploader(

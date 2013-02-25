@@ -1,16 +1,16 @@
 this.NotificationTab = Class.create(Tab,
 {
-	initialize: function(identifier, tabName)
+	initialize: function(tabName, DOM, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
 		this.uploader = null;
-		this.unique = "NotificationTab";
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 	},
 
 	updateContent: function()
 	{
-		var $tabContent = $('tabContent-' + this.identifier);
+		var $tabContent = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
 		$tabContent.update('<h1>Notification tests:</h1>');
 
 		function addButton(level)

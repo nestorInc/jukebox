@@ -472,9 +472,10 @@ color: white;
 .jukebox-tabs-header a:hover span{
 background-color: #7E94B9;
 }
-.tabHeaderActive span, .tabHeaderActive a {
+.jukebox-tabs-active span,
+.jukebox-tabs-active a {
 background-color: #42577B;
-color:#fff;
+color: #fff;
 }
 .jukebox-tabs-content{
 position: relative;

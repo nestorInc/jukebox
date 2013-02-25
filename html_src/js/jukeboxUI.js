@@ -30,8 +30,7 @@ function JukeboxUI(jukebox, element, opts)
 		_opts = Extend(true, {}, JukeboxUI.defaults, opts), // Recursively merge options
 
 		J = jukebox, // short jukebox reference
-		_tabs = new Tabs('tab'),
-		_tabsManager = {},
+		_tabs = null,
 		_skin = JukeboxUI.skins[_opts.skin],
 		_volumeSlider,
 		_$, // Selectors cache
@@ -374,7 +373,7 @@ function JukeboxUI(jukebox, element, opts)
 		if(!results.identifier)
 		{
 			// Adds the new created tab to the tabs container
-			var searchTab = new SearchTab(J, _$.tabs, results);
+			var searchTab = new SearchTab(J, _$.tabs, results, _opts.rootClass);
 			var id = _tabs.addTab(searchTab);
 			if(results.select !== false)
 			{
@@ -395,7 +394,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.sendingQuery = function(query)
 	{
-		var tab = _tabs.getFirstTabByClassName("DebugTab");
+		var tab = _tabs.getFirstTabByClass(DebugTab);
 		if(tab)
 		{
 			tab.updateSendingQuery(query);
@@ -415,7 +414,7 @@ function JukeboxUI(jukebox, element, opts)
 		}
 		*/
 
-		var tab = _tabs.getFirstTabByClassName("DebugTab");
+		var tab = _tabs.getFirstTabByClass(DebugTab);
 		if(tab)
 		{
 			tab.updateResponse(response);
@@ -428,8 +427,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.displayUploadedFiles = function(uploaded_files)
 	{
-		//TODO: TabManager.UploadTab
-		var tab = _tabs.getFirstTabByClassName("UploadTab");
+		var tab = _tabs.getFirstTabByClass(UploadTab);
 		if(tab)
 		{
 			tab.treatResponse(uploaded_files);
@@ -813,6 +811,7 @@ function JukeboxUI(jukebox, element, opts)
 			}
 		}
 
+		_tabs = new Tabs(_opts.rootClass);
 		_tabs.setRootNode(_$.tabs);
 
 		// Register listeners
@@ -847,44 +846,41 @@ function JukeboxUI(jukebox, element, opts)
 
 		(function() // Tabs
 		{
+			var tabsManager = {};
 			function createShowTab(tab)
 			{
-				_tabsManager["Show" + tab.classN] = function()
+				tabsManager["Show" + tab.classN] = function()
 				{
-					var identifier = _tabs.getFirstTabIdentifierByClassName(tab.classN);
-					if(identifier === null)
+					var search = _tabs.getFirstTabByClass(tab.classC);
+					if(search === null)
 					{
-						var newTab = new tab.classC(tab.identifier, tab.name, _$.tabs, J);
-						identifier = _tabs.addTab(newTab);
+						var newTab = new tab.classC(tab.name, _$.tabs, _opts.rootClass, J);
+						search = _tabs.addTab(newTab);
 					}
-					_tabs.toggleTab(identifier);
+					_tabs.toggleTab(search);
 				};
 			}
-			
+
 			var possibleTabs =
 			[
 				{
 					classN: "UploadTab",
 					classC: UploadTab,
-					identifier: "Uploader",
 					name: "Uploader"
 				},
 				{
 					classN: "DebugTab",
 					classC: DebugTab,
-					identifier: "Debug",
 					name: "Debug"
 				},
 				{
 					classN: "NotificationTab",
 					classC: NotificationTab,
-					identifier: "Notifications",
 					name: "Notifications"
 				},
 				{
 					classN: "CustomQueriesTab",
 					classC: CustomQueriesTab,
-					identifier: "Custom queries",
 					name: "Custom queries"
 				}
 			];
@@ -897,10 +893,10 @@ function JukeboxUI(jukebox, element, opts)
 			var TL = _$.tabs_links;
 			if(!TL.empty()) // For skins without tabs links
 			{
-				TL.down(rootClass+'tab-upload').on("click", _tabsManager.ShowUploadTab);
-				TL.down(rootClass+'tab-query').on("click", _tabsManager.ShowCustomQueriesTab);
-				TL.down(rootClass+'tab-notifs').on("click", _tabsManager.ShowNotificationTab);
-				TL.down(rootClass+'tab-debug').on("click", _tabsManager.ShowDebugTab);
+				TL.down(rootClass+'tab-upload').on("click", tabsManager.ShowUploadTab);
+				TL.down(rootClass+'tab-query').on("click", tabsManager.ShowCustomQueriesTab);
+				TL.down(rootClass+'tab-notifs').on("click", tabsManager.ShowNotificationTab);
+				TL.down(rootClass+'tab-debug').on("click", tabsManager.ShowDebugTab);
 			}
 		})();
 	})();
