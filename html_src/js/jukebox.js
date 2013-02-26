@@ -473,6 +473,27 @@ function Jukebox(element, opts)
 	};
 
 	/**
+	* Get all play queue identifiers
+	* @return string[] name.
+	*/
+	this.getPlayQueues = function()
+	{
+		var list = [];
+		if(_supportsHTML5Storage())
+		{
+			var playqueues = _getHTML5Storage("playqueues");
+			if(playqueues)
+			{
+				for(var name in playqueues)
+				{
+					list.push(name);
+				}
+			}
+		}
+		return list;
+	};
+
+	/**
 	* Go to the next song
 	* @return {Jukebox} this.
 	*/

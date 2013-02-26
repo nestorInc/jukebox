@@ -47,6 +47,7 @@ module.exports = function(grunt)
 					SRC.js + 'tab/search.js',
 					SRC.js + 'tab/upload.js',
 					SRC.js + 'tab/debug.js',
+					SRC.js + 'tab/playlist.js',
 					SRC.js + 'tab/customQueries.js',
 					SRC.js + 'tab/notification.js',
 					
@@ -158,6 +159,7 @@ module.exports = function(grunt)
 			tab_notification:	SRC.tab + 'notification.js',
 			tab_search:			SRC.tab + 'search.js',
 			tab_upload:			SRC.tab + 'upload.js',
+			tab_playlist:		SRC.tab + 'playlist:.js',
 
 			// skin/
 			skin_default:	SRC.skinjs + 'default.js',
@@ -236,7 +238,7 @@ module.exports = function(grunt)
 			},
 			jukeboxui:
 			{
-				globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true, Template: true, Notifications: true}
+				globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, PlaylistTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true, Template: true, Notifications: true}
 			},
 			tab_customQueries:
 			{

@@ -497,3 +497,11 @@ width: 10px;
 height: 20px;
 margin-left: 0;
 }
+
+table.jukebox-playlists{
+border-collapse: collapse;
+width: 100%;
+}
+.jukebox-playlists td{
+border: 1px solid black;
+}

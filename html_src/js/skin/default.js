@@ -30,6 +30,7 @@ Jukebox.UI.skins["default"] =
 		<a class="#{root}-tab-query">#{QueryTabName}</a>\
 		<a class="#{root}-tab-notifs">#{NotificationsTabName}</a>\
 		<a class="#{root}-tab-debug">#{DebugTabName}</a>\
+		<a class="#{root}-tab-playlist">#{PlaylistTabName}</a>\
 	</div>\
 	<div class="#{root}-tabs-head">\
 		#{searchLabel} <input type="text" class="#{root}-search-input" />\

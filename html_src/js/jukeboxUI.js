@@ -739,6 +739,7 @@ function JukeboxUI(jukebox, element, opts)
 				QueryTabName: 'Query',
 				NotificationsTabName: 'Notifications',
 				DebugTabName: 'Debug',
+				PlaylistTabName: 'Playlists',
 				artist: 'artiste',
 				title: 'title',
 				album: 'album',
@@ -882,6 +883,11 @@ function JukeboxUI(jukebox, element, opts)
 					classN: "CustomQueriesTab",
 					classC: CustomQueriesTab,
 					name: "Custom queries"
+				},
+				{
+					classN: "PlaylistTab",
+					classC: PlaylistTab,
+					name: "Playlists"
 				}
 			];
 
@@ -897,6 +903,7 @@ function JukeboxUI(jukebox, element, opts)
 				TL.down(rootClass+'tab-query').on("click", tabsManager.ShowCustomQueriesTab);
 				TL.down(rootClass+'tab-notifs').on("click", tabsManager.ShowNotificationTab);
 				TL.down(rootClass+'tab-debug').on("click", tabsManager.ShowDebugTab);
+				TL.down(rootClass+'tab-playlist').on("click", tabsManager.ShowPlaylistTab);
 			}
 		})();
 	})();
