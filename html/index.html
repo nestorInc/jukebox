@@ -60,6 +60,8 @@
 <script type="text/javascript" src="js/query.js"></script>
 <script type="text/javascript" src="js/tools.js"></script>
 <script type="text/javascript" src="js/jukeboxC.js"></script>
+<script type="text/javascript" src="skin/default.js"></script>
+<script type="text/javascript" src="skin/light.js"></script>
 <script type="text/javascript" src="js/jukeboxUI.js"></script>
 -->
 
@@ -75,7 +77,8 @@ var hrefLower = window.location.href.toLowerCase(),
 		shim: // Dependencies
 		{
 			'jukebox.min': ['lib/prototype', 'lib/libs.min', 'lib/soundmanager2-nodebug-jsmin'],
-			'lib/libs.min': ['lib/prototype']
+			'lib/libs.min': ['lib/prototype'],
+			'skins.min': ['jukebox.min']
 		}
 	},
 	requirejsScripts =
@@ -84,7 +87,8 @@ var hrefLower = window.location.href.toLowerCase(),
 		'lib/prototype',
 		'lib/soundmanager2-nodebug-jsmin',
 		'lib/libs.min',
-		'jukebox.min'
+		'jukebox.min',
+		'skins.min'
 	],
 
 	j; // The jukebox instance ; Global, easily accessible from console
@@ -113,7 +117,9 @@ if(DEBUG)
 			'lib/tablekit': ['lib/prototype'],
 			'lib/effects': ['lib/prototype'],
 			'lib/slider': ['lib/prototype'],
-			'lib/dragdrop': ['lib/prototype', 'lib/effects']
+			'lib/dragdrop': ['lib/prototype', 'lib/effects'],
+			'skin/default': ['jukeboxUI'],
+			'skin/light': ['jukeboxUI']
 		}
 	};
 	requirejsScripts =
@@ -142,7 +148,11 @@ if(DEBUG)
 		'query',
 		'tools',
 		'jukebox',
-		'jukeboxUI'
+		'jukeboxUI',
+
+		// Load skins after jukeboxUI
+		'skin/default',
+		'skin/light'
 	];
 }
 
