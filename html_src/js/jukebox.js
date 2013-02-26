@@ -1076,6 +1076,8 @@ Jukebox.defaults =
 	replaceTitle: true
 };
 
+Jukebox.UI = JukeboxUI; // To attach skins
+
 Object.freeze(Jukebox); // Non-extensible, Non-removable, Non-modifiable
 Object.freeze(Jukebox.prototype); // 1337 strict mode
 

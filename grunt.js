@@ -13,6 +13,7 @@ module.exports = function(grunt)
 			js:		SRC_DIR + 'js/',
 			tab:	SRC_DIR + 'js/tab/',
 			libs:	SRC_DIR + 'js/lib/',
+			skinjs: SRC_DIR + 'js/skin/',
 			img:	SRC_DIR + 'images/'
 		},
 
@@ -88,6 +89,15 @@ module.exports = function(grunt)
 				src: '<config:concat.js.dest>',
 				dest: OUT.js + 'jukebox.min.js'
 			},
+			jsSkin:
+			{
+				src:
+				[
+					SRC.skinjs + 'default.js',
+					SRC.skinjs + 'light.js'
+				],
+				dest: OUT.js + 'skins.min.js'
+			},
 			domReady:
 			{
 				src: SRC.libs + 'domReady.js',
@@ -147,7 +157,11 @@ module.exports = function(grunt)
 			tab_debug:			SRC.tab + 'debug.js',
 			tab_notification:	SRC.tab + 'notification.js',
 			tab_search:			SRC.tab + 'search.js',
-			tab_upload:			SRC.tab + 'upload.js'
+			tab_upload:			SRC.tab + 'upload.js',
+
+			// skin/
+			skin_default:	SRC.skinjs + 'default.js',
+			skin_light:		SRC.skinjs + 'light.js'
 		},
 		jshint:
 		{
@@ -222,8 +236,7 @@ module.exports = function(grunt)
 			},
 			jukeboxui:
 			{
-				options: {multistr: true},
-				globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true}
+				globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true, Template: true, Notifications: true}
 			},
 			tab_customQueries:
 			{
@@ -236,6 +249,14 @@ module.exports = function(grunt)
 			tab_upload:
 			{
 				options: {nonstandard: true, sub: true}
+			},
+			skin_default:
+			{
+				options: {multistr: true, sub: true}
+			},
+			skin_light:
+			{
+				options: {multistr: true, sub: true}
 			}
 		},
 		copy:
