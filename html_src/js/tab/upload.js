@@ -481,7 +481,7 @@ var UploadTab = Class.create(Tab,
 		{
 			Notifications.Display(1, "All current uploads canceled.");
 		}
-		this.uploader._handler.cancelAll();		
+		this.uploader._handler.cancelAll();
 	},
 
 	updateContent: function()
