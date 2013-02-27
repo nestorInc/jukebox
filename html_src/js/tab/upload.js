@@ -1,4 +1,4 @@
-var UploadTab = Class.create(Tab,
+this.UploadTab = Class.create(Tab,
 {
 	initialize: function(tabName, DOM, rootCSS, jukebox)
 	{
