@@ -87,7 +87,16 @@ var hrefLower = window.location.href.toLowerCase(),
 		'lib/prototype',
 		'lib/soundmanager2-nodebug-jsmin',
 		'lib/libs.min',
-		'jukebox.min',
+		'jukebox.min'
+	],
+
+	requirejsSkinsConfig =
+	{
+		waitSeconds: 10,
+		baseUrl: '/js/'
+	},
+	requirejsSkinsScripts =
+	[
 		'skins.min'
 	],
 
@@ -131,7 +140,7 @@ if(DEBUG)
 		// This plugin works properly for everyone!
 		'lib/domReady!',
 
-		'lib/prototype',
+		/*'lib/prototype',
 		'lib/json2',
 		'lib/tablekit',
 		'lib/fileuploader',
@@ -150,82 +159,95 @@ if(DEBUG)
 		'query',
 		'tools',
 		'jukebox',
-		'jukeboxUI',
+		'jukeboxUI',*/
+		'jukebox'
+	];
 
-		// Load skins after jukeboxUI
-		'skin/default',
-		'skin/light'
+	requirejsSkinsConfig =
+	{
+		waitSeconds: 20,
+		baseUrl: '/src/js/skin/'
+	};
+	requirejsSkinsScripts =
+	[
+		'default',
+		'light'
 	];
 }
 
 requirejs.config(requirejsConfig);
 requirejs(requirejsScripts, function()
 {
-	try
+	// Now load skins
+	requirejs.config(requirejsSkinsConfig);
+	requirejs(requirejsSkinsScripts, function()
 	{
-		j = new Jukebox("player",
+		try
 		{
-			skin: "light",
-			theme: "blue",
-			SM2Folder: DEBUG ? '/src/' : '/'
-		});
-		j.ready(function() // Wait that .swf player is loaded
-		{
-			Notifications.Display(Notifications.LEVELS.info, "Jukebox loaded");
-
-			if(hrefLower.indexOf('#play') > -1)
+			j = new Jukebox("player",
 			{
+				skin: "light",
+				theme: "blue",
+				SM2Folder: DEBUG ? '/src/' : '/'
+			});
+			j.ready(function() // Wait that .swf player is loaded
+			{
+				Notifications.Display(Notifications.LEVELS.info, "Jukebox loaded");
+
+				if(hrefLower.indexOf('#play') > -1)
+				{
+					j.start();
+				}
+
+				/*
+				Chaining is possible: j.play().volume(30);
+				`this` also points to the jukebox instance: this.volume(50);
+
+				// Public data:
+				console.log(j.name, j.stream, j.channel, j.streaming, j.playing, j.song, j.listenersCount);
+
+				j.addSearchToPlayQueueBottom(search, comparison, field, order, first, count);
+				j.addSearchToPlayQueueRandom(search, comparison, field, order, first, count);
+				j.addSearchToPlayQueueTop(search, comparison, field, order, first, count);
+				j.addToPlayQueueBottom(mid);
+				j.addToPlayQueueRandom(mid);
+				j.addToPlayQueueTop(mid);
+				j.autoRefresh(auto);
+				j.deletePlayQueue(name);
+				j.getPlayQueues();
+				j.joinChannel(channel);
+				j.next();
+				j.playQueueDelete(mid, play_queue_index);
+				j.playQueueMove(mid, play_queue_index, new_play_queue_index);
+				j.playQueueShuffle();
+				j.playQueueSize();
+				j.plugin(name);
+				j.previous();
+				j.ready(callback);
+				j.refresh();
+				j.remaining();
+				j.restorePlayQueue(name, position);
+				j.savePlayQueue(name);
+				j.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
 				j.start();
-			}
-
-			/*
-			Chaining is possible: j.play().volume(30);
-			`this` also points to the jukebox instance: this.volume(50);
-
-			// Public data:
-			console.log(j.name, j.stream, j.channel, j.streaming, j.playing, j.song, j.listenersCount);
-
-			j.addSearchToPlayQueueBottom(search, comparison, field, order, first, count);
-			j.addSearchToPlayQueueRandom(search, comparison, field, order, first, count);
-			j.addSearchToPlayQueueTop(search, comparison, field, order, first, count);
-			j.addToPlayQueueBottom(mid);
-			j.addToPlayQueueRandom(mid);
-			j.addToPlayQueueTop(mid);
-			j.autoRefresh(auto);
-			j.deletePlayQueue(name);
-			j.getPlayQueues();
-			j.joinChannel(channel);
-			j.next();
-			j.playQueueDelete(mid, play_queue_index);
-			j.playQueueMove(mid, play_queue_index, new_play_queue_index);
-			j.playQueueShuffle();
-			j.playQueueSize();
-			j.plugin(name);
-			j.previous();
-			j.ready(callback);
-			j.refresh();
-			j.remaining();
-			j.restorePlayQueue(name, position);
-			j.savePlayQueue(name);
-			j.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
-			j.start();
-			j.status();
-			j.stop();
-			j.volume(volume);
-			*/
-		});
+				j.status();
+				j.stop();
+				j.volume(volume);
+				*/
+			});
 
 
-		new Jukebox(document.body,
+			new Jukebox(document.body,
+			{
+				skin: "default",
+				SM2Folder: DEBUG ? '/src/' : '/'
+			});
+		}
+		catch(fatalEx)
 		{
-			skin: "default",
-			SM2Folder: DEBUG ? '/src/' : '/'
-		});
-	}
-	catch(fatalEx)
-	{
-		Notifications.Display(Notifications.LEVELS.fatal, "Fatal error at startup: " + fatalEx.message);
-	}
+			Notifications.Display(Notifications.LEVELS.fatal, "Fatal error at startup: " + fatalEx.message);
+		}
+	});
 });
 </script>
 </body>
