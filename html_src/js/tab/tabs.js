@@ -1,21 +1,11 @@
 var Tab = this.Tab = Class.create(
 {
-	initialize: function(identifier, name, jukebox, domContainer)
+	initialize: function(name, jukebox, domContainer, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = name;
 		this.jukebox = jukebox;
-		this.dom = domContainer;
-	},
-
-	getName: function()
-	{
-		return this.name; 
-	},
-
-	getIdentifier: function()
-	{
-		return this.identifier;
+		this.DOM = domContainer;
+		this.rootCSS = rootCSS;
 	}
 });
 
@@ -23,9 +13,9 @@ var Tab = this.Tab = Class.create(
 
 this.Tabs = Class.create(
 {
-	initialize: function(tabsCollectionName)
+	initialize: function(rootCSS)
 	{
-		this.tabsCollectionName = tabsCollectionName;
+		this.rootCSS = rootCSS;
 		this.tabs = [];
 		this.currentTabUniqueId = -1;
 		this.lastUniqueId = null;
@@ -33,7 +23,7 @@ this.Tabs = Class.create(
 
 	getTabFromUniqueId: function(identifier)
 	{
-		for(var i = 0; i < this.tabs.length; ++i)
+		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
 			if(this.tabs[i].identifier == identifier)
 			{
@@ -45,7 +35,7 @@ this.Tabs = Class.create(
 
 	getTabIndexFromUniqueId: function(identifier)
 	{
-		for(var i = 0; i < this.tabs.length; ++i)
+		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
 			if(this.tabs[i].identifier == identifier)
 			{
@@ -54,24 +44,12 @@ this.Tabs = Class.create(
 		}
 		return -1;
 	},
-	
-	getFirstTabIdentifierByClassName: function(tabClassName)
-	{
-		for(var i = 0; i < this.tabs.length; ++i)
-		{
-			if(this.tabs[i].unique !== undefined && this.tabs[i].unique == tabClassName)
-			{
-				return this.tabs[i].identifier;
-			}
-		}
-		return null;
-	},
 
-	getFirstTabByClassName: function(tabClassName)
+	getFirstTabByClass: function(tabClass)
 	{
 		for(var i = 0; i < this.tabs.length; ++i)
 		{
-			if(this.tabs[i].unique !== undefined && this.tabs[i].unique == tabClassName)
+			if(this.tabs[i] instanceof tabClass)
 			{
 				return this.tabs[i];
 			}
@@ -87,6 +65,7 @@ this.Tabs = Class.create(
 	// Add the tab in the html layout and in the tabs array
 	addTab: function(tab)
 	{
+		// Check tab class
 		var rootClass = tab.constructor;
 		while(rootClass.superclass != null)
 		{
@@ -107,19 +86,20 @@ this.Tabs = Class.create(
 			this.lastUniqueId++;
 		}
 
-		// Set the new tab identifier
-		var id = tab.identifier = this.tabsCollectionName + '-' + this.lastUniqueId;
+		// Set the new tab identifier and add tab
+		var id = tab.identifier = this.lastUniqueId;
 		this.tabs.push(tab);
 
-		// init html containers
+		// Init html containers
 		if(this.tabs.length == 1)
 		{
-			this.DOM.down('.jukebox-tabs-header').update('<ul class="jukebox-tabs-list"></ul>');
+			this.DOM.down('.'+this.rootCSS+'-tabs-header').update('<ul class="'+this.rootCSS+'-tabs-list"></ul>');
 		}
 
 		// Add tab Header
-		var toggleTab = new Element('a', {href: 'javascript:;'}).update('<span>' + tab.name + '</span>');
-		var removeTab = new Element('a', {href: 'javascript:;'}).update('<span> X </span>');
+		var noHref = 'javascript:;',
+			toggleTab = new Element('a', {href: noHref}).update('<span>' + tab.name + '</span>'),
+			removeTab = new Element('a', {href: noHref}).update('<span> X </span>');
 
 		var that = this; // Tool for closure
 		toggleTab.on("click", function()
@@ -131,28 +111,27 @@ this.Tabs = Class.create(
 			that.removeTab(id);
 		});
 
-		var tabDisplay = new Element('li',
-		{
-			style: 'margin-left: 1px',
-			id: 'tabHeader-' + id
-		}).insert(
+		var tabDisplay = new Element('li', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
 		{
 			top: toggleTab,
 			bottom: removeTab
 		});
 		if(this.tabs.length == 1)
 		{
-			tabDisplay.addClassName('tabHeaderActive');
+			tabDisplay.addClassName(this.rootCSS+'-tabs-active');
 		}
 
-		var tabContentContainer = new Element('div', {id: 'tabContent-' + id}); // todo: use classes to not pollute ids
-		tabContentContainer.style.display = this.tabs.length == 1 ? 'block' : 'none';
+		var tabContentContainer = new Element('div', {"class": this.rootCSS + '-tabContent-' + id});
+		if(this.tabs.length > 1)
+		{
+			tabContentContainer.hide();
+		}
 
 		// DOM insertion
-		this.DOM.down('.jukebox-tabs-list').insert({bottom: tabDisplay});
-		this.DOM.down('.jukebox-tabs-content').insert({bottom: tabContentContainer});
+		this.DOM.down('.'+this.rootCSS+'-tabs-list').insert(tabDisplay);
+		this.DOM.down('.'+this.rootCSS+'-tabs-content').insert(tabContentContainer);
 
-		// Start to init static tab content
+		// Init tab content
 		if(typeof tab.updateContent === 'function')
 		{
 			tab.updateContent();
@@ -167,9 +146,9 @@ this.Tabs = Class.create(
 		if(index != -1)
 		{
 			// If the tab to delete is the current active tab we want to select the first available tab
-			var tabHeader = $('tabHeader-' + identifier),
-				tabContent = $('tabContent-' + identifier);
-			if(tabHeader && tabHeader.hasClassName("tabHeaderActive"))
+			var tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+identifier),
+				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+identifier);
+			if(tabHeader && tabHeader.hasClassName(this.rootCSS + '-tabs-active'))
 			{
 				// Find the tabs position index available near from tab
 				if(index !== 0)
@@ -192,20 +171,21 @@ this.Tabs = Class.create(
 
 	toggleTab: function(identifier)
 	{
-		for(var i = 0; i < this.tabs.length; i++)
+		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
-			var id = this.tabs[i].identifier,
-				tabHeader = $('tabHeader-' + id),
-				tabContent = $('tabContent-' + id);
-			if(id == identifier)
+			var tab = this.tabs[i],
+				id = tab.identifier,
+				tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id),
+				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+id);
+			if(tab.identifier == identifier)
 			{
-				tabContent.style.display = 'block';
-				tabHeader.addClassName('tabHeaderActive');
+				tabContent.show();
+				tabHeader.addClassName(this.rootCSS + '-tabs-active');
 			}
 			else
 			{
-				tabContent.style.display = 'none';
-				tabHeader.removeClassName('tabHeaderActive');
+				tabContent.hide();
+				tabHeader.removeClassName(this.rootCSS + '-tabs-active');
 			}
 		}
 	}
