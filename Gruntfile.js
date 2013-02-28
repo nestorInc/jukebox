@@ -95,7 +95,8 @@ module.exports = function(grunt)
 				src:
 				[
 					SRC.skinjs + 'default.js',
-					SRC.skinjs + 'light.js'
+					SRC.skinjs + 'light.js',
+					SRC.skinjs + 'hype.js'
 				],
 				dest: OUT.js + 'skins.min.js'
 			},
@@ -135,7 +136,7 @@ module.exports = function(grunt)
 			},
 			cssSkins: // For now, concat all skins inside a single minified file
 			{
-				src: [SRC.skin + 'default.css', SRC.skin + 'light.css'],
+				src: [SRC.skin + 'default.css', SRC.skin + 'light.css', SRC.skin + 'hype.css'],
 				dest: OUT.skin + 'jukebox-skins.min.css'
 			}
 		},
@@ -309,6 +310,15 @@ module.exports = function(grunt)
 					multistr: true, sub: true,
 					globals: {Jukebox: true}
 				}
+			},
+			skin_hype:
+			{
+				src: SRC.skinjs + 'hype.js',
+				options:
+				{
+					multistr: true, sub: true,
+					globals: {Jukebox: true}
+				}
 			}
 		},
 		copy:
@@ -330,7 +340,8 @@ module.exports = function(grunt)
 					SRC.img + '*.png',
 					SRC.img + '*.jpg',
 					SRC.img + '*.gif',
-					SRC.img + 'icons/*.png'
+					SRC.img + 'icons/*.png',
+					SRC.img + 'hype/*.png'
 				],
 				dest: OUT_DIR
 			},

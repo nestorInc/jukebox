@@ -16,6 +16,7 @@
 	<link rel="stylesheet" type="text/css" href="/src/css/style.css" />
 	<link rel="stylesheet" type="text/css" href="/src/css/skin/default.css" />
 	<link rel="stylesheet" type="text/css" href="/src/css/skin/light.css" />
+	<link rel="stylesheet" type="text/css" href="/src/css/skin/hype.css" />
 	
 </head>
 <body>
@@ -129,7 +130,8 @@ if(DEBUG)
 			'lib/slider': ['lib/prototype'],
 			'lib/dragdrop': ['lib/prototype', 'lib/effects'],
 			'skin/default': ['jukeboxUI'],
-			'skin/light': ['jukeboxUI']
+			'skin/light': ['jukeboxUI'],
+			'skin/hype': ['jukeboxUI']
 		}
 	};
 	requirejsScripts =
@@ -171,7 +173,8 @@ if(DEBUG)
 	requirejsSkinsScripts =
 	[
 		'default',
-		'light'
+		'light',
+		'hype'
 	];
 }
 
@@ -186,7 +189,7 @@ requirejs(requirejsScripts, function()
 		{
 			j = new Jukebox("player",
 			{
-				skin: "default",
+				skin: "hype",
 				SM2Folder: DEBUG ? '/src/' : '/'
 			});
 			j.ready(function() // Wait that .swf player is loaded
