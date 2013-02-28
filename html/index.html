@@ -186,8 +186,7 @@ requirejs(requirejsScripts, function()
 		{
 			j = new Jukebox("player",
 			{
-				skin: "light",
-				theme: "blue",
+				skin: "default",
 				SM2Folder: DEBUG ? '/src/' : '/'
 			});
 			j.ready(function() // Wait that .swf player is loaded
@@ -236,12 +235,12 @@ requirejs(requirejsScripts, function()
 				*/
 			});
 
-
-			new Jukebox(document.body,
+			/*new Jukebox(document.body,
 			{
-				skin: "default",
+				skin: "light",
+				theme: "blue",
 				SM2Folder: DEBUG ? '/src/' : '/'
-			});
+			});*/
 		}
 		catch(fatalEx)
 		{
