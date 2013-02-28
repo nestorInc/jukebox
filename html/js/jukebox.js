@@ -484,22 +484,12 @@ function JsonPrettyPrint(input)
 }
 var Tab = this.Tab = Class.create(
 {
-	initialize: function(identifier, name, jukebox, domContainer)
+	initialize: function(name, jukebox, domContainer, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = name;
 		this.jukebox = jukebox;
-		this.dom = domContainer;
-	},
-
-	getName: function()
-	{
-		return this.name; 
-	},
-
-	getIdentifier: function()
-	{
-		return this.identifier;
+		this.DOM = domContainer;
+		this.rootCSS = rootCSS;
 	}
 });
 
@@ -507,9 +497,9 @@ var Tab = this.Tab = Class.create(
 
 this.Tabs = Class.create(
 {
-	initialize: function(tabsCollectionName)
+	initialize: function(rootCSS)
 	{
-		this.tabsCollectionName = tabsCollectionName;
+		this.rootCSS = rootCSS;
 		this.tabs = [];
 		this.currentTabUniqueId = -1;
 		this.lastUniqueId = null;
@@ -517,7 +507,7 @@ this.Tabs = Class.create(
 
 	getTabFromUniqueId: function(identifier)
 	{
-		for(var i = 0; i < this.tabs.length; ++i)
+		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
 			if(this.tabs[i].identifier == identifier)
 			{
@@ -529,7 +519,7 @@ this.Tabs = Class.create(
 
 	getTabIndexFromUniqueId: function(identifier)
 	{
-		for(var i = 0; i < this.tabs.length; ++i)
+		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
 			if(this.tabs[i].identifier == identifier)
 			{
@@ -538,24 +528,12 @@ this.Tabs = Class.create(
 		}
 		return -1;
 	},
-	
-	getFirstTabIdentifierByClassName: function(tabClassName)
-	{
-		for(var i = 0; i < this.tabs.length; ++i)
-		{
-			if(this.tabs[i].unique !== undefined && this.tabs[i].unique == tabClassName)
-			{
-				return this.tabs[i].identifier;
-			}
-		}
-		return null;
-	},
 
-	getFirstTabByClassName: function(tabClassName)
+	getFirstTabByClass: function(tabClass)
 	{
 		for(var i = 0; i < this.tabs.length; ++i)
 		{
-			if(this.tabs[i].unique !== undefined && this.tabs[i].unique == tabClassName)
+			if(this.tabs[i] instanceof tabClass)
 			{
 				return this.tabs[i];
 			}
@@ -571,6 +549,7 @@ this.Tabs = Class.create(
 	// Add the tab in the html layout and in the tabs array
 	addTab: function(tab)
 	{
+		// Check tab class
 		var rootClass = tab.constructor;
 		while(rootClass.superclass != null)
 		{
@@ -591,19 +570,20 @@ this.Tabs = Class.create(
 			this.lastUniqueId++;
 		}
 
-		// Set the new tab identifier
-		var id = tab.identifier = this.tabsCollectionName + '-' + this.lastUniqueId;
+		// Set the new tab identifier and add tab
+		var id = tab.identifier = this.lastUniqueId;
 		this.tabs.push(tab);
 
-		// init html containers
+		// Init html containers
 		if(this.tabs.length == 1)
 		{
-			this.DOM.down('.jukebox-tabs-header').update('<ul class="jukebox-tabs-list"></ul>');
+			this.DOM.down('.'+this.rootCSS+'-tabs-header').update('<ul class="'+this.rootCSS+'-tabs-list"></ul>');
 		}
 
 		// Add tab Header
-		var toggleTab = new Element('a', {href: 'javascript:;'}).update('<span>' + tab.name + '</span>');
-		var removeTab = new Element('a', {href: 'javascript:;'}).update('<span> X </span>');
+		var noHref = 'javascript:;',
+			toggleTab = new Element('a', {href: noHref}).update('<span>' + tab.name + '</span>'),
+			removeTab = new Element('a', {href: noHref}).update('<span> X </span>');
 
 		var that = this; // Tool for closure
 		toggleTab.on("click", function()
@@ -615,28 +595,27 @@ this.Tabs = Class.create(
 			that.removeTab(id);
 		});
 
-		var tabDisplay = new Element('li',
-		{
-			style: 'margin-left: 1px',
-			id: 'tabHeader-' + id
-		}).insert(
+		var tabDisplay = new Element('li', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
 		{
 			top: toggleTab,
 			bottom: removeTab
 		});
 		if(this.tabs.length == 1)
 		{
-			tabDisplay.addClassName('tabHeaderActive');
+			tabDisplay.addClassName(this.rootCSS+'-tabs-active');
 		}
 
-		var tabContentContainer = new Element('div', {id: 'tabContent-' + id}); // todo: use classes to not pollute ids
-		tabContentContainer.style.display = this.tabs.length == 1 ? 'block' : 'none';
+		var tabContentContainer = new Element('div', {"class": this.rootCSS + '-tabContent-' + id});
+		if(this.tabs.length > 1)
+		{
+			tabContentContainer.hide();
+		}
 
 		// DOM insertion
-		this.DOM.down('.jukebox-tabs-list').insert({bottom: tabDisplay});
-		this.DOM.down('.jukebox-tabs-content').insert({bottom: tabContentContainer});
+		this.DOM.down('.'+this.rootCSS+'-tabs-list').insert(tabDisplay);
+		this.DOM.down('.'+this.rootCSS+'-tabs-content').insert(tabContentContainer);
 
-		// Start to init static tab content
+		// Init tab content
 		if(typeof tab.updateContent === 'function')
 		{
 			tab.updateContent();
@@ -651,9 +630,9 @@ this.Tabs = Class.create(
 		if(index != -1)
 		{
 			// If the tab to delete is the current active tab we want to select the first available tab
-			var tabHeader = $('tabHeader-' + identifier),
-				tabContent = $('tabContent-' + identifier);
-			if(tabHeader && tabHeader.hasClassName("tabHeaderActive"))
+			var tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+identifier),
+				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+identifier);
+			if(tabHeader && tabHeader.hasClassName(this.rootCSS + '-tabs-active'))
 			{
 				// Find the tabs position index available near from tab
 				if(index !== 0)
@@ -676,20 +655,21 @@ this.Tabs = Class.create(
 
 	toggleTab: function(identifier)
 	{
-		for(var i = 0; i < this.tabs.length; i++)
+		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
-			var id = this.tabs[i].identifier,
-				tabHeader = $('tabHeader-' + id),
-				tabContent = $('tabContent-' + id);
-			if(id == identifier)
+			var tab = this.tabs[i],
+				id = tab.identifier,
+				tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id),
+				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+id);
+			if(tab.identifier == identifier)
 			{
-				tabContent.style.display = 'block';
-				tabHeader.addClassName('tabHeaderActive');
+				tabContent.show();
+				tabHeader.addClassName(this.rootCSS + '-tabs-active');
 			}
 			else
 			{
-				tabContent.style.display = 'none';
-				tabHeader.removeClassName('tabHeaderActive');
+				tabContent.hide();
+				tabHeader.removeClassName(this.rootCSS + '-tabs-active');
 			}
 		}
 	}
@@ -697,7 +677,7 @@ this.Tabs = Class.create(
 
 this.SearchTab = Class.create(Tab,
 {
-	initialize: function($super, jukebox, domContainer, server_results)
+	initialize: function($super, jukebox, domContainer, server_results, rootCSS)
 	{
 		this.reloadControllers = true;
 		this.pages = [];
@@ -705,7 +685,7 @@ this.SearchTab = Class.create(Tab,
 		this.tableKit = null;
 
 		var id = server_results.identifier;
-		$super(id, id, jukebox, domContainer);
+		$super(id, jukebox, domContainer, rootCSS);
 		
 		this.updateNewSearchInformations(server_results);
 	},
@@ -794,7 +774,7 @@ this.SearchTab = Class.create(Tab,
 		if(this.reloadControllers)
 		{
 			// Clean
-			this.dom.select('collection-pagelist-' + this.identifier).each(function(s)
+			this.DOM.select('collection-pagelist-' + this.identifier).each(function(s)
 			{
 				s.remove();
 			});
@@ -810,7 +790,7 @@ this.SearchTab = Class.create(Tab,
 			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>' +
 			'<div id="collection-content-' + this.identifier + '"></div>' +
 			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>';
-			this.dom.down('#tabContent-' + this.identifier).update(search_page);
+			this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier).update(search_page);
 
 			// Display sliders and links and init sliders behvior
 			this.initAndDisplaySearchControllers();
@@ -1338,14 +1318,12 @@ this.SearchTab = Class.create(Tab,
 	}
 });
 
-var UploadTab = Class.create(Tab,
+this.UploadTab = Class.create(Tab,
 {
-	initialize: function(identifier, tabName, domContainer, jukebox)
+	initialize: function(tabName, DOM, rootCSS, jukebox)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
 		this.uploader = null;
-		this.unique = "UploadTab";
 		this.uploadedFiles = null;
 		this.uploadedFilesEdition = null;
 		this.lastSendingDeletionIdentifier = null;
@@ -1353,7 +1331,8 @@ var UploadTab = Class.create(Tab,
 		this.lastSendingValidationIdentifier = null;
 		this.refresher = null;
 		this.tableId = new Date().getTime();
-		this.dom = domContainer;
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
 	},
 
@@ -1822,7 +1801,7 @@ var UploadTab = Class.create(Tab,
 		{
 			Notifications.Display(1, "All current uploads canceled.");
 		}
-		this.uploader._handler.cancelAll();		
+		this.uploader._handler.cancelAll();
 	},
 
 	updateContent: function()
@@ -1831,7 +1810,7 @@ var UploadTab = Class.create(Tab,
 			'<h2>Uploaded files</h2>' +
 			'<div id="uploaded-files" style="overflow:auto;"></div>';
 
-		this.dom.down('#tabContent-' + this.identifier).update(upload_form);
+		this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier).update(upload_form);
 
 		// Init upload button behavior
 		this.uploader = new qq.FileUploader(
@@ -1852,11 +1831,11 @@ var UploadTab = Class.create(Tab,
 
 this.DebugTab = Class.create(Tab, 
 {
-	initialize: function(identifier, tabName)
+	initialize: function(tabName, DOM, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
-		this.unique = 'DebugTab';
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 	},
 
 	updateSendingQuery: function(query)
@@ -1895,7 +1874,7 @@ this.DebugTab = Class.create(Tab,
 			'</td>' +
 		'</tr>' +
 		'</table>';
-		var $content = $('tabContent-' + this.identifier);
+		var $content = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
 		$content.update(debug_display);
 
 		this.$debug1 = $content.down('div:first');
@@ -1904,14 +1883,89 @@ this.DebugTab = Class.create(Tab,
 });
 
 
+this.PlaylistTab = Class.create(Tab,
+{
+	initialize: function(tabName, DOM, rootCSS, jukebox)
+	{
+		this.name = tabName;
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
+		this.jukebox = jukebox;
+	},
+
+	updateContent: function()
+	{
+		var $tabContent = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
+		$tabContent.update('<h1>Playlists</h1>');
+
+		var that = this;
+
+		function createLoad(name)
+		{
+			var el = new Element('input', {type: 'button', value: 'Load'});
+			el.on("click", function()
+			{
+				J.restorePlayQueue(name/*, position*/);
+			});
+			return el;
+		}
+		function createDel(name)
+		{
+			var el = new Element('input', {type: 'button', value: 'Remove'});
+			el.on("click", function()
+			{
+				J.deletePlayQueue(name);
+				that.updateContent(); // Force refresh (brutal)
+			});
+			return el;
+		}
+
+		var J = this.jukebox,
+			playlists = J.getPlayQueues(),
+			table = new Element('table').addClassName(this.rootCSS+'-playlists');
+		for(var i = 0, len = playlists.length; i < len; ++i)
+		{
+			var id = playlists[i],
+				tr = new Element('tr'),
+				name = new Element('td').insert(id),
+				load = new Element('td').insert(createLoad(id)),
+				del = new Element('td').insert(createDel(id));
+
+			tr.insert(load).insert(
+			{
+				top: name,
+				bottom: del
+			});
+			table.insert(tr);
+		}
+		$tabContent.insert(table);
+
+		var btn = new Element('input', {type: 'button', value: 'Save current playlist'});
+		btn.on("click", function()
+		{
+			var name = "";
+			while(name === "") // null allowed to ESC
+			{
+				name = prompt("Name");
+				if(name)
+				{
+					J.savePlayQueue(name);
+					Notifications.Display(Notifications.LEVELS.info, "Current playlist save with name " + name);
+					that.updateContent(); // Force refresh (brutal)
+				}
+			}
+		});
+		$tabContent.insert(btn);
+	}
+});
+
 this.CustomQueriesTab = Class.create(Tab,
 {
-	initialize: function(identifier, tabName, domContainer)
+	initialize: function(tabName, DOM, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
-		this.unique = 'CustomQueriesTab';
-		this.dom = domContainer;
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 	},
 
 	updateContent: function()
@@ -1946,7 +2000,7 @@ this.CustomQueriesTab = Class.create(Tab,
 			'<td><input type="button" value="send custom query"/></td>' +
 		'</tr>' +
 		'</table>';
-		var $content = this.dom.down('#tabContent-' + this.identifier);
+		var $content = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
 		$content.update(custom_queries_display);
 
 		var $textarea = $content.down('textarea'),
@@ -2057,18 +2111,18 @@ this.CustomQueriesTab = Class.create(Tab,
 
 this.NotificationTab = Class.create(Tab,
 {
-	initialize: function(identifier, tabName)
+	initialize: function(tabName, DOM, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
 		this.uploader = null;
-		this.unique = "NotificationTab";
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 	},
 
 	updateContent: function()
 	{
-		var $tabContent = $('tabContent-' + this.identifier);
-		$tabContent.update('<h1>Notification tests:</h1>');
+		var $tabContent = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
+		$tabContent.update('<h1>Notification tests</h1>');
 
 		function addButton(level)
 		{
@@ -2785,6 +2839,7 @@ function Jukebox(element, opts)
 	};
 
 	/**
+	* Get/Set the volume
 	* @param {int|string} [volume] - The volume to set in the [0-100] range.
 	* @return {int} The volume in the [0-100] range.
 	*/
@@ -3112,6 +3167,27 @@ function Jukebox(element, opts)
 	};
 
 	/**
+	* Get all play queue identifiers
+	* @return string[] name.
+	*/
+	this.getPlayQueues = function()
+	{
+		var list = [];
+		if(_supportsHTML5Storage())
+		{
+			var playqueues = _getHTML5Storage("playqueues");
+			if(playqueues)
+			{
+				for(var name in playqueues)
+				{
+					list.push(name);
+				}
+			}
+		}
+		return list;
+	};
+
+	/**
 	* Go to the next song
 	* @return {Jukebox} this.
 	*/
@@ -3254,7 +3330,11 @@ function Jukebox(element, opts)
 	{
 		query.setTimestamp(_timestamp);
 
-		_ui.sendingQuery(query.valueOf());
+		try
+		{
+			_ui.sendingQuery(query.valueOf());
+		}
+		catch(e){} // Prevent ajax stop in case of UI failure
 
 		var query_json = query.toJSON();
 		new Ajax.Request(_opts.URL,
@@ -3329,9 +3409,7 @@ function Jukebox(element, opts)
 		}
 		if(json.play_queue)
 		{
-			_ui.cleanupPlayQueue();
 			_playQueueSongs = json.play_queue.songs;
-
 			var clone = Extend(true, [], _playQueueSongs); // Clone: can be setted (inside ui) without impact
 			_ui.displayPlayQueue(clone, _last_nb_listening_users);
 		}
@@ -3654,7 +3732,9 @@ function Jukebox(element, opts)
 
 		_ui = new JukeboxUI($this, element,
 		{
-			replaceTitle: _opts.replaceTitle
+			replaceTitle: _opts.replaceTitle,
+			skin: _opts.skin,
+			theme: _opts.theme
 		});
 
 		if(_opts.autorefresh)
@@ -3711,6 +3791,8 @@ Jukebox.defaults =
 	replaceTitle: true
 };
 
+Jukebox.UI = JukeboxUI; // To attach skins
+
 Object.freeze(Jukebox); // Non-extensible, Non-removable, Non-modifiable
 Object.freeze(Jukebox.prototype); // 1337 strict mode
 
@@ -3736,6 +3818,7 @@ function JukeboxUI(jukebox, element, opts)
 	// [Public] Variables
 
 	this.skin = JukeboxUI.defaults.skin;
+	this.theme = '';
 
 	//---
 	// [Private] Variables
@@ -3747,22 +3830,34 @@ function JukeboxUI(jukebox, element, opts)
 		_opts = Extend(true, {}, JukeboxUI.defaults, opts), // Recursively merge options
 
 		J = jukebox, // short jukebox reference
-		_tabs = new Tabs('tab'),
-		_tabsManager = {},
+		_tabs = null,
+		_skin = JukeboxUI.skins[_opts.skin],
 		_volumeSlider,
 		_$, // Selectors cache
 
 		_refreshSongTimer = null,
 		_lastCurrentSongElapsedTime = null;
 
-	if(JukeboxUI.skins[_opts.skin])
+	if(_skin) // Skin exists
 	{
 		this.skin = _opts.skin;
 	}
-	else
+	else // Invalid _opts.skin
 	{
+		// Restore to default value
 		_opts.skin = JukeboxUI.defaults.skin;
+		_skin = JukeboxUI.skins[_opts.skin];
 	}
+
+	// Ensure params default values
+	_skin.params = Extend(true, {}, JukeboxUI.defaults.skinParams, _skin.params);
+
+	// Set theme
+	_opts.theme = (_skin.themes || []).indexOf(_opts.theme) == -1 ? _skin.defaultTheme : _opts.theme;
+	this.theme = _opts.theme;
+
+	// One distinct CSS per skin
+	_opts.rootClass += _opts.skin == JukeboxUI.defaults.skin ? '' : '-' + _opts.skin;
 
 	//---
 	// [Privileged] Functions
@@ -3774,12 +3869,17 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.activity = function(status)
 	{
-		var color = _opts.ActivityMonitorColor.inactive;
+		var on = _opts.rootClass + '-activity-on',
+			off = _opts.rootClass + '-activity-off',
+			add = off,
+			remove = on;
 		if(status === true)
 		{
-			color = _opts.ActivityMonitorColor.active;
+			add = on;
+			remove = off;
 		}
-		_$.activity_monitor.setStyle({backgroundColor: color});
+		_$.activity_monitor.removeClassName(remove);
+		_$.activity_monitor.addClassName(add);
 	};
 
 	/**
@@ -3875,14 +3975,11 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.updateNbUsers = function(count)
 	{
-		var items = $$('span.count-user-listening');
-		if(items.length > 0)
+		var items = _$.jukebox.select('.'+_opts.rootClass+'-listening-count');
+		items.each(function(e)
 		{
-			items.each(function(e)
-			{
-				e.update(count.toString());
-			});
-		}
+			e.update(count.toString());
+		});
 	};
 
 	/**
@@ -3903,127 +4000,164 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
-	this.cleanupPlayQueue = function()
-	{
-		var len = _$.play_queue_content.select('li').length - 1;
-		for(var i = 0; i < len; ++i)
-		{
-			Droppables.remove('play-queue-song-' + i);
-		}
-	};
-
 	/**
 	* Render the current play queue
 	* @param {Array<song>} playQueueSongs - The current play queue
 	*/
 	this.displayPlayQueue = function(playQueueSongs)
 	{
-		var ul = new Element('ul');
-		var li = '' +
-		'<li id="play-queue-li-first" class="droppable">Play queue' +
-			'<div>' +
-				'<span class="nb-listening-users"></span>' +
-				'<span class="count-user-listening">' + J.listenersCount + '</span>' +
-			'</div>' +
-			'<a><span class="play-queue-shuffle"></span></a>' +
-			'<a><span class="play-queue-delete"></span></a>' +
-		'</li>';
-		ul.insert(li);
+		_cleanupPlayQueue();
 
-		ul.down(".play-queue-shuffle").on("click", function()
+		// Playqueue header template
+		var playQueueTpl = new Template(_skin.templates.playQueue),
+		playQueueTplVars =
 		{
-			J.playQueueShuffle();
-		});
-		ul.down(".play-queue-delete").on("click", function()
-		{
-			J.playQueueDelete();  // no args = all
-		});
+			root: _opts.rootClass,
+			playQueueLabel: 'Play queue',
+			listenersCount: J.listenersCount
+		};
+		
+		// Create playqueue header
+		var ul = new Element(_skin.params.playQueueNode).insert(playQueueTpl.evaluate(playQueueTplVars));
 
+		// Declare listeners
+		var rootClass = '.' + _opts.rootClass + '-',
+			$shuffle = ul.down(rootClass+"playqueue-shuffle"),
+			$delete = ul.down(rootClass+"playqueue-delete");
+		if($shuffle)
+		{
+			$shuffle.on("click", function()
+			{
+				J.playQueueShuffle();
+			});
+		}
+		if($delete)
+		{
+			$delete.on("click", function()
+			{
+				J.playQueueDelete();  // no args = all
+			});
+		}
+
+		// Each song template
 		var currentPQSongIndex = 0,
 			lastPQIndex = playQueueSongs.length - 1;
 		playQueueSongs.each(function(song)
 		{
-			li = '' +
-			'<li id="play-queue-li-' + currentPQSongIndex + '" class="droppable">' +
-				'<div id="play-queue-song-' + currentPQSongIndex + '" class="play-queue-draggable">' +
-					'<div id="play-queue-handle-' + currentPQSongIndex + '" class="play-queue-handle">' +
-						'<a href="javascript:void(0)">' + song.artist + '</a>' +
-						' - ' +
-						'<a href="javascript:void(0)">' + song.album + '</a>' +
-						' - ' +
-						song.title + ' (' + FormatTime(song.duration) + ')' +
-					'</div>' +
-					'<a><span class="play-queue-move-top"></span></a>' +
-					'<a><span class="play-queue-move-bottom"></span></a>' +
-					'<a><span class="play-queue-delete"></span></a>' +
-				'</div>' +
-			'</li>';
-			ul.insert(li);
-
-			// Store mid
-			ul.down('li:last > div').store('mid', song.mid);
+			// Playqueue song template
+			var playQueueSongTpl = new Template(_skin.templates.playQueueSong),
+			playQueueSongTplVars =
+			{
+				root: _opts.rootClass,
+				index: currentPQSongIndex,
+				artist: song.artist,
+				album: song.album,
+				title: song.title,
+				duration: FormatTime(song.duration)
+			};
+			ul.insert(playQueueSongTpl.evaluate(playQueueSongTplVars));
 
 			// Declare listeners
+			var li = ul.down((_skin.params.songNode) + ':last');
+
+			// Store mid
+			li.store('mid', song.mid);
 
 			// Artist
-			ul.down('li:last .play-queue-handle a:first').on("click", function()
+			var $artist = li.down(rootClass+'playqueue-handle a:first');
+			if($artist)
 			{
-				_search(1, null, null, song.artist, 'equal', 'artist', 'artist,album,track,title', 20, false);
-			});
-			// Album
-			ul.down('li:last .play-queue-handle a:last').on("click", function()
-			{
-				_search(1, null, null, song.album, 'equal', 'album', 'artist,album,track,title', 20, false);
-			});
+				$artist.on("click", function()
+				{
+					_search(1, null, null, song.artist, 'equal', 'artist', 'artist,album,track,title', 20, false);
+				});
+			}
 
-			var localcurrentPQSongIndex = currentPQSongIndex; // Avoid closure issue
-			ul.down('li:last .play-queue-move-top').on("click", function()
+			// Album
+			var $album = li.down(rootClass+'playqueue-handle a:last');
+			if($album)
 			{
-				J.playQueueMove(1, localcurrentPQSongIndex, 0);
-			});
-			ul.down('li:last .play-queue-move-bottom').on("click", function()
+				$album.on("click", function()
+				{
+					_search(1, null, null, song.album, 'equal', 'album', 'artist,album,track,title', 20, false);
+				});
+			}
+
+			var localcurrentPQSongIndex = currentPQSongIndex, // Avoid closure issue
+				$top = li.down(rootClass+'playqueue-move-top'),
+				$bottom = li.down(rootClass+'playqueue-move-bottom');
+			
+			if($top)
 			{
-				J.playQueueMove(1, localcurrentPQSongIndex, lastPQIndex);
-			});
-			ul.down('li:last .play-queue-delete').on("click", function()
+				$top.on("click", function()
+				{
+					J.playQueueMove(1, localcurrentPQSongIndex, 0);
+				});
+			}
+			if($bottom)
 			{
-				J.playQueueDelete(1, localcurrentPQSongIndex);
-			});
+				$bottom.on("click", function()
+				{
+					J.playQueueMove(1, localcurrentPQSongIndex, lastPQIndex);
+				});
+			}
+			$delete = li.down(rootClass+'playqueue-delete');
+			if($delete)
+			{
+				$delete.on("click", function()
+				{
+					J.playQueueDelete(1, localcurrentPQSongIndex);
+				});
+			}
 
 			currentPQSongIndex++;
 		});
 		
+
+		if(ul.nodeName == 'TBODY')
+		{
+			ul = ul.wrap('table');
+		}
+
 		_$.play_queue_content.update(ul);
 
 		function dragStart(dragged)
 		{
-			var id = dragged.element.id;
-			id = id.substring(16);
-			$('play-queue-li-' + id).addClassName('being-dragged');
+			var id = _findDraggedId(dragged.element);
+			if(id !== null)
+			{
+				ul.down(rootClass+'playqueue-' + id).addClassName(_opts.rootClass+'-being-dragged');
+			}
 		}
 
 		function dragEnd(dragged)
 		{
-			var id = dragged.element.id;
-			id = id.substring(16);
-			$('play-queue-li-' + id).removeClassName('being-dragged');
+			var id = _findDraggedId(dragged.element);
+			if(id !== null)
+			{
+				ul.down(rootClass+'playqueue-' + id).removeClassName(_opts.rootClass+'-being-dragged');
+			}
 		}
 		
 		// Create all draggables, once update is done.
 		for(var i = 0, len = playQueueSongs.length; i < len; i++)
 		{
-			new Draggable('play-queue-song-' + i,
+			var droppable = ul.down(rootClass+'playqueue-' + i),
+				draggable = droppable.down(rootClass+'playqueue-song-' + i),
+				handle = draggable.down(rootClass+'playqueue-handle-' + i);
+
+			new Draggable(draggable,
 			{
 				scroll: window,
 				constraint: 'vertical',
 				revert: true,
-				handle: 'play-queue-handle-' + i,
+				handle: handle,
 				onStart: dragStart,
 				onEnd: dragEnd
 			});
-			_makePlayQueueSongDroppable('play-queue-li-' + i, playQueueSongs);
+			_makePlayQueueSongDroppable(droppable, playQueueSongs);
 		}
-		_makePlayQueueSongDroppable('play-queue-li-first', playQueueSongs);
+		_makePlayQueueSongDroppable(ul.down(rootClass+'playqueue-first'), playQueueSongs);
 	};
 
 	/**
@@ -4039,7 +4173,7 @@ function JukeboxUI(jukebox, element, opts)
 		if(!results.identifier)
 		{
 			// Adds the new created tab to the tabs container
-			var searchTab = new SearchTab(J, _$.tabs, results);
+			var searchTab = new SearchTab(J, _$.tabs, results, _opts.rootClass);
 			var id = _tabs.addTab(searchTab);
 			if(results.select !== false)
 			{
@@ -4060,7 +4194,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.sendingQuery = function(query)
 	{
-		var tab = _tabs.getFirstTabByClassName("DebugTab");
+		var tab = _tabs.getFirstTabByClass(DebugTab);
 		if(tab)
 		{
 			tab.updateSendingQuery(query);
@@ -4080,7 +4214,7 @@ function JukeboxUI(jukebox, element, opts)
 		}
 		*/
 
-		var tab = _tabs.getFirstTabByClassName("DebugTab");
+		var tab = _tabs.getFirstTabByClass(DebugTab);
 		if(tab)
 		{
 			tab.updateResponse(response);
@@ -4093,12 +4227,29 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.displayUploadedFiles = function(uploaded_files)
 	{
-		//TODO: TabManager.UploadTab
-		var tab = _tabs.getFirstTabByClassName("UploadTab");
+		var tab = _tabs.getFirstTabByClass(UploadTab);
 		if(tab)
 		{
 			tab.treatResponse(uploaded_files);
 		}
+	};
+
+	/**
+	* Get/Set the theme
+	* @param {string} [name] - Theme to set
+	* @return {string} The current theme.
+	*/
+	this.theme = function(name)
+	{
+		if(arguments.length > 0)
+		{
+			var prefix = _opts.rootClass + '-theme-';
+			_$.jukebox.removeClassName(prefix + _opts.theme);
+			_opts.theme = name;
+			_$.jukebox.addClassName(prefix + _opts.theme);
+			this.theme = _opts.theme;
+		}
+		return _opts.theme;
 	};
 
 	//-----
@@ -4109,10 +4260,9 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	function _expand()
 	{
-		_$.tabs.style.display = 'inline';
 		_$.expand_button.hide();
-		_$.collapse_button.style.display = 'block'; // .show is stupid (ignores css)
-		_$.jukebox.setStyle({width: '900px'});
+		_$.collapse_button.show();
+		_$.jukebox.addClassName(_opts.rootClass+'-fullplayer');
 	}
 
 	/**
@@ -4120,10 +4270,9 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	function _collapse()
 	{
-		_$.tabs.hide();
 		_$.expand_button.show();
 		_$.collapse_button.hide();
-		_$.jukebox.setStyle({width: '280px'});
+		_$.jukebox.removeClassName(_opts.rootClass+'-fullplayer');
 	}
 
 	/**
@@ -4154,40 +4303,76 @@ function JukeboxUI(jukebox, element, opts)
 	}
 
 	/**
-	 * Helper to do a search in a specific category
-	 * @param {string} search - The text search
-	 * @param {string} category - artist or album
-	 */
+	* Helper to do a search in a specific category
+	* @param {string} search - The text search
+	* @param {string} category - artist or album
+	*/
 	function _searchCategory(search, category)
 	{
 		_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, false);
 	}
 
 	/**
+	* Remove droppability for playqueue items
+	*/
+	function _cleanupPlayQueue()
+	{
+		_$.play_queue_content.select('.'+_opts.rootClass+'-playqueue-droppable').each(function(e)
+		{
+			Droppables.remove(e);
+		});
+	}
+
+	/**
+	* Helper to get the id of a playqueue item
+	* @param {DOM} element Item to get id from
+	* @param {bool} [drop] Is the element a droppable?
+	* @return {string} id extracted from css jukebox-song-<id>, null if not found
+	*/
+	function _findDraggedId(element, drop)
+	{
+		var classes = element.className.split(' '),
+			str = drop ? _opts.rootClass+'-playqueue-' : _opts.rootClass+'-playqueue-song-',
+			id = null;
+		for(var i = 0; i < classes.length; ++i)
+		{
+			if(classes[i].indexOf(str) != -1)
+			{
+				id = classes[i].substring(str.length);
+				break;
+			}
+		}
+		return id;
+	}
+
+	/**
 	* Make play queue songs droppables
-	* @param {int} droppable_id - The element id to make droppable (same as draggable)
+	* @param {int} droppable - The element to make droppable (same as draggable)
 	* @param {Array<song>} playQueueSongs - The play queue
 	*/
-	function _makePlayQueueSongDroppable(droppable_id, playQueueSongs)
+	function _makePlayQueueSongDroppable(droppable, playQueueSongs)
 	{
-		Droppables.add(droppable_id,
+		Droppables.add(droppable,
 		{ 
-			accept: ['play-queue-draggable', 'library-draggable'],
+			accept: [_opts.rootClass+'-playqueue-draggable', 'library-draggable'],
 			overlap: 'vertical',
-			hoverclass: 'droppable-hover',
-			onDrop: function(dragged, dropped/*, event*/)
+			hoverclass: _opts.rootClass+'-droppable-hover',
+			onDrop: function(dragged, dropped)
 			{
 				var old_index,
 					song_mid;
-				if(dragged.hasClassName("play-queue-draggable"))
+				if(dragged.hasClassName(_opts.rootClass+'-playqueue-draggable'))
 				{
-					old_index = parseInt(dragged.id.substring(16), 10);
-					song_mid = dragged.retrieve('mid');
+					var draggedId = _findDraggedId(dragged);
+
+					old_index = parseInt(draggedId, 10);
+					song_mid = dragged.up().retrieve('mid');
 					
 					var new_index = -1;
-					if(dropped.id != "play-queue-li-first")
+					if(!dropped.hasClassName(_opts.rootClass+'-playqueue-first'))
 					{
-						new_index = parseInt(dropped.id.substring(14), 10);
+						var droppedId = _findDraggedId(dropped, true);
+						new_index = parseInt(droppedId, 10);
 					}
 					if(new_index <= old_index)
 					{
@@ -4197,7 +4382,7 @@ function JukeboxUI(jukebox, element, opts)
 					{
 						J.playQueueMove(song_mid, old_index, new_index);
 						
-						$this.cleanupPlayQueue();
+						_cleanupPlayQueue();
 						var tmp = playQueueSongs[old_index];
 						playQueueSongs.splice(old_index, 1);
 						playQueueSongs.splice(new_index, 0, tmp);						
@@ -4213,9 +4398,10 @@ function JukeboxUI(jukebox, element, opts)
 					song_mid = song.mid;
 					
 					var play_queue_index = -1;
-					if(dropped.id != "play-queue-li-first")
+					if(!dropped.hasClassName(_opts.rootClass+'-playqueue-first'))
 					{
-						play_queue_index = parseInt(dropped.id.substring(14), 10);
+						var droppedId2 = _findDraggedId(dropped, true);
+						play_queue_index = parseInt(droppedId2, 10);
 					}
 					play_queue_index++;
 
@@ -4334,12 +4520,17 @@ function JukeboxUI(jukebox, element, opts)
 		var $elem = $(element);
 		try
 		{
-			var skin = JukeboxUI.skins[_opts.skin],
-			songTpl = new Template(skin.templates.song),
-			jukeboxTpl = new Template(skin.templates.player),
+			var songTpl = new Template(_skin.templates.song),
+			songTplVars =
+			{
+				root: _opts.rootClass
+			},
+			jukeboxTpl = new Template(_skin.templates.player),
 			jukeboxTplVars =
 			{
-				currentSong: songTpl.evaluate(),
+				root: _opts.rootClass,
+				theme: _opts.theme,
+				currentSong: songTpl.evaluate(songTplVars),
 				canalLabel: 'Canal :',
 				canalValue: 'Rejoindre',
 				searchLabel: 'Rechercher :',
@@ -4348,7 +4539,8 @@ function JukeboxUI(jukebox, element, opts)
 				QueryTabName: 'Query',
 				NotificationsTabName: 'Notifications',
 				DebugTabName: 'Debug',
-				artiste: 'artiste',
+				PlaylistTabName: 'Playlists',
+				artist: 'artiste',
 				title: 'title',
 				album: 'album',
 				genre: 'genre',
@@ -4359,9 +4551,10 @@ function JukeboxUI(jukebox, element, opts)
 				pluginButton: 'Appliquer',
 				play: 'Play stream',
 				stop: 'Stop stream',
-				volume: 'Volume :'
+				volume: 'Volume :',
+				listenersCount: J.listenersCount
 			};
-			$elem.insert(jukeboxTpl.evaluate(jukeboxTplVars)); // DOM insertion ; Only location where element is modified
+			$elem.insert(jukeboxTpl.evaluate(jukeboxTplVars)); // DOM insertion ; Only location where $elem is modified
 		}
 		catch(skinEx)
 		{
@@ -4386,7 +4579,7 @@ function JukeboxUI(jukebox, element, opts)
 			btn_search:			$JB.down(rootClass+'search-button'),
 			progressbar:		$JB.down(rootClass+'progressbar'),
 			player_song_time:	$JB.down(rootClass+'song-time'),
-			activity_monitor:	$JB.down(rootClass+'activity-monitor'),
+			activity_monitor:	$JB.down(rootClass+'activity'),
 			play_stream:		$JB.down(rootClass+'stream-play'),
 			stop_stream:		$JB.down(rootClass+'stream-stop'),
 			channel:			$JB.down(rootClass+'channel'),
@@ -4405,6 +4598,21 @@ function JukeboxUI(jukebox, element, opts)
 			tabs_links:			$JB.down(rootClass+'tabs-links')
 		};
 
+		// Initial visibility state
+		_$.collapse_button.hide();
+		_$.stop_stream.hide();
+
+		// Make selector facultative (for some skins)
+		var dummyElement = new Element('p');
+		for(var selector in _$)
+		{
+			if(!_$[selector])
+			{
+				_$[selector] = dummyElement;
+			}
+		}
+
+		_tabs = new Tabs(_opts.rootClass);
 		_tabs.setRootNode(_$.tabs);
 
 		// Register listeners
@@ -4439,45 +4647,47 @@ function JukeboxUI(jukebox, element, opts)
 
 		(function() // Tabs
 		{
+			var tabsManager = {};
 			function createShowTab(tab)
 			{
-				_tabsManager["Show" + tab.classN] = function()
+				tabsManager["Show" + tab.classN] = function()
 				{
-					var identifier = _tabs.getFirstTabIdentifierByClassName(tab.classN);
-					if(identifier === null)
+					var search = _tabs.getFirstTabByClass(tab.classC);
+					if(search === null)
 					{
-						var newTab = new tab.classC(tab.identifier, tab.name, _$.tabs, J);
-						identifier = _tabs.addTab(newTab);
+						var newTab = new tab.classC(tab.name, _$.tabs, _opts.rootClass, J);
+						search = _tabs.addTab(newTab);
 					}
-					_tabs.toggleTab(identifier);
+					_tabs.toggleTab(search);
 				};
 			}
-			
+
 			var possibleTabs =
 			[
 				{
 					classN: "UploadTab",
 					classC: UploadTab,
-					identifier: "Uploader",
 					name: "Uploader"
 				},
 				{
 					classN: "DebugTab",
 					classC: DebugTab,
-					identifier: "Debug",
 					name: "Debug"
 				},
 				{
 					classN: "NotificationTab",
 					classC: NotificationTab,
-					identifier: "Notifications",
 					name: "Notifications"
 				},
 				{
 					classN: "CustomQueriesTab",
 					classC: CustomQueriesTab,
-					identifier: "Custom queries",
 					name: "Custom queries"
+				},
+				{
+					classN: "PlaylistTab",
+					classC: PlaylistTab,
+					name: "Playlists"
 				}
 			];
 
@@ -4487,10 +4697,14 @@ function JukeboxUI(jukebox, element, opts)
 			}
 
 			var TL = _$.tabs_links;
-			TL.down('.tab-upload').on("click", _tabsManager.ShowUploadTab);
-			TL.down('.tab-query').on("click", _tabsManager.ShowCustomQueriesTab);
-			TL.down('.tab-notifs').on("click", _tabsManager.ShowNotificationTab);
-			TL.down('.tab-debug').on("click", _tabsManager.ShowDebugTab);
+			if(!TL.empty()) // For skins without tabs links
+			{
+				TL.down(rootClass+'tab-upload').on("click", tabsManager.ShowUploadTab);
+				TL.down(rootClass+'tab-query').on("click", tabsManager.ShowCustomQueriesTab);
+				TL.down(rootClass+'tab-notifs').on("click", tabsManager.ShowNotificationTab);
+				TL.down(rootClass+'tab-debug').on("click", tabsManager.ShowDebugTab);
+				TL.down(rootClass+'tab-playlist').on("click", tabsManager.ShowPlaylistTab);
+			}
 		})();
 	})();
 }
@@ -4498,113 +4712,20 @@ function JukeboxUI(jukebox, element, opts)
 //---
 
 /** [Static] Variables
-* @property {string} ActivityMonitorColor.active - Monitor color when active
-* @property {string} ActivityMonitorColor.inactive - Monitor color when inactive
 */
 JukeboxUI.defaults =
 {
-	ActivityMonitorColor:
-	{
-		active: "orange",
-		inactive: "green"
-	},
 	skin: 'default',
-	rootClass: 'jukebox' // CSS begins with ".jukebox-"
-};
-
-JukeboxUI.skins =
-{
-	"default":
+	rootClass: 'jukebox', // CSS begins with ".jukebox-"
+	skinParams:
 	{
-		templates:
-		{
-			player:
-'<div class="jukebox">\
-	<div class="jukebox-header">\
-		#{canalLabel} <input type="text" class="jukebox-channel" /><input type="button" class="jukebox-channel-button" value="#{canalValue}" />\
-		<span class="jukebox-expand-button">&gt;</span>\
-		<span class="jukebox-collapse-button">&lt;</span>\
-		<span class="jukebox-activity-monitor"></span>\
-	</div>\
-	<div class="jukebox-main">\
-		<div class="jukebox-controls">\
-			<span class="jukebox-previous-button"></span><span class="jukebox-next-button"></span>\
-			#{currentSong}\
-			<div class="jukebox-progressbar-wrapper">\
-				<div class="jukebox-progressbar"></div>\
-				<p class="jukebox-song-time"></p>\
-			</div>\
-		</div>\
-		<div class="jukebox-playqueue">\
-			<div class="jukebox-playqueue-content"></div>\
-		</div>\
-	</div>\
-	\
-	<div class="jukebox-tabs">\
-		<div class="jukebox-tabs-links">\
-			<a class="tab-upload">#{UploadTabName}</a>\
-			<a class="tab-query">#{QueryTabName}</a>\
-			<a class="tab-notifs">#{NotificationsTabName}</a>\
-			<a class="tab-debug">#{DebugTabName}</a>\
-		</div>\
-		<div class="jukebox-tabs-head">\
-			#{searchLabel} <input type="text" class="jukebox-search-input" />\
-			<select class="jukebox-search-genres" style="display:none;"></select>\
-			<select class="jukebox-search-field">\
-				<option value="artist">#{artiste}</option>\
-				<option value="title">#{title}</option>\
-				<option value="album">#{album}</option>\
-				<option value="genre">#{genre}</option>\
-			</select> \
-			<select class="jukebox-results-per-page">\
-				<option value="10">10</option>\
-				<option value="20" selected="selected">20</option>\
-				<option value="30">30</option>\
-				<option value="40">40</option>\
-				<option value="50">50</option>\
-				<option value="60">60</option>\
-				<option value="70">70</option>\
-				<option value="80">80</option>\
-				<option value="90">90</option>\
-				<option value="100">100</option>\
-			</select> \
-			<input type="button" class="jukebox-search-button" value="#{searchButton}" />\
-		</div>\
-		<div class="jukebox-tabs-header"></div>\
-		<div class="jukebox-tabs-content"></div>\
-	</div>\
-	\
-	<div class="jukebox-footer">\
-		<input type="button" class="jukebox-refresh-button" value="#{refreshButton}" />\
-		<input type="checkbox" name="jukebox-autorefresh" class="jukebox-autorefresh" checked="checked" value="autorefresh" /><label for="jukebox-autorefresh"> #{refreshLabel}</label>\
-		<br />\
-		#{pluginLabel} <input type="text" class="jukebox-plugin" value="#{pluginDefault}" style="width: 100px;" />\
-		<input type="button" class="jukebox-plugin-button" value="#{pluginButton}" />\
-	</div>\
-	\
-	<div class="jukebox-stream">\
-		<a class="jukebox-stream-play">#{play}</a>\
-		<a class="jukebox-stream-stop">#{stop}</a>\
-	</div>\
-	<span class="jukebox-volume">\
-		<span>#{volume}&nbsp;</span>\
-		<div class="jukebox-volume-slider slider">\
-			<div class="jukebox-volume-handle handle"></div>\
-		</div>\
-		<br clear="all" />\
-	</span>\
-</div>',
-			song:
-'<p class="jukebox-song">\
-	<a class="jukebox-song-artist" href="#">#{artist}</a> - \
-	<a class="jukebox-song-album" href="#">#{album}</a> - \
-	<span class="jukebox-song-title">#{song}</span>\
-</p>',
-			playQueue: '',
-			playQueueSongs: ''
-		}
+		dragdrop: true,
+		playQueueNode: 'ul',
+		songNode: 'li'
 	}
 };
+
+JukeboxUI.skins = {}; // See skin/*.js
 
 Object.freeze(JukeboxUI); // Non-extensible, Non-removable, Non-modifiable
 Object.freeze(JukeboxUI.prototype); // 1337 strict mode

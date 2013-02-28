@@ -1,6 +1,6 @@
 this.SearchTab = Class.create(Tab,
 {
-	initialize: function($super, jukebox, domContainer, server_results)
+	initialize: function($super, jukebox, domContainer, server_results, rootCSS)
 	{
 		this.reloadControllers = true;
 		this.pages = [];
@@ -8,7 +8,7 @@ this.SearchTab = Class.create(Tab,
 		this.tableKit = null;
 
 		var id = server_results.identifier;
-		$super(id, id, jukebox, domContainer);
+		$super(id, jukebox, domContainer, rootCSS);
 		
 		this.updateNewSearchInformations(server_results);
 	},
@@ -97,7 +97,7 @@ this.SearchTab = Class.create(Tab,
 		if(this.reloadControllers)
 		{
 			// Clean
-			this.dom.select('collection-pagelist-' + this.identifier).each(function(s)
+			this.DOM.select('collection-pagelist-' + this.identifier).each(function(s)
 			{
 				s.remove();
 			});
@@ -113,7 +113,7 @@ this.SearchTab = Class.create(Tab,
 			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>' +
 			'<div id="collection-content-' + this.identifier + '"></div>' +
 			'<div class="collection-pagelist" name="collection-pagelist-' + this.identifier + '"></div>';
-			this.dom.down('#tabContent-' + this.identifier).update(search_page);
+			this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier).update(search_page);
 
 			// Display sliders and links and init sliders behvior
 			this.initAndDisplaySearchControllers();

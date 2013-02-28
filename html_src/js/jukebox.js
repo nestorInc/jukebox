@@ -145,6 +145,7 @@ function Jukebox(element, opts)
 	};
 
 	/**
+	* Get/Set the volume
 	* @param {int|string} [volume] - The volume to set in the [0-100] range.
 	* @return {int} The volume in the [0-100] range.
 	*/
@@ -472,6 +473,27 @@ function Jukebox(element, opts)
 	};
 
 	/**
+	* Get all play queue identifiers
+	* @return string[] name.
+	*/
+	this.getPlayQueues = function()
+	{
+		var list = [];
+		if(_supportsHTML5Storage())
+		{
+			var playqueues = _getHTML5Storage("playqueues");
+			if(playqueues)
+			{
+				for(var name in playqueues)
+				{
+					list.push(name);
+				}
+			}
+		}
+		return list;
+	};
+
+	/**
 	* Go to the next song
 	* @return {Jukebox} this.
 	*/
@@ -614,7 +636,11 @@ function Jukebox(element, opts)
 	{
 		query.setTimestamp(_timestamp);
 
-		_ui.sendingQuery(query.valueOf());
+		try
+		{
+			_ui.sendingQuery(query.valueOf());
+		}
+		catch(e){} // Prevent ajax stop in case of UI failure
 
 		var query_json = query.toJSON();
 		new Ajax.Request(_opts.URL,
@@ -689,9 +715,7 @@ function Jukebox(element, opts)
 		}
 		if(json.play_queue)
 		{
-			_ui.cleanupPlayQueue();
 			_playQueueSongs = json.play_queue.songs;
-
 			var clone = Extend(true, [], _playQueueSongs); // Clone: can be setted (inside ui) without impact
 			_ui.displayPlayQueue(clone, _last_nb_listening_users);
 		}
@@ -1014,7 +1038,9 @@ function Jukebox(element, opts)
 
 		_ui = new JukeboxUI($this, element,
 		{
-			replaceTitle: _opts.replaceTitle
+			replaceTitle: _opts.replaceTitle,
+			skin: _opts.skin,
+			theme: _opts.theme
 		});
 
 		if(_opts.autorefresh)
@@ -1070,6 +1096,8 @@ Jukebox.defaults =
 	autorefresh_delay: 3000,
 	replaceTitle: true
 };
+
+Jukebox.UI = JukeboxUI; // To attach skins
 
 Object.freeze(Jukebox); // Non-extensible, Non-removable, Non-modifiable
 Object.freeze(Jukebox.prototype); // 1337 strict mode

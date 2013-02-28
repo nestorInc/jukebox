@@ -1,10 +1,10 @@
 this.DebugTab = Class.create(Tab, 
 {
-	initialize: function(identifier, tabName)
+	initialize: function(tabName, DOM, rootCSS)
 	{
-		this.identifier = identifier;
 		this.name = tabName;
-		this.unique = 'DebugTab';
+		this.DOM = DOM;
+		this.rootCSS = rootCSS;
 	},
 
 	updateSendingQuery: function(query)
@@ -43,7 +43,7 @@ this.DebugTab = Class.create(Tab,
 			'</td>' +
 		'</tr>' +
 		'</table>';
-		var $content = $('tabContent-' + this.identifier);
+		var $content = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
 		$content.update(debug_display);
 
 		this.$debug1 = $content.down('div:first');

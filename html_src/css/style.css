@@ -15,329 +15,10 @@ text-indent: 0.5em;
 }
 
 footer{
+margin-top: 15px;
 text-align: center;
-}
-
-a:link, a:active, a:visited, a:hover, .jukebox-tabs-links > a, .jukebox-stream-play, .jukebox-stream-stop{
-text-decoration: none;
-font-weight: bold;
-color: #4d67b1;
-}
-a:hover, .jukebox-tabs-links > a:hover, .jukebox-stream-play:hover, .jukebox-stream-stop:hover{
-color: #a21919;
-cursor: pointer;
-}
-
-.jukebox{
-position: relative;
-margin-top: 25px; /* 1 notification height*/
-margin-right: auto;
-margin-left: auto;
-/*width: 960px;*/
-width: 280px;
-border: 1px solid black;
-/*border-radius: 10px;*/
-}
-
-/* Page layout */
-.jukebox-header{
-background-color: #6B6B6B;
-width: 100%;
-height: 20px;
-/*border-top-left-radius: 10px;
-border-top-right-radius: 10px;*/
-}
-
-.jukebox-main{
-float: left;
-display: inline;
-width: 280px;
-}
-
-.jukebox-footer{
-clear: both;
-position: relative;
-width: 100%;
-background-color: #6B6B6B;
-font-size: 85%;
-}
-
-/* Header */
-.jukebox-channel{
-width: 100px;
-height: 20px; /* #header height */
-border: 0;
-padding: 0;
-vertical-align: top;
-}
-.jukebox-channel-button{
-height: 100%;
-vertical-align: top;
-}
-
-span.jukebox-activity-monitor{
-display: block;
-float: right;
-height: 100%;
-width: 8px;
-background-color: green;
-}
-
-span.jukebox-expand-button, span.jukebox-collapse-button{
-display: block;
-float: right;
-background-color: white;
-font-weight: bold;
-color: #4D67B1;
-cursor: pointer;
-}
-
-/* CONTROLS */
-.jukebox-controls{
-position: relative;
-background-color: #DEDEDE;
-width: 100%;
-height: 50px;
-overflow:hidden;
-border-right: 1px solid black;
-border-bottom: 1px solid black;
-}
-
-.jukebox-previous-button,.jukebox-next-button{
-background: url("../images/next.jpg") no-repeat left top;
-display: block;
-position: absolute;
-width: 30px;
-height: 30px;
-top: 10px;
-cursor: pointer;
-}
-.jukebox-previous-button{
-left: 5px;
-
-/* Flip */
--moz-transform: scaleX(-1);
--o-transform: scaleX(-1);
--webkit-transform: scaleX(-1);
-transform: scaleX(-1);
-filter: FlipH;
--ms-filter: "FlipH";
-}
-.jukebox-next-button{
-left: 40px; /* 5 from border + 30 left image + 5 space */
-}
-
-p.jukebox-song{
-position: absolute;
-left: 70px; /* 30 * 2 + 5 * 2 */
-height: 37px;
-width: 210px; /* 280px - 70px */
-overflow: hidden;
-
-font-size: 70%;
-padding-left: 0;
-padding-right: 0;
-text-align: center;
-text-indent: 0;
-}
-p.jukebox-song-time{
-position: absolute;
-top: 0;
-height: 100%;
-width: 100%;
-
-font-size: 60%;
-padding-left: 0;
-padding-right: 0;
-text-align: center;
-text-indent: 0;
-z-index: 100;
-color: black;
-}
-
-/* Progressbar */
-.jukebox-progressbar-wrapper{
-position: absolute;
-top: 36px;
-left: 73px; /* 70 + 3 */
-width: 204px; /* 280 - 70 - 3*2 */
-height: 12px;
-
-background-color: white;
-border-radius: 25px;
-box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
-}
-.jukebox-progressbar{
-height: 100%;
-width: 0; /* Not 100% at start */
-
-/* Côté gauche arrondi */
-/*-webkit-border-top-left-radius: 20px;
--webkit-border-bottom-left-radius: 20px;
--moz-border-radius-topleft: 20px;
--moz-border-radius-bottomleft: 20px;*/
-border-top-left-radius: 20px;
-border-bottom-left-radius: 20px;
-
-/* Color ! */
-background-color: rgb(43,194,83);
-background-image: -webkit-gradient(
-linear,
-left bottom,
-left top,
-color-stop(0, rgb(43,194,83)),
-color-stop(1, rgb(84,240,84))
-);
-background-image: -moz-linear-gradient(
-center bottom,
-rgb(43,194,83) 37%,
-rgb(84,240,84) 69%
-);
-/*-webkit-box-shadow: 
-inset 0 2px 9px  rgba(255,255,255,0.3),
-inset 0 -2px 6px rgba(0,0,0,0.4);
--moz-box-shadow: 
-inset 0 2px 9px  rgba(255,255,255,0.3),
-inset 0 -2px 6px rgba(0,0,0,0.4);*/
-}
-
-
-/* PLAYLIST */
-.jukebox-playqueue{
-padding-top: 2px;
-position: relative;
-background-color: white;
-width: 100%;
-border-right: 1px solid black;
-}
-
-.jukebox-playqueue-content ul{
-list-style-type: none;
-}
-.jukebox-playqueue-content li{
-border-top: 1px solid grey;
-}
-.jukebox-playqueue-content li#play-queue-li-first{
-border-top: 0;
-}
-
-div.play-queue-handle{
-width: 215px;
-overflow: hidden;
-}
-
-span.play-queue-delete, span.play-queue-shuffle, span.play-queue-move-top, span.play-queue-move-bottom, span.nb-listening-users{
-/*display: block;
-float: right;*/
-width: 10px;
-height: 10px;
-position: absolute;
-top: 2px;
-right: 5px;
-background-color: black;
-}
-span.add-to-play-queue-bottom, span.add-to-play-queue-top, span.add-to-play-queue-rand{
-width: 10px;
-height: 10px;
-display: block;
-float: left;
-background-color: black;
-}
-span.count-user-listening{
-width: 10px;
-height: 10px;
-position: absolute;
-top: 2px;
-left: 85px;
-font-size: 10px;
-}
-span.nb-listening-users{
-left: 80px;
-top: 3px;
-background: url("../images/user.png") no-repeat left top;
-}
-span.add-to-play-queue-top{
-right: 20px;
-background: url("../images/icons/add_to_play_queue_top.png") no-repeat left top;
-}
-span.add-to-play-queue-bottom{
-background: url("../images/icons/add_to_play_queue_bottom.png") no-repeat left top;
-}
-span.add-to-play-queue-rand{
-right: 35px;
-background: url("../images/icons/add_to_play_queue_randomly.png") no-repeat left top;
-}
-span.play-queue-delete{
-background: url("../images/icons/play_queue_delete.png") no-repeat left top;
-}
-span.play-queue-shuffle{
-right: 20px;
-background: url("../images/icons/play_queue_shuffle.png") no-repeat left top;
-}
-span.play-queue-move-top{
-right: 35px;
-background: url("../images/icons/play_queue_move_top.png") no-repeat left top;
-}
-span.play-queue-move-bottom{
-right: 20px;
-background: url("../images/icons/play_queue_move_bottom.png") no-repeat left top;
-}
-
-
-/* Music collection */
-.jukebox-tabs{
-width: 620px; /* 900-280 */
-float: left;
-overflow: hidden;
-display: none;
-font-size: 80%;
-}
-
-.jukebox-tabs-head{
-position: relative;
-background-color: #DEDEDE;
-font-size: 80%;
-border-bottom: 1px solid black;
-border-left: 1px solid black;
-}
-
-.jukebox-search-button,.jukebox-refresh-button,.jukebox-plugin-button{
-height: 100%;
-}
-
-.jukebox-autorefresh{
-vertical-align: middle;
-}
-
-.jukebox-tabs-links{
-position: relative;
-background-color: #DEDEDE;
-font-size: 80%;
-border-left: 1px solid black;
-}
-
-.page-links{
-text-align: center;
-}
-
-#debug1 p, #debug2 p{
-font-size: 70%;
-}
-
-li.droppable-hover{
-border-bottom:5px solid blue;
-}
-
-li.being-dragged tr.being-dragged{
-height: 0px;
-}
-
-li.being-dragged div{
-border: 1px solid black;
-}
-
-.jukebox-playqueue-content li.being-dragged tr.being-dragged{
-border-top: none;
+font-style: italic;
+font-size: 12px;
 }
 
 #notifications{
@@ -347,12 +28,14 @@ left: 0;
 z-index: 1000;
 width: 100%;
 }
-
-div.notification-wrapper{
+.notification-wrapper{
 position: relative;
 }
-
-div.notification-wrapper-debug, div.notification-wrapper-info, div.notification-wrapper-warning, div.notification-wrapper-error, div.notification-wrapper-fatal{
+.notification-wrapper-debug,
+.notification-wrapper-info,
+.notification-wrapper-warning,
+.notification-wrapper-error,
+.notification-wrapper-fatal{
 position: relative;
 border-style: solid;
 border-width: 2px;
@@ -363,187 +46,36 @@ font-size: 100%;
 font-weight: bold;
 color: white;
 }
-div.notification-wrapper-debug{
+.notification-wrapper-debug{
 background-color: #999999;
 border-color: #444444;
 }
-div.notification-wrapper-info{
+.notification-wrapper-info{
 background-color: #4EA5CD;
 border-color: #3B8EB5;
 }
-div.notification-wrapper-warning{
+.notification-wrapper-warning{
 background-color: #EAAF51;
 border-color: #D99A36;
 }
-div.notification-wrapper-error{
+.notification-wrapper-error{
 background-color: #DE4343;
 border-color: #C43D3D;
 }
-div.notification-wrapper-fatal{
+.notification-wrapper-fatal{
 background-color: #660000;
 border-color: black;
 }
 
-table.search-table,
-table.upload-table{
-width: 100%;
-}
-
-table.search-table td,
-table.search-table th,
-table.upload-table th,
-table.upload-table td{
-border: 1px solid #CCCCCC;
-max-width: 100px;
-width: auto;
-min-width: 5px;
-text-align: left;
-padding-left: 5px;
-}
-table.search-table th{
-white-space: pre; /* For buttons column */
-}
-table.search-table thead,
-table.search-table tfoot,
-table.upload-table thead,
-table.upload-table tfoot{
-background-color: #DDD;
-}
-
-table.search-table tr.rowodd{
-background-color: #FFF;
-}
-table.search-table tr.roweven{
-background-color: #F2F2F2;
-}
-
-table.search-table .sortcol{
-cursor: pointer;
-padding-right: 20px;
-background-repeat: no-repeat;
-background-position: right center;
-}
-table.search-table .sortasc{
-background-color: #DDFFAC;
-background-image: url(../images/up.gif);
-}
-table.search-table .sortdesc{
-background-color: #B9DDFF;
-background-image: url(../images/down.gif);
-}
-table.search-table .nosort{
-cursor: default;
-}
-
-table.search-table th.resize-handle-active{
-cursor: e-resize;
-}
-table.search-table div.resize-handle{
-cursor: e-resize;
-width: 2px;
-border-right: 1px dashed #1E90FF;
-position: absolute;
-top: 0;
-left: 0;
-}
-
-/* Upload */
-
-td form{
-overflow: auto;
-}
-
-td.modified{
-color: #880000;
-}
-
-/* Sliders */
-div.page-links{
-text-align: center;
-}
-div.slider{
-margin: 15px 0;
-background-color: #ccc;
-height: 15px;
-position: relative;
-}
-div.slider div.handle{
-width: 25px;
-height: 25px;
-background-color: #888;
-cursor: move;
-position: absolute;
-top: -5px;
-}
-div.slider div.handle span{
-height: 20px;
-}
-a.slider-link-current-page{
-color: #ff0000;
-}
-a.slider-link-current-selection{
-color: #00ff00;
-}
-
-/* tabs */
-.jukebox-tabs-header{
-margin-left: 4px;
-padding: 0;
-padding-left: 5px;
-display: inline-block;
-}
-.jukebox-tabs-header ul{
-font: bold 11px Arial, Verdana, sans-serif;
-list-style: none;
-}
-.jukebox-tabs-header li{
-display: inline;
-}
-.jukebox-tabs-header a{
-text-decoration: none;
-}
-.jukebox-tabs-header a span{
-float: left;
-display: block;
-}
-.jukebox-tabs-header a:hover{
-background-color: #7E94B9;
-color: white;
-}
-.jukebox-tabs-header a:hover span{
-background-color: #7E94B9;
-}
-.tabHeaderActive span, .tabHeaderActive a {
-background-color: #42577B;
-color:#fff;
-}
-.jukebox-tabs-content{
-position: relative;
-border-left: 1px solid black;
-}
-span.tab-delete{
-background: url("../images/icons/play_queue_delete.png") no-repeat left top;
-}
-
-span.jukebox-collapse-button,.jukebox-stream-stop{
-display: none; /* initial state */
-}
-.jukebox-volume span{
-float: left;
-font-size: 13px;
-}
-div.jukebox-volume-slider{
-float: left;
-width: 120px;
-height: 10px;
-margin: 5px 0;
-}
-div.jukebox-volume-slider div.jukebox-volume-handle{
-width: 10px;
-height: 20px;
-margin-left: 0;
-}
-
 .qq-upload-button input{
 height: 30px; /* Height of the button, so that pointer is ok on all height. 100% doesn't work */
+}
+
+#player{
+margin-top: 50px; /* 2 notifications height*/
+
+margin-right: auto;
+margin-left: auto;
+
+width: 600px;
 }
