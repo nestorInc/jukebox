@@ -1,5 +1,5 @@
 .jukebox-hype{
-border: 1px solid black;
+
 }
 
 .jukebox-hype a:link,
@@ -15,7 +15,49 @@ color: #a21919;
 }
 
 div.jukebox-hype-main{
+	background: url("../../images/hype/soft_wallpaper.png");
+	border: 2px solid gray;
+	border-radius:5px;
+	width: 500px;
+	height:300px;
+}
+
+div.jukebox-hype-main-titlebar {
 	background: url("../../images/hype/wood.png");
+	font-size: 70%;
+	margin-bottom: 7px;
+}
+
+table.jukebox-hype-main-titlebar{
+	width: 100%;
+	height: 25px;
+}
+
+table.jukebox-hype-main-current-song {
+	width: 100%;
+
+}
+
+table.jukebox-hype-main-current-song-infos {
+	width: 100%;
+}
+
+td.jukebox-hype-main-current-song-cover {
+	width: 200px;
+	vertical-align: middle;
+	text-align: center;
+}
+
+div.jukebox-hype-main-current-song-cover-wrapper {
+	width: 180px;
+	height: 180px;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: gray;
+}
+img.jukebox-hype-main-current-song-cover {
+	width: 180px;
+	height: 180px;
 }
 
 table.jukebox-hype-main{
@@ -23,11 +65,11 @@ width: 100%;
 height: 30px;
 }
 .jukebox-hype-activity{
-width: 10px;
-background-color: white;
+width: 4px;
+background-color: transparent;
 }
 .jukebox-hype-activity-on{
-background-color: #1282F4;
+background-color: gray;
 }
 
 .jukebox-hype-controls{
@@ -146,8 +188,24 @@ cursor: move;
 top: -5px;
 }
 
+td.jukebox-hype-main-titlebar-refresh-button {
+	width: 20px;
+	vertical-align: top;
+}
+
+td.jukebox-hype-main-titlebar-autorefresh-checkbox {
+	width: 10px;
+}
+
+input.jukebox-hype-refresh-button {
+	border: none;
+	background: url("../../images/hype/refresh.png") no-repeat;
+	width: 20px;
+	height: 20px;
+}
+
 .jukebox-hype-listening{
-width: 20px;
+width: 25px;
 }
 .jukebox-hype-listening-ico{
 height: 10px;
@@ -156,9 +214,8 @@ background-position: center;
 background-repeat: no-repeat;
 }
 .jukebox-hype-listening-count{
-height: 20px;
+height: 15px;
 text-align: center;
-font-size: 15px;
 }
 
 .jukebox-hype-expand-collapse{
