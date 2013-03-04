@@ -1,5 +1,18 @@
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'), url("../../images/hype/opensans.ttf") format('truetype');
+}
+
+
+body {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 0.8em;
+}
+
 .jukebox-hype{
-border: 1px solid black;
+
 }
 
 .jukebox-hype a:link,
@@ -15,19 +28,99 @@ color: #a21919;
 }
 
 div.jukebox-hype-main{
-	background: url("../../images/hype/wood.png");
+	background: url("../../images/hype/soft_wallpaper.png");
+	border: 2px solid gray;
+	border-radius:5px;
+	width: 435px;
+	height:300px;
 }
+
+div.jukebox-hype-main-titlebar {
+	background: url("../../images/hype/wood.png");
+	font-size: 80%;
+	margin-bottom: 7px;
+}
+
+td.jukebox-hype-main-titlebar-title {
+	font-size: 100%;
+	font-weight: bold;
+	padding-left: 6px;
+}
+
+table.jukebox-hype-main-titlebar{
+	width: 100%;
+	height: 25px;
+}
+
+table.jukebox-hype-main-current-song {
+	width: 100%;
+
+}
+
+table.jukebox-hype-main-current-song-infos {
+	width: 100%;
+}
+
+td.jukebox-hype-main-current-song-infos {
+	padding-right: 10px;
+	padding-top: 10px;
+	vertical-align: top;
+}
+
+tr.jukebox-hype-main-current-song-infos-text {
+	height: 140px;
+}
+
+td.jukebox-hype-main-current-song-cover {
+	width: 200px;
+	vertical-align: middle;
+	text-align: center;
+}
+
+div.jukebox-hype-main-current-song-cover-wrapper {
+	width: 180px;
+	height: 180px;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: gray;
+}
+img.jukebox-hype-main-current-song-cover {
+	width: 180px;
+	height: 180px;
+}
+
+div.jukebox-hype-song-title {
+	font-size: 150%;
+	font-weight: bold;
+	text-align: center;
+}
+
+div.jukebox-hype-song-artist {
+	font-size: 100%;
+	font-weight: normal;
+	text-align: center;
+}
+
+div.jukebox-hype-song-album {
+	font-size: 80%;
+	font-style: italic;;
+	font-weight: normal;
+	text-align: center;
+}
+
+
+
 
 table.jukebox-hype-main{
 width: 100%;
 height: 30px;
 }
 .jukebox-hype-activity{
-width: 10px;
-background-color: white;
+width: 4px;
+background-color: transparent;
 }
 .jukebox-hype-activity-on{
-background-color: #1282F4;
+background-color: gray;
 }
 
 .jukebox-hype-controls{
@@ -146,8 +239,24 @@ cursor: move;
 top: -5px;
 }
 
+td.jukebox-hype-main-titlebar-refresh-button {
+	width: 20px;
+	vertical-align: top;
+}
+
+td.jukebox-hype-main-titlebar-autorefresh-checkbox {
+	width: 10px;
+}
+
+input.jukebox-hype-refresh-button {
+	border: none;
+	background: url("../../images/hype/refresh.png") no-repeat;
+	width: 20px;
+	height: 20px;
+}
+
 .jukebox-hype-listening{
-width: 20px;
+width: 25px;
 }
 .jukebox-hype-listening-ico{
 height: 10px;
@@ -156,9 +265,8 @@ background-position: center;
 background-repeat: no-repeat;
 }
 .jukebox-hype-listening-count{
-height: 20px;
+height: 15px;
 text-align: center;
-font-size: 15px;
 }
 
 .jukebox-hype-expand-collapse{
