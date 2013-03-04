@@ -6,18 +6,18 @@
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 
 	<!-- RELEASE
-	<link rel="stylesheet" type="text/css" href="/css/jukebox.min.css" />
-	<link rel="stylesheet" type="text/css" href="/css/skin/jukebox-skins.min.css" />
+	<link rel="stylesheet" type="text/css" href="css/jukebox.min.css" />
+	<link rel="stylesheet" type="text/css" href="css/skin/jukebox-skins.min.css" />
 	 -->
-	<!-- DEBUG -->
-	<link rel="stylesheet" type="text/css" href="/src/css/normalize.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/fileuploader.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/flashblock.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/style.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/skin/default.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/skin/light.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/skin/hype.css" />
-	
+	<!-- DEBUG
+	<link rel="stylesheet" type="text/css" href="src/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/fileuploader.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/flashblock.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/style.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/skin/default.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/skin/light.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/skin/hype.css" />
+	 -->
 </head>
 <body>
 
@@ -90,6 +90,11 @@ var hrefLower = window.location.href.toLowerCase(),
 		'lib/libs.min',
 		'jukebox.min'
 	],
+	CSS =
+	[
+		"css/jukebox.min.css",
+		"css/skin/jukebox-skins.min.css"
+	],
 
 	requirejsSkinsConfig =
 	{
@@ -102,6 +107,15 @@ var hrefLower = window.location.href.toLowerCase(),
 	],
 
 	j; // The jukebox instance ; Global, easily accessible from console
+
+function loadCss(url)
+{
+	var link = document.createElement("link");
+	link.type = "text/css";
+	link.rel = "stylesheet";
+	link.href = url;
+	document.getElementsByTagName("head")[0].appendChild(link);
+}
 
 if(DEBUG)
 {
@@ -163,6 +177,16 @@ if(DEBUG)
 		'jukebox',
 		'jukeboxUI',*/
 		'jukebox'
+	];	
+	CSS =
+	[
+		'src/css/normalize.css',
+		'src/css/fileuploader.css',
+		'src/css/flashblock.css',
+		'src/css/style.css',
+		'src/css/skin/default.css',
+		'src/css/skin/light.css',
+		'src/css/skin/hype.css'
 	];
 
 	requirejsSkinsConfig =
@@ -178,6 +202,14 @@ if(DEBUG)
 	];
 }
 
+//----------
+// Here we go
+
+for(var i = 0, len = CSS.length; i < len; ++i)
+{
+	loadCss(CSS[i]);
+}
+
 requirejs.config(requirejsConfig);
 requirejs(requirejsScripts, function()
 {
@@ -189,7 +221,7 @@ requirejs(requirejsScripts, function()
 		{
 			j = new Jukebox("player",
 			{
-				skin: "hype",
+				skin: "default",
 				SM2Folder: DEBUG ? '/src/' : '/'
 			});
 			j.ready(function() // Wait that .swf player is loaded
