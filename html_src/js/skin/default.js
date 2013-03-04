@@ -83,7 +83,7 @@ Jukebox.UI.skins["default"] =
 '<p class="#{root}-song">\
 <a class="#{root}-song-artist" href="#">#{artist}</a> - \
 <a class="#{root}-song-album" href="#">#{album}</a> - \
-<span class="#{root}-song-title">#{song}</span>\
+<span class="#{root}-song-title">#{title}</span>\
 </p>',
 		playQueue:
 '<li class="#{root}-playqueue-first #{root}-playqueue-droppable">#{playQueueLabel}\
