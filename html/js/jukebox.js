@@ -2865,6 +2865,32 @@ function Jukebox(element, opts)
 	};
 
 	/**
+	* Get/Set the skin
+	* @param {string} [name] - Skin to set
+	* @return {string} The current skin.
+	*/
+	this.skin = function(name)
+	{
+		var skinName = _ui.skin(name);
+		if(name)
+		{
+			// Also refresh play queue now!
+			_refreshPlayQueue();
+		}
+		return skinName;
+	};
+
+	/**
+	* Get/Set the theme
+	* @param {string} [name] - Theme to set
+	* @return {string} The current theme.
+	*/
+	this.theme = function(name)
+	{
+		return _ui.theme(name);
+	};
+
+	/**
 	* Make a search
 	* @param {int} page 
 	* @param {int} identifier 
@@ -3410,8 +3436,7 @@ function Jukebox(element, opts)
 		if(json.play_queue)
 		{
 			_playQueueSongs = json.play_queue.songs;
-			var clone = Extend(true, [], _playQueueSongs); // Clone: can be setted (inside ui) without impact
-			_ui.displayPlayQueue(clone, _last_nb_listening_users);
+			_refreshPlayQueue();
 		}
 		/*TODO
 		if(json.news)
@@ -3547,6 +3572,15 @@ function Jukebox(element, opts)
 		}
 
 		_doAction(new Action("add_search_to_play_queue", opts));
+	}
+
+	/**
+	* Force a play queue refresh
+	*/
+	function _refreshPlayQueue()
+	{
+		var clone = Extend(true, [], _playQueueSongs); // Clone: can be setted (inside ui) without impact
+		_ui.displayPlayQueue(clone, _last_nb_listening_users);
 	}
 
 	/**
@@ -3815,49 +3849,23 @@ function JukeboxUI(jukebox, element, opts)
 	}
 
 	//---
-	// [Public] Variables
-
-	this.skin = JukeboxUI.defaults.skin;
-	this.theme = '';
-
-	//---
 	// [Private] Variables
 	
 	// `this` refers to current object, because we're in a "new" object creation
 	// Useful for private methods and events handlers
 	var $this = this,
+		$elem = $(element),
 		
 		_opts = Extend(true, {}, JukeboxUI.defaults, opts), // Recursively merge options
 
 		J = jukebox, // short jukebox reference
 		_tabs = null,
-		_skin = JukeboxUI.skins[_opts.skin],
+		_skin = null,
 		_volumeSlider,
 		_$, // Selectors cache
 
 		_refreshSongTimer = null,
 		_lastCurrentSongElapsedTime = null;
-
-	if(_skin) // Skin exists
-	{
-		this.skin = _opts.skin;
-	}
-	else // Invalid _opts.skin
-	{
-		// Restore to default value
-		_opts.skin = JukeboxUI.defaults.skin;
-		_skin = JukeboxUI.skins[_opts.skin];
-	}
-
-	// Ensure params default values
-	_skin.params = Extend(true, {}, JukeboxUI.defaults.skinParams, _skin.params);
-
-	// Set theme
-	_opts.theme = (_skin.themes || []).indexOf(_opts.theme) == -1 ? _skin.defaultTheme : _opts.theme;
-	this.theme = _opts.theme;
-
-	// One distinct CSS per skin
-	_opts.rootClass += _opts.skin == JukeboxUI.defaults.skin ? '' : '-' + _opts.skin;
 
 	//---
 	// [Privileged] Functions
@@ -4235,19 +4243,67 @@ function JukeboxUI(jukebox, element, opts)
 	};
 
 	/**
+	* Get/Set the skin
+	* @param {string} [name] - Skin to set
+	* @return {string} The current skin.
+	*/
+	this.skin = function(name)
+	{
+		if(arguments.length > 0 && name && name != _opts.skin)
+		{
+			// Set new skin
+			if(JukeboxUI.skins[name]) // Skin exists
+			{
+				_skin = JukeboxUI.skins[name];
+				_skin.themes  = _skin.themes || []; // Ensure validity even if no theme specified
+				_opts.skin = name;
+			}
+			else // Invalid _opts.skin
+			{
+				throw new Error('Invalid skin');
+			}
+
+			// If already a skin remove it
+			var $JB = $elem.down('.' + _opts.rootClass);
+			if($JB)
+			{
+				$JB.remove();
+			}
+
+			// Ensure params default values
+			_skin.params = Extend(true, {}, JukeboxUI.defaults.skinParams, _skin.params);
+
+			// Set theme
+			_opts.theme = _skin.themes.indexOf(_opts.theme) == -1 ? _skin.defaultTheme : _opts.theme;
+
+			// One distinct CSS per skin
+			_opts.rootClass = _opts.rootCSS + (_opts.skin == JukeboxUI.defaults.skin ? '' : ('-' + _opts.skin));
+
+			_init(); // Note: Opened tabs are lost
+		}
+		return _opts.skin;
+	};
+
+	/**
 	* Get/Set the theme
 	* @param {string} [name] - Theme to set
 	* @return {string} The current theme.
 	*/
 	this.theme = function(name)
 	{
-		if(arguments.length > 0)
+		if(arguments.length > 0 && name && name != _opts.theme)
 		{
-			var prefix = _opts.rootClass + '-theme-';
-			_$.jukebox.removeClassName(prefix + _opts.theme);
-			_opts.theme = name;
-			_$.jukebox.addClassName(prefix + _opts.theme);
-			this.theme = _opts.theme;
+			if(_skin.themes.indexOf(name) == -1)
+			{
+				throw new Error('Invalid theme');
+			}
+			else
+			{
+				var prefix = _opts.rootClass + '-theme-';
+				_$.jukebox.removeClassName(prefix + _opts.theme);
+				_opts.theme = name;
+				_$.jukebox.addClassName(prefix + _opts.theme);
+			}
 		}
 		return _opts.theme;
 	};
@@ -4508,16 +4564,13 @@ function JukeboxUI(jukebox, element, opts)
 			J.plugin(_$.selection_plugin.value);
 		}
 	};
-	
+
 	/**
 	* @constructs
 	*/
-	(function()
+	function _init()
 	{
-		Object.seal($this); // Non-extensible, Non-removable
-
 		// Create HTML player
-		var $elem = $(element);
 		try
 		{
 			var songTpl = new Template(_skin.templates.song),
@@ -4706,7 +4759,16 @@ function JukeboxUI(jukebox, element, opts)
 				TL.down(rootClass+'tab-playlist').on("click", tabsManager.ShowPlaylistTab);
 			}
 		})();
-	})();
+	}
+
+	//---
+	// Do this once
+
+	Object.seal($this); // Non-extensible, Non-removable
+
+	var temp = _opts.skin;
+	_opts.skin = null; // Force null to bypass `name != _opts.skin` check in .skin() method
+	this.skin(temp); // Will call _init()
 }
 
 //---
@@ -4716,7 +4778,7 @@ function JukeboxUI(jukebox, element, opts)
 JukeboxUI.defaults =
 {
 	skin: 'default',
-	rootClass: 'jukebox', // CSS begins with ".jukebox-"
+	rootCSS: 'jukebox', // CSS begins with ".jukebox-"
 	skinParams:
 	{
 		dragdrop: true,

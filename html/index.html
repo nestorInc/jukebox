@@ -231,9 +231,11 @@ requirejs(requirejsScripts, function()
 				j.restorePlayQueue(name, position);
 				j.savePlayQueue(name);
 				j.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
+				j.skin(name);
 				j.start();
 				j.status();
 				j.stop();
+				j.theme(name);
 				j.volume(volume);
 				*/
 			});
