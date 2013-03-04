@@ -15,6 +15,7 @@ Jukebox.UI.skins["hype"] =
 <div class="#{root}-main">\
 <div class="#{root}-main-titlebar">\
 <table class="#{root}-main-titlebar">\
+<tr>\
 <td class="#{root}-main-titlebar-title">\
 Home made jukebox over streaming\
 </td>\
@@ -29,6 +30,7 @@ Home made jukebox over streaming\
 	<input type="checkbox" name="#{root}-autorefresh" class="#{root}-autorefresh" checked="checked" value="autorefresh" />\
 </td>\
 <td class="#{root}-activity"></td>\
+<tr>\
 </table>\
 </div>\
 <table class="#{root}-main-current-song">\
