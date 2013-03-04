@@ -171,6 +171,32 @@ function Jukebox(element, opts)
 	};
 
 	/**
+	* Get/Set the skin
+	* @param {string} [name] - Skin to set
+	* @return {string} The current skin.
+	*/
+	this.skin = function(name)
+	{
+		var skinName = _ui.skin(name);
+		if(name)
+		{
+			// Also refresh play queue now!
+			_refreshPlayQueue();
+		}
+		return skinName;
+	};
+
+	/**
+	* Get/Set the theme
+	* @param {string} [name] - Theme to set
+	* @return {string} The current theme.
+	*/
+	this.theme = function(name)
+	{
+		return _ui.theme(name);
+	};
+
+	/**
 	* Make a search
 	* @param {int} page 
 	* @param {int} identifier 
@@ -716,8 +742,7 @@ function Jukebox(element, opts)
 		if(json.play_queue)
 		{
 			_playQueueSongs = json.play_queue.songs;
-			var clone = Extend(true, [], _playQueueSongs); // Clone: can be setted (inside ui) without impact
-			_ui.displayPlayQueue(clone, _last_nb_listening_users);
+			_refreshPlayQueue();
 		}
 		/*TODO
 		if(json.news)
@@ -853,6 +878,15 @@ function Jukebox(element, opts)
 		}
 
 		_doAction(new Action("add_search_to_play_queue", opts));
+	}
+
+	/**
+	* Force a play queue refresh
+	*/
+	function _refreshPlayQueue()
+	{
+		var clone = Extend(true, [], _playQueueSongs); // Clone: can be setted (inside ui) without impact
+		_ui.displayPlayQueue(clone, _last_nb_listening_users);
 	}
 
 	/**
