@@ -40,9 +40,11 @@ Home made jukebox over streaming\
 	</td>\
 	<td class="#{root}-main-current-song-infos">\
 		<table class="#{root}-main-current-song-infos">\
-			<tr>\
+			<tr class="#{root}-main-current-song-infos-text">\
 				<td>\
-					#{currentSong}\
+					<div class="#{root}-song-title"></div>\
+					<div class="#{root}-song-artist"></div>\
+					<div class="#{root}-song-album"></div>\
 				</td>\
 			</tr>\
 			<tr>\

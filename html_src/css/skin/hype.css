@@ -1,3 +1,16 @@
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'), url("../../images/hype/opensans.ttf") format('truetype');
+}
+
+
+body {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 0.8em;
+}
+
 .jukebox-hype{
 
 }
@@ -18,14 +31,20 @@ div.jukebox-hype-main{
 	background: url("../../images/hype/soft_wallpaper.png");
 	border: 2px solid gray;
 	border-radius:5px;
-	width: 500px;
+	width: 435px;
 	height:300px;
 }
 
 div.jukebox-hype-main-titlebar {
 	background: url("../../images/hype/wood.png");
-	font-size: 70%;
+	font-size: 80%;
 	margin-bottom: 7px;
+}
+
+td.jukebox-hype-main-titlebar-title {
+	font-size: 100%;
+	font-weight: bold;
+	padding-left: 6px;
 }
 
 table.jukebox-hype-main-titlebar{
@@ -40,6 +59,16 @@ table.jukebox-hype-main-current-song {
 
 table.jukebox-hype-main-current-song-infos {
 	width: 100%;
+}
+
+td.jukebox-hype-main-current-song-infos {
+	padding-right: 10px;
+	padding-top: 10px;
+	vertical-align: top;
+}
+
+tr.jukebox-hype-main-current-song-infos-text {
+	height: 140px;
 }
 
 td.jukebox-hype-main-current-song-cover {
@@ -59,6 +88,28 @@ img.jukebox-hype-main-current-song-cover {
 	width: 180px;
 	height: 180px;
 }
+
+div.jukebox-hype-song-title {
+	font-size: 150%;
+	font-weight: bold;
+	text-align: center;
+}
+
+div.jukebox-hype-song-artist {
+	font-size: 100%;
+	font-weight: normal;
+	text-align: center;
+}
+
+div.jukebox-hype-song-album {
+	font-size: 80%;
+	font-style: italic;;
+	font-weight: normal;
+	text-align: center;
+}
+
+
+
 
 table.jukebox-hype-main{
 width: 100%;
