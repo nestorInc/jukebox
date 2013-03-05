@@ -1,4 +1,4 @@
-﻿input{
+input{
 height: 16px;
 }
 select, input[type="button"]{
@@ -78,4 +78,8 @@ margin-right: auto;
 margin-left: auto;
 
 width: 600px;
+}
+
+#skinSelectors{
+text-align: center;
 }

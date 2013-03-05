@@ -27,6 +27,9 @@
 
 <div role="main" id="page-wrapper">
 	<div id="player"></div>
+	<div id="skinSelectors">
+		<input type="button" id="skin_default" value="default" /> <input type="button" id="skin_light" value="light" /> <input type="button" id="skin_hype" value="hype" />
+	</div>
 </div>
 
 <footer>Home made jukebox over streaming</footer>
@@ -272,12 +275,18 @@ requirejs(requirejsScripts, function()
 				*/
 			});
 
-			/*new Jukebox(document.body,
+			$("skin_default").on("click", function()
 			{
-				skin: "light",
-				theme: "blue",
-				SM2Folder: DEBUG ? '/src/' : '/'
-			});*/
+				j.skin("default");
+			});
+			$("skin_light").on("click", function()
+			{
+				j.skin("light");
+			});
+			$("skin_hype").on("click", function()
+			{
+				j.skin("hype");
+			});
 		}
 		catch(fatalEx)
 		{

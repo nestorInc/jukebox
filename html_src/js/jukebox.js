@@ -180,6 +180,11 @@ function Jukebox(element, opts)
 		var skinName = _ui.skin(name);
 		if(name)
 		{
+			if(_supportsHTML5Storage())
+			{
+				_setHTML5Storage("skin", skinName);
+			}
+
 			// Also refresh play queue now!
 			_refreshPlayQueue();
 		}
@@ -431,7 +436,7 @@ function Jukebox(element, opts)
 
 			playqueues[name] = ids; // Add current play queue
 
-			localStorage["playqueues"] = JSON.stringify(playqueues); // Save
+			_setHTML5Storage("playqueues", playqueues);
 		}
 		else
 		{
@@ -492,7 +497,7 @@ function Jukebox(element, opts)
 			if(playqueues)
 			{
 				delete playqueues[name];
-				localStorage["playqueues"] = JSON.stringify(playqueues); // Save
+				_setHTML5Storage("playqueues", playqueues);
 			}
 		}
 		return this;
@@ -923,23 +928,30 @@ function Jukebox(element, opts)
 	*/
 	function _getHTML5Storage(key)
 	{
-		var obj = localStorage[key];
-		if(obj)
+		var str = localStorage[Jukebox.name+"-"+key],
+			obj = null;
+		if(str)
 		{
 			try
 			{
-				obj = JSON.parse(obj);
+				obj = JSON.parse(str);
 			}
 			catch(e)
 			{
 				obj = null;
 			}
 		}
-		else
-		{
-			obj = null;
-		}
 		return obj;
+	}
+
+	/**
+	* Save data to HTML5 storage
+	* @param {string} key - Storage identifier
+	* @param {object} value - Storage data
+	*/
+	function _setHTML5Storage(key, value)
+	{
+		localStorage[Jukebox.name+"-"+key] = JSON.stringify(value);
 	}
 
 	//--
@@ -1070,10 +1082,16 @@ function Jukebox(element, opts)
 			}
 		});
 
+		var skin = _opts.skin;
+		if(_supportsHTML5Storage())
+		{
+			skin = _getHTML5Storage("skin") || skin;
+		}
+
 		_ui = new JukeboxUI($this, element,
 		{
 			replaceTitle: _opts.replaceTitle,
-			skin: _opts.skin,
+			skin: skin,
 			theme: _opts.theme
 		});
 
