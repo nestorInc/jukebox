@@ -290,7 +290,7 @@ module.exports = function(grunt)
 				src: SRC.tab + 'playlist.js',
 				options:
 				{
-					globals: {Tab: true, Class: true, Notifications: true, prompt: true}
+					globals: {Tab: true, Class: true, Notifications: true}
 				}
 			},
 			skin_default:

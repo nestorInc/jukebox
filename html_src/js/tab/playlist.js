@@ -55,21 +55,18 @@ this.PlaylistTab = Class.create(Tab,
 		}
 		$tabContent.insert(table);
 
-		var btn = new Element('input', {type: 'button', value: 'Save current playlist'});
+		var btn = new Element('input', {type: 'button', value: 'Save current playlist'}),
+			input = new Element('input', {type: 'text'});
 		btn.on("click", function()
 		{
-			var name = "";
-			while(name === "") // null allowed to ESC
+			var name = input.value.trim();
+			if(name)
 			{
-				name = prompt("Name");
-				if(name)
-				{
-					J.savePlayQueue(name);
-					Notifications.Display(Notifications.LEVELS.info, "Current playlist save with name " + name);
-					that.updateContent(); // Force refresh (brutal)
-				}
+				J.savePlayQueue(name);
+				Notifications.Display(Notifications.LEVELS.info, "Current playlist save with name " + name);
+				that.updateContent(); // Force refresh (brutal)
 			}
 		});
-		$tabContent.insert(btn);
+		$tabContent.insert(input).insert(btn);
 	}
 });
