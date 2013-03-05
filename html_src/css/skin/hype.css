@@ -5,14 +5,9 @@
   src: local('Open Sans'), local('OpenSans'), url("../../images/hype/opensans.ttf") format('truetype');
 }
 
-
-body {
+.jukebox-hype{
 	font-family: 'Open Sans', sans-serif;
 	font-size: 0.8em;
-}
-
-.jukebox-hype{
-
 }
 
 .jukebox-hype a:link,

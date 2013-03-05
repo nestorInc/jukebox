@@ -341,7 +341,8 @@ module.exports = function(grunt)
 					SRC.img + '*.jpg',
 					SRC.img + '*.gif',
 					SRC.img + 'icons/*.png',
-					SRC.img + 'hype/*.png'
+					SRC.img + 'hype/*.png',
+					SRC.img + 'hype/*.ttf'
 				],
 				dest: OUT_DIR
 			},
