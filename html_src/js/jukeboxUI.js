@@ -165,7 +165,7 @@ function JukeboxUI(jukebox, element, opts)
 		if(audio)
 		{
 			_$.play_stream.hide();
-			_$.stop_stream.style.display = 'inline';
+			_$.stop_stream.show();
 		}
 		else
 		{

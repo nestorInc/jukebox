@@ -63,11 +63,15 @@ Home made jukebox over streaming\
 </table>\
 <table class="#{root}-main">\
 <tr>\
+	<td class="#{root}-expand-collapse">\
+		<a href="javascript:;" class="#{root}-expand-button #{root}-btn"><span class="#{root}-expand-button-icon"></span></a>\
+		<a href="javascript:;" class="#{root}-collapse-button #{root}-btn-pushed"><span class="#{root}-expand-button-icon"></span></a>\
+	</td>\
 	<td class="#{root}-controls">\
-		<a href="javascript:;" class="#{root}-previous-button"></a>\
-		<a href="javascript:;" class="#{root}-stream-play" title="#{play}"></a>\
-		<a href="javascript:;" class="#{root}-stream-stop" title="#{stop}"></a>\
-		<a href="javascript:;" class="#{root}-next-button"></a>\
+		<a href="javascript:;" class="#{root}-btn #{root}-previous-button"><span class="#{root}-previous-button-icon"></span></a>\
+		<a href="javascript:;" class="#{root}-btn #{root}-stream-play" title="#{play}"><span class="#{root}-stream-play-icon"></span></a>\
+		<a href="javascript:;" class="#{root}-btn #{root}-stream-stop" title="#{stop}"><span class="#{root}-stream-stop-icon"></span></a>\
+		<a href="javascript:;" class="#{root}-btn #{root}-next-button"><span class="#{root}-next-button-icon"></span></a>\
 	</td>\
 	<td class="#{root}-volume">\
 		<div class="#{root}-volume-ico"></div>\
@@ -75,11 +79,7 @@ Home made jukebox over streaming\
 			<div class="#{root}-volume-handle"></div>\
 		</div>\
 	</td>\
-	<td class="#{root}-expand-collapse">\
-		<a href="javascript:;" class="#{root}-expand-button"></a>\
-		<a href="javascript:;" class="#{root}-collapse-button"></a>\
-	</td>\
-</tr>\
+	</tr>\
 </table>\
 </div>\
 \
