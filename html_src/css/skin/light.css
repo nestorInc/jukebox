@@ -1,5 +1,8 @@
 .jukebox-light{
 border: 1px solid black;
+width: 600px;
+margin-left: auto;
+margin-right: auto;
 }
 
 .jukebox-light a:link,
