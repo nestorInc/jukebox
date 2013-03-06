@@ -15,11 +15,11 @@
 /* buttons */
 
 .jukebox-hype-btn, .jukebox-hype-btn-pushed {
-    background-color: #306E73;
-    background-image: -moz-linear-gradient(center top , #4E8C91, #125055);
+	background-color: #B0ACA4;
+    background-image: -moz-linear-gradient(center top , #CECAC2, #928E86);
     border-color: rgba(0, 0, 0, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.25);
     color: #FFFFFF;
-    text-shadow: 0 -1px 0 #125055;
+    text-shadow: 0 -1px 0 #928E86;
 
     -moz-border-bottom-colors: none;
     -moz-border-left-colors: none;
@@ -40,24 +40,24 @@
     padding: 4px;
 }
 .jukebox-hype-btn:hover, .jukebox-hype-btn:active, .jukebox-hype-btn.active, .jukebox-hype-btn.disabled, .jukebox-hype-btn[disabled], .jukebox-hype-btn-pushed:hover, .jukebox-hype-btn-pushed:active, .jukebox-hype-btn-pushed.active, .jukebox-hype-btn-pushed.disabled, .jukebox-hype-btn-pushed[disabled] {
-    background-color: #125055;
+   background-color: #928E86;
 }
 .jukebox-hype-btn:hover, .jukebox-hype-btn-pushed:hover {
     background-position: 0 -15px;
-    color: #F8FFFF;
-    text-shadow: 0 -1px 0 #003237;
+    color: #FFFFFF;
+    text-shadow: 0 -1px 0 #747068;
     text-decoration: none;
 }
 .jukebox-hype-btn:focus, .jukebox-hype-btn-pushed:focus {
-    border-color: rgba(0, 0, 0, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.25);
     outline: 1px dotted #666666;
+    border-color: rgba(0, 0, 0, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.25);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
-    color: #94D2D7;
+    color: #FFFFFF;
 }
 .jukebox-hype-btn.active, .jukebox-hype-btn:active, .jukebox-hype-btn-pushed {
     background-image: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
-    color: #94D2D7;
+    color: #FFFFFF;
 }
 
 .jukebox-hype-btn.primary {
