@@ -1083,7 +1083,7 @@ function Jukebox(element, opts)
 		});
 
 		var skin = _opts.skin;
-		if(_supportsHTML5Storage())
+		if(!skin && _supportsHTML5Storage()) // Restore latest skin
 		{
 			skin = _getHTML5Storage("skin") || skin;
 		}
