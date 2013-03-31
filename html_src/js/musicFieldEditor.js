@@ -33,7 +33,8 @@ MusicFieldEditor.prototype.undo = function(cell)
 	// Update html
 	for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
 	{
-		var fname = escape(this.uploadedFiles[i].filename);
+		var uploadedFile = this.uploadedFiles[i],
+			fname = escape(uploadedFile.filename);
 		if("upload-line-" + fname == identifier)
 		{
 			// Show validate
@@ -46,15 +47,15 @@ MusicFieldEditor.prototype.undo = function(cell)
 			}
 			if(this.name == "track")
 			{
-				cell.update(this.uploadedFiles[i]["track"].split('/')[0]);
+				cell.update(uploadedFile["track"].split('/')[0]);
 			}
 			else if (this.name == "trackNb")
 			{
-				cell.update(this.uploadedFiles[i]["track"].split('/')[1]);
+				cell.update(uploadedFile["track"].split('/')[1]);
 			}
 			else
 			{
-				cell.update(this.uploadedFiles[i][this.name]);
+				cell.update(uploadedFile[this.name]);
 			}
 			this.uploadedFilesEdition[i][this.name] = this.uploadedFiles[i][this.name];
 			break;
