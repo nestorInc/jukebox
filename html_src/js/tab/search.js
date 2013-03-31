@@ -379,7 +379,7 @@ this.SearchTab = Class.create(Tab,
 		}
 		function createLink(text, search, category)
 		{
-			var item = new Element('a', {href: 'javascript:void(0)'}).update(text);
+			var item = new Element('a', {href: 'javascript:;'}).update(text);
 			item.on('click', function()
 			{
 				doSearch(search, category);
@@ -598,7 +598,7 @@ this.SearchTab = Class.create(Tab,
 		var tab = this;
 		function createLink(num, className)
 		{
-			var item = new Element('a', {href: 'javascript:void(0)'}).addClassName(className).update(num + " ");
+			var item = new Element('a', {href: 'javascript:;'}).addClassName(className).update(num + " ");
 			item.on('click', function()
 			{
 				tab.goToPage(num);

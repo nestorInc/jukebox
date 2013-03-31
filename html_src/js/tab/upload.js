@@ -265,15 +265,15 @@ this.UploadTab = Class.create(Tab,
 		html += '</td>' +
 		'<td class="static actions">' +
 			'<div>' +
-				'<a href="javascript:void(0);">X</a>' +
+				'<a href="javascript:;">X</a>' +
 			'</div>' +
 			
 			'<div class="update" style="display:none;">' +
-				'<a href="javascript:void(0);">&nbsp;Update&nbsp;</a>' +
+				'<a href="javascript:;">&nbsp;Update&nbsp;</a>' +
 			'</div>' +
 
 			'<div class="validate">' +
-				'<a href="javascript:void(0);">&nbsp;Validate&nbsp;</a>' +
+				'<a href="javascript:;">&nbsp;Validate&nbsp;</a>' +
 			'</div>' +
 		'</td>';
 
