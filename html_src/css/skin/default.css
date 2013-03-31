@@ -28,7 +28,6 @@ margin-right: auto;
 
 .jukebox-fullplayer{
 width: 900px;
-margin-left: -200px;
 }
 
 /* Page layout */
@@ -200,7 +199,6 @@ inset 0 -2px 6px rgba(0,0,0,0.4);*/
 
 /* PLAYLIST */
 .jukebox-playqueue{
-padding-top: 2px;
 position: relative;
 background-color: white;
 width: 100%;
@@ -209,6 +207,7 @@ border-right: 1px solid black;
 
 .jukebox-playqueue-content ul{
 list-style-type: none;
+padding: 3px;
 }
 .jukebox-playqueue-content li{
 border-top: 1px solid grey;
