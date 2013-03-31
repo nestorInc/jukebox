@@ -40,6 +40,7 @@ function Jukebox(element, opts)
 
 		_timestamp = 0, // last timestamp sent by server
 		_channel = null, // current channel we're connected to
+		_songsHistory = [], // songs previously played
 		_playQueueSongs = [], // songs in current playlist
 		_current_song = null,
 
@@ -524,6 +525,16 @@ function Jukebox(element, opts)
 		return list;
 	};
 
+
+	/**
+	* Get previous played songs
+	* @return <Song>[]
+	*/
+	this.history = function()
+	{
+		return _songsHistory.slice();
+	};
+
 	/**
 	* Go to the next song
 	* @return {Jukebox} this.
@@ -711,6 +722,13 @@ function Jukebox(element, opts)
 			// Expose public infos
 			$this.song = Extend(true, {}, _current_song); // Cloned: can be setted without impact
 
+			// Fill songs history ; TODO: Get that data from server side ; see json.play_queue_history
+			if(_songsHistory.length == 0 || _current_song.mid != _songsHistory[_songsHistory.length - 1].mid)
+			{
+				var newSong = Extend(true, {}, _current_song); // Create another clone
+				_songsHistory.push(newSong);
+			}
+
 			$this.lastServerResponse = new Date();
 
 			_ui.updateCurrentSong(_current_song);
@@ -749,6 +767,10 @@ function Jukebox(element, opts)
 			_playQueueSongs = json.play_queue.songs;
 			_refreshPlayQueue();
 		}
+		/*if(json.play_queue_history)
+		{
+			_songsHistory = json.play_queue.songsHistory;
+		}*/
 		/*TODO
 		if(json.news)
 		{
