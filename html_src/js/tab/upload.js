@@ -1,6 +1,6 @@
 this.UploadTab = Class.create(Tab,
 {
-	initialize: function(tabName, DOM, rootCSS, jukebox)
+	initialize: function(tabName, DOM, rootCSS, jukebox, template)
 	{
 		this.name = tabName;
 		this.uploader = null;
@@ -14,6 +14,7 @@ this.UploadTab = Class.create(Tab,
 		this.DOM = DOM;
 		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
+		this.template = template;
 	},
 
 	deleteUploadedSong: function(file_name)
@@ -108,7 +109,8 @@ this.UploadTab = Class.create(Tab,
 				}
 
 				// Delete html part
-				$('upload-line-' + escape(id)).remove();
+				var $uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files');
+				$uploaded_files.down('[id="upload-line-' + escape(id) + '"]').remove();
 				Notifications.Display(2, "Song " + id + " sucessfully deleted");
 
 				this.reinitTable();
@@ -127,8 +129,8 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(1, message);
 
 			var lastId = escape(this.lastSendingUpdateIdentifier),
-				selector = 'upload-line-' + lastId,
-				$selector = $(selector);
+				$uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files'),
+				$selector = $uploaded_files.down('[id="upload-line-' + lastId + '"]');
 
 			// Delete all modified styles
 			$selector.select('[class="modified"]').each(function(e)
@@ -179,7 +181,8 @@ this.UploadTab = Class.create(Tab,
 				}
 
 				// Delete html part
-				$('upload-line-' + escape(id)).remove();
+				var $uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files');
+				$uploaded_files.down('[id="upload-line-' + escape(id) + '"]').remove();
 
 				this.reinitTable();
 			}
@@ -192,7 +195,7 @@ this.UploadTab = Class.create(Tab,
 
 	reinitTable: function()
 	{
-		var $uploaded_files = $('uploaded-files');
+		var $uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files');
 		if($uploaded_files.down('tbody').childElementCount === 0)
 		{
 			$uploaded_files.update("No file uploaded yet.");
@@ -202,7 +205,7 @@ this.UploadTab = Class.create(Tab,
 		else
 		{
 			var temp = new Date().getTime();
-			$('uploaded-filelist-' + this.tableId).id = 'uploaded-filelist-' + temp;
+			$uploaded_files.down('[id="uploaded-filelist-' + this.tableId + '"]').id = 'uploaded-filelist-' + temp;
 			this.tableId = temp;
 			this.tableKit = new TableKit('uploaded-filelist-' + this.tableId,
 			{
@@ -243,45 +246,48 @@ this.UploadTab = Class.create(Tab,
 
 	getUploadedFileHtml: function(obj)
 	{
-		var html = '<td class="static">' + obj.filename + '</td><td>';
-		if(obj.artist) {html += obj.artist;}
-		html += '</td><td>';
-		if(obj.album) {html += obj.album;}
-		html += '</td><td>';
-		if(obj.title) {html += obj.title;}
-		html += '</td><td>' + obj.year + '</td><td>';
-
-		var trackSlashIndex = obj.track.toString().indexOf("/");
-		if(trackSlashIndex != -1) {html += obj.track.split("/")[0];}
-		else {html += obj.track;}
-		html += '</td><td>';
-		if(trackSlashIndex != -1) {html += obj.track.split("/")[1];}
-		else {html += 0;}
-		html += '</td><td>';
-		if(genres[obj.genre])
+		// Prepare variables
+		var trackSlashIndex = obj.track.toString().indexOf("/"),
+			track,
+			trackNb;
+		if(trackSlashIndex != -1)
 		{
-			html += genres[obj.genre];
+			track = obj.track.split("/")[0];
+			trackNb = obj.track.split("/")[1];
 		}
-		html += '</td>' +
-		'<td class="static actions">' +
-			'<div>' +
-				'<a href="javascript:;">X</a>' +
-			'</div>' +
-			
-			'<div class="update" style="display:none;">' +
-				'<a href="javascript:;">&nbsp;Update&nbsp;</a>' +
-			'</div>' +
+		else
+		{
+			track = obj.track;
+			trackNb = 0;
+		}
 
-			'<div class="validate">' +
-				'<a href="javascript:;">&nbsp;Validate&nbsp;</a>' +
-			'</div>' +
-		'</td>';
+		var genre = genres[obj.genre] ? genres[obj.genre] : '',
+			fname = escape(obj.filename);
+		
+		// Instanciate template
+		var tableBodyTpl = new Template(this.template.tableBody),
+			tableBodyVars =
+			{
+				rowId: 'upload-line-' + fname,
+				filename: obj.filename,
+				artist: obj.artist,
+				alnum: obj.album,
+				title: obj.title,
+				year: obj.year,
+				track: track,
+				trackNb: trackNb,
+				genre: genre
+			},
+			tr = tableBodyTpl.evaluate(tableBodyVars); // as a string
 
-		var fname = escape(obj.filename),
-			tr = new Element('tr', {'id': 'upload-line-' + fname}).update(html),
-			divs = tr.select('div'),
+		// Compute a dom element
+		var div = new Element('tbody').update(tr);
+		tr = div.down();
+
+		var divs = tr.select('div'),
 			that = this;
 		
+		// Register listeners
 		divs[0].on("click", function(){that.deleteUploadedSong(fname);});
 		divs[1].on("click", function(){that.updateUploadedSong(fname);});
 		divs[2].on("click", function(){that.validateUploadedSong(fname);});
@@ -294,7 +300,7 @@ this.UploadTab = Class.create(Tab,
 		var i, j,
 			len,
 			found,
-			$uploaded_files = $('uploaded-files'),
+			$uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files'),
 			$uploaded_files_tbody = $uploaded_files.down('tbody'),
 			that = this;
 
@@ -326,17 +332,8 @@ this.UploadTab = Class.create(Tab,
 				this.uploadedFilesEdition = JSON.parse(JSON.stringify(uploaded_files));
 
 				var html = '<table id="uploaded-filelist-' + this.tableId + '" class="sortable resizable editable upload-table">';
-				var tr = '<tr>' +
-					'<th>Filename</th>' +
-					'<th class="artist">Artist</th>' +
-					'<th class="album">Album</th>' +
-					'<th class="title">Title</th>' +
-					'<th class="year">Year</th>' +
-					'<th class="track">Track</th>' +
-					'<th class="trackNb">TrackNb</th>' +
-					'<th class="genre">Genre</th>' +
-					'<th>Actions</th>' +
-				'</tr>';
+				var tableHeadTpl = new Template(this.template.tableHead),
+					tr = tableHeadTpl.evaluate();
 				html += '<thead>' + tr + '</thead><tfoot>' + tr + '</tfoot></table>';
 				$uploaded_files.update(html);
 
@@ -407,7 +404,7 @@ this.UploadTab = Class.create(Tab,
 				}
 
 				// Remove the html Element
-				$('upload-line-' + escape(deleteLines[i])).remove();
+				$uploaded_files.down('[id="upload-line-' + escape(deleteLines[i]) + '"]').remove();
 			}
 		}
 		else if(this.uploadedFiles.length < uploaded_files.length)
@@ -437,7 +434,7 @@ this.UploadTab = Class.create(Tab,
 				//TODO: clone with Extend(true, {}, object);
 				this.uploadedFiles.push(JSON.parse(JSON.stringify(newLines[i])));
 				this.uploadedFilesEdition.push(JSON.parse(JSON.stringify(newLines[i])));
-				$('uploaded-filelist-' + this.tableId).down('tbody').insert(this.getUploadedFileHtml(newLines[i]));
+				$uploaded_files.down('[id="uploaded-filelist-' + this.tableId + '"]').down('tbody').insert(this.getUploadedFileHtml(newLines[i]));
 
 				this.removeFileFromQQUpload(newLines[i].filename);
 			}
@@ -457,7 +454,7 @@ this.UploadTab = Class.create(Tab,
 
 	removeFileFromQQUpload: function(filename)
 	{
-		$$('.qq-upload-success').each(function(element)
+		this.DOM.select('.'+this.rootCSS+'-file-uploader .qq-upload-success').each(function(element)
 		{
 			if(element.down('.qq-upload-file').innerHTML == filename)
 			{
@@ -486,16 +483,21 @@ this.UploadTab = Class.create(Tab,
 
 	updateContent: function()
 	{
-		var upload_form = '<div id="file-uploader' + this.identifier + '"></div>' +
-			'<h2>Uploaded files</h2>' +
-			'<div id="uploaded-files" style="overflow:auto;"></div>';
+		var uploadTpl = new Template(this.template.main),
+			uploadTplVars =
+			{
+				root: this.rootCSS,
+				uploadedFilesLabel: "Uploaded files"
+			},
+			upload_form = uploadTpl.evaluate(uploadTplVars);
 
-		this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier).update(upload_form);
+		this.DOM = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
+		this.DOM.update(upload_form);
 
 		// Init upload button behavior
 		this.uploader = new qq.FileUploader(
 		{
-			element: document.getElementById('file-uploader' + this.identifier),
+			element: this.DOM.down('.'+this.rootCSS+'-file-uploader'),
 			action: 'upload',
 			params:
 			{

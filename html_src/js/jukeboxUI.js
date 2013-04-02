@@ -357,8 +357,12 @@ function JukeboxUI(jukebox, element, opts)
 		else
 		{
 			// If the user send a search query with an identifier he wants to update the tab content so we refresh the displayed results
-			_tabs.getTabFromUniqueId(results.identifier).updateNewSearchInformations(results);
-			_tabs.getTabFromUniqueId(results.identifier).updateContent();
+			var tab = _tabs.getTabFromUniqueId(results.identifier);
+			if(tab)
+			{
+				tab.updateNewSearchInformations(results);
+				tab.updateContent();
+			}
 		}
 	};
 
@@ -874,7 +878,8 @@ function JukeboxUI(jukebox, element, opts)
 					var search = _tabs.getFirstTabByClass(tab.classC);
 					if(search === null)
 					{
-						var newTab = new tab.classC(tab.name, _$.tabs, _opts.rootClass, J);
+						var template = _skin.templates.tabs ? _skin.templates.tabs[tab.name] : null;
+						var newTab = new tab.classC(tab.name, _$.tabs, _opts.rootClass, J, template);
 						search = _tabs.addTab(newTab);
 					}
 					_tabs.toggleTab(search);

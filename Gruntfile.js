@@ -282,7 +282,7 @@ module.exports = function(grunt)
 				options:
 				{
 					nonstandard: true, sub: true,
-					globals: {MusicFieldEditor: true, Tab: true, Notifications: true, $: true, qq: true, UploadTab: true, Class: true, TableKit: true, genres: true, $$: true}
+					globals: {MusicFieldEditor: true, Tab: true, Notifications: true, qq: true, UploadTab: true, Class: true, Template: true, TableKit: true, genres: true}
 				}
 			},
 			tab_playlist:

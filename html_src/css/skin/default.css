@@ -409,6 +409,9 @@ left: 0;
 
 
 /* Upload */
+.jukebox-uploaded-files{
+overflow: auto;
+}
 table.upload-table td form{
 overflow: auto;
 }

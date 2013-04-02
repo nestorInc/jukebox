@@ -106,6 +106,50 @@ Jukebox.UI.skins["default"] =
 	<a><span class="#{root}-playqueue-move-bottom"></span></a>\
 	<a><span class="#{root}-playqueue-delete"></span></a>\
 </div>\
-</li>'
+</li>',
+		tabs:
+		{
+			Uploader:
+			{
+				main:
+'<div class="#{root}-file-uploader"></div>\
+<h2>#{uploadedFilesLabel}</h2>\
+<div class="#{root}-uploaded-files"></div>',
+				tableHead:
+'<tr>\
+	<th>Filename</th>\
+	<th class="artist">Artist</th>\
+	<th class="album">Album</th>\
+	<th class="title">Title</th>\
+	<th class="year">Year</th>\
+	<th class="track">Track</th>\
+	<th class="trackNb">TrackNb</th>\
+	<th class="genre">Genre</th>\
+	<th>Actions</th>\
+</tr>',
+				tableBody:
+'<tr id="#{rowId}">\
+	<td class="static">#{filename}</td>\
+	<td>#{artist}</td>\
+	<td>#{album}</td>\
+	<td>#{title}</td>\
+	<td>#{year}</td>\
+	<td>#{track}</td>\
+	<td>#{trackNb}</td>\
+	<td>#{genre}</td>\
+	<td class="static actions">\
+		<div>\
+			<a href="javascript:;">X</a>\
+		</div>\
+		<div class="update" style="display:none;">\
+			<a href="javascript:;">&nbsp;Update&nbsp;</a>\
+		</div>\
+		<div class="validate">\
+			<a href="javascript:;">&nbsp;Validate&nbsp;</a>\
+		</div>\
+	</td>\
+</tr>'
+			}
+		}
 	}
 };
