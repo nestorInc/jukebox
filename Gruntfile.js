@@ -257,7 +257,7 @@ module.exports = function(grunt)
 				src: SRC.tab + 'customQueries.js',
 				options:
 				{
-					globals: {Tab: true, Action: true, Query: true, Class: true, $: true, Notifications: true, sendQueryProxy: true}
+					globals: {Tab: true, Action: true, Query: true, Class: true, Notifications: true, sendQueryProxy: true}
 				}
 			},
 			tab_debug:
@@ -265,7 +265,7 @@ module.exports = function(grunt)
 				src: SRC.tab + 'debug.js',
 				options:
 				{
-					globals: {JsonPrettyPrint: true, Tab: true, Class: true, $: true}
+					globals: {JsonPrettyPrint: true, Tab: true, Class: true}
 				}
 			},
 			tab_notification:

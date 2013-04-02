@@ -723,7 +723,7 @@ function Jukebox(element, opts)
 			$this.song = Extend(true, {}, _current_song); // Cloned: can be setted without impact
 
 			// Fill songs history ; TODO: Get that data from server side ; see json.play_queue_history
-			if(_songsHistory.length == 0 || _current_song.mid != _songsHistory[_songsHistory.length - 1].mid)
+			if(_songsHistory.length === 0 || _current_song.mid != _songsHistory[_songsHistory.length - 1].mid)
 			{
 				var newSong = Extend(true, {}, _current_song); // Create another clone
 				_songsHistory.push(newSong);
