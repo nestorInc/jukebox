@@ -245,7 +245,7 @@ this.UploadTab = Class.create(Tab,
 		}
 	},
 
-	getUploadedFileHtml: function(obj, tbody)
+	addRow: function(obj, tbody)
 	{
 		// Prepare variables
 		var trackSlashIndex = obj.track.toString().indexOf("/"),
@@ -342,7 +342,7 @@ this.UploadTab = Class.create(Tab,
 				var tbody = new Element('tbody');
 				for(i = 0; i < uploaded_files.length; ++i)
 				{
-					this.getUploadedFileHtml(uploaded_files[i], tbody);
+					this.addRow(uploaded_files[i], tbody);
 					this.removeFileFromQQUpload(uploaded_files[i].filename);
 				}
 				$uploaded_files.down('table').insert(tbody);
@@ -436,7 +436,7 @@ this.UploadTab = Class.create(Tab,
 				this.uploadedFiles.push(JSON.parse(JSON.stringify(newLines[i])));
 				this.uploadedFilesEdition.push(JSON.parse(JSON.stringify(newLines[i])));
 				var tbody2 = $uploaded_files.down('[id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '"]').down('tbody');
-				this.getUploadedFileHtml(newLines[i], tbody2);
+				this.addRow(newLines[i], tbody2);
 
 				this.removeFileFromQQUpload(newLines[i].filename);
 			}
