@@ -110,7 +110,7 @@ this.UploadTab = Class.create(Tab,
 
 				// Delete html part
 				var $uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files');
-				$uploaded_files.down('[id="upload-line-' + escape(id) + '"]').remove();
+				$uploaded_files.down('[id="' + this.rootCSS + '-upload-line-' + escape(id) + '"]').remove();
 				Notifications.Display(2, "Song " + id + " sucessfully deleted");
 
 				this.reinitTable();
@@ -129,23 +129,24 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(1, message);
 
 			var lastId = escape(this.lastSendingUpdateIdentifier),
+				rootCSS = this.rootCSS,
 				$uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files'),
-				$selector = $uploaded_files.down('[id="upload-line-' + lastId + '"]');
+				$selector = $uploaded_files.down('[id="' + this.rootCSS + '-upload-line-' + lastId + '"]');
 
 			// Delete all modified styles
-			$selector.select('[class="modified"]').each(function(e)
+			$selector.select('.'+rootCSS+'-uploaded-file-modified').each(function(e)
 			{
-				e.removeClassName("modified");
+				e.removeClassName(rootCSS+'-uploaded-file-modified');
 			});
 
 			// Hide update
-			$selector.select('[class="update"]').each(function(e)
+			$selector.select('.'+rootCSS+'-uploaded-file-update').each(function(e)
 			{
 				e.hide();
 			});
 
 			// Show validate
-			$selector.select('[class="validate"]').each(function(e)
+			$selector.select('.'+rootCSS+'-uploaded-file-validate').each(function(e)
 			{
 				e.show();
 			});
@@ -182,7 +183,7 @@ this.UploadTab = Class.create(Tab,
 
 				// Delete html part
 				var $uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files');
-				$uploaded_files.down('[id="upload-line-' + escape(id) + '"]').remove();
+				$uploaded_files.down('[id="' + this.rootCSS + '-upload-line-' + escape(id) + '"]').remove();
 
 				this.reinitTable();
 			}
@@ -205,9 +206,9 @@ this.UploadTab = Class.create(Tab,
 		else
 		{
 			var temp = new Date().getTime();
-			$uploaded_files.down('[id="uploaded-filelist-' + this.tableId + '"]').id = 'uploaded-filelist-' + temp;
+			$uploaded_files.down('[id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '"]').id = this.rootCSS + '-uploaded-filelist-' + temp;
 			this.tableId = temp;
-			this.tableKit = new TableKit('uploaded-filelist-' + this.tableId,
+			this.tableKit = new TableKit(this.rootCSS + '-uploaded-filelist-' + this.tableId,
 			{
 				'sortable': true,
 				'editable': true,
@@ -244,7 +245,7 @@ this.UploadTab = Class.create(Tab,
 		}
 	},
 
-	getUploadedFileHtml: function(obj)
+	getUploadedFileHtml: function(obj, tbody)
 	{
 		// Prepare variables
 		var trackSlashIndex = obj.track.toString().indexOf("/"),
@@ -268,7 +269,8 @@ this.UploadTab = Class.create(Tab,
 		var tableBodyTpl = new Template(this.template.tableBody),
 			tableBodyVars =
 			{
-				rowId: 'upload-line-' + fname,
+				root: this.rootCSS,
+				rowId: this.rootCSS + '-upload-line-' + fname,
 				filename: obj.filename,
 				artist: obj.artist,
 				album: obj.album,
@@ -281,8 +283,8 @@ this.UploadTab = Class.create(Tab,
 			tr = tableBodyTpl.evaluate(tableBodyVars); // as a string
 
 		// Compute a dom element
-		var div = new Element('tbody').update(tr);
-		tr = div.down();
+		tbody.insert(tr);
+		tr = tbody.childElements().last();
 
 		var divs = tr.select('div'),
 			that = this;
@@ -291,8 +293,6 @@ this.UploadTab = Class.create(Tab,
 		divs[0].on("click", function(){that.deleteUploadedSong(fname);});
 		divs[1].on("click", function(){that.updateUploadedSong(fname);});
 		divs[2].on("click", function(){that.validateUploadedSong(fname);});
-
-		return tr;
 	},
 
 	displayUploadedFiles: function(uploaded_files)
@@ -331,9 +331,10 @@ this.UploadTab = Class.create(Tab,
 				this.uploadedFiles = JSON.parse(JSON.stringify(uploaded_files));
 				this.uploadedFilesEdition = JSON.parse(JSON.stringify(uploaded_files));
 
-				var html = '<table id="uploaded-filelist-' + this.tableId + '" class="sortable resizable editable upload-table">';
+				var html = '<table id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '" class="' + this.rootCSS + '-upload-table">';
 				var tableHeadTpl = new Template(this.template.tableHead),
-					tr = tableHeadTpl.evaluate();
+					tableHeadTplVars = {root: this.rootCSS},
+					tr = tableHeadTpl.evaluate(tableHeadTplVars);
 				html += '<thead>' + tr + '</thead><tfoot>' + tr + '</tfoot></table>';
 				$uploaded_files.update(html);
 
@@ -341,20 +342,20 @@ this.UploadTab = Class.create(Tab,
 				var tbody = new Element('tbody');
 				for(i = 0; i < uploaded_files.length; ++i)
 				{
-					tbody.insert(this.getUploadedFileHtml(uploaded_files[i]));
+					this.getUploadedFileHtml(uploaded_files[i], tbody);
 					this.removeFileFromQQUpload(uploaded_files[i].filename);
 				}
 				$uploaded_files.down('table').insert(tbody);
 
-				this.makeCellEditable("artist");
-				this.makeCellEditable("album");
-				this.makeCellEditable("title");
-				this.makeCellEditable("year");
-				this.makeCellEditable("track");
-				this.makeCellEditable("trackNb");
-				this.makeCellEditable("genre");
+				this.makeCellEditable(this.rootCSS + "-upload-artist");
+				this.makeCellEditable(this.rootCSS + "-upload-album");
+				this.makeCellEditable(this.rootCSS + "-upload-title");
+				this.makeCellEditable(this.rootCSS + "-upload-year");
+				this.makeCellEditable(this.rootCSS + "-upload-track");
+				this.makeCellEditable(this.rootCSS + "-upload-trackNb");
+				this.makeCellEditable(this.rootCSS + "-upload-genre");
 
-				this.tableKit = new TableKit('uploaded-filelist-' + this.tableId,
+				this.tableKit = new TableKit(this.rootCSS + '-uploaded-filelist-' + this.tableId,
 				{
 					'sortable': true,
 					'editable': true,
@@ -404,7 +405,7 @@ this.UploadTab = Class.create(Tab,
 				}
 
 				// Remove the html Element
-				$uploaded_files.down('[id="upload-line-' + escape(deleteLines[i]) + '"]').remove();
+				$uploaded_files.down('[id="' + this.rootCSS + '-upload-line-' + escape(deleteLines[i]) + '"]').remove();
 			}
 		}
 		else if(this.uploadedFiles.length < uploaded_files.length)
@@ -434,7 +435,8 @@ this.UploadTab = Class.create(Tab,
 				//TODO: clone with Extend(true, {}, object);
 				this.uploadedFiles.push(JSON.parse(JSON.stringify(newLines[i])));
 				this.uploadedFilesEdition.push(JSON.parse(JSON.stringify(newLines[i])));
-				$uploaded_files.down('[id="uploaded-filelist-' + this.tableId + '"]').down('tbody').insert(this.getUploadedFileHtml(newLines[i]));
+				var tbody2 = $uploaded_files.down('[id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '"]').down('tbody');
+				this.getUploadedFileHtml(newLines[i], tbody2);
 
 				this.removeFileFromQQUpload(newLines[i].filename);
 			}
@@ -448,7 +450,7 @@ this.UploadTab = Class.create(Tab,
 
 	makeCellEditable: function(name)
 	{
-		var obj = new MusicFieldEditor(name, this.uploadedFiles, this.uploadedFilesEdition);
+		var obj = new MusicFieldEditor(name, this.rootCSS, this.uploadedFiles, this.uploadedFilesEdition);
 		TableKit.Editable.addCellEditor(obj);
 	},
 

@@ -1,6 +1,8 @@
-function MusicFieldEditor(name, uploadedFiles, uploadedFilesEdition)
+function MusicFieldEditor(name, rootCSS, uploadedFiles, uploadedFilesEdition)
 {
 	this.name = name;
+	this.rootCSS = rootCSS;
+	this.prefix = rootCSS + '-upload-';
 	this.uploadedFiles = uploadedFiles;
 	this.uploadedFilesEdition = uploadedFilesEdition;
 }
@@ -28,42 +30,39 @@ MusicFieldEditor.prototype._undo = function(e)
 MusicFieldEditor.prototype.undo = function(cell)
 {
 	var row = cell.up('tr'),
-		identifier = row.id; // // Get the line filename ( identifier )
+		identifier = row.id;
 
-	// Update html
 	for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
 	{
 		var uploadedFile = this.uploadedFiles[i],
 			fname = escape(uploadedFile.filename);
-		if("upload-line-" + fname == identifier)
+		if(this.prefix + "line-" + fname == identifier)
 		{
-			// Show validate
-			var selector = 'upload-line-' + fname,
-				$selector = $(selector);
-			if($selector.select('[class="modified"]').length == 1)
+			var property = this.name.substring(this.prefix.length);
+			if(row.select('.'+this.rootCSS+'-uploaded-file-modified').length == 1)
 			{
-				$selector.select('[class="update"]').each(function(e){e.hide();});
-				$selector.select('[class="validate"]').each(function(e){e.show();});
+				row.select('.'+this.rootCSS+'-uploaded-file-update').each(function(e){e.hide();});
+				row.select('.'+this.rootCSS+'-uploaded-file-validate').each(function(e){e.show();});
 			}
-			if(this.name == "track")
+			if(this.name == this.prefix + "track")
 			{
 				cell.update(uploadedFile["track"].split('/')[0]);
 			}
-			else if (this.name == "trackNb")
+			else if (this.name == this.prefix + "trackNb")
 			{
 				cell.update(uploadedFile["track"].split('/')[1]);
 			}
 			else
 			{
-				cell.update(uploadedFile[this.name]);
+				cell.update(uploadedFile[property]);
 			}
-			this.uploadedFilesEdition[i][this.name] = this.uploadedFiles[i][this.name];
+			this.uploadedFilesEdition[i][property] = this.uploadedFiles[i][property];
 			break;
 		}
 	}
 
 	// Remove cell style modified
-	cell.removeClassName("modified");
+	cell.removeClassName(this.rootCSS+'-uploaded-file-modified');
 
 	var data = TableKit.getCellData(cell);
 	data.active = false;
@@ -71,10 +70,10 @@ MusicFieldEditor.prototype.undo = function(cell)
 
 MusicFieldEditor.prototype._submit = function(e)
 {
-	var cell = Event.findElement(e,'td');
-	var form = Event.findElement(e,'form');
+	var cell = Event.findElement(e, 'td');
+	var form = Event.findElement(e, 'form');
 	Event.stop(e);
-	this.submit(cell,form);
+	this.submit(cell, form);
 };
 
 MusicFieldEditor.prototype.submit = function(cell, form)
@@ -82,12 +81,12 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 	form = form ? form : cell.down('form');
 
 	var row = cell.up('tr'),
-		identifier = row.id, // Get the line filename ( identifier )
+		identifier = row.id,
 		firstChild = form.firstChild,
-		firstChildVal = firstChild.value;
+		firstChildVal = firstChild.value,
+		property = this.name.substring(this.prefix.length);
 
-	// Update html
-	if(this.name == "genre" && genres[firstChildVal])
+	if(property == "genre" && genres[firstChildVal])
 	{
 		cell.update(genres[firstChildVal]);
 	}
@@ -96,29 +95,28 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 		cell.update(firstChildVal);
 	}
 
-	// Update new value
 	for(var i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 	{
 		var fileE = this.uploadedFilesEdition[i],
 			fname = escape(fileE.filename);
-		if("upload-line-" + fname == identifier)
+		if(this.prefix + "line-" + fname == identifier)
 		{
-			if(this.name == "genre")
+			if(property == "genre")
 			{
-				fileE[this.name] = firstChild.options[firstChild.selectedIndex].value;
+				fileE["genre"] = firstChild.options[firstChild.selectedIndex].value;
 			}
-			else if(this.name == "track")
+			else if(property == "track")
 			{
-				if(fileE[this.name].toString().indexOf("/") == -1)
+				if(fileE["track"].toString().indexOf("/") == -1)
 				{
-					fileE[this.name] = firstChildVal + "/0";
+					fileE["track"] = firstChildVal + "/0";
 				}
 				else
 				{
-					fileE[this.name] = firstChildVal + "/" + fileE[this.name].split("/")[1];
+					fileE["track"] = firstChildVal + "/" + fileE["track"].split("/")[1];
 				}
 			}
-			else if(this.name == "trackNb")
+			else if(property == "trackNb")
 			{
 				if(fileE["track"].toString().indexOf("/") == -1)
 				{
@@ -131,28 +129,27 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 			}
 			else
 			{
-				fileE[this.name] = firstChildVal;
+				fileE[property] = firstChildVal;
 			}
 
 			// Upload cell style ff the new value differs
 			if( (
-					( this.name == "track" && this.uploadedFiles[i][this.name].split('/')[0] != firstChildVal ) ||
-					( this.name == "trackNb" && this.uploadedFiles[i]["track"].split('/')[1] != firstChildVal ) ||
-					( this.name != "track" && this.name != "trackNb" && firstChildVal != this.uploadedFiles[i][this.name] )
+					( property == "track" && this.uploadedFiles[i][property].split('/')[0] != firstChildVal ) ||
+					( property == "trackNb" && this.uploadedFiles[i]["track"].split('/')[1] != firstChildVal ) ||
+					( property != "track" && property != "trackNb" && firstChildVal != this.uploadedFiles[i][property] )
 				) &&
-				!cell.hasClassName("modified"))
+				!cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
 			{
 				// Default behaviour
-				cell.addClassName("modified");
+				cell.addClassName(this.rootCSS+'-uploaded-file-modified');
 
-				var $selector = $('upload-line-' + fname);
-				$selector.select('[class="update"]').each(function(e){e.show();});
-				$selector.select('[class="validate"]').each(function(e){e.hide();});
+				row.select('.'+this.rootCSS+'-uploaded-file-update').each(function(e){e.show();});
+				row.select('.'+this.rootCSS+'-uploaded-file-validate').each(function(e){e.hide();});
 
 			}
-			else if(firstChildVal == this.uploadedFiles[i][this.name] && cell.hasClassName("modified"))
+			else if(firstChildVal == this.uploadedFiles[i][property] && cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
 			{
-				cell.removeClassName("modified");
+				cell.removeClassName(this.rootCSS+'-uploaded-file-modified');
 			}
 
 			break;
@@ -166,7 +163,7 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 MusicFieldEditor.prototype.edit = function(cell)
 {
 	cell = $(cell);
-	if(cell.hasClassName("static"))
+	if(cell.hasClassName(this.rootCSS + "-upload-cell-static"))
 	{
 		return;
 	}
@@ -186,30 +183,47 @@ MusicFieldEditor.prototype.edit = function(cell)
 	// Change behavior from field names
 	var modified = false;
 
-	if(this.name == "genre")
+	var property = this.name.substring(this.prefix.length);
+	if(property == "genre")
 	{
 		// Create genre element add fill options
 		var select = document.createElement("select");
-		select.id = "genre";
-		form.appendChild(select);
-
 		for(i = 0, len = genresOrdered.length; i < len; ++i)
 		{
-			var genre = genresOrdered[i];
-			var option = document.createElement('option');
+			var genre = genresOrdered[i],
+				option = document.createElement('option');
 			option.value = genre.id;
 			option.appendChild(document.createTextNode(genre.name));
 			select.appendChild(option);
 		}
+		form.appendChild(select);
 
 		for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 		{
-			if("upload-line-" + escape(this.uploadedFilesEdition[i].filename) == identifier)
+			if(this.prefix + "line-" + escape(this.uploadedFilesEdition[i].filename) == identifier)
 			{
 				if(this.uploadedFilesEdition[i]["genre"] != this.uploadedFiles[i]["genre"])
 				{
 					modified = true;
 				}
+
+				// Automatically select genre
+				var options = select.select('option'),
+					len2 = options.length;
+				if(len2 > 0 && len2 < this.uploadedFilesEdition[i]["genre"])
+				{
+					options[len2-1].selected = true;
+				}
+				for(var j = 0; j < len2; j++)
+				{
+					if(options[j].value == this.uploadedFilesEdition[i]["genre"])
+					{
+						options[j].selected = true;
+						break;
+					}
+				}
+
+				break;
 			}
 		}
 	}
@@ -222,9 +236,9 @@ MusicFieldEditor.prototype.edit = function(cell)
 		for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 		{
 			var fileE = this.uploadedFilesEdition[i];
-			if("upload-line-" + escape(fileE.filename) == identifier)
+			if(this.prefix + "line-" + escape(fileE.filename) == identifier)
 			{
-				if(this.name == "track")
+				if(property == "track")
 				{
 					if(fileE["track"].toString().indexOf('/') == -1)
 					{
@@ -239,7 +253,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 						}
 					}
 				}
-				else if(this.name == "trackNb")
+				else if(property == "trackNb")
 				{
 					if(fileE["track"].toString().indexOf('/') == -1)
 					{
@@ -256,8 +270,8 @@ MusicFieldEditor.prototype.edit = function(cell)
 				}
 				else
 				{
-					input.value = fileE[this.name];
-					if(fileE[this.name] != this.uploadedFiles[i][this.name])
+					input.value = fileE[property];
+					if(fileE[property] != this.uploadedFiles[i][property])
 					{
 						modified = true;
 					}
@@ -272,50 +286,27 @@ MusicFieldEditor.prototype.edit = function(cell)
 	var okButton = document.createElement("input");
 	okButton.type = "submit";
 	okButton.value = "submit";
-	okButton.className = 'editor-ok-button';
+	okButton.className = this.prefix + 'editor-ok';
 	form.appendChild(okButton);
 
 	if(modified)
 	{
 		var undoLink = document.createElement("a");
-		undoLink.href = "#";
+		undoLink.href = "javascript;";
 		undoLink.appendChild(document.createTextNode("undo "));
 		undoLink.onclick = this._undo.bindAsEventListener(this);
-		undoLink.className = 'editor-undo';      
+		undoLink.className = this.prefix + 'editor-undo';      
 		form.appendChild(undoLink);
 		form.appendChild(document.createTextNode(" "));
 	}
 	
 	var cancelLink = document.createElement("a");
-	cancelLink.href = "#";
+	cancelLink.href = "javascript;";
 	cancelLink.appendChild(document.createTextNode("cancel"));
 	cancelLink.onclick = this._cancel.bindAsEventListener(this);
-	cancelLink.className = 'editor-cancel';      
+	cancelLink.className = this.prefix + 'editor-cancel';      
 	form.appendChild(cancelLink);
 
 	cell.innerHTML = '';
 	cell.appendChild(form);
-
-	// Update new value
-	for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
-	{
-		if("upload-line-" + escape(this.uploadedFilesEdition[i].filename) == identifier)
-		{
-			// Automatically select genre
-			var options = $$('select#genre option');
-			var len2 = options.length;
-			if(len2 > 0 && len2 < this.uploadedFilesEdition[i][this.name])
-			{
-				options[len2-1].selected = true;
-			}
-			for(var j = 0; j < len2; j++)
-			{
-				if(options[j].value == this.uploadedFilesEdition[i][this.name])
-				{
-					options[j].selected = true;
-					break;
-				}
-			}
-		}
-	}
 };

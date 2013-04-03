@@ -229,7 +229,7 @@ module.exports = function(grunt)
 				options:
 				{
 					nonstandard: true, loopfunc: true, sub: true,
-					globals: {genres: true, genresOrdered: true, Event: true, TableKit: true, $: true, $$: true}
+					globals: {genres: true, genresOrdered: true, Event: true, TableKit: true, $: true}
 				}
 			},
 			jukebox:

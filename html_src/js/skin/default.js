@@ -118,18 +118,18 @@ Jukebox.UI.skins["default"] =
 				tableHead:
 '<tr>\
 	<th>Filename</th>\
-	<th class="artist">Artist</th>\
-	<th class="album">Album</th>\
-	<th class="title">Title</th>\
-	<th class="year">Year</th>\
-	<th class="track">Track</th>\
-	<th class="trackNb">TrackNb</th>\
-	<th class="genre">Genre</th>\
+	<th class="#{root}-upload-artist">Artist</th>\
+	<th class="#{root}-upload-album">Album</th>\
+	<th class="#{root}-upload-title">Title</th>\
+	<th class="#{root}-upload-year">Year</th>\
+	<th class="#{root}-upload-track">Track</th>\
+	<th class="#{root}-upload-trackNb">TrackNb</th>\
+	<th class="#{root}-upload-genre">Genre</th>\
 	<th>Actions</th>\
 </tr>',
 				tableBody:
 '<tr id="#{rowId}">\
-	<td class="static">#{filename}</td>\
+	<td class="#{root}-upload-cell-static">#{filename}</td>\
 	<td>#{artist}</td>\
 	<td>#{album}</td>\
 	<td>#{title}</td>\
@@ -137,14 +137,14 @@ Jukebox.UI.skins["default"] =
 	<td>#{track}</td>\
 	<td>#{trackNb}</td>\
 	<td>#{genre}</td>\
-	<td class="static actions">\
+	<td class="#{root}-uploaded-file-actions #{root}-upload-cell-static">\
 		<div>\
 			<a href="javascript:;">X</a>\
 		</div>\
-		<div class="update" style="display:none;">\
+		<div class="#{root}-uploaded-file-update" style="display:none;">\
 			<a href="javascript:;">&nbsp;Update&nbsp;</a>\
 		</div>\
-		<div class="validate">\
+		<div class="#{root}-uploaded-file-validate">\
 			<a href="javascript:;">&nbsp;Validate&nbsp;</a>\
 		</div>\
 	</td>\

@@ -345,14 +345,14 @@ border: 1px solid black;
 
 
 table.search-table,
-table.upload-table{
+table.jukebox-upload-table{
 width: 100%;
 }
 
 table.search-table td,
 table.search-table th,
-table.upload-table th,
-table.upload-table td{
+table.jukebox-upload-table th,
+table.jukebox-upload-table td{
 border: 1px solid #CCCCCC;
 max-width: 100px;
 width: auto;
@@ -365,8 +365,8 @@ white-space: pre; /* For buttons column */
 }
 table.search-table thead,
 table.search-table tfoot,
-table.upload-table thead,
-table.upload-table tfoot{
+table.jukebox-upload-table thead,
+table.jukebox-upload-table tfoot{
 background-color: #DDD;
 }
 
@@ -412,10 +412,16 @@ left: 0;
 .jukebox-uploaded-files{
 overflow: auto;
 }
-table.upload-table td form{
+.jukebox-uploaded-file-actions{
+white-space: nowrap;
+}
+.jukebox-uploaded-file-actions div{
+float: left;
+}
+table.jukebox-upload-table td form{
 overflow: auto;
 }
-table.upload-table td.modified{
+table.jukebox-upload-table td.jukebox-uploaded-file-modified{
 color: #880000;
 }
 
