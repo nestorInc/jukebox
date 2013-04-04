@@ -286,13 +286,11 @@ this.UploadTab = Class.create(Tab,
 		tbody.insert(tr);
 		tr = tbody.childElements().last();
 
-		var divs = tr.select('div'),
-			that = this;
-		
 		// Register listeners
-		divs[0].on("click", function(){that.deleteUploadedSong(fname);});
-		divs[1].on("click", function(){that.updateUploadedSong(fname);});
-		divs[2].on("click", function(){that.validateUploadedSong(fname);});
+		var divs = tr.select('div');
+		divs[0].on("click", this.deleteUploadedSong.bind(this, fname));
+		divs[1].on("click", this.updateUploadedSong.bind(this, fname));
+		divs[2].on("click", this.validateUploadedSong.bind(this, fname));
 	},
 
 	displayUploadedFiles: function(uploaded_files)

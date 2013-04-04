@@ -101,15 +101,8 @@ this.Tabs = Class.create(
 			toggleTab = new Element('a', {href: noHref}).update('<span>' + tab.name + '</span>'),
 			removeTab = new Element('a', {href: noHref}).update('<span> X </span>');
 
-		var that = this; // Tool for closure
-		toggleTab.on("click", function()
-		{
-			that.toggleTab(id);
-		});
-		removeTab.on("click", function()
-		{
-			that.removeTab(id, className);
-		});
+		toggleTab.on("click", this.toggleTab.bind(this, id));
+		removeTab.on("click", this.removeTab.bind(this, id, className));
 
 		var tabDisplay = new Element('li', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
 		{
