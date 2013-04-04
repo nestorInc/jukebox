@@ -489,6 +489,11 @@ function JukeboxUI(jukebox, element, opts)
 		_$.expand_button.hide();
 		_$.collapse_button.show();
 		_$.jukebox.addClassName(_opts.rootClass+'-fullplayer');
+
+		if(HTML5Storage.isSupported)
+		{
+			HTML5Storage.set("fullplayer", true);
+		}
 	}
 
 	/**
@@ -499,6 +504,11 @@ function JukeboxUI(jukebox, element, opts)
 		_$.expand_button.show();
 		_$.collapse_button.hide();
 		_$.jukebox.removeClassName(_opts.rootClass+'-fullplayer');
+
+		if(HTML5Storage.isSupported)
+		{
+			HTML5Storage.set("fullplayer", false);
+		}
 	}
 
 	/**
@@ -940,6 +950,11 @@ function JukeboxUI(jukebox, element, opts)
 	var temp = _opts.skin;
 	_opts.skin = null; // Force null to bypass `name != _opts.skin` check in .skin() method
 	this.skin(temp); // Will call _init()
+
+	if(_opts.fullplayer)
+	{
+		_expand();
+	}
 }
 
 //---
@@ -955,7 +970,8 @@ JukeboxUI.defaults =
 		dragdrop: true,
 		playQueueNode: 'ul',
 		songNode: 'li'
-	}
+	},
+	fullplayer: false
 };
 
 JukeboxUI.skins = {}; // See skin/*.js

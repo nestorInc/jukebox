@@ -181,9 +181,9 @@ function Jukebox(element, opts)
 		var skinName = _ui.skin(name);
 		if(name)
 		{
-			if(_supportsHTML5Storage())
+			if(HTML5Storage.isSupported)
 			{
-				_setHTML5Storage("skin", skinName);
+				HTML5Storage.set("skin", skinName);
 			}
 
 			// Also refresh play queue now!
@@ -424,9 +424,9 @@ function Jukebox(element, opts)
 	*/
 	this.savePlayQueue = function(name)
 	{
-		if(_supportsHTML5Storage())
+		if(HTML5Storage.isSupported)
 		{
-			var playqueues = _getHTML5Storage("playqueues") || {};
+			var playqueues = HTML5Storage.get("playqueues") || {};
 
 			// Only store id
 			var ids = [];
@@ -437,7 +437,7 @@ function Jukebox(element, opts)
 
 			playqueues[name] = ids; // Add current play queue
 
-			_setHTML5Storage("playqueues", playqueues);
+			HTML5Storage.set("playqueues", playqueues);
 		}
 		else
 		{
@@ -454,9 +454,9 @@ function Jukebox(element, opts)
 	*/
 	this.restorePlayQueue = function(name, position)
 	{
-		if(_supportsHTML5Storage())
+		if(HTML5Storage.isSupported)
 		{
-			var playqueues = _getHTML5Storage("playqueues"),
+			var playqueues = HTML5Storage.get("playqueues"),
 				error = false;
 
 			if(playqueues !== null)
@@ -492,13 +492,13 @@ function Jukebox(element, opts)
 	*/
 	this.deletePlayQueue = function(name)
 	{
-		if(_supportsHTML5Storage())
+		if(HTML5Storage.isSupported)
 		{
-			var playqueues = _getHTML5Storage("playqueues");
+			var playqueues = HTML5Storage.get("playqueues");
 			if(playqueues)
 			{
 				delete playqueues[name];
-				_setHTML5Storage("playqueues", playqueues);
+				HTML5Storage.set("playqueues", playqueues);
 			}
 		}
 		return this;
@@ -511,9 +511,9 @@ function Jukebox(element, opts)
 	this.getPlayQueues = function()
 	{
 		var list = [];
-		if(_supportsHTML5Storage())
+		if(HTML5Storage.isSupported)
 		{
-			var playqueues = _getHTML5Storage("playqueues");
+			var playqueues = HTML5Storage.get("playqueues");
 			if(playqueues)
 			{
 				for(var name in playqueues)
@@ -927,55 +927,6 @@ function Jukebox(element, opts)
 		}
 	}
 
-	/**
-	* Detect if HTML5 storage is supported
-	* @return {bool} true if HTML5 storage is supported, false otherwise
-	*/
-	function _supportsHTML5Storage()
-	{
-		try
-		{
-			return 'localStorage' in window && window['localStorage'] !== null;
-		}
-		catch(e)
-		{
-			return false;
-		}
-	}
-
-	/**
-	* Fetch data from HTML5 storage + parse it into an object
-	* @param {string} key - Storage identifier
-	* @return {object} Saved object, or null
-	*/
-	function _getHTML5Storage(key)
-	{
-		var str = localStorage[Jukebox.name+"-"+key],
-			obj = null;
-		if(str)
-		{
-			try
-			{
-				obj = JSON.parse(str);
-			}
-			catch(e)
-			{
-				obj = null;
-			}
-		}
-		return obj;
-	}
-
-	/**
-	* Save data to HTML5 storage
-	* @param {string} key - Storage identifier
-	* @param {object} value - Storage data
-	*/
-	function _setHTML5Storage(key, value)
-	{
-		localStorage[Jukebox.name+"-"+key] = JSON.stringify(value);
-	}
-
 	//--
 	// Events handlers
 
@@ -1105,16 +1056,23 @@ function Jukebox(element, opts)
 		});
 
 		var skin = _opts.skin;
-		if(!skin && _supportsHTML5Storage()) // Restore latest skin
+		if(!skin && HTML5Storage.isSupported) // Restore latest skin
 		{
-			skin = _getHTML5Storage("skin") || skin;
+			skin = HTML5Storage.get("skin") || skin; // || for backup if not in storage
+		}
+
+		var fullplayer = _opts.fullplayer;
+		if(!fullplayer && HTML5Storage.isSupported)
+		{
+			fullplayer = HTML5Storage.get("fullplayer") || fullplayer; // || for backup if not in storage
 		}
 
 		_ui = new JukeboxUI($this, element,
 		{
 			replaceTitle: _opts.replaceTitle,
 			skin: skin,
-			theme: _opts.theme
+			theme: _opts.theme,
+			fullplayer: fullplayer
 		});
 
 		if(_opts.autorefresh)
@@ -1169,6 +1127,8 @@ Jukebox.defaults =
 	autorefresh: true,
 	autorefresh_delay: 3000,
 	replaceTitle: true
+	//skin: 'default', // Automatically restore latest skin when not specified
+	//fullplayer: false, // Automatically restore state when not specified
 };
 
 Jukebox.UI = JukeboxUI; // To attach skins

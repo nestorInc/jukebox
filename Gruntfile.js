@@ -41,6 +41,7 @@ module.exports = function(grunt)
 					// Helpers
 					SRC.js + 'genres.js',
 					SRC.js + 'tools.js',
+					SRC.js + 'storage.js',
 
 					// Tabs
 					SRC.js + 'tab/tabs.js',
@@ -223,6 +224,14 @@ module.exports = function(grunt)
 				src: SRC.js + 'tools.js',
 				options: {unused: false, eqeqeq: false, eqnull: true}
 			},
+			storage:
+			{
+				src: SRC.js + 'storage.js',
+				options:
+				{
+					globals: {Jukebox: true}
+				}
+			},
 			fieldEditor:
 			{
 				src: SRC.js + 'musicFieldEditor.js',
@@ -237,7 +246,7 @@ module.exports = function(grunt)
 				src: SRC.js + 'jukebox.js',
 				options:
 				{
-					globals: {Extend: true, Query: true, Action: true, JukeboxUI: true, soundManager: true, Notifications: true, Ajax: true, $R: true}
+					globals: {Extend: true, Query: true, Action: true, JukeboxUI: true, soundManager: true, Notifications: true, Ajax: true, $R: true, HTML5Storage: true}
 				}
 			},
 			jukeboxui:
@@ -245,7 +254,7 @@ module.exports = function(grunt)
 				src: SRC.js + 'jukeboxUI.js',
 				options:
 				{
-					globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, PlaylistTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true, Template: true, Notifications: true}
+					globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, PlaylistTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true, Template: true, Notifications: true, HTML5Storage: true}
 				}
 			},
 			tabs:

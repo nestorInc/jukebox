@@ -63,7 +63,8 @@
 <script type="text/javascript" src="js/action.js"></script>
 <script type="text/javascript" src="js/query.js"></script>
 <script type="text/javascript" src="js/tools.js"></script>
-<script type="text/javascript" src="js/jukeboxC.js"></script>
+<script type="text/javascript" src="js/storage.js"></script>
+<script type="text/javascript" src="js/jukebox.js"></script>
 <script type="text/javascript" src="skin/default.js"></script>
 <script type="text/javascript" src="skin/light.js"></script>
 <script type="text/javascript" src="js/jukeboxUI.js"></script>
@@ -128,13 +129,14 @@ if(DEBUG)
 		baseUrl: '/src/js/',
 		shim: // Dependencies
 		{
-			'jukebox': ['query', 'action', 'tools', 'notifications', 'jukeboxUI', 'lib/soundmanager2'],
-			'jukeboxUI': ['lib/prototype', 'tools', 'genres', 'tab/tabs', 'tab/search', 'tab/upload', 'tab/debug', 'tab/playlist', 'tab/customQueries', 'tab/notification', 'lib/slider', 'lib/dragdrop'],
+			'jukebox': ['query', 'action', 'tools', 'storage', 'notifications', 'jukeboxUI', 'lib/soundmanager2'],
+			'jukeboxUI': ['lib/prototype', 'tools', 'storage', 'genres', 'tab/tabs', 'tab/search', 'tab/upload', 'tab/debug', 'tab/playlist', 'tab/customQueries', 'tab/notification', 'lib/slider', 'lib/dragdrop'],
 			'musicFieldEditor': ['lib/prototype', 'genres', 'lib/tablekit'],
 			'notifications': ['lib/prototype', 'lib/effects'],
 			'query': ['action'],
 			'action': ['tools'],
 			'tools': ['lib/json2'],
+			'storage': ['lib/json2'],
 			'tab/tabs': ['lib/prototype'],
 			'tab/notification': ['lib/prototype', 'tab/tabs', 'lib/json2', 'notifications', 'action', 'query'],
 			'tab/customQueries': ['lib/prototype', 'tab/tabs', 'notifications'],
@@ -177,6 +179,7 @@ if(DEBUG)
 		'action',
 		'query',
 		'tools',
+		'storage',
 		'jukebox',
 		'jukeboxUI',*/
 		'jukebox'
