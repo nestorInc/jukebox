@@ -1064,7 +1064,7 @@ function Jukebox(element, opts)
 		var fullplayer = _opts.fullplayer;
 		if(!fullplayer && HTML5Storage.isSupported)
 		{
-			fullplayer = HTML5Storage.get("fullplayer") || fullplayer; // || for backup if not in storage
+			fullplayer = HTML5Storage.get("fullplayer") || fullplayer;
 		}
 
 		_ui = new JukeboxUI($this, element,

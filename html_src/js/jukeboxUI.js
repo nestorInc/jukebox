@@ -348,7 +348,7 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			// Adds the new created tab to the tabs container
 			var searchTab = new SearchTab(J, _$.tabs, results, _opts.rootClass);
-			var id = _tabs.addTab(searchTab);
+			var id = _tabs.addTab(searchTab, "SearchTab");
 			if(results.select !== false)
 			{
 				_tabs.toggleTab(id);
@@ -449,7 +449,7 @@ function JukeboxUI(jukebox, element, opts)
 			// One distinct CSS per skin
 			_opts.rootClass = _opts.rootCSS + (_opts.skin == JukeboxUI.defaults.skin ? '' : ('-' + _opts.skin));
 
-			_init(); // Note: Opened tabs are lost
+			_init();
 		}
 		return _opts.skin;
 	};
@@ -878,6 +878,11 @@ function JukeboxUI(jukebox, element, opts)
 			onChange: _events.volume // Mostly for click anywhere on the slider
 		});
 
+		if(_opts.fullplayer)
+		{
+			_expand();
+		}
+		
 		(function() // Tabs
 		{
 			var tabsManager = {};
@@ -890,7 +895,7 @@ function JukeboxUI(jukebox, element, opts)
 					{
 						var template = _skin.templates.tabs ? _skin.templates.tabs[tab.name] : null;
 						var newTab = new tab.classC(tab.name, _$.tabs, _opts.rootClass, J, template);
-						search = _tabs.addTab(newTab);
+						search = _tabs.addTab(newTab, tab.classN);
 					}
 					_tabs.toggleTab(search);
 				};
@@ -939,6 +944,16 @@ function JukeboxUI(jukebox, element, opts)
 				TL.down(rootClass+'tab-debug').on("click", tabsManager.ShowDebugTab);
 				TL.down(rootClass+'tab-playlist').on("click", tabsManager.ShowPlaylistTab);
 			}
+
+			// Restore opened tabs
+			if(HTML5Storage.isSupported)
+			{
+				var openedTabs = HTML5Storage.get("tabs") || [];
+				for(var j = 0; j < openedTabs.length; ++j)
+				{
+					tabsManager["Show"+openedTabs[j]]();
+				}
+			}
 		})();
 	}
 
@@ -950,11 +965,6 @@ function JukeboxUI(jukebox, element, opts)
 	var temp = _opts.skin;
 	_opts.skin = null; // Force null to bypass `name != _opts.skin` check in .skin() method
 	this.skin(temp); // Will call _init()
-
-	if(_opts.fullplayer)
-	{
-		_expand();
-	}
 }
 
 //---

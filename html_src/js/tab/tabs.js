@@ -63,7 +63,7 @@ this.Tabs = Class.create(
 	},
 
 	// Add the tab in the html layout and in the tabs array
-	addTab: function(tab)
+	addTab: function(tab, className)
 	{
 		// Check tab class
 		var rootClass = tab.constructor;
@@ -108,7 +108,7 @@ this.Tabs = Class.create(
 		});
 		removeTab.on("click", function()
 		{
-			that.removeTab(id);
+			that.removeTab(id, className);
 		});
 
 		var tabDisplay = new Element('li', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
@@ -134,13 +134,28 @@ this.Tabs = Class.create(
 		// Init tab content
 		if(typeof tab.updateContent === 'function')
 		{
-			tab.updateContent();
+			setTimeout(function()
+			{
+				tab.updateContent();
+			}, 0); // Workaround issue when restoring UploadTab on jukebox instanciation (execute _update() but _ui undefined yet)
+		}
+
+		// Store that tab is opened
+		if(className != "SearchTab" && HTML5Storage.isSupported)
+		{
+			var openedTabs = HTML5Storage.get("tabs") || [];
+			if(openedTabs.indexOf(className) == -1)
+			{
+				//openedTabs.splice(index, 0, className); // insert at a specific index
+				openedTabs.push(className);
+			}
+			HTML5Storage.set("tabs", openedTabs);
 		}
 
 		return id;
 	},
 
-	removeTab: function(identifier)
+	removeTab: function(identifier, className)
 	{
 		var index = this.getTabIndexFromUniqueId(identifier);
 		if(index != -1)
@@ -166,6 +181,18 @@ this.Tabs = Class.create(
 
 			if(tabHeader) {tabHeader.remove();}
 			if(tabContent) {tabContent.remove();}
+
+			// Remove tab from opened list
+			if(className != "SearchTab" && HTML5Storage.isSupported)
+			{
+				var openedTabs = HTML5Storage.get("tabs") || [],
+					tabIndex = openedTabs.indexOf(className);
+				if(tabIndex != -1)
+				{
+					openedTabs.splice(tabIndex, 1);
+				}
+				HTML5Storage.set("tabs", openedTabs);
+			}
 		}
 	},
 

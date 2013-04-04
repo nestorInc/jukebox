@@ -180,7 +180,8 @@ module.exports = function(grunt)
 					Tab: true,
 					genres: true,
 					FormatTime: true,
-					SortUnique: true
+					SortUnique: true,
+					HTML5Storage: true
 				}
 			},
 			grunt:
