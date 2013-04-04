@@ -508,7 +508,7 @@ this.UploadTab = Class.create(Tab,
 			debug: true
 		});
 
-		// Send a json query to obtain the list off uploaded files
+		// Send a json query to obtain the list of uploaded files
 		this.getUploadedFiles();
 	}
 });
