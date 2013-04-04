@@ -890,14 +890,19 @@ function JukeboxUI(jukebox, element, opts)
 			{
 				tabsManager["Show" + tab.classN] = function()
 				{
-					var search = _tabs.getFirstTabByClass(tab.classC);
+					var search = _tabs.getFirstTabByClass(tab.classC),
+						identifier;
 					if(search === null)
 					{
 						var template = _skin.templates.tabs ? _skin.templates.tabs[tab.name] : null;
 						var newTab = new tab.classC(tab.name, _$.tabs, _opts.rootClass, J, template);
-						search = _tabs.addTab(newTab, tab.classN);
+						identifier = _tabs.addTab(newTab, tab.classN);
 					}
-					_tabs.toggleTab(search);
+					else
+					{
+						identifier = search.identifier;
+					}
+					_tabs.toggleTab(identifier);
 				};
 			}
 
