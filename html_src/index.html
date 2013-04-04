@@ -136,21 +136,18 @@ if(DEBUG)
 			'query': ['action'],
 			'action': ['tools'],
 			'tools': ['lib/json2'],
-			'storage': ['lib/json2'],
+			'storage': [],
 			'tab/tabs': ['lib/prototype'],
-			'tab/notification': ['lib/prototype', 'tab/tabs', 'lib/json2', 'notifications', 'action', 'query'],
+			'tab/notification': ['lib/prototype', 'tab/tabs', 'notifications', 'action', 'query'],
 			'tab/customQueries': ['lib/prototype', 'tab/tabs', 'notifications'],
 			'tab/debug': ['lib/prototype', 'tab/tabs', 'tools'],
 			'tab/playlist': ['lib/prototype', 'tab/tabs'],
-			'tab/upload': ['lib/prototype', 'tab/tabs', 'lib/json2', 'lib/fileuploader', 'lib/tablekit', 'musicFieldEditor', 'notifications', 'genres'],
+			'tab/upload': ['lib/prototype', 'tab/tabs', 'lib/fileuploader', 'lib/tablekit', 'musicFieldEditor', 'notifications', 'genres'],
 			'tab/search': ['lib/prototype', 'tab/tabs', 'lib/tablekit', 'genres', 'tools', 'lib/dragdrop'],
 			'lib/tablekit': ['lib/prototype'],
 			'lib/effects': ['lib/prototype'],
 			'lib/slider': ['lib/prototype'],
-			'lib/dragdrop': ['lib/prototype', 'lib/effects'],
-			'skin/default': ['jukeboxUI'],
-			'skin/light': ['jukeboxUI'],
-			'skin/hype': ['jukeboxUI']
+			'lib/dragdrop': ['lib/prototype', 'lib/effects']
 		}
 	};
 	requirejsScripts =
@@ -219,7 +216,7 @@ for(var i = 0, len = CSS.length; i < len; ++i)
 requirejs.config(requirejsConfig);
 requirejs(requirejsScripts, function()
 {
-	// Now load skins
+	// Now load skins ; They are injected into Jukebox.UI.skins
 	requirejs.config(requirejsSkinsConfig);
 	requirejs(requirejsSkinsScripts, function()
 	{

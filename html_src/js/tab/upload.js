@@ -328,8 +328,8 @@ this.UploadTab = Class.create(Tab,
 			if(uploaded_files.length > 0)
 			{
 				// trick used to clone ; TODO: replace with Extend
-				this.uploadedFiles = JSON.parse(JSON.stringify(uploaded_files));
-				this.uploadedFilesEdition = JSON.parse(JSON.stringify(uploaded_files));
+				this.uploadedFiles = Object.toJSON(uploaded_files).evalJSON();
+				this.uploadedFilesEdition = Object.toJSON(uploaded_files).evalJSON();
 
 				var html = '<table id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '" class="' + this.rootCSS + '-upload-table">';
 				var tableHeadTpl = new Template(this.template.tableHead),
@@ -433,8 +433,8 @@ this.UploadTab = Class.create(Tab,
 			for(i = 0, len = newLines.length; i < len; ++i)
 			{
 				//TODO: clone with Extend(true, {}, object);
-				this.uploadedFiles.push(JSON.parse(JSON.stringify(newLines[i])));
-				this.uploadedFilesEdition.push(JSON.parse(JSON.stringify(newLines[i])));
+				this.uploadedFiles.push(Object.toJSON(newLines[i]).evalJSON());
+				this.uploadedFilesEdition.push(Object.toJSON(newLines[i]).evalJSON());
 				var tbody2 = $uploaded_files.down('[id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '"]').down('tbody');
 				this.addRow(newLines[i], tbody2);
 

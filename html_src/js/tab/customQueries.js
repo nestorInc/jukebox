@@ -123,26 +123,29 @@ this.CustomQueriesTab = Class.create(Tab,
 			}
 
 			// Check if the textarea contains a valid json query
-			var json = JSON.parse($textarea.value);
-			if(json && json.action)
+			if($textarea.value.isJSON())
 			{
-				query = new Query(json.timestamp ? json.timestamp : 0);
-				if(Object.isArray(json.action))
+				var json = $textarea.value.evalJSON();
+				if(json && json.action)
 				{
-					actions = json.action;
-				}
-				else
-				{
-					actions = [json.action];
-				}
+					query = new Query(json.timestamp ? json.timestamp : 0);
+					if(Object.isArray(json.action))
+					{
+						actions = json.action;
+					}
+					else
+					{
+						actions = [json.action];
+					}
 
-				for(var i = 0; i < actions.length; ++i)
-				{
-					var action = new Action(actions[i].name, actions[i]);
-					query.addAction(action);
-				}
+					for(var i = 0; i < actions.length; ++i)
+					{
+						var action = new Action(actions[i].name, actions[i]);
+						query.addAction(action);
+					}
 
-				sendQueryProxy(query);
+					sendQueryProxy(query);
+				}
 			}
 		});
 	}

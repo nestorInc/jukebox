@@ -21,7 +21,7 @@ var HTML5Storage =
 		{
 			try
 			{
-				obj = JSON.parse(str);
+				obj = str.evalJSON();
 			}
 			catch(e)
 			{
@@ -38,7 +38,7 @@ var HTML5Storage =
 	*/
 	set: function(key, value)
 	{
-		localStorage[HTML5Storage.prefix + "-" + key] = JSON.stringify(value);
+		localStorage[HTML5Storage.prefix + "-" + key] = Object.toJSON(value);
 	}
 };
 Object.freeze(HTML5Storage); // Non-extensible, Non-removable, Non-modifiable
