@@ -117,7 +117,7 @@ Jukebox.UI.skins["default"] =
 <div class="#{root}-uploaded-files"></div>',
 				tableHead:
 '<tr>\
-	<th>Filename</th>\
+	<th class="#{root}-upload-filename">Filename</th>\
 	<th class="#{root}-upload-artist">Artist</th>\
 	<th class="#{root}-upload-album">Album</th>\
 	<th class="#{root}-upload-title">Title</th>\
@@ -125,7 +125,7 @@ Jukebox.UI.skins["default"] =
 	<th class="#{root}-upload-track">Track</th>\
 	<th class="#{root}-upload-trackNb">TrackNb</th>\
 	<th class="#{root}-upload-genre">Genre</th>\
-	<th>Actions</th>\
+	<th class="#{root}-upload-actions">Actions</th>\
 </tr>',
 				tableBody:
 '<tr id="#{rowId}">\

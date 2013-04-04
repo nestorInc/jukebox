@@ -347,6 +347,7 @@ this.UploadTab = Class.create(Tab,
 				}
 				$uploaded_files.down('table').insert(tbody);
 
+				// Editable
 				this.makeCellEditable(this.rootCSS + "-upload-artist");
 				this.makeCellEditable(this.rootCSS + "-upload-album");
 				this.makeCellEditable(this.rootCSS + "-upload-title");
@@ -354,6 +355,9 @@ this.UploadTab = Class.create(Tab,
 				this.makeCellEditable(this.rootCSS + "-upload-track");
 				this.makeCellEditable(this.rootCSS + "-upload-trackNb");
 				this.makeCellEditable(this.rootCSS + "-upload-genre");
+				// Non-editable, but we have to register them anyway
+				this.makeCellEditable(this.rootCSS + "-upload-filename");
+				this.makeCellEditable(this.rootCSS + "-upload-actions");
 
 				this.tableKit = new TableKit(this.rootCSS + '-uploaded-filelist-' + this.tableId,
 				{
