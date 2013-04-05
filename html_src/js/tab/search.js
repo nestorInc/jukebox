@@ -156,7 +156,7 @@ this.SearchTab = Class.create(Tab,
 		if(this.total_results > 0 && this.page_count > 1)
 		{
 			// We have to specified a fixed width, 100% doesn't work : the slider is lost
-			var music_wrapper_width = this.dom.getWidth();
+			var music_wrapper_width = this.DOM.getWidth();
 
 			var slider = '' +
 			'<div name="results-slider-' + tabId + '" class="slider" style="width:' + music_wrapper_width + 'px;">' +
