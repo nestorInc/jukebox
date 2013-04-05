@@ -79,17 +79,17 @@ module.exports = function(grunt)
 		},
 		uglify:
 		{
-			options:
-			{
-				mangle:
-				{
-					except:['$super']
-				}
-			},
 			js:
 			{
 				src: '<%= concat.js.dest %>',
-				dest: OUT.js + 'jukebox.min.js'
+				dest: OUT.js + 'jukebox.min.js',
+				options:
+				{
+					mangle:
+					{
+						except:['$super']
+					}
+				}
 			},
 			jsSkin:
 			{
