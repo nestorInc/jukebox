@@ -745,9 +745,6 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
-	/**
-	* @constructs
-	*/
 	function _init()
 	{
 		// Create HTML player
