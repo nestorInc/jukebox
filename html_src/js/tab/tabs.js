@@ -1,11 +1,12 @@
 var Tab = this.Tab = Class.create(
 {
-	initialize: function(name, jukebox, domContainer, rootCSS)
+	initialize: function(tabName, DOM, rootCSS, jukebox, template)
 	{
-		this.name = name;
-		this.jukebox = jukebox;
-		this.DOM = domContainer;
+		this.name = tabName;
+		this.DOM = DOM;
 		this.rootCSS = rootCSS;
+		this.jukebox = jukebox;
+		this.template = template;
 	}
 });
 

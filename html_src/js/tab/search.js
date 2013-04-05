@@ -1,14 +1,13 @@
 this.SearchTab = Class.create(Tab,
 {
-	initialize: function($super, jukebox, domContainer, server_results, rootCSS)
+	initialize: function($super, server_results, DOM, rootCSS, jukebox)
 	{
 		this.reloadControllers = true;
 		this.pages = [];
 		this.sliders = [];
 		this.tableKit = null;
 
-		var id = server_results.identifier;
-		$super(id, jukebox, domContainer, rootCSS);
+		$super(server_results.identifier, DOM, rootCSS, jukebox);
 		
 		this.updateNewSearchInformations(server_results);
 	},
