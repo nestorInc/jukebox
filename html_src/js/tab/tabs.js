@@ -80,7 +80,7 @@ this.Tabs = Class.create(
 		// Compute a new valid uniqueid 
 		if(this.lastUniqueId == null)
 		{
-			this.lastUniqueId = 0;
+			this.lastUniqueId = 1;
 		}
 		else
 		{
