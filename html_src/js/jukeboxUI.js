@@ -317,21 +317,28 @@ function JukeboxUI(jukebox, element, opts)
 		for(var i = 0, len = playQueueSongs.length; i < len; i++)
 		{
 			var droppable = ul.down(rootClass+'playqueue-' + i),
-				draggable = droppable.down(rootClass+'playqueue-song-' + i),
-				handle = draggable.down(rootClass+'playqueue-handle-' + i);
+				draggable = droppable.down(rootClass+'playqueue-draggable');
 
-			new Draggable(draggable,
+			if(draggable)
 			{
-				scroll: window,
-				constraint: 'vertical',
-				revert: true,
-				handle: handle,
-				onStart: dragStart,
-				onEnd: dragEnd
-			});
-			_makePlayQueueSongDroppable(droppable, playQueueSongs);
+				var handle = draggable.down(rootClass+'playqueue-handle-' + i);
+				new Draggable(draggable,
+				{
+					scroll: window,
+					constraint: 'vertical',
+					revert: true,
+					handle: handle,
+					onStart: dragStart,
+					onEnd: dragEnd
+				});
+				_makePlayQueueSongDroppable(droppable, playQueueSongs);
+			}
 		}
-		_makePlayQueueSongDroppable(ul.down(rootClass+'playqueue-first'), playQueueSongs);
+		var first = ul.down(rootClass+'playqueue-first');
+		if(first)
+		{
+			_makePlayQueueSongDroppable(first, playQueueSongs);
+		}
 	};
 
 	/**
@@ -623,7 +630,7 @@ function JukeboxUI(jukebox, element, opts)
 				}
 				else if(dragged.hasClassName(_opts.rootClass+'-search-row'))
 				{
-					var song = dragged.retrieve('song')
+					var song = dragged.retrieve('song');
 					song_mid = song.mid;
 					
 					var play_queue_index = -1;
