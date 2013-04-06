@@ -350,8 +350,19 @@ function JukeboxUI(jukebox, element, opts)
 		// A new search could be initiated from the left pannel so we must automatically expand the right pannel
 		_expand();
 
-		// Create a new searchTab
-		if(!results.identifier)
+		var tab = null;
+		if(results.identifier)
+		{
+			// If the user send a search query with an identifier he wants to update the tab content so we refresh the displayed results
+			tab = _tabs.getTabFromUniqueId(results.identifier);
+		}
+
+		if(tab)
+		{
+			tab.updateNewSearchInformations(results);
+			tab.updateContent();
+		}
+		else
 		{
 			// Adds the new created tab to the tabs container
 			var searchTab = new SearchTab(results, _$.tabs, _opts.rootClass, J, _skin.templates.tabs ? _skin.templates.tabs["Search"] : null);
@@ -359,16 +370,6 @@ function JukeboxUI(jukebox, element, opts)
 			if(results.select !== false)
 			{
 				_tabs.toggleTab(id);
-			}
-		}
-		else
-		{
-			// If the user send a search query with an identifier he wants to update the tab content so we refresh the displayed results
-			var tab = _tabs.getTabFromUniqueId(results.identifier);
-			if(tab)
-			{
-				tab.updateNewSearchInformations(results);
-				tab.updateContent();
 			}
 		}
 	};
@@ -950,11 +951,23 @@ function JukeboxUI(jukebox, element, opts)
 			// Restore opened tabs
 			if(HTML5Storage.isSupported)
 			{
-				var openedTabs = HTML5Storage.get("tabs") || [];
-				for(var j = 0; j < openedTabs.length; ++j)
+				setTimeout(function()
 				{
-					tabsManager["Show"+openedTabs[j]]();
-				}
+					var openedTabs = HTML5Storage.get("tabs") || [];
+					for(var i = 0; i < openedTabs.length; ++i)
+					{
+						var type = openedTabs[i].type;
+						if(type == "SearchTab")
+						{
+							var opts = openedTabs[i].options;
+							_search(opts.current_page, opts.identifier, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
+						}
+						else
+						{
+							tabsManager["Show"+type]();
+						}
+					}
+				}, 0); // Avoid issue when restoring tab on jukebox instanciation (_ui undefined in jukebox.js because _init() not finished yet)
 			}
 		})();
 	}

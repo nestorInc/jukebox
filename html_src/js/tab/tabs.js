@@ -128,25 +128,69 @@ this.Tabs = Class.create(
 		// Init tab content
 		if(typeof tab.updateContent === 'function')
 		{
-			setTimeout(function()
-			{
-				tab.updateContent();
-			}, 0); // Workaround issue when restoring UploadTab on jukebox instanciation (execute _update() but _ui undefined yet)
+			tab.updateContent();
 		}
 
 		// Store that tab is opened
-		if(className != "SearchTab" && HTML5Storage.isSupported)
+		if(HTML5Storage.isSupported)
 		{
+			var tabDescriptor =
+			{
+				type: className
+			};
+
+			if(className == "SearchTab")
+			{
+				var toSave = ['identifier', 'select_fields', 'search_value', 'search_comparison', 'search_field', 'order_by', 'result_count', 'current_page'],
+					obj = {};
+				for(var i = 0; i < toSave.length; ++i)
+				{
+					var prop = toSave[i];
+					obj[prop] = tab[prop];
+				}
+				tabDescriptor.options = obj;
+			}
+
 			var openedTabs = HTML5Storage.get("tabs") || [];
-			if(openedTabs.indexOf(className) == -1)
+			if(this.getTabIndexInStorage(openedTabs, className, tab) == -1) // Not found
 			{
 				//openedTabs.splice(index, 0, className); // insert at a specific index
-				openedTabs.push(className);
+				openedTabs.push(tabDescriptor);
 			}
 			HTML5Storage.set("tabs", openedTabs);
 		}
 
 		return id;
+	},
+
+	getTabIndexInStorage: function(openedTabs, className, tab)
+	{
+		var index = -1;
+		for(var i = 0; i < openedTabs.length; ++i)
+		{
+			if(openedTabs[i].type == className)
+			{
+				var opts = openedTabs[i].options;
+				if(
+					className != "SearchTab" ||
+					// Do not resave tab on restore
+					(className == "SearchTab" && // We cannot use identifier
+						tab.select_fields == opts.select_fields &&
+						tab.search_value == opts.search_value &&
+						tab.search_comparison == opts.search_comparison &&
+						tab.search_field == opts.search_field &&
+						tab.order_by == opts.order_by &&
+						tab.result_count == opts.result_count &&
+						tab.current_page == opts.current_page
+					)
+				)
+				{
+					index = i;
+					break;
+				}
+			}
+		}
+		return index;
 	},
 
 	removeTab: function(identifier, className)
@@ -171,16 +215,16 @@ this.Tabs = Class.create(
 			}
 
 			// Remove the tab
-			this.tabs.splice(index, 1);
+			var tab = this.tabs.splice(index, 1)[0];
 
 			if(tabHeader) {tabHeader.remove();}
 			if(tabContent) {tabContent.remove();}
 
 			// Remove tab from opened list
-			if(className != "SearchTab" && HTML5Storage.isSupported)
+			if(HTML5Storage.isSupported)
 			{
 				var openedTabs = HTML5Storage.get("tabs") || [],
-					tabIndex = openedTabs.indexOf(className);
+					tabIndex = this.getTabIndexInStorage(openedTabs, className, tab);
 				if(tabIndex != -1)
 				{
 					openedTabs.splice(tabIndex, 1);

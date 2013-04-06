@@ -632,8 +632,16 @@ function Jukebox(element, opts)
 	*/
 	function _doAction(action)
 	{
-		_nextQuery.addAction(action);
-		_update();
+		if(action.name == "search" && _nextQuery.search != null)
+		{
+			var newSearch = new Query(null, [action]);
+			_waitingQueries.push(newSearch);
+		}
+		else
+		{
+			_nextQuery.addAction(action);
+			_update();
+		}
 	}
 
 	/**
@@ -655,7 +663,7 @@ function Jukebox(element, opts)
 		else
 		{
 			// Query is being sent and new query has arrived
-			if(_nextQuery.actions.length > 0)
+			if(_nextQuery.actions.length > 0 || _nextQuery.search != null)
 			{
 				_waitingQueries.push(_nextQuery);
 				_nextQuery = new Query();
@@ -968,10 +976,12 @@ function Jukebox(element, opts)
 			{
 				// Progressively send waiting queries in order
 
-				if(_nextQuery.actions.length > 0)
+				// Store _nextQuery at the end, there might be others before
+				if(_nextQuery.actions.length > 0 || _nextQuery.search != null)
 				{
 					_waitingQueries.push(_nextQuery);
 				}
+
 				var oldestQuery = _waitingQueries.splice(0, 1)[0]; // Remove the oldest
 				_nextQuery = oldestQuery; // Send it
 
