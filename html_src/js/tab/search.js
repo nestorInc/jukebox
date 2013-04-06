@@ -436,6 +436,7 @@ this.SearchTab = Class.create(Tab,
 				isOdd = !isOdd;
 
 				var tr = new Element('tr').addClassName(that.rootCSS + '-search-row ' + style);
+				tr.store('song', s); // For drag'n drop to playqueue
 
 				for(var i = 0; i < columns.length; ++i) // Only display specified thead columns
 				{

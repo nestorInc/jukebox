@@ -586,7 +586,7 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		Droppables.add(droppable,
 		{ 
-			accept: [_opts.rootClass+'-playqueue-draggable', 'library-draggable'],
+			accept: [_opts.rootClass+'-playqueue-draggable', _opts.rootClass+'-search-row'],
 			overlap: 'vertical',
 			hoverclass: _opts.rootClass+'-droppable-hover',
 			onDrop: function(dragged, dropped)
@@ -621,12 +621,9 @@ function JukeboxUI(jukebox, element, opts)
 						$this.displayPlayQueue(playQueueSongs);
 					}
 				}
-				else if(dragged.hasClassName("library-draggable"))
+				else if(dragged.hasClassName(_opts.rootClass+'-search-row'))
 				{
-					var idregexp = new RegExp(".*-([^\\-]*-[^\\-]*)-([0-9]*)");
-					var tab_index = dragged.id.replace(idregexp, "$1");
-					old_index = parseInt(dragged.id.replace(idregexp, "$2"), 10);
-					var song = _tabs.getTabFromUniqueId(tab_index).server_results[old_index];
+					var song = dragged.retrieve('song')
 					song_mid = song.mid;
 					
 					var play_queue_index = -1;
