@@ -567,16 +567,12 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	function _findDraggedId(element, drop)
 	{
-		var classes = element.className.split(' '),
-			str = drop ? _opts.rootClass+'-playqueue-' : _opts.rootClass+'-playqueue-song-',
-			id = null;
-		for(var i = 0; i < classes.length; ++i)
+		var str = drop ? _opts.rootClass+'-playqueue-' : _opts.rootClass+'-playqueue-song-',
+			id = null,
+			match = element.classNames().detect(function(n){return n.indexOf(str) != -1;});
+		if(match)
 		{
-			if(classes[i].indexOf(str) != -1)
-			{
-				id = classes[i].substring(str.length);
-				break;
-			}
+			id = match.substring(str.length);
 		}
 		return id;
 	}

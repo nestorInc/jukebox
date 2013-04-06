@@ -415,12 +415,14 @@ this.SearchTab = Class.create(Tab,
 				columns = [],
 				that = this;
 
+			// Get columns according to current thead definition
 			thead.select('th').each(function(th)
 			{
+				var classes = th.classNames();
 				for(var i = 0; i < possibleColumns.length; ++i)
 				{
 					var column = possibleColumns[i];
-					if(th.hasClassName(that.rootCSS + "-search-" + column))
+					if(classes.include(that.rootCSS + "-search-" + column))
 					{
 						columns.push(column);
 						break;
