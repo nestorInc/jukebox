@@ -154,17 +154,13 @@ Jukebox.UI.skins["default"] =
 			{
 				main:
 '<div class="#{pagelistClass}">\
-	<p>\
-		\\#{slider}\
-		\\#{links}\
-	</p>\
+	\\#{slider}\
+	\\#{links}\
 </div>\
 <div class="#{contentClass}"></div>\
 <div class="#{pagelistClass}">\
-	<p>\
-		\\#{links}\
-		\\#{slider}\
-	</p>\
+	\\#{links}\
+	\\#{slider}\
 </div>',
 				tableHead:
 '<tr>\
