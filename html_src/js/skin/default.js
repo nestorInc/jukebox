@@ -1,5 +1,12 @@
 Jukebox.UI.skins["default"] =
 {
+	params:
+	{
+		allowTabs: true,
+		dragdrop: true,
+		playQueueNode: 'ul',
+		songNode: 'li'
+	},
 	templates:
 	{
 		player:

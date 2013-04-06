@@ -938,36 +938,36 @@ function JukeboxUI(jukebox, element, opts)
 				createShowTab(possibleTabs[i]);
 			}
 
-			var TL = _$.tabs_links;
-			if(!TL.empty()) // For skins without tabs links
+			if(_skin.params.allowTabs)
 			{
+				var TL = _$.tabs_links;
 				TL.down(rootClass+'tab-upload').on("click", tabsManager.ShowUploadTab);
 				TL.down(rootClass+'tab-query').on("click", tabsManager.ShowCustomQueriesTab);
 				TL.down(rootClass+'tab-notifs').on("click", tabsManager.ShowNotificationTab);
 				TL.down(rootClass+'tab-debug').on("click", tabsManager.ShowDebugTab);
 				TL.down(rootClass+'tab-playlist').on("click", tabsManager.ShowPlaylistTab);
-			}
 
-			// Restore opened tabs
-			if(HTML5Storage.isSupported)
-			{
-				setTimeout(function()
+				// Restore opened tabs
+				if(HTML5Storage.isSupported)
 				{
-					var openedTabs = HTML5Storage.get("tabs") || [];
-					for(var i = 0; i < openedTabs.length; ++i)
+					setTimeout(function()
 					{
-						var type = openedTabs[i].type;
-						if(type == "SearchTab")
+						var openedTabs = HTML5Storage.get("tabs") || [];
+						for(var i = 0; i < openedTabs.length; ++i)
 						{
-							var opts = openedTabs[i].options;
-							_search(opts.current_page, opts.identifier, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
+							var type = openedTabs[i].type;
+							if(type == "SearchTab")
+							{
+								var opts = openedTabs[i].options;
+								_search(opts.current_page, opts.identifier, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
+							}
+							else
+							{
+								tabsManager["Show"+type]();
+							}
 						}
-						else
-						{
-							tabsManager["Show"+type]();
-						}
-					}
-				}, 0); // Avoid issue when restoring tab on jukebox instanciation (_ui undefined in jukebox.js because _init() not finished yet)
+					}, 0); // Avoid issue when restoring tab on jukebox instanciation (_ui undefined in jukebox.js because _init() not finished yet)
+				}
 			}
 		})();
 	}
@@ -992,6 +992,7 @@ JukeboxUI.defaults =
 	rootCSS: 'jukebox', // CSS begins with ".jukebox-"
 	skinParams:
 	{
+		allowTabs: false,
 		dragdrop: true,
 		playQueueNode: 'ul',
 		songNode: 'li'
