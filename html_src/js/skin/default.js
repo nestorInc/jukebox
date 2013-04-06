@@ -81,8 +81,8 @@ Jukebox.UI.skins["default"] =
 </div>',
 		song:
 '<p class="#{root}-song">\
-<a class="#{root}-song-artist" href="#">#{artist}</a> - \
-<a class="#{root}-song-album" href="#">#{album}</a> - \
+<a class="#{root}-song-artist" href="javascript;">#{artist}</a> - \
+<a class="#{root}-song-album" href="javascript;">#{album}</a> - \
 <span class="#{root}-song-title">#{title}</span>\
 </p>',
 		playQueue:
@@ -148,6 +148,33 @@ Jukebox.UI.skins["default"] =
 			<a href="javascript:;">&nbsp;Validate&nbsp;</a>\
 		</div>\
 	</td>\
+</tr>'
+			},
+			Search:
+			{
+				main:
+'<div class="#{pagelistClass}">\
+	<p>\
+		\\#{slider}\
+		\\#{links}\
+	</p>\
+</div>\
+<div class="#{contentClass}"></div>\
+<div class="#{pagelistClass}">\
+	<p>\
+		\\#{links}\
+		\\#{slider}\
+	</p>\
+</div>',
+				tableHead:
+'<tr>\
+	<th class="#{root}-search-artist">Artist</th>\
+	<th class="#{root}-search-album">Album</th>\
+	<th class="#{root}-search-title">Title</th>\
+	<th class="#{root}-search-track">Track</th>\
+	<th class="#{root}-search-genre">Genre</th>\
+	<th class="#{root}-search-duration">Duration</th>\
+	<th class="#{root}-search-controls"></th>\
 </tr>'
 			}
 		}

@@ -162,16 +162,17 @@ module.exports = function(grunt)
 				{
 					// Libs
 					JSON: true,
-					Ajax: true,
+					/*Ajax: true,
 					Draggable: true,
 					Droppables: true,
 					$R: true,
 					$: true,
-					$$: true,
+					$$: true,*/
 					Class: true,
 					Control: true,
 					Element: true,
 					Event: true,
+					Template: true,
 					TableKit: true,
 					qq: true,
 
@@ -284,7 +285,11 @@ module.exports = function(grunt)
 			},
 			tab_search:
 			{
-				src: SRC.tab + 'search.js'
+				src: SRC.tab + 'search.js',
+				options:
+				{
+					globals: {Class: true, Tab: true, genres: true, Template: true, Control: true, $R: true, FormatTime: true, Draggable: true, TableKit: true, SortUnique: true}
+				}
 			},
 			tab_upload:
 			{

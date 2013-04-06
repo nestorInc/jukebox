@@ -347,7 +347,7 @@ function JukeboxUI(jukebox, element, opts)
 		if(!results.identifier)
 		{
 			// Adds the new created tab to the tabs container
-			var searchTab = new SearchTab(results, _$.tabs, _opts.rootClass, J);
+			var searchTab = new SearchTab(results, _$.tabs, _opts.rootClass, J, _skin.templates.tabs ? _skin.templates.tabs["Search"] : null);
 			var id = _tabs.addTab(searchTab, "SearchTab");
 			if(results.select !== false)
 			{
