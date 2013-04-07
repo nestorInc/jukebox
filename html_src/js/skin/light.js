@@ -33,8 +33,8 @@ Jukebox.UI.skins["light"] =
 	</td>\
 	<td class="#{root}-volume">\
 		<div class="#{root}-volume-ico"></div>\
-		<div class="#{root}-volume-slider">\
-			<div class="#{root}-volume-handle"></div>\
+		<div class="#{root}-slider #{root}-volume-slider">\
+			<div class="#{root}-slider-handle"></div>\
 		</div>\
 	</td>\
 	<td class="#{root}-listening">\

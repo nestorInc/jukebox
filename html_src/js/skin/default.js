@@ -81,7 +81,7 @@ Jukebox.UI.skins["default"] =
 <span class="#{root}-volume">\
 	<span>#{volume}&nbsp;</span>\
 	<div class="#{root}-slider #{root}-volume-slider">\
-		<div class="#{root}-slider-handle #{root}-volume-handle"></div>\
+		<div class="#{root}-slider-handle"></div>\
 	</div>\
 	<br clear="all" />\
 </span>\

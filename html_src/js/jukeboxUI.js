@@ -866,7 +866,7 @@ function JukeboxUI(jukebox, element, opts)
 		_$.btn_apply_plugin.on("click", _events.plugin);
 
 		var range0to100 = $R(0, 100);
-		_volumeSlider = new Control.Slider(_$.volume_box_slider.down(rootClass+'volume-handle'), _$.volume_box_slider,
+		_volumeSlider = new Control.Slider(_$.volume_box_slider.down(rootClass+'slider-handle'), _$.volume_box_slider,
 		{
 			range: range0to100,
 			values: range0to100,
