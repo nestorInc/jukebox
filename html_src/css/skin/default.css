@@ -423,16 +423,13 @@ color: #880000;
 }
 
 /* Sliders */
-.jukebox-search-page-links{
-text-align: center;
-}
-.jukebox-search-slider{
+.jukebox-slider{
 margin: 15px 0;
 background-color: #ccc;
 height: 15px;
 position: relative;
 }
-.jukebox-search-slider-handle{
+.jukebox-slider-handle{
 width: 25px;
 height: 25px;
 background-color: #888;
@@ -440,13 +437,30 @@ cursor: move;
 position: absolute;
 top: -5px;
 }
-.jukebox-search-slider-handle span{
-height: 20px;
+.jukebox-volume span{
+float: left;
+font-size: 13px;
 }
-.jukebox a.jukebox-slider-link-current-page{
+div.jukebox-volume-slider{
+float: left;
+width: 120px;
+height: 10px;
+margin: 5px 0;
+}
+div.jukebox-volume-slider div.jukebox-volume-handle{
+width: 10px;
+height: 20px;
+margin-left: 0;
+}
+
+/* Search page links */
+.jukebox-search-page-links{
+text-align: center;
+}
+.jukebox a.jukebox-search-page-link-current-page{
 color: #ff0000;
 }
-.jukebox a.jukebox-slider-link-current-selection{
+.jukebox a.jukebox-search-page-link-current-selection{
 color: #00ff00;
 }
 
@@ -487,22 +501,6 @@ color: #fff;
 .jukebox-tabs-content{
 position: relative;
 border-left: 1px solid black;
-}
-
-.jukebox-volume span{
-float: left;
-font-size: 13px;
-}
-.jukebox div.jukebox-volume-slider{
-float: left;
-width: 120px;
-height: 10px;
-margin: 5px 0;
-}
-.jukebox div.jukebox-volume-slider div.jukebox-volume-handle{
-width: 10px;
-height: 20px;
-margin-left: 0;
 }
 
 table.jukebox-playlists{

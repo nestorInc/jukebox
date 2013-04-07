@@ -139,7 +139,8 @@ this.SearchTab = Class.create(Tab,
 	// Update sliders and pages
 	initAndDisplaySearchControllers: function(pagelistClass)
 	{
-		var sliderCSS = this.rootCSS + '-search-slider',
+		var sliderCSS = this.rootCSS + '-slider',
+			sliderCSS2 = this.rootCSS + '-search-slider',
 			handleCSS = sliderCSS + '-handle',
 			pageListCollection = this.DOM.select('.' + pagelistClass);
 
@@ -150,7 +151,7 @@ this.SearchTab = Class.create(Tab,
 			var music_wrapper_width = this.DOM.up().getWidth();
 
 			var sliderTpl = '' +
-			'<div class="'+sliderCSS+'" style="width:' + music_wrapper_width + 'px;">' +
+			'<div class="'+sliderCSS+' '+sliderCSS2+'" style="width:' + music_wrapper_width + 'px;">' +
 				'<div class="'+handleCSS+'"></div>' +
 			'</div>';
 			var linksTpl = '<div class="'+this.rootCSS+'-search-page-links"></div>';
@@ -641,15 +642,15 @@ this.SearchTab = Class.create(Tab,
 				var className;
 				if(pages[i] == currentPage)
 				{
-					className = "slider-link-current-page";
+					className = "search-page-link-current-page";
 				}
 				else if(pages[i] == currentSelection)
 				{
-					className = "slider-link-current-selection";
+					className = "search-page-link-current-selection";
 				}
 				else
 				{
-					className = "slider-link";
+					className = "search-page-link";
 				}
 
 				var link = createLink(pages[i], className);
