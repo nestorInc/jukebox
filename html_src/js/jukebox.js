@@ -40,6 +40,7 @@ function Jukebox(element, opts)
 
 		_timestamp = 0, // last timestamp sent by server
 		_channel = null, // current channel we're connected to
+		_songsHistory = [], // songs previously played
 		_playQueueSongs = [], // songs in current playlist
 		_current_song = null,
 
@@ -168,6 +169,37 @@ function Jukebox(element, opts)
 		}
 		_volume = _streamPlayer.volume;
 		return _volume;
+	};
+
+	/**
+	* Get/Set the skin
+	* @param {string} [name] - Skin to set
+	* @return {string} The current skin.
+	*/
+	this.skin = function(name)
+	{
+		var skinName = _ui.skin(name);
+		if(name)
+		{
+			if(HTML5Storage.isSupported)
+			{
+				HTML5Storage.set("skin", skinName);
+			}
+
+			// Also refresh play queue now!
+			_refreshPlayQueue();
+		}
+		return skinName;
+	};
+
+	/**
+	* Get/Set the theme
+	* @param {string} [name] - Theme to set
+	* @return {string} The current theme.
+	*/
+	this.theme = function(name)
+	{
+		return _ui.theme(name);
 	};
 
 	/**
@@ -392,9 +424,9 @@ function Jukebox(element, opts)
 	*/
 	this.savePlayQueue = function(name)
 	{
-		if(_supportsHTML5Storage())
+		if(HTML5Storage.isSupported)
 		{
-			var playqueues = _getHTML5Storage("playqueues") || {};
+			var playqueues = HTML5Storage.get("playqueues") || {};
 
 			// Only store id
 			var ids = [];
@@ -405,7 +437,7 @@ function Jukebox(element, opts)
 
 			playqueues[name] = ids; // Add current play queue
 
-			localStorage["playqueues"] = JSON.stringify(playqueues); // Save
+			HTML5Storage.set("playqueues", playqueues);
 		}
 		else
 		{
@@ -422,9 +454,9 @@ function Jukebox(element, opts)
 	*/
 	this.restorePlayQueue = function(name, position)
 	{
-		if(_supportsHTML5Storage())
+		if(HTML5Storage.isSupported)
 		{
-			var playqueues = _getHTML5Storage("playqueues"),
+			var playqueues = HTML5Storage.get("playqueues"),
 				error = false;
 
 			if(playqueues !== null)
@@ -460,13 +492,13 @@ function Jukebox(element, opts)
 	*/
 	this.deletePlayQueue = function(name)
 	{
-		if(_supportsHTML5Storage())
+		if(HTML5Storage.isSupported)
 		{
-			var playqueues = _getHTML5Storage("playqueues");
+			var playqueues = HTML5Storage.get("playqueues");
 			if(playqueues)
 			{
 				delete playqueues[name];
-				localStorage["playqueues"] = JSON.stringify(playqueues); // Save
+				HTML5Storage.set("playqueues", playqueues);
 			}
 		}
 		return this;
@@ -479,9 +511,9 @@ function Jukebox(element, opts)
 	this.getPlayQueues = function()
 	{
 		var list = [];
-		if(_supportsHTML5Storage())
+		if(HTML5Storage.isSupported)
 		{
-			var playqueues = _getHTML5Storage("playqueues");
+			var playqueues = HTML5Storage.get("playqueues");
 			if(playqueues)
 			{
 				for(var name in playqueues)
@@ -491,6 +523,16 @@ function Jukebox(element, opts)
 			}
 		}
 		return list;
+	};
+
+
+	/**
+	* Get previous played songs
+	* @return <Song>[]
+	*/
+	this.history = function()
+	{
+		return _songsHistory.slice();
 	};
 
 	/**
@@ -590,8 +632,16 @@ function Jukebox(element, opts)
 	*/
 	function _doAction(action)
 	{
-		_nextQuery.addAction(action);
-		_update();
+		if(action.name == "search" && _nextQuery.search != null)
+		{
+			var newSearch = new Query(null, [action]);
+			_waitingQueries.push(newSearch);
+		}
+		else
+		{
+			_nextQuery.addAction(action);
+			_update();
+		}
 	}
 
 	/**
@@ -613,7 +663,7 @@ function Jukebox(element, opts)
 		else
 		{
 			// Query is being sent and new query has arrived
-			if(_nextQuery.actions.length > 0)
+			if(_nextQuery.actions.length > 0 || _nextQuery.search != null)
 			{
 				_waitingQueries.push(_nextQuery);
 				_nextQuery = new Query();
@@ -680,6 +730,13 @@ function Jukebox(element, opts)
 			// Expose public infos
 			$this.song = Extend(true, {}, _current_song); // Cloned: can be setted without impact
 
+			// Fill songs history ; TODO: Get that data from server side ; see json.play_queue_history
+			if(_songsHistory.length === 0 || _current_song.mid != _songsHistory[_songsHistory.length - 1].mid)
+			{
+				var newSong = Extend(true, {}, _current_song); // Create another clone
+				_songsHistory.push(newSong);
+			}
+
 			$this.lastServerResponse = new Date();
 
 			_ui.updateCurrentSong(_current_song);
@@ -716,9 +773,12 @@ function Jukebox(element, opts)
 		if(json.play_queue)
 		{
 			_playQueueSongs = json.play_queue.songs;
-			var clone = Extend(true, [], _playQueueSongs); // Clone: can be setted (inside ui) without impact
-			_ui.displayPlayQueue(clone, _last_nb_listening_users);
+			_refreshPlayQueue();
 		}
+		/*if(json.play_queue_history)
+		{
+			_songsHistory = json.play_queue.songsHistory;
+		}*/
 		/*TODO
 		if(json.news)
 		{
@@ -856,6 +916,15 @@ function Jukebox(element, opts)
 	}
 
 	/**
+	* Force a play queue refresh
+	*/
+	function _refreshPlayQueue()
+	{
+		var clone = Extend(true, [], _playQueueSongs); // Clone: can be setted (inside ui) without impact
+		_ui.displayPlayQueue(clone, _last_nb_listening_users);
+	}
+
+	/**
 	* Execute ready callback
 	*/
 	function _startCallback()
@@ -864,48 +933,6 @@ function Jukebox(element, opts)
 		{
 			_readyCallback.call($this);
 		}
-	}
-
-	/**
-	* Detect if HTML5 storage is supported
-	* @return {bool} true if HTML5 storage is supported, false otherwise
-	*/
-	function _supportsHTML5Storage()
-	{
-		try
-		{
-			return 'localStorage' in window && window['localStorage'] !== null;
-		}
-		catch(e)
-		{
-			return false;
-		}
-	}
-
-	/**
-	* Fetch data from HTML5 storage + parse it into an object
-	* @param {string} key - Storage identifier
-	* @return {object} Saved object, or null
-	*/
-	function _getHTML5Storage(key)
-	{
-		var obj = localStorage[key];
-		if(obj)
-		{
-			try
-			{
-				obj = JSON.parse(obj);
-			}
-			catch(e)
-			{
-				obj = null;
-			}
-		}
-		else
-		{
-			obj = null;
-		}
-		return obj;
 	}
 
 	//--
@@ -949,10 +976,12 @@ function Jukebox(element, opts)
 			{
 				// Progressively send waiting queries in order
 
-				if(_nextQuery.actions.length > 0)
+				// Store _nextQuery at the end, there might be others before
+				if(_nextQuery.actions.length > 0 || _nextQuery.search != null)
 				{
 					_waitingQueries.push(_nextQuery);
 				}
+
 				var oldestQuery = _waitingQueries.splice(0, 1)[0]; // Remove the oldest
 				_nextQuery = oldestQuery; // Send it
 
@@ -1036,11 +1065,24 @@ function Jukebox(element, opts)
 			}
 		});
 
+		var skin = _opts.skin;
+		if(!skin && HTML5Storage.isSupported) // Restore latest skin
+		{
+			skin = HTML5Storage.get("skin") || skin; // || for backup if not in storage
+		}
+
+		var fullplayer = _opts.fullplayer;
+		if(!fullplayer && HTML5Storage.isSupported)
+		{
+			fullplayer = HTML5Storage.get("fullplayer") || fullplayer;
+		}
+
 		_ui = new JukeboxUI($this, element,
 		{
 			replaceTitle: _opts.replaceTitle,
-			skin: _opts.skin,
-			theme: _opts.theme
+			skin: skin,
+			theme: _opts.theme,
+			fullplayer: fullplayer
 		});
 
 		if(_opts.autorefresh)
@@ -1095,6 +1137,8 @@ Jukebox.defaults =
 	autorefresh: true,
 	autorefresh_delay: 3000,
 	replaceTitle: true
+	//skin: 'default', // Automatically restore latest skin when not specified
+	//fullplayer: false, // Automatically restore state when not specified
 };
 
 Jukebox.UI = JukeboxUI; // To attach skins

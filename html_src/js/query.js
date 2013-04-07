@@ -21,10 +21,7 @@ function Query(lastTimestamp, actions)
 	{
 		for(var i = 0; i < actions.length; ++i)
 		{
-			if(actions[i] instanceof Action)
-			{
-				this.actions.push(actions[i]);
-			}
+			this.addAction(actions[i]);
 		}
 	}
 

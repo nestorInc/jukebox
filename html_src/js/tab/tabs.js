@@ -1,11 +1,11 @@
 var Tab = this.Tab = Class.create(
 {
-	initialize: function(name, jukebox, domContainer, rootCSS)
+	initialize: function(tabName, rootCSS, jukebox, template)
 	{
-		this.name = name;
-		this.jukebox = jukebox;
-		this.DOM = domContainer;
+		this.name = tabName;
 		this.rootCSS = rootCSS;
+		this.jukebox = jukebox;
+		this.template = template;
 	}
 });
 
@@ -13,8 +13,9 @@ var Tab = this.Tab = Class.create(
 
 this.Tabs = Class.create(
 {
-	initialize: function(rootCSS)
+	initialize: function(DOM, rootCSS)
 	{
+		this.DOM = DOM;
 		this.rootCSS = rootCSS;
 		this.tabs = [];
 		this.currentTabUniqueId = -1;
@@ -57,13 +58,8 @@ this.Tabs = Class.create(
 		return null;
 	},
 
-	setRootNode: function(node)
-	{
-		this.DOM = node;
-	},
-
 	// Add the tab in the html layout and in the tabs array
-	addTab: function(tab)
+	addTab: function(tab, className)
 	{
 		// Check tab class
 		var rootClass = tab.constructor;
@@ -79,7 +75,7 @@ this.Tabs = Class.create(
 		// Compute a new valid uniqueid 
 		if(this.lastUniqueId == null)
 		{
-			this.lastUniqueId = 0;
+			this.lastUniqueId = 1;
 		}
 		else
 		{
@@ -101,15 +97,8 @@ this.Tabs = Class.create(
 			toggleTab = new Element('a', {href: noHref}).update('<span>' + tab.name + '</span>'),
 			removeTab = new Element('a', {href: noHref}).update('<span> X </span>');
 
-		var that = this; // Tool for closure
-		toggleTab.on("click", function()
-		{
-			that.toggleTab(id);
-		});
-		removeTab.on("click", function()
-		{
-			that.removeTab(id);
-		});
+		toggleTab.on("click", this.toggleTab.bind(this, id));
+		removeTab.on("click", this.removeTab.bind(this, id, className));
 
 		var tabDisplay = new Element('li', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
 		{
@@ -134,13 +123,72 @@ this.Tabs = Class.create(
 		// Init tab content
 		if(typeof tab.updateContent === 'function')
 		{
-			tab.updateContent();
+			tab.updateContent(tabContentContainer);
+		}
+
+		// Store that tab is opened
+		if(HTML5Storage.isSupported)
+		{
+			var tabDescriptor =
+			{
+				type: className
+			};
+
+			if(className == "SearchTab")
+			{
+				var toSave = ['identifier', 'select_fields', 'search_value', 'search_comparison', 'search_field', 'order_by', 'result_count', 'current_page'],
+					obj = {};
+				for(var i = 0; i < toSave.length; ++i)
+				{
+					var prop = toSave[i];
+					obj[prop] = tab[prop];
+				}
+				tabDescriptor.options = obj;
+			}
+
+			var openedTabs = HTML5Storage.get("tabs") || [];
+			if(this.getTabIndexInStorage(openedTabs, className, tab) == -1) // Not found
+			{
+				//openedTabs.splice(index, 0, className); // insert at a specific index
+				openedTabs.push(tabDescriptor);
+			}
+			HTML5Storage.set("tabs", openedTabs);
 		}
 
 		return id;
 	},
 
-	removeTab: function(identifier)
+	getTabIndexInStorage: function(openedTabs, className, tab)
+	{
+		var index = -1;
+		for(var i = 0; i < openedTabs.length; ++i)
+		{
+			if(openedTabs[i].type == className)
+			{
+				var opts = openedTabs[i].options;
+				if(
+					className != "SearchTab" ||
+					// Do not resave tab on restore
+					(className == "SearchTab" && // We cannot use identifier
+						tab.select_fields == opts.select_fields &&
+						tab.search_value == opts.search_value &&
+						tab.search_comparison == opts.search_comparison &&
+						tab.search_field == opts.search_field &&
+						tab.order_by == opts.order_by &&
+						tab.result_count == opts.result_count &&
+						tab.current_page == opts.current_page
+					)
+				)
+				{
+					index = i;
+					break;
+				}
+			}
+		}
+		return index;
+	},
+
+	removeTab: function(identifier, className)
 	{
 		var index = this.getTabIndexFromUniqueId(identifier);
 		if(index != -1)
@@ -162,10 +210,22 @@ this.Tabs = Class.create(
 			}
 
 			// Remove the tab
-			this.tabs.splice(index, 1);
+			var tab = this.tabs.splice(index, 1)[0];
 
 			if(tabHeader) {tabHeader.remove();}
 			if(tabContent) {tabContent.remove();}
+
+			// Remove tab from opened list
+			if(HTML5Storage.isSupported)
+			{
+				var openedTabs = HTML5Storage.get("tabs") || [],
+					tabIndex = this.getTabIndexInStorage(openedTabs, className, tab);
+				if(tabIndex != -1)
+				{
+					openedTabs.splice(tabIndex, 1);
+				}
+				HTML5Storage.set("tabs", openedTabs);
+			}
 		}
 	},
 

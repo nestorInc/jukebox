@@ -1,4 +1,4 @@
-﻿input{
+input{
 height: 16px;
 }
 select, input[type="button"]{
@@ -73,9 +73,8 @@ height: 30px; /* Height of the button, so that pointer is ok on all height. 100%
 
 #player{
 margin-top: 50px; /* 2 notifications height*/
+}
 
-margin-right: auto;
-margin-left: auto;
-
-width: 600px;
+#skinSelectors{
+text-align: center;
 }

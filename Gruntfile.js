@@ -41,6 +41,7 @@ module.exports = function(grunt)
 					// Helpers
 					SRC.js + 'genres.js',
 					SRC.js + 'tools.js',
+					SRC.js + 'storage.js',
 
 					// Tabs
 					SRC.js + 'tab/tabs.js',
@@ -78,24 +79,25 @@ module.exports = function(grunt)
 		},
 		uglify:
 		{
-			options:
-			{
-				mangle:
-				{
-					except:['$super']
-				}
-			},
 			js:
 			{
 				src: '<%= concat.js.dest %>',
-				dest: OUT.js + 'jukebox.min.js'
+				dest: OUT.js + 'jukebox.min.js',
+				options:
+				{
+					mangle:
+					{
+						except:['$super']
+					}
+				}
 			},
 			jsSkin:
 			{
 				src:
 				[
 					SRC.skinjs + 'default.js',
-					SRC.skinjs + 'light.js'
+					SRC.skinjs + 'light.js',
+					SRC.skinjs + 'hype.js'
 				],
 				dest: OUT.js + 'skins.min.js'
 			},
@@ -135,7 +137,7 @@ module.exports = function(grunt)
 			},
 			cssSkins: // For now, concat all skins inside a single minified file
 			{
-				src: [SRC.skin + 'default.css', SRC.skin + 'light.css'],
+				src: [SRC.skin + 'default.css', SRC.skin + 'light.css', SRC.skin + 'hype.css'],
 				dest: OUT.skin + 'jukebox-skins.min.css'
 			}
 		},
@@ -160,16 +162,17 @@ module.exports = function(grunt)
 				{
 					// Libs
 					JSON: true,
-					Ajax: true,
+					/*Ajax: true,
 					Draggable: true,
 					Droppables: true,
 					$R: true,
 					$: true,
-					$$: true,
+					$$: true,*/
 					Class: true,
 					Control: true,
 					Element: true,
 					Event: true,
+					Template: true,
 					TableKit: true,
 					qq: true,
 
@@ -178,7 +181,8 @@ module.exports = function(grunt)
 					Tab: true,
 					genres: true,
 					FormatTime: true,
-					SortUnique: true
+					SortUnique: true,
+					HTML5Storage: true
 				}
 			},
 			grunt:
@@ -222,13 +226,21 @@ module.exports = function(grunt)
 				src: SRC.js + 'tools.js',
 				options: {unused: false, eqeqeq: false, eqnull: true}
 			},
+			storage:
+			{
+				src: SRC.js + 'storage.js',
+				options:
+				{
+					globals: {Jukebox: true}
+				}
+			},
 			fieldEditor:
 			{
 				src: SRC.js + 'musicFieldEditor.js',
 				options:
 				{
 					nonstandard: true, loopfunc: true, sub: true,
-					globals: {genres: true, genresOrdered: true, Event: true, TableKit: true, $: true, $$: true}
+					globals: {genres: true, genresOrdered: true, Event: true, TableKit: true, $: true}
 				}
 			},
 			jukebox:
@@ -236,7 +248,7 @@ module.exports = function(grunt)
 				src: SRC.js + 'jukebox.js',
 				options:
 				{
-					globals: {Extend: true, Query: true, Action: true, JukeboxUI: true, soundManager: true, Notifications: true, Ajax: true, $R: true}
+					globals: {Extend: true, Query: true, Action: true, JukeboxUI: true, soundManager: true, Notifications: true, Ajax: true, $R: true, HTML5Storage: true}
 				}
 			},
 			jukeboxui:
@@ -244,7 +256,7 @@ module.exports = function(grunt)
 				src: SRC.js + 'jukeboxUI.js',
 				options:
 				{
-					globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, PlaylistTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true, Template: true, Notifications: true}
+					globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, PlaylistTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true, Template: true, Notifications: true, HTML5Storage: true}
 				}
 			},
 			tabs:
@@ -256,7 +268,7 @@ module.exports = function(grunt)
 				src: SRC.tab + 'customQueries.js',
 				options:
 				{
-					globals: {Tab: true, Action: true, Query: true, Class: true, $: true, Notifications: true, sendQueryProxy: true}
+					globals: {Tab: true, Action: true, Query: true, Class: true, Notifications: true, sendQueryProxy: true}
 				}
 			},
 			tab_debug:
@@ -264,7 +276,7 @@ module.exports = function(grunt)
 				src: SRC.tab + 'debug.js',
 				options:
 				{
-					globals: {JsonPrettyPrint: true, Tab: true, Class: true, $: true}
+					globals: {JsonPrettyPrint: true, Tab: true, Class: true}
 				}
 			},
 			tab_notification:
@@ -273,7 +285,11 @@ module.exports = function(grunt)
 			},
 			tab_search:
 			{
-				src: SRC.tab + 'search.js'
+				src: SRC.tab + 'search.js',
+				options:
+				{
+					globals: {Class: true, Tab: true, genres: true, Template: true, Control: true, $R: true, FormatTime: true, Draggable: true, TableKit: true, SortUnique: true}
+				}
 			},
 			tab_upload:
 			{
@@ -281,7 +297,7 @@ module.exports = function(grunt)
 				options:
 				{
 					nonstandard: true, sub: true,
-					globals: {MusicFieldEditor: true, Tab: true, Notifications: true, $: true, qq: true, UploadTab: true, Class: true, TableKit: true, genres: true, $$: true}
+					globals: {MusicFieldEditor: true, Tab: true, Notifications: true, qq: true, UploadTab: true, Class: true, Template: true, TableKit: true, genres: true}
 				}
 			},
 			tab_playlist:
@@ -289,7 +305,7 @@ module.exports = function(grunt)
 				src: SRC.tab + 'playlist.js',
 				options:
 				{
-					globals: {Tab: true, Class: true, Notifications: true, prompt: true}
+					globals: {Tab: true, Class: true, Notifications: true}
 				}
 			},
 			skin_default:
@@ -304,6 +320,15 @@ module.exports = function(grunt)
 			skin_light:
 			{
 				src: SRC.skinjs + 'light.js',
+				options:
+				{
+					multistr: true, sub: true,
+					globals: {Jukebox: true}
+				}
+			},
+			skin_hype:
+			{
+				src: SRC.skinjs + 'hype.js',
 				options:
 				{
 					multistr: true, sub: true,
@@ -330,7 +355,9 @@ module.exports = function(grunt)
 					SRC.img + '*.png',
 					SRC.img + '*.jpg',
 					SRC.img + '*.gif',
-					SRC.img + 'icons/*.png'
+					SRC.img + 'icons/*.png',
+					SRC.img + 'hype/*.png',
+					SRC.img + 'hype/*.ttf'
 				],
 				dest: OUT_DIR
 			},

@@ -1,5 +1,12 @@
 Jukebox.UI.skins["default"] =
 {
+	params:
+	{
+		allowTabs: true,
+		dragdrop: true,
+		playQueueNode: 'ul',
+		songNode: 'li'
+	},
 	templates:
 	{
 		player:
@@ -81,9 +88,9 @@ Jukebox.UI.skins["default"] =
 </div>',
 		song:
 '<p class="#{root}-song">\
-<a class="#{root}-song-artist" href="#">#{artist}</a> - \
-<a class="#{root}-song-album" href="#">#{album}</a> - \
-<span class="#{root}-song-title">#{song}</span>\
+<a class="#{root}-song-artist" href="javascript;">#{artist}</a> - \
+<a class="#{root}-song-album" href="javascript;">#{album}</a> - \
+<span class="#{root}-song-title">#{title}</span>\
 </p>',
 		playQueue:
 '<li class="#{root}-playqueue-first #{root}-playqueue-droppable">#{playQueueLabel}\
@@ -98,14 +105,81 @@ Jukebox.UI.skins["default"] =
 '<li class="#{root}-playqueue-#{index} #{root}-playqueue-droppable">\
 <div class="#{root}-playqueue-song-#{index} #{root}-playqueue-draggable">\
 	<div class="#{root}-playqueue-handle-#{index} #{root}-playqueue-handle">\
-		<a href="javascript:void(0)">#{artist}</a> - \
-		<a href="javascript:void(0)">#{album}</a> - \
+		<a href="javascript:;">#{artist}</a> - \
+		<a href="javascript:;)">#{album}</a> - \
 		#{title} (#{duration})\
 	</div>\
 	<a><span class="#{root}-playqueue-move-top"></span></a>\
 	<a><span class="#{root}-playqueue-move-bottom"></span></a>\
 	<a><span class="#{root}-playqueue-delete"></span></a>\
 </div>\
-</li>'
+</li>',
+		tabs:
+		{
+			Uploader:
+			{
+				main:
+'<div class="#{root}-file-uploader"></div>\
+<h2>#{uploadedFilesLabel}</h2>\
+<div class="#{root}-uploaded-files"></div>',
+				tableHead:
+'<tr>\
+	<th class="#{root}-upload-filename">Filename</th>\
+	<th class="#{root}-upload-artist">Artist</th>\
+	<th class="#{root}-upload-album">Album</th>\
+	<th class="#{root}-upload-title">Title</th>\
+	<th class="#{root}-upload-year">Year</th>\
+	<th class="#{root}-upload-track">Track</th>\
+	<th class="#{root}-upload-trackNb">TrackNb</th>\
+	<th class="#{root}-upload-genre">Genre</th>\
+	<th class="#{root}-upload-actions">Actions</th>\
+</tr>',
+				tableBody:
+'<tr id="#{rowId}">\
+	<td class="#{root}-upload-cell-static">#{filename}</td>\
+	<td>#{artist}</td>\
+	<td>#{album}</td>\
+	<td>#{title}</td>\
+	<td>#{year}</td>\
+	<td>#{track}</td>\
+	<td>#{trackNb}</td>\
+	<td>#{genre}</td>\
+	<td class="#{root}-uploaded-file-actions #{root}-upload-cell-static">\
+		<div>\
+			<a href="javascript:;">X</a>\
+		</div>\
+		<div class="#{root}-uploaded-file-update" style="display:none;">\
+			<a href="javascript:;">&nbsp;Update&nbsp;</a>\
+		</div>\
+		<div class="#{root}-uploaded-file-validate">\
+			<a href="javascript:;">&nbsp;Validate&nbsp;</a>\
+		</div>\
+	</td>\
+</tr>'
+			},
+			Search:
+			{
+				main:
+'<div class="#{pagelistClass}">\
+	\\#{slider}\
+	\\#{links}\
+</div>\
+<div class="#{contentClass}"></div>\
+<div class="#{pagelistClass}">\
+	\\#{links}\
+	\\#{slider}\
+</div>',
+				tableHead:
+'<tr>\
+	<th class="#{root}-search-artist">Artist</th>\
+	<th class="#{root}-search-album">Album</th>\
+	<th class="#{root}-search-title">Title</th>\
+	<th class="#{root}-search-track">Track</th>\
+	<th class="#{root}-search-genre">Genre</th>\
+	<th class="#{root}-search-duration">Duration</th>\
+	<th class="#{root}-search-controls"></th>\
+</tr>'
+			}
+		}
 	}
 };
