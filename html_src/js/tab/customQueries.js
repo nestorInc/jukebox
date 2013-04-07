@@ -8,36 +8,36 @@ this.CustomQueriesTab = Class.create(Tab,
 
 	updateContent: function(DOM)
 	{
-		var custom_queries_display = '' +
-		'<h1>Custom Json Query</h1>' +
-		'<table width="100%">' +
-		'<tr>' +
-			'<td colspan="2">' +
-			'<center>' +
-				'<textarea style="width:100%;height:160px;"></textarea>' +
-			'</center>' +
-			'</td>' +
-		'</tr>' +
-		'<tr>' +
-			'<td>' +
-				'Query filler : ' +
-				'<select>' +
-					'<option value="clear_form">clear_form</option>' +
-					'<option value="dummy" selected="selected">--------</option>' +
-					'<option value="empty">empty</option>' +
-					'<option value="next">next</option>' +
-					'<option value="previous">previous</option>' +
-					'<option value="add_to_play_queue">add_to_play_queue</option>' +
-					'<option value="remove_from_play_queue">remove_from_play_queue</option>' +
-					'<option value="move_in_play_queue">move_in_play_queue</option>' +
-					'<option value="join_channel">join_channel</option>' +
-					'<option value="get_news">get_news</option>' +
-					'<option value="search">search</option>' +
-				'</select>' +
-			'</td>' +
-			'<td><input type="button" value="send custom query"/></td>' +
-		'</tr>' +
-		'</table>';
+		var custom_queries_display = '\
+		<h1>Custom Json Query</h1>\
+		<table width="100%">\
+		<tr>\
+			<td colspan="2">\
+			<center>\
+				<textarea style="width:100%;height:160px;"></textarea>\
+			</center>\
+			</td>\
+		</tr>\
+		<tr>\
+			<td>\
+				Query filler : \
+				<select>\
+					<option value="clear_form">clear_form</option>\
+					<option value="dummy" selected="selected">--------</option>\
+					<option value="empty">empty</option>\
+					<option value="next">next</option>\
+					<option value="previous">previous</option>\
+					<option value="add_to_play_queue">add_to_play_queue</option>\
+					<option value="remove_from_play_queue">remove_from_play_queue</option>\
+					<option value="move_in_play_queue">move_in_play_queue</option>\
+					<option value="join_channel">join_channel</option>\
+					<option value="get_news">get_news</option>\
+					<option value="search">search</option>\
+				</select>\
+			</td>\
+			<td><input type="button" value="send custom query"/></td>\
+		</tr>\
+		</table>';
 		DOM.update(custom_queries_display);
 
 		var $textarea = DOM.down('textarea'),
