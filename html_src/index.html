@@ -6,17 +6,18 @@
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 
 	<!-- RELEASE
-	<link rel="stylesheet" type="text/css" href="/css/jukebox.min.css" />
-	<link rel="stylesheet" type="text/css" href="/css/skin/jukebox-skins.min.css" />
+	<link rel="stylesheet" type="text/css" href="css/jukebox.min.css" />
+	<link rel="stylesheet" type="text/css" href="css/skin/jukebox-skins.min.css" />
 	 -->
-	<!-- DEBUG -->
-	<link rel="stylesheet" type="text/css" href="/src/css/normalize.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/fileuploader.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/flashblock.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/style.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/skin/default.css" />
-	<link rel="stylesheet" type="text/css" href="/src/css/skin/light.css" />
-	
+	<!-- DEBUG
+	<link rel="stylesheet" type="text/css" href="src/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/fileuploader.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/flashblock.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/style.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/skin/default.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/skin/light.css" />
+	<link rel="stylesheet" type="text/css" href="src/css/skin/hype.css" />
+	 -->
 </head>
 <body>
 
@@ -26,6 +27,9 @@
 
 <div role="main" id="page-wrapper">
 	<div id="player"></div>
+	<div id="skinSelectors">
+		<input type="button" id="skin_default" value="default" /> <input type="button" id="skin_light" value="light" /> <input type="button" id="skin_hype" value="hype" />
+	</div>
 </div>
 
 <footer>Home made jukebox over streaming</footer>
@@ -59,7 +63,8 @@
 <script type="text/javascript" src="js/action.js"></script>
 <script type="text/javascript" src="js/query.js"></script>
 <script type="text/javascript" src="js/tools.js"></script>
-<script type="text/javascript" src="js/jukeboxC.js"></script>
+<script type="text/javascript" src="js/storage.js"></script>
+<script type="text/javascript" src="js/jukebox.js"></script>
 <script type="text/javascript" src="skin/default.js"></script>
 <script type="text/javascript" src="skin/light.js"></script>
 <script type="text/javascript" src="js/jukeboxUI.js"></script>
@@ -89,6 +94,11 @@ var hrefLower = window.location.href.toLowerCase(),
 		'lib/libs.min',
 		'jukebox.min'
 	],
+	CSS =
+	[
+		"css/jukebox.min.css",
+		"css/skin/jukebox-skins.min.css"
+	],
 
 	requirejsSkinsConfig =
 	{
@@ -102,6 +112,15 @@ var hrefLower = window.location.href.toLowerCase(),
 
 	j; // The jukebox instance ; Global, easily accessible from console
 
+function loadCss(url)
+{
+	var link = document.createElement("link");
+	link.type = "text/css";
+	link.rel = "stylesheet";
+	link.href = url;
+	document.getElementsByTagName("head")[0].appendChild(link);
+}
+
 if(DEBUG)
 {
 	requirejsConfig =
@@ -110,26 +129,25 @@ if(DEBUG)
 		baseUrl: '/src/js/',
 		shim: // Dependencies
 		{
-			'jukebox': ['query', 'action', 'tools', 'notifications', 'jukeboxUI', 'lib/soundmanager2'],
-			'jukeboxUI': ['lib/prototype', 'tools', 'genres', 'tab/tabs', 'tab/search', 'tab/upload', 'tab/debug', 'tab/playlist', 'tab/customQueries', 'tab/notification', 'lib/slider', 'lib/dragdrop'],
+			'jukebox': ['query', 'action', 'tools', 'storage', 'notifications', 'jukeboxUI', 'lib/soundmanager2'],
+			'jukeboxUI': ['lib/prototype', 'tools', 'storage', 'genres', 'tab/tabs', 'tab/search', 'tab/upload', 'tab/debug', 'tab/playlist', 'tab/customQueries', 'tab/notification', 'lib/slider', 'lib/dragdrop'],
 			'musicFieldEditor': ['lib/prototype', 'genres', 'lib/tablekit'],
 			'notifications': ['lib/prototype', 'lib/effects'],
 			'query': ['action'],
 			'action': ['tools'],
 			'tools': ['lib/json2'],
+			'storage': [],
 			'tab/tabs': ['lib/prototype'],
-			'tab/notification': ['lib/prototype', 'tab/tabs', 'lib/json2', 'notifications', 'action', 'query'],
+			'tab/notification': ['lib/prototype', 'tab/tabs', 'notifications', 'action', 'query'],
 			'tab/customQueries': ['lib/prototype', 'tab/tabs', 'notifications'],
 			'tab/debug': ['lib/prototype', 'tab/tabs', 'tools'],
 			'tab/playlist': ['lib/prototype', 'tab/tabs'],
-			'tab/upload': ['lib/prototype', 'tab/tabs', 'lib/json2', 'lib/fileuploader', 'lib/tablekit', 'musicFieldEditor', 'notifications', 'genres'],
+			'tab/upload': ['lib/prototype', 'tab/tabs', 'lib/fileuploader', 'lib/tablekit', 'musicFieldEditor', 'notifications', 'genres'],
 			'tab/search': ['lib/prototype', 'tab/tabs', 'lib/tablekit', 'genres', 'tools', 'lib/dragdrop'],
 			'lib/tablekit': ['lib/prototype'],
 			'lib/effects': ['lib/prototype'],
 			'lib/slider': ['lib/prototype'],
-			'lib/dragdrop': ['lib/prototype', 'lib/effects'],
-			'skin/default': ['jukeboxUI'],
-			'skin/light': ['jukeboxUI']
+			'lib/dragdrop': ['lib/prototype', 'lib/effects']
 		}
 	};
 	requirejsScripts =
@@ -158,9 +176,20 @@ if(DEBUG)
 		'action',
 		'query',
 		'tools',
+		'storage',
 		'jukebox',
 		'jukeboxUI',*/
 		'jukebox'
+	];	
+	CSS =
+	[
+		'src/css/normalize.css',
+		'src/css/fileuploader.css',
+		'src/css/flashblock.css',
+		'src/css/style.css',
+		'src/css/skin/default.css',
+		'src/css/skin/light.css',
+		'src/css/skin/hype.css'
 	];
 
 	requirejsSkinsConfig =
@@ -171,14 +200,23 @@ if(DEBUG)
 	requirejsSkinsScripts =
 	[
 		'default',
-		'light'
+		'light',
+		'hype'
 	];
+}
+
+//----------
+// Here we go
+
+for(var i = 0, len = CSS.length; i < len; ++i)
+{
+	loadCss(CSS[i]);
 }
 
 requirejs.config(requirejsConfig);
 requirejs(requirejsScripts, function()
 {
-	// Now load skins
+	// Now load skins ; They are injected into Jukebox.UI.skins
 	requirejs.config(requirejsSkinsConfig);
 	requirejs(requirejsSkinsScripts, function()
 	{
@@ -186,7 +224,6 @@ requirejs(requirejsScripts, function()
 		{
 			j = new Jukebox("player",
 			{
-				skin: "default",
 				SM2Folder: DEBUG ? '/src/' : '/'
 			});
 			j.ready(function() // Wait that .swf player is loaded
@@ -228,19 +265,27 @@ requirejs(requirejsScripts, function()
 				j.restorePlayQueue(name, position);
 				j.savePlayQueue(name);
 				j.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
+				j.skin(name);
 				j.start();
 				j.status();
 				j.stop();
+				j.theme(name);
 				j.volume(volume);
 				*/
 			});
 
-			/*new Jukebox(document.body,
+			$("skin_default").on("click", function()
 			{
-				skin: "light",
-				theme: "blue",
-				SM2Folder: DEBUG ? '/src/' : '/'
-			});*/
+				j.skin("default");
+			});
+			$("skin_light").on("click", function()
+			{
+				j.skin("light");
+			});
+			$("skin_hype").on("click", function()
+			{
+				j.skin("hype");
+			});
 		}
 		catch(fatalEx)
 		{

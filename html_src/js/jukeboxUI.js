@@ -15,49 +15,23 @@ function JukeboxUI(jukebox, element, opts)
 	}
 
 	//---
-	// [Public] Variables
-
-	this.skin = JukeboxUI.defaults.skin;
-	this.theme = '';
-
-	//---
 	// [Private] Variables
 	
 	// `this` refers to current object, because we're in a "new" object creation
 	// Useful for private methods and events handlers
 	var $this = this,
+		$elem = $(element),
 		
 		_opts = Extend(true, {}, JukeboxUI.defaults, opts), // Recursively merge options
 
 		J = jukebox, // short jukebox reference
 		_tabs = null,
-		_skin = JukeboxUI.skins[_opts.skin],
+		_skin = null,
 		_volumeSlider,
 		_$, // Selectors cache
 
 		_refreshSongTimer = null,
 		_lastCurrentSongElapsedTime = null;
-
-	if(_skin) // Skin exists
-	{
-		this.skin = _opts.skin;
-	}
-	else // Invalid _opts.skin
-	{
-		// Restore to default value
-		_opts.skin = JukeboxUI.defaults.skin;
-		_skin = JukeboxUI.skins[_opts.skin];
-	}
-
-	// Ensure params default values
-	_skin.params = Extend(true, {}, JukeboxUI.defaults.skinParams, _skin.params);
-
-	// Set theme
-	_opts.theme = (_skin.themes || []).indexOf(_opts.theme) == -1 ? _skin.defaultTheme : _opts.theme;
-	this.theme = _opts.theme;
-
-	// One distinct CSS per skin
-	_opts.rootClass += _opts.skin == JukeboxUI.defaults.skin ? '' : '-' + _opts.skin;
 
 	//---
 	// [Privileged] Functions
@@ -191,7 +165,7 @@ function JukeboxUI(jukebox, element, opts)
 		if(audio)
 		{
 			_$.play_stream.hide();
-			_$.stop_stream.style.display = 'inline';
+			_$.stop_stream.show();
 		}
 		else
 		{
@@ -343,21 +317,28 @@ function JukeboxUI(jukebox, element, opts)
 		for(var i = 0, len = playQueueSongs.length; i < len; i++)
 		{
 			var droppable = ul.down(rootClass+'playqueue-' + i),
-				draggable = droppable.down(rootClass+'playqueue-song-' + i),
-				handle = draggable.down(rootClass+'playqueue-handle-' + i);
+				draggable = droppable.down(rootClass+'playqueue-draggable');
 
-			new Draggable(draggable,
+			if(draggable)
 			{
-				scroll: window,
-				constraint: 'vertical',
-				revert: true,
-				handle: handle,
-				onStart: dragStart,
-				onEnd: dragEnd
-			});
-			_makePlayQueueSongDroppable(droppable, playQueueSongs);
+				var handle = draggable.down(rootClass+'playqueue-handle-' + i);
+				new Draggable(draggable,
+				{
+					scroll: window,
+					constraint: 'vertical',
+					revert: true,
+					handle: handle,
+					onStart: dragStart,
+					onEnd: dragEnd
+				});
+				_makePlayQueueSongDroppable(droppable, playQueueSongs);
+			}
 		}
-		_makePlayQueueSongDroppable(ul.down(rootClass+'playqueue-first'), playQueueSongs);
+		var first = ul.down(rootClass+'playqueue-first');
+		if(first)
+		{
+			_makePlayQueueSongDroppable(first, playQueueSongs);
+		}
 	};
 
 	/**
@@ -369,22 +350,27 @@ function JukeboxUI(jukebox, element, opts)
 		// A new search could be initiated from the left pannel so we must automatically expand the right pannel
 		_expand();
 
-		// Create a new searchTab
-		if(!results.identifier)
+		var tab = null;
+		if(results.identifier)
+		{
+			// If the user send a search query with an identifier he wants to update the tab content so we refresh the displayed results
+			tab = _tabs.getTabFromUniqueId(results.identifier);
+		}
+
+		if(tab)
+		{
+			tab.updateNewSearchInformations(results);
+			tab.updateContent(tab.DOM);
+		}
+		else
 		{
 			// Adds the new created tab to the tabs container
-			var searchTab = new SearchTab(J, _$.tabs, results, _opts.rootClass);
-			var id = _tabs.addTab(searchTab);
+			var searchTab = new SearchTab(results, _opts.rootClass, J, _skin.templates.tabs ? _skin.templates.tabs["Search"] : null);
+			var id = _tabs.addTab(searchTab, "SearchTab");
 			if(results.select !== false)
 			{
 				_tabs.toggleTab(id);
 			}
-		}
-		else
-		{
-			// If the user send a search query with an identifier he wants to update the tab content so we refresh the displayed results
-			_tabs.getTabFromUniqueId(results.identifier).updateNewSearchInformations(results);
-			_tabs.getTabFromUniqueId(results.identifier).updateContent();
 		}
 	};
 
@@ -435,19 +421,67 @@ function JukeboxUI(jukebox, element, opts)
 	};
 
 	/**
+	* Get/Set the skin
+	* @param {string} [name] - Skin to set
+	* @return {string} The current skin.
+	*/
+	this.skin = function(name)
+	{
+		if(arguments.length > 0 && name && name != _opts.skin)
+		{
+			// Set new skin
+			if(JukeboxUI.skins[name]) // Skin exists
+			{
+				_skin = JukeboxUI.skins[name];
+				_skin.themes  = _skin.themes || []; // Ensure validity even if no theme specified
+				_opts.skin = name;
+			}
+			else // Invalid _opts.skin
+			{
+				throw new Error('Invalid skin');
+			}
+
+			// If already a skin remove it
+			var $JB = $elem.down('.' + _opts.rootClass);
+			if($JB)
+			{
+				$JB.remove();
+			}
+
+			// Ensure params default values
+			_skin.params = Extend(true, {}, JukeboxUI.defaults.skinParams, _skin.params);
+
+			// Set theme
+			_opts.theme = _skin.themes.indexOf(_opts.theme) == -1 ? _skin.defaultTheme : _opts.theme;
+
+			// One distinct CSS per skin
+			_opts.rootClass = _opts.rootCSS + (_opts.skin == JukeboxUI.defaults.skin ? '' : ('-' + _opts.skin));
+
+			_init();
+		}
+		return _opts.skin;
+	};
+
+	/**
 	* Get/Set the theme
 	* @param {string} [name] - Theme to set
 	* @return {string} The current theme.
 	*/
 	this.theme = function(name)
 	{
-		if(arguments.length > 0)
+		if(arguments.length > 0 && name && name != _opts.theme)
 		{
-			var prefix = _opts.rootClass + '-theme-';
-			_$.jukebox.removeClassName(prefix + _opts.theme);
-			_opts.theme = name;
-			_$.jukebox.addClassName(prefix + _opts.theme);
-			this.theme = _opts.theme;
+			if(_skin.themes.indexOf(name) == -1)
+			{
+				throw new Error('Invalid theme');
+			}
+			else
+			{
+				var prefix = _opts.rootClass + '-theme-';
+				_$.jukebox.removeClassName(prefix + _opts.theme);
+				_opts.theme = name;
+				_$.jukebox.addClassName(prefix + _opts.theme);
+			}
 		}
 		return _opts.theme;
 	};
@@ -463,6 +497,11 @@ function JukeboxUI(jukebox, element, opts)
 		_$.expand_button.hide();
 		_$.collapse_button.show();
 		_$.jukebox.addClassName(_opts.rootClass+'-fullplayer');
+
+		if(HTML5Storage.isSupported)
+		{
+			HTML5Storage.set("fullplayer", true);
+		}
 	}
 
 	/**
@@ -473,6 +512,11 @@ function JukeboxUI(jukebox, element, opts)
 		_$.expand_button.show();
 		_$.collapse_button.hide();
 		_$.jukebox.removeClassName(_opts.rootClass+'-fullplayer');
+
+		if(HTML5Storage.isSupported)
+		{
+			HTML5Storage.set("fullplayer", false);
+		}
 	}
 
 	/**
@@ -531,16 +575,12 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	function _findDraggedId(element, drop)
 	{
-		var classes = element.className.split(' '),
-			str = drop ? _opts.rootClass+'-playqueue-' : _opts.rootClass+'-playqueue-song-',
-			id = null;
-		for(var i = 0; i < classes.length; ++i)
+		var str = drop ? _opts.rootClass+'-playqueue-' : _opts.rootClass+'-playqueue-song-',
+			id = null,
+			match = element.classNames().detect(function(n){return n.indexOf(str) != -1;});
+		if(match)
 		{
-			if(classes[i].indexOf(str) != -1)
-			{
-				id = classes[i].substring(str.length);
-				break;
-			}
+			id = match.substring(str.length);
 		}
 		return id;
 	}
@@ -554,7 +594,7 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		Droppables.add(droppable,
 		{ 
-			accept: [_opts.rootClass+'-playqueue-draggable', 'library-draggable'],
+			accept: [_opts.rootClass+'-playqueue-draggable', _opts.rootClass+'-search-row'],
 			overlap: 'vertical',
 			hoverclass: _opts.rootClass+'-droppable-hover',
 			onDrop: function(dragged, dropped)
@@ -589,12 +629,9 @@ function JukeboxUI(jukebox, element, opts)
 						$this.displayPlayQueue(playQueueSongs);
 					}
 				}
-				else if(dragged.hasClassName("library-draggable"))
+				else if(dragged.hasClassName(_opts.rootClass+'-search-row'))
 				{
-					var idregexp = new RegExp(".*-([^\\-]*-[^\\-]*)-([0-9]*)");
-					var tab_index = dragged.id.replace(idregexp, "$1");
-					old_index = parseInt(dragged.id.replace(idregexp, "$2"), 10);
-					var song = _tabs.getTabFromUniqueId(tab_index).server_results[old_index];
+					var song = dragged.retrieve('song');
 					song_mid = song.mid;
 					
 					var play_queue_index = -1;
@@ -708,16 +745,10 @@ function JukeboxUI(jukebox, element, opts)
 			J.plugin(_$.selection_plugin.value);
 		}
 	};
-	
-	/**
-	* @constructs
-	*/
-	(function()
-	{
-		Object.seal($this); // Non-extensible, Non-removable
 
+	function _init()
+	{
 		// Create HTML player
-		var $elem = $(element);
 		try
 		{
 			var songTpl = new Template(_skin.templates.song),
@@ -812,8 +843,7 @@ function JukeboxUI(jukebox, element, opts)
 			}
 		}
 
-		_tabs = new Tabs(_opts.rootClass);
-		_tabs.setRootNode(_$.tabs);
+		_tabs = new Tabs(_$.tabs, _opts.rootClass);
 
 		// Register listeners
 		_$.expand_button.on("click", _events.expand);
@@ -845,6 +875,11 @@ function JukeboxUI(jukebox, element, opts)
 			onChange: _events.volume // Mostly for click anywhere on the slider
 		});
 
+		if(_opts.fullplayer)
+		{
+			_expand();
+		}
+		
 		(function() // Tabs
 		{
 			var tabsManager = {};
@@ -852,13 +887,19 @@ function JukeboxUI(jukebox, element, opts)
 			{
 				tabsManager["Show" + tab.classN] = function()
 				{
-					var search = _tabs.getFirstTabByClass(tab.classC);
+					var search = _tabs.getFirstTabByClass(tab.classC),
+						identifier;
 					if(search === null)
 					{
-						var newTab = new tab.classC(tab.name, _$.tabs, _opts.rootClass, J);
-						search = _tabs.addTab(newTab);
+						var template = _skin.templates.tabs ? _skin.templates.tabs[tab.name] : null;
+						var newTab = new tab.classC(tab.name, _opts.rootClass, J, template);
+						identifier = _tabs.addTab(newTab, tab.classN);
 					}
-					_tabs.toggleTab(search);
+					else
+					{
+						identifier = search.identifier;
+					}
+					_tabs.toggleTab(identifier);
 				};
 			}
 
@@ -896,17 +937,48 @@ function JukeboxUI(jukebox, element, opts)
 				createShowTab(possibleTabs[i]);
 			}
 
-			var TL = _$.tabs_links;
-			if(!TL.empty()) // For skins without tabs links
+			if(_skin.params.allowTabs)
 			{
+				var TL = _$.tabs_links;
 				TL.down(rootClass+'tab-upload').on("click", tabsManager.ShowUploadTab);
 				TL.down(rootClass+'tab-query').on("click", tabsManager.ShowCustomQueriesTab);
 				TL.down(rootClass+'tab-notifs').on("click", tabsManager.ShowNotificationTab);
 				TL.down(rootClass+'tab-debug').on("click", tabsManager.ShowDebugTab);
 				TL.down(rootClass+'tab-playlist').on("click", tabsManager.ShowPlaylistTab);
+
+				// Restore opened tabs
+				if(HTML5Storage.isSupported)
+				{
+					setTimeout(function()
+					{
+						var openedTabs = HTML5Storage.get("tabs") || [];
+						for(var i = 0; i < openedTabs.length; ++i)
+						{
+							var type = openedTabs[i].type;
+							if(type == "SearchTab")
+							{
+								var opts = openedTabs[i].options;
+								_search(opts.current_page, opts.identifier, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
+							}
+							else
+							{
+								tabsManager["Show"+type]();
+							}
+						}
+					}, 0); // Avoid issue when restoring tab on jukebox instanciation (_ui undefined in jukebox.js because _init() not finished yet)
+				}
 			}
 		})();
-	})();
+	}
+
+	//---
+	// Do this once
+
+	Object.seal($this); // Non-extensible, Non-removable
+
+	var temp = _opts.skin;
+	_opts.skin = null; // Force null to bypass `name != _opts.skin` check in .skin() method
+	this.skin(temp); // Will call _init()
 }
 
 //---
@@ -916,13 +988,15 @@ function JukeboxUI(jukebox, element, opts)
 JukeboxUI.defaults =
 {
 	skin: 'default',
-	rootClass: 'jukebox', // CSS begins with ".jukebox-"
+	rootCSS: 'jukebox', // CSS begins with ".jukebox-"
 	skinParams:
 	{
+		allowTabs: false,
 		dragdrop: true,
 		playQueueNode: 'ul',
 		songNode: 'li'
-	}
+	},
+	fullplayer: false
 };
 
 JukeboxUI.skins = {}; // See skin/*.js

@@ -2,6 +2,7 @@ Jukebox.UI.skins["light"] =
 {
 	params:
 	{
+		allowTabs: false,
 		dragdrop: false,
 		playQueueNode: 'tbody',
 		songNode: 'tr'
