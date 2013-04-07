@@ -312,7 +312,7 @@ margin-top: 6px;
 background-color: #ccc;
 float: left;
 }
-.jukebox-hype-volume-handle{
+.jukebox-hype-volume-slider .jukebox-hype-slider-handle{
 width: 10px;
 height: 20px;
 margin-left: 0;

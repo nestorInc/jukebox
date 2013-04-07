@@ -136,7 +136,7 @@ margin-top: 6px;
 background-color: #ccc;
 float: left;
 }
-.jukebox-light-volume-handle{
+.jukebox-light-volume-slider .jukebox-light-slider-handle{
 width: 10px;
 height: 20px;
 margin-left: 0;
