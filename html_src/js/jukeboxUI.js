@@ -98,7 +98,9 @@ function JukeboxUI(jukebox, element, opts)
 			{
 				var percent = Math.round(currentSongElapsedTime / song.duration * 100);
 				_$.progressbar.setStyle({width: percent + '%'});
-				_$.player_song_time.update(FormatTime(currentSongElapsedTime) + "/" + FormatTime(song.duration));
+				_$.song_time.update(FormatTime(currentSongElapsedTime)); // song.elapsed is updated only on ajax
+				_$.song_remaining_time.update(FormatTime(song.duration - currentSongElapsedTime));
+				_$.song_total_time.update(FormatTime(song.duration));
 			}
 			_lastCurrentSongElapsedTime = currentSongElapsedTime;
 		}
@@ -106,7 +108,8 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			_lastCurrentSongElapsedTime = null;
 			_$.progressbar.setStyle({width: 0});
-			_$.player_song_time.update("--- / ---");
+			_$.song_time.update("---");
+			_$.song_total_time.update("---");
 		}
 
 		//---
@@ -125,15 +128,15 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		if(songObj)
 		{
-			_$.player_song_artist.update(songObj.artist).stopObserving().on("click", function()
+			_$.song_artist.update(songObj.artist).stopObserving().on("click", function()
 			{
 				_searchCategory(songObj.artist, 'artist');
 			});
-			_$.player_song_album.update(songObj.album).stopObserving().on("click", function()
+			_$.song_album.update(songObj.album).stopObserving().on("click", function()
 			{
 				_searchCategory(songObj.album, 'album');
 			});
-			_$.player_song_title.update(songObj.title);
+			_$.song_title.update(songObj.title);
 
 			// Change the page title with the current song played
 			if(_opts.replaceTitle)
@@ -809,7 +812,9 @@ function JukeboxUI(jukebox, element, opts)
 			results_per_page:	$JB.down(rootClass+'results-per-page'),
 			btn_search:			$JB.down(rootClass+'search-button'),
 			progressbar:		$JB.down(rootClass+'progressbar'),
-			player_song_time:	$JB.down(rootClass+'song-time'),
+			song_time:			$JB.down(rootClass+'song-time'),
+			song_remaining_time:$JB.down(rootClass+'song-remaining-time'),
+			song_total_time:	$JB.down(rootClass+'song-total-time'),
 			activity_monitor:	$JB.down(rootClass+'activity'),
 			play_stream:		$JB.down(rootClass+'stream-play'),
 			stop_stream:		$JB.down(rootClass+'stream-stop'),
@@ -819,10 +824,10 @@ function JukeboxUI(jukebox, element, opts)
 			next_button:		$JB.down(rootClass+'next-button'),
 			cb_autorefresh:		$JB.down(rootClass+'autorefresh'),
 			btn_refresh:		$JB.down(rootClass+'refresh-button'),
-			player_song_artist: $JB.down(rootClass+'song-artist'),
-			player_song_album:	$JB.down(rootClass+'song-album'),
-			player_song_title:	$JB.down(rootClass+'song-title'),
-			play_queue_content: $JB.down(rootClass+'playqueue-content'),
+			song_artist:		$JB.down(rootClass+'song-artist'),
+			song_album:			$JB.down(rootClass+'song-album'),
+			song_title:			$JB.down(rootClass+'song-title'),
+			play_queue_content:	$JB.down(rootClass+'playqueue-content'),
 			selection_plugin:	$JB.down(rootClass+'plugin'),
 			btn_apply_plugin:	$JB.down(rootClass+'plugin-button'),
 			volume_box_slider:	$JB.down(rootClass+'volume-slider'),
