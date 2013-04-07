@@ -268,6 +268,7 @@ module.exports = function(grunt)
 				src: SRC.tab + 'customQueries.js',
 				options:
 				{
+					multistr: true,
 					globals: {Tab: true, Action: true, Query: true, Class: true, Notifications: true, sendQueryProxy: true}
 				}
 			},
