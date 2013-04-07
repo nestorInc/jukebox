@@ -23,7 +23,7 @@ Jukebox.UI.skins["light"] =
 		<a href="javascript:;" class="#{root}-next-button"></a>\
 	</td>\
 	<td class="#{root}-progressbar-container">\
-		<p class="#{root}-song-time"></p>\
+		<p class="#{root}-song-remaining-time"></p>\
 		<div class="#{root}-progressbar-wrapper">\
 			<div class="#{root}-progressbar"></div>\
 		</div>\

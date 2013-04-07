@@ -23,7 +23,9 @@ Jukebox.UI.skins["default"] =
 		#{currentSong}\
 		<div class="#{root}-progressbar-wrapper">\
 			<div class="#{root}-progressbar"></div>\
-			<p class="#{root}-song-time"></p>\
+			<p class="#{root}-song-time-box">\
+				<span class="#{root}-song-time"></span> / <span class="#{root}-song-total-time"></span>\
+			</p>\
 		</div>\
 	</div>\
 	<div class="#{root}-playqueue">\

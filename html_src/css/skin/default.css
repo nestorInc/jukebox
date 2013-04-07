@@ -135,7 +135,7 @@ padding-right: 0;
 text-align: center;
 text-indent: 0;
 }
-p.jukebox-song-time{
+p.jukebox-song-time-box{
 position: absolute;
 top: 0;
 height: 100%;
@@ -148,6 +148,7 @@ text-align: center;
 text-indent: 0;
 z-index: 100;
 color: black;
+white-space: nowrap;
 }
 
 /* Progressbar */

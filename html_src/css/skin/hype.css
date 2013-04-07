@@ -276,8 +276,8 @@ rgb(84,240,84) 70%
 );
 }
 
-.jukebox-hype-song-time{
-
+.jukebox-hype-song-time-box{
+white-space: nowrap;
 }
 .jukebox-hype-song{
 font-size: 13px;

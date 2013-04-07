@@ -52,7 +52,9 @@ Home made jukebox over streaming\
 			</tr>\
 			<tr>\
 				<td class="#{root}-progressbar-container">\
-					<p class="#{root}-song-time"></p>\
+					<p class="#{root}-song-time-box">\
+						<span class="#{root}-song-time"></span> / <span class="#{root}-song-total-time"></span>\
+					</p>\
 					<div class="#{root}-progressbar-wrapper">\
 						<div class="#{root}-progressbar"></div>\
 					</div>\

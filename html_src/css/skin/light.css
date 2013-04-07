@@ -102,8 +102,8 @@ rgb(84,240,84) 70%
 );
 }
 
-.jukebox-light-song-time{
-
+.jukebox-light-song-time-box{
+white-space: nowrap;
 }
 .jukebox-light-song{
 font-size: 13px;
