@@ -958,7 +958,7 @@ function JukeboxUI(jukebox, element, opts)
 							if(type == "SearchTab")
 							{
 								var opts = openedTabs[i].options;
-								_search(opts.current_page, opts.identifier, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
+								_search(opts.current_page, null, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
 							}
 							else
 							{

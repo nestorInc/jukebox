@@ -136,7 +136,7 @@ this.Tabs = Class.create(
 
 			if(className == "SearchTab")
 			{
-				var toSave = ['identifier', 'select_fields', 'search_value', 'search_comparison', 'search_field', 'order_by', 'result_count', 'current_page'],
+				var toSave = ['select_fields', 'search_value', 'search_comparison', 'search_field', 'order_by', 'result_count', 'current_page'],
 					obj = {};
 				for(var i = 0; i < toSave.length; ++i)
 				{
