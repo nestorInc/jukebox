@@ -866,7 +866,7 @@ function JukeboxUI(jukebox, element, opts)
 		_$.btn_apply_plugin.on("click", _events.plugin);
 
 		var range0to100 = $R(0, 100);
-		_volumeSlider = new Control.Slider(_$.volume_box_slider.down(rootClass+'volume-handle'), _$.volume_box_slider,
+		_volumeSlider = new Control.Slider(_$.volume_box_slider.down(rootClass+'slider-handle'), _$.volume_box_slider,
 		{
 			range: range0to100,
 			values: range0to100,
@@ -958,7 +958,7 @@ function JukeboxUI(jukebox, element, opts)
 							if(type == "SearchTab")
 							{
 								var opts = openedTabs[i].options;
-								_search(opts.current_page, opts.identifier, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
+								_search(opts.current_page, null, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
 							}
 							else
 							{
