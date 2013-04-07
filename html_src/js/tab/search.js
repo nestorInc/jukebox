@@ -1,13 +1,14 @@
 this.SearchTab = Class.create(Tab,
 {
-	initialize: function($super, server_results, DOM, rootCSS, jukebox, template)
+	initialize: function($super, server_results, rootCSS, jukebox, template)
 	{
 		this.reloadControllers = true;
 		this.pages = [];
 		this.sliders = [];
 		this.tableKit = null;
+		this.DOM = null;
 
-		$super(server_results.identifier, DOM, rootCSS, jukebox, template);
+		$super(server_results.identifier, rootCSS, jukebox, template);
 		
 		this.updateNewSearchInformations(server_results);
 	},
@@ -91,12 +92,13 @@ this.SearchTab = Class.create(Tab,
 			this.result_count);
 	},
 
-	updateContent: function()
+	updateContent: function(DOM)
 	{
+		this.DOM = DOM;
 		if(this.reloadControllers)
 		{
-			var pagelistClass = this.rootCSS + "-search-pagelist-" + this.identifier, // TODO: remove this.identifier (when this.DOM is jukebox-tabContent-<num>)
-				contentClass = this.rootCSS + "-search-" + this.identifier; // TODO: remove this.identifier (when this.DOM is jukebox-tabContent-<num>)
+			var pagelistClass = this.rootCSS + "-search-pagelist",
+				contentClass = this.rootCSS + "-search";
 
 			// Html structure
 			var mainTpl = new Template(this.template.main),
@@ -107,7 +109,7 @@ this.SearchTab = Class.create(Tab,
 				},
 				search_page = mainTpl.evaluate(mainTplVars);
 			
-			this.DOM.down('.' + this.rootCSS + '-tabContent-' + this.identifier).update(search_page);
+			this.DOM.update(search_page);
 
 			// Display sliders and links and init sliders behavior
 			this.initAndDisplaySearchControllers(pagelistClass);
@@ -145,7 +147,7 @@ this.SearchTab = Class.create(Tab,
 		if(this.total_results > 0 && this.page_count > 1)
 		{
 			// We have to specified a fixed width, 100% doesn't work : the slider is lost
-			var music_wrapper_width = this.DOM.getWidth();
+			var music_wrapper_width = this.DOM.up().getWidth();
 
 			var sliderTpl = '' +
 			'<div class="'+sliderCSS+'" style="width:' + music_wrapper_width + 'px;">' +
@@ -286,10 +288,7 @@ this.SearchTab = Class.create(Tab,
 				cell.removeClassName(that.rootCSS + "-search-sortcol");
 			}
 			sql = sql.replace('${ORDER}', order);
-			cell.on("click", function()
-			{
-				that.sort(sql);
-			});
+			cell.on("click", that.sort.bind(that, sql));
 		}
 
 		var sql =
@@ -383,7 +382,7 @@ this.SearchTab = Class.create(Tab,
 	{
 		var tbody = new Element('tbody'),
 			count = this.result_count,
-			$content = this.DOM.down('.' + this.rootCSS + "-search-" + this.identifier),
+			$content = this.DOM.down('.' + this.rootCSS + "-search"),
 			isOdd = true,
 			style,
 			J = this.jukebox;

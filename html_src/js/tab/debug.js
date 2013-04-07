@@ -1,9 +1,8 @@
 this.DebugTab = Class.create(Tab, 
 {
-	initialize: function(tabName, DOM, rootCSS)
+	initialize: function(tabName, rootCSS)
 	{
 		this.name = tabName;
-		this.DOM = DOM;
 		this.rootCSS = rootCSS;
 	},
 
@@ -29,7 +28,7 @@ this.DebugTab = Class.create(Tab,
 		}
 	},
 
-	updateContent: function()
+	updateContent: function(DOM)
 	{
 		var debug_display = '' +
 		'<h1>Debug console</h1>' +
@@ -43,11 +42,10 @@ this.DebugTab = Class.create(Tab,
 			'</td>' +
 		'</tr>' +
 		'</table>';
-		var $content = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
-		$content.update(debug_display);
+		DOM.update(debug_display);
 
-		this.$debug1 = $content.down('div:first');
-		this.$debug2 = $content.down('div:last');
+		this.$debug1 = DOM.down('div:first');
+		this.$debug2 = DOM.down('div:last');
 	}
 });
 

@@ -360,12 +360,12 @@ function JukeboxUI(jukebox, element, opts)
 		if(tab)
 		{
 			tab.updateNewSearchInformations(results);
-			tab.updateContent();
+			tab.updateContent(tab.DOM);
 		}
 		else
 		{
 			// Adds the new created tab to the tabs container
-			var searchTab = new SearchTab(results, _$.tabs, _opts.rootClass, J, _skin.templates.tabs ? _skin.templates.tabs["Search"] : null);
+			var searchTab = new SearchTab(results, _opts.rootClass, J, _skin.templates.tabs ? _skin.templates.tabs["Search"] : null);
 			var id = _tabs.addTab(searchTab, "SearchTab");
 			if(results.select !== false)
 			{
@@ -843,8 +843,7 @@ function JukeboxUI(jukebox, element, opts)
 			}
 		}
 
-		_tabs = new Tabs(_opts.rootClass);
-		_tabs.setRootNode(_$.tabs);
+		_tabs = new Tabs(_$.tabs, _opts.rootClass);
 
 		// Register listeners
 		_$.expand_button.on("click", _events.expand);
@@ -893,7 +892,7 @@ function JukeboxUI(jukebox, element, opts)
 					if(search === null)
 					{
 						var template = _skin.templates.tabs ? _skin.templates.tabs[tab.name] : null;
-						var newTab = new tab.classC(tab.name, _$.tabs, _opts.rootClass, J, template);
+						var newTab = new tab.classC(tab.name, _opts.rootClass, J, template);
 						identifier = _tabs.addTab(newTab, tab.classN);
 					}
 					else

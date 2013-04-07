@@ -1,27 +1,22 @@
 this.PlaylistTab = Class.create(Tab,
 {
-	initialize: function(tabName, DOM, rootCSS, jukebox)
+	initialize: function(tabName, rootCSS, jukebox)
 	{
 		this.name = tabName;
-		this.DOM = DOM;
 		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
 	},
 
-	updateContent: function()
+	updateContent: function(DOM)
 	{
-		var $tabContent = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
-		$tabContent.update('<h1>Playlists</h1>');
+		DOM.update('<h1>Playlists</h1>');
 
 		var that = this;
 
 		function createLoad(name)
 		{
 			var el = new Element('input', {type: 'button', value: 'Load'});
-			el.on("click", function()
-			{
-				J.restorePlayQueue(name/*, position*/);
-			});
+			el.on("click", J.restorePlayQueue.bind(J, name/*, position*/));
 			return el;
 		}
 		function createDel(name)
@@ -30,7 +25,7 @@ this.PlaylistTab = Class.create(Tab,
 			el.on("click", function()
 			{
 				J.deletePlayQueue(name);
-				that.updateContent(); // Force refresh (brutal)
+				that.updateContent(DOM); // Force refresh (brutal)
 			});
 			return el;
 		}
@@ -53,7 +48,7 @@ this.PlaylistTab = Class.create(Tab,
 			});
 			table.insert(tr);
 		}
-		$tabContent.insert(table);
+		DOM.insert(table);
 
 		var btn = new Element('input', {type: 'button', value: 'Save current playlist'}),
 			input = new Element('input', {type: 'text'});
@@ -64,9 +59,9 @@ this.PlaylistTab = Class.create(Tab,
 			{
 				J.savePlayQueue(name);
 				Notifications.Display(Notifications.LEVELS.info, "Current playlist save with name " + name);
-				that.updateContent(); // Force refresh (brutal)
+				that.updateContent(DOM); // Force refresh (brutal)
 			}
 		});
-		$tabContent.insert(input).insert(btn);
+		DOM.insert(input).insert(btn);
 	}
 });

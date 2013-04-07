@@ -1,13 +1,12 @@
 this.CustomQueriesTab = Class.create(Tab,
 {
-	initialize: function(tabName, DOM, rootCSS)
+	initialize: function(tabName, rootCSS)
 	{
 		this.name = tabName;
-		this.DOM = DOM;
 		this.rootCSS = rootCSS;
 	},
 
-	updateContent: function()
+	updateContent: function(DOM)
 	{
 		var custom_queries_display = '' +
 		'<h1>Custom Json Query</h1>' +
@@ -39,17 +38,16 @@ this.CustomQueriesTab = Class.create(Tab,
 			'<td><input type="button" value="send custom query"/></td>' +
 		'</tr>' +
 		'</table>';
-		var $content = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
-		$content.update(custom_queries_display);
+		DOM.update(custom_queries_display);
 
-		var $textarea = $content.down('textarea'),
+		var $textarea = DOM.down('textarea'),
 			query,
 			actions;
 
 		//----------
 		// Combobox
 
-		var $select = $content.down('select');
+		var $select = DOM.down('select');
 		$select.on("change", function fillCustomJsonQuery()
 		{
 			var opts = {},
@@ -112,7 +110,7 @@ this.CustomQueriesTab = Class.create(Tab,
 		//----------
 		// Button
 
-		var $input = $content.down('input');
+		var $input = DOM.down('input');
 		$input.on("click", function checkAndSendJson()
 		{
 			// Check if the textarea is filled

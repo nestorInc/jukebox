@@ -1,9 +1,8 @@
 var Tab = this.Tab = Class.create(
 {
-	initialize: function(tabName, DOM, rootCSS, jukebox, template)
+	initialize: function(tabName, rootCSS, jukebox, template)
 	{
 		this.name = tabName;
-		this.DOM = DOM;
 		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
 		this.template = template;
@@ -14,8 +13,9 @@ var Tab = this.Tab = Class.create(
 
 this.Tabs = Class.create(
 {
-	initialize: function(rootCSS)
+	initialize: function(DOM, rootCSS)
 	{
+		this.DOM = DOM;
 		this.rootCSS = rootCSS;
 		this.tabs = [];
 		this.currentTabUniqueId = -1;
@@ -56,11 +56,6 @@ this.Tabs = Class.create(
 			}
 		}
 		return null;
-	},
-
-	setRootNode: function(node)
-	{
-		this.DOM = node;
 	},
 
 	// Add the tab in the html layout and in the tabs array
@@ -128,7 +123,7 @@ this.Tabs = Class.create(
 		// Init tab content
 		if(typeof tab.updateContent === 'function')
 		{
-			tab.updateContent();
+			tab.updateContent(tabContentContainer);
 		}
 
 		// Store that tab is opened

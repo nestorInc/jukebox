@@ -1,17 +1,15 @@
 this.NotificationTab = Class.create(Tab,
 {
-	initialize: function(tabName, DOM, rootCSS)
+	initialize: function(tabName, rootCSS)
 	{
 		this.name = tabName;
 		this.uploader = null;
-		this.DOM = DOM;
 		this.rootCSS = rootCSS;
 	},
 
-	updateContent: function()
+	updateContent: function(DOM)
 	{
-		var $tabContent = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
-		$tabContent.update('<h1>Notification tests</h1>');
+		DOM.update('<h1>Notification tests</h1>');
 
 		function addButton(level)
 		{
@@ -20,7 +18,7 @@ this.NotificationTab = Class.create(Tab,
 			{
 				Notifications.Display(Notifications.LEVELS[level], "Notification: " + level);
 			});
-			$tabContent.insert(btn);
+			DOM.insert(btn);
 		}
 
 		for(var level in Notifications.LEVELS)

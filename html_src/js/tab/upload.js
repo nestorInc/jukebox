@@ -1,6 +1,6 @@
 this.UploadTab = Class.create(Tab,
 {
-	initialize: function(tabName, DOM, rootCSS, jukebox, template)
+	initialize: function(tabName, rootCSS, jukebox, template)
 	{
 		this.name = tabName;
 		this.uploader = null;
@@ -11,10 +11,10 @@ this.UploadTab = Class.create(Tab,
 		this.lastSendingValidationIdentifier = null;
 		this.refresher = null;
 		this.tableId = new Date().getTime();
-		this.DOM = DOM;
 		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
 		this.template = template;
+		this.DOM = null;
 	},
 
 	deleteUploadedSong: function(file_name)
@@ -485,7 +485,7 @@ this.UploadTab = Class.create(Tab,
 		this.uploader._handler.cancelAll();
 	},
 
-	updateContent: function()
+	updateContent: function(DOM)
 	{
 		var uploadTpl = new Template(this.template.main),
 			uploadTplVars =
@@ -495,7 +495,7 @@ this.UploadTab = Class.create(Tab,
 			},
 			upload_form = uploadTpl.evaluate(uploadTplVars);
 
-		this.DOM = this.DOM.down('.'+this.rootCSS+'-tabContent-' + this.identifier);
+		this.DOM = DOM;
 		this.DOM.update(upload_form);
 
 		// Init upload button behavior
