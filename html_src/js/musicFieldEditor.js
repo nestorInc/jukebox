@@ -292,7 +292,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	if(modified)
 	{
 		var undoLink = document.createElement("a");
-		undoLink.href = "javascript;";
+		undoLink.href = "javascript:;";
 		undoLink.appendChild(document.createTextNode("undo "));
 		undoLink.onclick = this._undo.bindAsEventListener(this);
 		undoLink.className = this.prefix + 'editor-undo';      
@@ -301,7 +301,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	}
 	
 	var cancelLink = document.createElement("a");
-	cancelLink.href = "javascript;";
+	cancelLink.href = "javascript:;";
 	cancelLink.appendChild(document.createTextNode("cancel"));
 	cancelLink.onclick = this._cancel.bindAsEventListener(this);
 	cancelLink.className = this.prefix + 'editor-cancel';      
