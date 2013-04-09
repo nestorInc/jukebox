@@ -90,8 +90,8 @@ Jukebox.UI.skins["default"] =
 </div>',
 		song:
 '<p class="#{root}-song">\
-<a class="#{root}-song-artist" href="javascript;">#{artist}</a> - \
-<a class="#{root}-song-album" href="javascript;">#{album}</a> - \
+<a class="#{root}-song-artist" href="javascript:;">#{artist}</a> - \
+<a class="#{root}-song-album" href="javascript:;">#{album}</a> - \
 <span class="#{root}-song-title">#{title}</span>\
 </p>',
 		playQueue:
