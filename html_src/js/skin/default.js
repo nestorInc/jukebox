@@ -108,7 +108,7 @@ Jukebox.UI.skins["default"] =
 <div class="#{root}-playqueue-song-#{index} #{root}-playqueue-draggable">\
 	<div class="#{root}-playqueue-handle-#{index} #{root}-playqueue-handle">\
 		<a href="javascript:;">#{artist}</a> - \
-		<a href="javascript:;)">#{album}</a> - \
+		<a href="javascript:;">#{album}</a> - \
 		#{title} (#{duration})\
 	</div>\
 	<a><span class="#{root}-playqueue-move-top"></span></a>\
