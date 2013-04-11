@@ -185,14 +185,6 @@ module.exports = function(grunt)
 					HTML5Storage: true
 				}
 			},
-			grunt:
-			{
-				src: "grunt.js",
-				options:
-				{
-					globals: {module: true}
-				}
-			},
 			notifications:
 			{
 				src: SRC.js + 'notifications.js',
