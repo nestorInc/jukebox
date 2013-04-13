@@ -23,9 +23,48 @@ module YamlLogger
   end
 end
 
+module ClassifierStuff
+  def update_classifier()
+    @@classifier ||= Classifier.new
+
+    actions ||= YAML::Store.new "channel_action.log"
+    actions.transaction do
+      actions["actions"].each do |action|
+        puts action[0]
+        puts action[1]
+        if action[0] == :del or action[0] == :next
+          puts "demote"
+          song = action[1]
+          @@classifier.demote(song[:mid], song[:artist], song[:album], song[:genre])
+        elsif action[0] == :add
+          puts "promote"
+          song = action[1]
+          @@classifier.promote(song[:mid], song[:artist], song[:album], song[:genre])
+        end
+      end
+    end
+  end
+
+  def pick_from_classifier()
+    # how much top songs should be given a chance
+    ratio = 0.1
+
+    @@classifier ||= Classifier.new
+
+    scores = @@classifier.scores
+    scores.sort_by do |score| score[1] end
+    selected_index = (scores.size*rand*ratio).to_i
+    puts "index"
+    puts selected_index
+    puts "scores"
+    puts scores[selected_index][0]
+    scores[selected_index][0]
+  end
+end
 
 module ChannelMixin
   include YamlLogger
+  include ClassifierStuff
 
   def fetchData()
     nb_preload = 11
@@ -36,9 +75,11 @@ module ChannelMixin
       # keep a file from being include twice in the next x songs
       last_insert = @queue[-nb_preload..-1] || [];
       begin
-        entry = @library.get_file().first;
-      end while last_insert.include?(entry.mid) # the space we look is (10 + preload) wide (30min) see above
-      pos = @queue.add(nil, entry.mid, :log => false);
+        update_classifier()
+        entry = pick_from_classifier();
+        puts entry
+      end while last_insert.include?(entry) # the space we look is (10 + preload) wide (30min) see above
+      pos = @queue.add(nil, entry, :log => false);
     }
     super();
   end
