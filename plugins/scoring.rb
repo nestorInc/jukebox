@@ -85,7 +85,7 @@ class Classifier
   # indexes  = { :artists = {name, [score_item0, ....]},
   #              :genre   = ...
 
-  def initialize(db)
+  def initialize()
     @scores = []
     @indexes = {
       :artists => Hash.new { |hash, key| hash[key] = [] },
@@ -94,65 +94,76 @@ class Classifier
     }
     @entries = 0
 
-    # populate scores with null values for each song
-    # from db ?
+    load()
+  end
 
+  def populate()
+    # populate scores with null values for each song
+    # from db
     songs = db.request("mid, artist, album, genre",  nil, nil, nil, nil, nil)
     songs.each do |song|
-      register_song(song)
+      register_song(song.mid, song.artist, song.album, song.genre)
     end
-
   end
 
-  def register_song(song)
+  def register_song(mid, artist, album, genre)
     # scores.push([mid, score])
     # Score=Struct.new :mid, :score
-    score = [song.mid, 0]
+    score = [mid, 0]
     @scores << score
     # add ref(mid, score) to indexes.artists, album, genre
-    @indexes[:artists][song.artist].push(score)
-    @indexes[:albums][song.album].push(score)
-    @indexes[:genres][song.genre].push(score)
+    @indexes[:artists][artist].push(score)
+    @indexes[:albums][album].push(score)
+    @indexes[:genres][genre].push(score)
   end
 
-  def promote(mid, db)
+  def promote(mid, artist, album, genre)
     # +1
     # join on artist, album, genre
-    song = db.request("mid, artist, album, genre",  mid.to_s, "mid", nil, nil, nil).first
+    #song = db.request("mid, artist, album, genre",  mid.to_s, "mid", nil, nil, nil).first
 
-    indexes[:artists][song.artist].each do |score|
+    # I think over promotion can be good.
+    indexes[:artists][artist].each do |score|
       score[1] += 1
     end
-    indexes[:albums][song.album].each do |score|
+    indexes[:albums][album].each do |score|
       score[1] += 1
     end
-    indexes[:genres][song.genre].each do |score|
+    indexes[:genres][genre].each do |score|
       score[1] += 1
     end
   end
 
-  def demote()
+  def demote(mid, artist, album, genre)
     # /2
     # join on artist, album, genre
-    song = db.request("mid, artist, album, genre",  mid.to_s, "mid", nil, nil, nil).first
+    #song = db.request("mid, artist, album, genre",  mid.to_s, "mid", nil, nil, nil).first
 
-    indexes[:artists][song.artist].each do |score|
-      score[1] /= 2
-    end
-    indexes[:albums][song.album].each do |score|
-      score[1] /= 2
-    end
-    indexes[:genres][song.genre].each do |score|
+    # uniq to demote only once
+    result_set = (indexes[:artists][artist] +
+                  indexes[:albums][album] +
+                  indexes[:genres][genre]).uniq
+    result_set.each do |score|
       score[1] /= 2
     end
   end
 
-  def dump()
+  def dump(filename="learning.log")
     # dump this class
+    store = YAML::Store.new filename
+    store.transaction do
+      store[:scores] = scores
+      store[:indexes] = indexes
+    end
   end
 
-  def load()
+  def load(filename="learning.log")
     # load up previous learning
+    store = YAML::Store.new filename
+    store.transaction do
+      @scores = store[:scores]
+      @indexes = store[:indexes]
+    end
   end
 
 end
