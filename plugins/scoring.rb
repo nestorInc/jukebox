@@ -9,10 +9,11 @@ module YamlLogger
       @@log_store['actions'] ||= []
     end
 
-    action_object = [action,
-                     ["artist" => song.artist,
-                      "album" => song.album,
-                      "genre" => song.genre]]
+    action_object = [[action,
+                      { :mid => song.mid,
+                        :artist => song.artist,
+                        :album => song.album,
+                        :genre => song.genre}]]
 
     puts action_object.to_yaml
 
