@@ -1,5 +1,6 @@
 require 'yaml/store'
 
+#classifiable ?
 module YamlLogger
 
   # log any action on current entry to channel_action.log file
@@ -23,7 +24,7 @@ module YamlLogger
   end
 end
 
-module ClassifierStuff
+module ClassifierAble
   def update_classifier()
     @@classifier ||= Classifier.new
 
@@ -43,6 +44,10 @@ module ClassifierStuff
         end
       end
     end
+
+    #debug purpose
+    @@classifier.dump
+
   end
 
   def pick_from_classifier()
@@ -64,7 +69,7 @@ end
 
 module ChannelMixin
   include YamlLogger
-  include ClassifierStuff
+  include ClassifierAble
 
   def fetchData()
     nb_preload = 11
@@ -138,7 +143,7 @@ class Classifier
     load()
   end
 
-  def populate()
+  def populate(db)
     # populate scores with null values for each song
     # from db
     songs = db.request("mid, artist, album, genre",  nil, nil, nil, nil, nil)
@@ -160,8 +165,11 @@ class Classifier
 
   def promote(mid, artist, album, genre)
     # +1
-    # join on artist, album, genre
-    #song = db.request("mid, artist, album, genre",  mid.to_s, "mid", nil, nil, nil).first
+
+    # add missing songs
+    if (scores.select do |score| score[0] == mid end).empty?
+      register(mid, artist, album, genre)
+    end
 
     # I think over promotion can be good.
     indexes[:artists][artist].each do |score|
@@ -177,8 +185,11 @@ class Classifier
 
   def demote(mid, artist, album, genre)
     # /2
-    # join on artist, album, genre
-    #song = db.request("mid, artist, album, genre",  mid.to_s, "mid", nil, nil, nil).first
+
+    # add missing songs
+    if (scores.select do |score| score[0] == mid end).empty?
+      register(mid, artist, album, genre)
+    end
 
     # uniq to demote only once
     result_set = (indexes[:artists][artist] +
@@ -203,7 +214,7 @@ class Classifier
     store = YAML::Store.new filename
     store.transaction do
       @scores = store[:scores]
-      @indexes = store[:indexes]
+      @indexes.merge(store[:indexes])
     end
   end
 
