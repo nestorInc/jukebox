@@ -1,3 +1,6 @@
+/* jshint loopfunc: true */
+/* global $R, FormatTime, Draggable, TableKit, SortUnique */
+
 this.SearchTab = Class.create(Tab,
 {
 	initialize: function($super, server_results, rootCSS, jukebox, template)

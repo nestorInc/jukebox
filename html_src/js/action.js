@@ -1,3 +1,5 @@
+/* global Extend */
+
 /**
 * Represents an Action that is going to be sent to server.
 * @constructor

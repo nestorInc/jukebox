@@ -1,3 +1,5 @@
+/* global JsonPrettyPrint, Tab, Class */
+
 this.DebugTab = Class.create(Tab, 
 {
 	initialize: function(tabName, rootCSS)

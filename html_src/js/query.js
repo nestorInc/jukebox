@@ -1,3 +1,5 @@
+/* global Action */
+
 /**
 * Represents a Query that is going to be sent to server.
 * @constructor

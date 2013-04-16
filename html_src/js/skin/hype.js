@@ -1,3 +1,6 @@
+/* jshint multistr: true, sub: true */
+/* global Jukebox */
+
 Jukebox.UI.skins["hype"] =
 {
 	params:

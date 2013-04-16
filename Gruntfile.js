@@ -145,189 +145,27 @@ module.exports = function(grunt)
 		{
 			options:
 			{
-				curly: true,
-				eqeqeq: false,
-				immed: true,
-				latedef: true,
-				newcap: false,
-				noarg: false,
-				sub: true,
-				undef: true,
-				unused: true,
-				eqnull: true,
-				browser: true,
-				loopfunc: true,
-				scripturl: true,
-				globals:
-				{
-					// Libs
-					JSON: true,
-					/*Ajax: true,
-					Draggable: true,
-					Droppables: true,
-					$R: true,
-					$: true,
-					$$: true,*/
-					Class: true,
-					Control: true,
-					Element: true,
-					Event: true,
-					Template: true,
-					TableKit: true,
-					qq: true,
-
-					// By our code
-					Notifications: true,
-					Tab: true,
-					genres: true,
-					FormatTime: true,
-					SortUnique: true,
-					HTML5Storage: true
-				}
+				jshintrc: SRC.js + ".jshintrc"
 			},
-			notifications:
-			{
-				src: SRC.js + 'notifications.js',
-				options:
-				{
-					globals: {$: true, Effect: true, Event: true}
-				}
-			},
-			action:
-			{
-				src: SRC.js + 'action.js',
-				options:
-				{
-					globals: {Extend: true}
-				}
-			},
-			query:
-			{
-				src: SRC.js + 'query.js',
-				options:
-				{
-					globals: {Action: true}
-				}
-			},
-			genre:
-			{
-				src: SRC.js + 'genres.js'
-			},
-			tools:
-			{
-				src: SRC.js + 'tools.js',
-				options: {unused: false, eqeqeq: false, eqnull: true}
-			},
-			storage:
-			{
-				src: SRC.js + 'storage.js',
-				options:
-				{
-					globals: {Jukebox: true}
-				}
-			},
-			fieldEditor:
-			{
-				src: SRC.js + 'musicFieldEditor.js',
-				options:
-				{
-					nonstandard: true, loopfunc: true, sub: true,
-					globals: {genres: true, genresOrdered: true, Event: true, TableKit: true, $: true}
-				}
-			},
-			jukebox:
-			{
-				src: SRC.js + 'jukebox.js',
-				options:
-				{
-					globals: {Extend: true, Query: true, Action: true, JukeboxUI: true, soundManager: true, Notifications: true, Ajax: true, $R: true, HTML5Storage: true}
-				}
-			},
-			jukeboxui:
-			{
-				src: SRC.js + 'jukeboxUI.js',
-				options:
-				{
-					globals: {Extend: true, Tabs: true, FormatTime: true, SearchTab: true, UploadTab: true, DebugTab: true, PlaylistTab: true, NotificationTab: true, CustomQueriesTab: true, genresOrdered: true, $: true, $$: true, $R: true, Draggable: true, Droppables: true, Element: true, Event: true, Control: true, Template: true, Notifications: true, HTML5Storage: true}
-				}
-			},
-			tabs:
-			{
-				src: SRC.tab + 'tabs.js'
-			},
-			tab_customQueries:
-			{
-				src: SRC.tab + 'customQueries.js',
-				options:
-				{
-					multistr: true,
-					globals: {Tab: true, Action: true, Query: true, Class: true, Notifications: true, sendQueryProxy: true}
-				}
-			},
-			tab_debug:
-			{
-				src: SRC.tab + 'debug.js',
-				options:
-				{
-					globals: {JsonPrettyPrint: true, Tab: true, Class: true}
-				}
-			},
-			tab_notification:
-			{
-				src: SRC.tab + 'notification.js'
-			},
-			tab_search:
-			{
-				src: SRC.tab + 'search.js',
-				options:
-				{
-					globals: {Class: true, Tab: true, genres: true, Template: true, Control: true, $R: true, FormatTime: true, Draggable: true, TableKit: true, SortUnique: true}
-				}
-			},
-			tab_upload:
-			{
-				src: SRC.tab + 'upload.js',
-				options:
-				{
-					nonstandard: true, sub: true,
-					globals: {MusicFieldEditor: true, Tab: true, Notifications: true, qq: true, UploadTab: true, Class: true, Template: true, TableKit: true, genres: true}
-				}
-			},
-			tab_playlist:
-			{
-				src: SRC.tab + 'playlist.js',
-				options:
-				{
-					globals: {Tab: true, Class: true, Notifications: true}
-				}
-			},
-			skin_default:
-			{
-				src: SRC.skinjs + 'default.js',
-				options:
-				{
-					multistr: true, sub: true,
-					globals: {Jukebox: true}
-				}
-			},
-			skin_light:
-			{
-				src: SRC.skinjs + 'light.js',
-				options:
-				{
-					multistr: true, sub: true,
-					globals: {Jukebox: true}
-				}
-			},
-			skin_hype:
-			{
-				src: SRC.skinjs + 'hype.js',
-				options:
-				{
-					multistr: true, sub: true,
-					globals: {Jukebox: true}
-				}
-			}
+			notifications: SRC.js + 'notifications.js',
+			action: SRC.js + 'action.js',
+			query: SRC.js + 'query.js',
+			genre: SRC.js + 'genres.js',
+			tools: SRC.js + 'tools.js',
+			storage: SRC.js + 'storage.js',
+			fieldEditor: SRC.js + 'musicFieldEditor.js',
+			jukebox: SRC.js + 'jukebox.js',
+			jukeboxui: SRC.js + 'jukeboxUI.js',
+			tabs: SRC.tab + 'tabs.js',
+			tab_customQueries: SRC.tab + 'customQueries.js',
+			tab_debug: SRC.tab + 'debug.js',
+			tab_notification: SRC.tab + 'notification.js',
+			tab_search: SRC.tab + 'search.js',
+			tab_upload: SRC.tab + 'upload.js',
+			tab_playlist: SRC.tab + 'playlist.js',
+			skin_default: SRC.skinjs + 'default.js',
+			skin_light: SRC.skinjs + 'light.js',
+			skin_hype: SRC.skinjs + 'hype.js'
 		},
 		copy:
 		{

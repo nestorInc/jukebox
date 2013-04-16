@@ -1,3 +1,6 @@
+/* jshint multistr:true */
+/* global Action, Query, Notifications, sendQueryProxy */
+
 this.CustomQueriesTab = Class.create(Tab,
 {
 	initialize: function(tabName, rootCSS)

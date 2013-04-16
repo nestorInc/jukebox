@@ -1,3 +1,5 @@
+/* global Extend, Tabs, FormatTime, SearchTab, UploadTab, DebugTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $R, Draggable, Droppables, Event, Notifications, HTML5Storage */
+
 /**
 * Represents a Jukebox graphical interface.
 * @constructor
