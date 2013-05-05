@@ -391,16 +391,17 @@ this.SearchTab = Class.create(Tab,
 			style,
 			J = this.jukebox;
 
-		function doSearch(search, category)
+		function doSearch(search, category, mouseEvent)
 		{
-			J.search(1, null, null, search.toString(), 'equal', category, 'artist,album,track,title', count, true);
+			var focusTab = (mouseEvent.which == 2 || mouseEvent.ctrlKey) ? false : true; // Open in background with middle clic or ctrl+clic
+			J.search(1, null, null, search.toString(), 'equal', category, 'artist,album,track,title', count, focusTab);
 		}
 		function createLink(text, search, category)
 		{
 			var item = new Element('a', {href: 'javascript:;'}).update(text);
-			item.on('click', function()
+			item.on('click', function(evt)
 			{
-				doSearch(search, category);
+				doSearch(search, category, evt);
 			});
 			return item;
 		}
