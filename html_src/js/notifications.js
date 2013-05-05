@@ -1,3 +1,5 @@
+/* global $, Effect, Event */
+
 (function(){ // Protect scope
 
 /**

@@ -1,3 +1,5 @@
+/* global Extend, Tabs, FormatTime, SearchTab, UploadTab, DebugTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $R, Draggable, Droppables, Event, Notifications, HTML5Storage */
+
 /**
 * Represents a Jukebox graphical interface.
 * @constructor
@@ -128,13 +130,13 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		if(songObj)
 		{
-			_$.song_artist.update(songObj.artist).stopObserving().on("click", function()
+			_$.song_artist.update(songObj.artist).stopObserving().on("click", function(evt)
 			{
-				_searchCategory(songObj.artist, 'artist');
+				_searchCategory(songObj.artist, 'artist', evt);
 			});
-			_$.song_album.update(songObj.album).stopObserving().on("click", function()
+			_$.song_album.update(songObj.album).stopObserving().on("click", function(evt)
 			{
-				_searchCategory(songObj.album, 'album');
+				_searchCategory(songObj.album, 'album', evt);
 			});
 			_$.song_title.update(songObj.title);
 
@@ -244,9 +246,9 @@ function JukeboxUI(jukebox, element, opts)
 			var $artist = li.down(rootClass+'playqueue-handle a:first');
 			if($artist)
 			{
-				$artist.on("click", function()
+				$artist.on("click", function(evt)
 				{
-					_search(1, null, null, song.artist, 'equal', 'artist', 'artist,album,track,title', 20, false);
+					_searchCategory(song.artist, 'artist', evt);
 				});
 			}
 
@@ -254,9 +256,9 @@ function JukeboxUI(jukebox, element, opts)
 			var $album = li.down(rootClass+'playqueue-handle a:last');
 			if($album)
 			{
-				$album.on("click", function()
+				$album.on("click", function(evt)
 				{
-					_search(1, null, null, song.album, 'equal', 'album', 'artist,album,track,title', 20, false);
+					_searchCategory(song.album, 'album', evt);
 				});
 			}
 
@@ -553,10 +555,12 @@ function JukeboxUI(jukebox, element, opts)
 	* Helper to do a search in a specific category
 	* @param {string} search - The text search
 	* @param {string} category - artist or album
+	* @param {int} mouseEvent - Clic event to detect left/middle click
 	*/
-	function _searchCategory(search, category)
+	function _searchCategory(search, category, mouseEvent)
 	{
-		_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, false);
+		var focusTab = (mouseEvent.which == 2 || mouseEvent.ctrlKey) ? false : true; // Open in background with middle clic or ctrl+clic
+		_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, focusTab);
 	}
 
 	/**

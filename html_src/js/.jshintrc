@@ -1,0 +1,26 @@
+{
+	"curly": true,
+	"eqeqeq": false,
+	"immed": true,
+	"latedef": true,
+	"newcap": false,
+	"noarg": false,
+	"sub": true,
+	"undef": true,
+	"unused": true,
+	"eqnull": true,
+	"browser": true,
+	"scripturl": true,
+	"globals":
+	{
+		"JSON": true,		
+		"Class": true,
+		"Control": true,
+		"Element": true,
+		"Template": true,
+
+		"Notifications": true,
+		"Tab": true,
+		"genres": true
+	}
+}

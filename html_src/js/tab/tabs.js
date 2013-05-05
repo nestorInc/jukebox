@@ -1,3 +1,5 @@
+/* global HTML5Storage */
+
 var Tab = this.Tab = Class.create(
 {
 	initialize: function(tabName, rootCSS, jukebox, template)

@@ -1,3 +1,6 @@
+/* jshint nonstandard: true, loopfunc: true, sub: true */
+/* global genresOrdered, Event, TableKit, $ */
+
 function MusicFieldEditor(name, rootCSS, uploadedFiles, uploadedFilesEdition)
 {
 	this.name = name;

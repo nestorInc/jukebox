@@ -1,3 +1,6 @@
+/* jshint nonstandard:true, sub:true */
+/* global MusicFieldEditor, Notifications, qq, TableKit */
+
 this.UploadTab = Class.create(Tab,
 {
 	initialize: function(tabName, rootCSS, jukebox, template)

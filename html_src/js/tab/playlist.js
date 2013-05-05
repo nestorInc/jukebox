@@ -1,3 +1,5 @@
+/* global Notifications */
+
 this.PlaylistTab = Class.create(Tab,
 {
 	initialize: function(tabName, rootCSS, jukebox)

@@ -1,3 +1,5 @@
+/* global Extend, Query, Action, JukeboxUI, soundManager, Notifications, Ajax, $R, HTML5Storage */
+
 var uniqid = 0,
 	sendQueryProxy;
 
