@@ -5,6 +5,7 @@ require 'time'
 
 require 'display.rb'
 require 'playlist.rb'
+require 'plugable.rb'
 
 class ChannelsCron < Rev::TimerWatcher
   def initialize()
@@ -34,6 +35,7 @@ $channelsCron = ChannelsCron.new();
 $channelsCron.attach(Rev::Loop.default)
 
 class Channel
+  include Plugable
   attr_reader   :name
   attr_reader   :timestamp
   attr_reader   :queue
@@ -92,6 +94,12 @@ class Channel
     log("Unregistering channel #{@name} [#{@connections.size()} user(s) connected]");
   end
 
+  def _next()
+    log("Auto next on channel #{@name}");
+    @queue.next();
+    fetchData();
+  end
+
   def next()
     log("Next on channel #{@name}");
     @queue.next();
@@ -112,13 +120,25 @@ class Channel
 
   def set_plugin(name = "default")
     begin
+      # remove previous plugin
+      self.remove ChannelMixin if defined? ChannelMixin
+      @queue.remove SongQueueMixin if defined? SongQueueMixin
+      # and clean up namespace
+      Object.send(:remove_const, :ChannelMixin) if defined? ChannelMixin
+      Object.send(:remove_const, :SongQueueMixin) if defined? SongQueueMixin
+
+      # now load it
       load "plugins/#{name}.rb"
-      self.extend(ChannelMixin)
-      @queue.extend(SongQueueMixin)
+      self.extend ChannelMixin
+      @queue.extend SongQueueMixin
+
+      # and set a little config
       #XXXdlet: til I figure something better
       if SongQueueMixin.method_defined? :setlib
         @queue.setlib(@library)
       end
+
+      # we're good
       log("Loading #{name} plugin for songs selection")
       true;
     rescue LoadError=> e
@@ -162,7 +182,7 @@ class Channel
       @tag = tag.to_s();
       @timestamp = Time.now().to_i();
     rescue => e
-      @queue.next() if(@queue[0]);
+      @queue._next() if(@queue[0]);
       error("Can't load mid=#{mid}: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
       retry;
     end
@@ -192,7 +212,7 @@ class Channel
         break if(@remaining <= 0)
       }
 
-      self.next() if(@remaining > 0);
+      self._next() if(@remaining > 0);
     end while(@remaining > 0)
     @time  = now;
     data;
