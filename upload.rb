@@ -319,13 +319,13 @@ class UploadManager < HttpNode
           track = trackStr;
         end
 
-        title = "#{id3info.artist} - #{id3info.album} - #{track} - #{id3info.title}.mp3";
+        title = "#{id3info.artist.gsub("/","_")} - #{id3info.album.gsub("/","_")} - #{track} - #{id3info.title.gsub("/","_")}.mp3";
         #filename is limited to 255 by the filesystem
         if(title.length > 255 )
-          title = "#{id3info.title}.mp3"
+          title = "#{id3info.title.gsub("/","_")}.mp3"
         end
-        album_folder = "#{id3info.date} - #{id3info.album}";
-        dst_folder = File.join(source_dir, id3info.artist);
+        album_folder = "#{id3info.date} - #{id3info.album.gsub("/","_")}";
+        dst_folder = File.join(source_dir, id3info.artist.gsub("/","_"));
       rescue Exception=>e
         error(e);
         action_response = {
@@ -341,7 +341,7 @@ class UploadManager < HttpNode
           warning("create " + dst_folder);
           Dir.mkdir(dst_folder);
         end
-        dst_folder = File.join(dst_folder, id3info.album);
+        dst_folder = File.join(dst_folder, id3info.album.gsub("/","_"));
         if not File.directory?(dst_folder)
           warning("create " + dst_folder);
           Dir.mkdir(dst_folder);
@@ -372,7 +372,7 @@ class UploadManager < HttpNode
         action_response = {
           :name              => "validate_uploaded_file",
           :return            => "error",
-          :message           => "Could not move the file #{req["file_name"]}, #{e}"
+          :message           => "Could not move the file #{req["file_name"]} to #{File.join(dst_folder,title)}, #{e}"
         };
         return action_response;
       end
