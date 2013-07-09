@@ -27,7 +27,6 @@ class Id3
     fd = File.open(file)
     data = fd.read();
     fd.close();
-
     Id3.new(data);
   end
 
@@ -61,24 +60,29 @@ private
   end
 
   def getV2String(data)
-    return "" if(data.bytesize() == 0);
-    enc = data.slice!(0).ord();
-    case(enc)
-    when 0x01
-      bom = data.slice!(0..1);
-      if(bom <=> "\xFF\xFE")
-        data.force_encoding("UTF-16LE");
-      else  
+    begin
+      return "" if(data.bytesize() == 0);
+      enc = data.slice!(0).ord();
+      case(enc)
+      when 0x01
+        bom = data.slice!(0..1);
+        if(bom <=> "\xFF\xFE")
+          data.force_encoding("UTF-16LE");
+        else  
+          data.force_encoding("UTF-16BE");
+        end
+      when 0x02
         data.force_encoding("UTF-16BE");
-      end
-    when 0x02
-      data.force_encoding("UTF-16BE");
-    when 0x03
-      data.force_encoding("UTF-8");
-    else
+      when 0x03
+        data.force_encoding("UTF-8");
+      else
       data.force_encoding("ISO-8859-1");
+      end
+      data.encode("UTF-8").strip;
+    rescue Exception=>e
+      error("Could not parse tag v1");
+      raise e
     end
-    data.encode("UTF-8").strip;
   end
 
   def setV2String(str)
@@ -114,8 +118,20 @@ private
   end
 
   def Id3.getUnsynchronisation(data)
-    data.force_encoding("BINARY");
-    data.gsub("\xFF\x00", "\xFF");
+    begin
+      data.force_encoding("BINARY");
+    rescue Exception=>e
+      error("Cannot synchronize : binary encoding problem");
+      raise e
+    end
+
+    begin
+      data.gsub(/#{0xFF.chr}#{0x00.chr}/, "#{0xFF.chr}");
+    rescue Exception=>e
+      error("Cannot synchronize : gsub error #{e}\n data");
+      raise e
+    end
+
   end
 
   def Id3.setV2(tags)
@@ -152,45 +168,49 @@ private
   end
 
   def decodeV2(data)
-    tag = {};
+    begin
 
-    meta, flag = Id3.fetchV2Frame(data);
-    return false if(meta == nil);
-
-    # remove header
-    meta.slice!(0..9);
-
-    # extended header (remove it)
-    if ((flag & 0x40) == true)
-      size = Id3.getV2Size(meta[0..3]);
-      meta.slice!(0..size-1)
-    end
-
-    while(meta.bytesize() >= 10)
-      id   = meta[0..3];
-      size = Id3.getV2Size(meta[4..7]);
-      break if(id == "\x00\x00\x00\x00");
-      flag = meta[8..9].unpack("n").first;
+      tag = {};
+      
+      meta, flag = Id3.fetchV2Frame(data);
+      return false if(meta == nil);
+      
+      # remove header
       meta.slice!(0..9);
-      data = meta.slice!(0..size-1);
-      data = data[4..-1]                    if(flag & 0x0001 == 0x0001);
-      data = Id3.getUnsynchronisation(data) if(flag & 0x0002 == 0x0002);
-      tag[id] = data;
+      
+      # extended header (remove it)
+      if ((flag & 0x40) == true)
+        size = Id3.getV2Size(meta[0..3]);
+      meta.slice!(0..size-1)
+      end
+      
+      while(meta.bytesize() >= 10)
+        id   = meta[0..3];
+        size = Id3.getV2Size(meta[4..7]);
+        break if(id == "\x00\x00\x00\x00");
+        flag = meta[8..9].unpack("n").first;
+        meta.slice!(0..9);
+        data = meta.slice!(0..size-1);
+        data = data[4..-1]                    if(flag & 0x0001 == 0x0001);
+        data = Id3.getUnsynchronisation(data) if(flag & 0x0002 == 0x0002);
+        tag[id] = data;
+      end
+      v = tag["TIT2"];
+      @title = getV2String(v) if(v);
+      
+      v = tag["TALB"];
+      @album = getV2String(v) if(v);
+      
+      v = tag["TRCK"];
+      @track = getV2String(v) if(v);
+      
+      v = tag["TPE1"];
+      @artist = getV2String(v) if(v);
+      return true;
+    rescue Exception=>e
+      error("Could not parse v2 tags");
+      raise e
     end
-
-    v = tag["TIT2"];
-    @title = getV2String(v) if(v);
-
-    v = tag["TALB"];
-    @album = getV2String(v) if(v);
-
-    v = tag["TRCK"];
-    @track = getV2String(v) if(v);
-
-    v = tag["TPE1"];
-    @artist = getV2String(v) if(v);
-
-    return true;
   end
 end
 
