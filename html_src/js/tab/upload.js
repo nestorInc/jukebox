@@ -1,5 +1,5 @@
 /* jshint nonstandard:true, sub:true */
-/* global MusicFieldEditor, Notifications, qq, TableKit */
+/* global MusicFieldEditor, Notifications, qq, TableKit, genresOrdered */
 
 this.UploadTab = Class.create(Tab,
 {
@@ -18,6 +18,7 @@ this.UploadTab = Class.create(Tab,
 		this.jukebox = jukebox;
 		this.template = template;
 		this.DOM = null;
+
 	},
 
 	deleteUploadedSong: function(file_name)
@@ -122,6 +123,115 @@ this.UploadTab = Class.create(Tab,
 		else if(ret == "error")
 		{
 			Notifications.Display(4, message);
+		}
+	},
+
+	change_global_action: function()
+	{
+		var select = this.DOM.down('.'+this.rootCSS+'-upload-global-action-select');
+		var selectedOption = select.options[select.selectedIndex].value;
+		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
+		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
+		if( selectedOption === "genre"){
+			input.style.display="none";
+			genres.style.display="";
+		} else if(selectedOption === "validate" ||
+				selectedOption === "update" ||
+				selectedOption === "delete"){
+			input.style.display="none";
+			genres.style.display="none";
+		} else {
+			input.style.display="";
+			genres.style.display="none";
+		}
+
+	},
+
+	apply_global_modifications: function()
+	{
+		var i =0;
+		var elements =this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
+		var select = this.DOM.down('.'+this.rootCSS+'-upload-global-action-select');
+		var selectedOption = select.options[select.selectedIndex].value;
+		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
+		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
+		var done = false;
+
+		if( selectedOption !== "genre" &&
+			selectedOption !== "delete" &&
+			selectedOption !== "update" &&
+			selectedOption !== "validate" &&
+			input.value.length === 0){
+			Notifications.Display(4, "Global textfield empty");
+			return;
+		}
+
+		for(i=0;i<elements.length;++i){
+			if(elements[i].checked){
+				done = true;
+
+				var tr = elements[i].up("tr");
+				var td = null;
+				if( selectedOption === "artist" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
+					this.tableKit.editCell(td);
+					td.down("input[type=text]").value = input.value;
+					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+				} else if( selectedOption === "album" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-album');
+					this.tableKit.editCell(td);
+					td.down("input[type=text]").value = input.value;
+					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+				} else if( selectedOption === "year" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-year');
+					this.tableKit.editCell(td);
+					td.down("input[type=text]").value = input.value;
+					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+				} else if( selectedOption === "genre" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-genre');
+					this.tableKit.editCell(td);
+					td.down("select").selectedIndex = genres.selectedIndex;
+					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+				} else if( selectedOption === "tracknb" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-trackNb');
+					this.tableKit.editCell(td);
+					td.down("input[type=text]").value = input.value;
+					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+				}
+
+			}
+		}
+
+		if(!done){
+			Notifications.Display(4, "You must select files from the uploaded list");
+			return;
+		}
+	},
+
+	toggle_checkbox_selection: function(checkbox)
+	{
+		var i=0;
+		var elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
+		for(i=0;i<elements.length;++i){
+			elements[i].checked=checkbox.checked;
+		}
+
+		elements = this.DOM.select('.'+this.rootCSS+'-upload-selector-checkbox');
+		for(i=0;i<elements.length;++i){
+			elements[i].checked=checkbox.checked;
+		}
+	},
+	resolve_toggle: function(){
+		var i=0;
+		var elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
+		var allischecked = true;
+		for(i=0;i<elements.length;++i){
+			allischecked = allischecked && elements[i].checked;
+		}
+
+		elements = this.DOM.select('.'+this.rootCSS+'-upload-selector-checkbox');
+		for(i=0;i<elements.length;++i){
+			elements[i].checked=allischecked;
 		}
 	},
 
@@ -267,7 +377,7 @@ this.UploadTab = Class.create(Tab,
 
 		var genre = genres[obj.genre] ? genres[obj.genre] : '',
 			fname = escape(obj.filename);
-		
+
 		// Instanciate template
 		var tableBodyTpl = new Template(this.template.tableBody),
 			tableBodyVars =
@@ -332,10 +442,17 @@ this.UploadTab = Class.create(Tab,
 				this.uploadedFiles = Object.toJSON(uploaded_files).evalJSON();
 				this.uploadedFilesEdition = Object.toJSON(uploaded_files).evalJSON();
 
-				var html = '<table id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '" class="' + this.rootCSS + '-upload-table">';
+				var tableControllerTpl = new Template(this.template.tableController),
+					tableControllerTplVars = {root: this.rootCSS},
+					controller = tableControllerTpl.evaluate(tableControllerTplVars);
+
+				var html = controller + '<table id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '" class="' + this.rootCSS + '-upload-table">';
 				var tableHeadTpl = new Template(this.template.tableHead),
 					tableHeadTplVars = {root: this.rootCSS},
 					tr = tableHeadTpl.evaluate(tableHeadTplVars);
+
+
+
 				html += '<thead>' + tr + '</thead><tfoot>' + tr + '</tfoot></table>';
 				$uploaded_files.update(html);
 
@@ -357,6 +474,7 @@ this.UploadTab = Class.create(Tab,
 				this.makeCellEditable(this.rootCSS + "-upload-trackNb");
 				this.makeCellEditable(this.rootCSS + "-upload-genre");
 				// Non-editable, but we have to register them anyway
+				this.makeCellEditable(this.rootCSS + "-upload-selector");
 				this.makeCellEditable(this.rootCSS + "-upload-filename");
 				this.makeCellEditable(this.rootCSS + "-upload-actions");
 
@@ -367,6 +485,36 @@ this.UploadTab = Class.create(Tab,
 					'trueResize': true,
 					'keepWidth': true
 				});
+
+
+				// Checkbox controller and global form
+				this.DOM.down('.'+this.rootCSS+'-upload-global-submit').on("click",this.apply_global_modifications.bind(this));
+
+				var elements = this.DOM.select('.'+this.rootCSS+'-upload-selector-checkbox');
+				for(i=0; i<elements.length; ++i){
+					elements[i].on("change", this.toggle_checkbox_selection.bind(this, elements[i]));
+				}
+
+				elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
+				for(i=0; i<elements.length; ++i){
+					elements[i].on("change", this.resolve_toggle.bind(this));
+				}
+
+				var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
+				//fill genre global list
+				for(i = 0, len = genresOrdered.length; i < len; ++i)
+				{
+					var genre = genresOrdered[i],
+					option = document.createElement('option');
+					option.value = genre.id;
+					option.appendChild(document.createTextNode(genre.name));
+					genres.appendChild(option);
+				}
+				genres.style.display="none";
+
+				this.DOM.down('.'+this.rootCSS+'-upload-global-action-select').on("change", this.change_global_action.bind(this));
+
+
 			}
 			else // uploaded_files.length == 0
 			{

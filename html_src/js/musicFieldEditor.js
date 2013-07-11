@@ -137,8 +137,11 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 
 			// Upload cell style ff the new value differs
 			if( (
-					( property == "track" && this.uploadedFiles[i][property].split('/')[0] != firstChildVal ) ||
-					( property == "trackNb" && this.uploadedFiles[i]["track"].split('/')[1] != firstChildVal ) ||
+				( property == "track" && this.uploadedFiles[i][property].toString().split('/')[0] !== firstChildVal ) ||
+					( property == "trackNb" && (
+                        this.uploadedFiles[i]["track"] === null ||
+                            this.uploadedFiles[i]["track"].toString().split('/') === null ||
+                            this.uploadedFiles[i]["track"].toString().split('/')[1] !== firstChildVal )) ||
 					( property != "track" && property != "trackNb" && firstChildVal != this.uploadedFiles[i][property] )
 				) &&
 				!cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
@@ -182,7 +185,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	form.id = cell.id + '-form';
 	form.addClassName(TableKit.option('formClassName', table.id)[0]);
 	form.onsubmit = this._submit.bindAsEventListener(this);
-
+    
 	// Change behavior from field names
 	var modified = false;
 
@@ -219,7 +222,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 				}
 				for(var j = 0; j < len2; j++)
 				{
-					if(options[j].value == this.uploadedFilesEdition[i]["genre"])
+					if(options[j].value === this.uploadedFilesEdition[i]["genre"])
 					{
 						options[j].selected = true;
 						break;
@@ -250,7 +253,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 					else
 					{
 						input.value = fileE["track"].toString().split('/')[0];
-						if(fileE["track"].toString().split('/')[1] != this.uploadedFiles[i]["track"].toString().split('/')[1])
+						if(fileE["track"].toString().split('/')[1] !== this.uploadedFiles[i]["track"].toString().split('/')[1])
 						{
 							modified = true;
 						}
@@ -265,7 +268,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 					else
 					{
 						input.value = fileE["track"].toString().split('/')[1];
-						if(fileE["track"].toString().split('/')[1] != this.uploadedFiles[i]["track"].toString().split('/')[1])
+						if(fileE["track"].toString().split('/')[1] !== this.uploadedFiles[i]["track"].toString().split('/')[1])
 						{
 							modified = true;
 						}
@@ -274,7 +277,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 				else
 				{
 					input.value = fileE[property];
-					if(fileE[property] != this.uploadedFiles[i][property])
+					if(fileE[property] !== this.uploadedFiles[i][property])
 					{
 						modified = true;
 					}

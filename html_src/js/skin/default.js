@@ -127,8 +127,24 @@ Jukebox.UI.skins["default"] =
 '<div class="#{root}-file-uploader"></div>\
 <h2>#{uploadedFilesLabel}</h2>\
 <div class="#{root}-uploaded-files"></div>',
+				tableController: '<select class="#{root}-upload-global-action-select">\
+<option value="artist">Artist</option>\
+<option value="album">Album</option>\
+<option value="year">Year</option>\
+<option value="tracknb">TrackNb</option>\
+<option value="genre">Genre</option>\
+<option value="delete">Supprimer</option>\
+<option value="update">Mettre à jour</option>\
+<option value="validate">Valider</option>\
+</select>\
+<input class="#{root}-upload-global-action-input" type="text" value="" />\
+<select class="#{root}-upload-global-action-genre-select" ></select>\
+<input class="#{root}-upload-global-submit" type="submit" value="Appliquer" />',
 				tableHead:
 '<tr>\
+	<th class="#{root}-upload-selector">\
+    <input class="#{root}-upload-selector-checkbox" type="checkbox" />\
+    </th>\
 	<th class="#{root}-upload-filename">Filename</th>\
 	<th class="#{root}-upload-artist">Artist</th>\
 	<th class="#{root}-upload-album">Album</th>\
@@ -141,14 +157,15 @@ Jukebox.UI.skins["default"] =
 </tr>',
 				tableBody:
 '<tr id="#{rowId}">\
+	<td class="#{root}-upload-cell-static"><input class="#{root}-upload-cell-checkbox" type="checkbox" /></td>\
 	<td class="#{root}-upload-cell-static">#{filename}</td>\
-	<td>#{artist}</td>\
-	<td>#{album}</td>\
+	<td class="#{root}-upload-cell-artist">#{artist}</td>\
+	<td class="#{root}-upload-cell-album">#{album}</td>\
 	<td>#{title}</td>\
-	<td>#{year}</td>\
-	<td>#{track}</td>\
-	<td>#{trackNb}</td>\
-	<td>#{genre}</td>\
+	<td class="#{root}-upload-cell-year">#{year}</td>\
+	<td class="#{root}-upload-cell-track">#{track}</td>\
+	<td class="#{root}-upload-cell-trackNb">#{trackNb}</td>\
+	<td class="#{root}-upload-cell-genre">#{genre}</td>\
 	<td class="#{root}-uploaded-file-actions #{root}-upload-cell-static">\
 		<div>\
 			<a href="javascript:void(0);">X</a>\
