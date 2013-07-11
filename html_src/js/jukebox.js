@@ -60,7 +60,7 @@ function Jukebox(element, opts)
 		_readyCallback = null,
 
 		_ui = null; // Graphic interface
-	
+
 	//---
 	// [Privileged] Functions
 	// (Publicly exposed with private data & methods access)
@@ -112,7 +112,7 @@ function Jukebox(element, opts)
 		_update();
 		return this;
 	};
-	
+
 	/**
 	* @param {string} channel - The channel to join.
 	* @return {Jukebox} this.
@@ -206,15 +206,15 @@ function Jukebox(element, opts)
 
 	/**
 	* Make a search
-	* @param {int} page 
-	* @param {int} identifier 
-	* @param {string} select_fields 
-	* @param {string} search_value 
-	* @param {string} search_comparison 
-	* @param {string} search_field 
-	* @param {string} order_by 
-	* @param {int} result_count 
-	* @param {bool} select 
+	* @param {int} page
+	* @param {int} identifier
+	* @param {string} select_fields
+	* @param {string} search_value
+	* @param {string} search_comparison
+	* @param {string} search_field
+	* @param {string} order_by
+	* @param {int} result_count
+	* @param {bool} select
 	* @return {Jukebox} this.
 	*/
 	this.search = function(/*page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select*/)
@@ -230,11 +230,11 @@ function Jukebox(element, opts)
 	{
 		addToRandom: function(mid | search, comparison, field, order, first, count)
 		{
-			
+
 		},
 		addToTop: function(mid | search, comparison, field, order, first, count)
 		{
-			
+
 		},
 		addToBottom: function(mid | search, comparison, field, order, first, count)
 		{
@@ -260,11 +260,11 @@ function Jukebox(element, opts)
 
 	function PlayQueue()
 	{
-		
+
 	}
 	PlayQueue.prototype.addToRandom = function(mid)
 	{
-	
+
 	};
 
 	*/
@@ -373,12 +373,12 @@ function Jukebox(element, opts)
 
 	/**
 	* Add a whole search randomly to the play queue
-	* @param {string} search 
-	* @param {string} comparison 
-	* @param {string} field 
-	* @param {string} order 
-	* @param {int} first 
-	* @param {int} count 
+	* @param {string} search
+	* @param {string} comparison
+	* @param {string} field
+	* @param {string} order
+	* @param {int} first
+	* @param {int} count
 	* @return {Jukebox} this.
 	*/
 	this.addSearchToPlayQueueRandom = function(search, comparison, field, order, first, count)
@@ -389,12 +389,12 @@ function Jukebox(element, opts)
 
 	/**
 	* Add a whole search to the top of the play queue
-	* @param {string} search 
-	* @param {string} comparison 
-	* @param {string} field 
-	* @param {string} order 
-	* @param {int} first 
-	* @param {int} count 
+	* @param {string} search
+	* @param {string} comparison
+	* @param {string} field
+	* @param {string} order
+	* @param {int} first
+	* @param {int} count
 	* @return {Jukebox} this.
 	*/
 	this.addSearchToPlayQueueTop = function(search, comparison, field, order, first, count)
@@ -405,12 +405,12 @@ function Jukebox(element, opts)
 
 	/**
 	* Add a whole search to the end of the play queue
-	* @param {string} search 
-	* @param {string} comparison 
-	* @param {string} field 
-	* @param {string} order 
-	* @param {int} first 
-	* @param {int} count 
+	* @param {string} search
+	* @param {string} comparison
+	* @param {string} field
+	* @param {string} order
+	* @param {int} first
+	* @param {int} count
 	* @return {Jukebox} this.
 	*/
 	this.addSearchToPlayQueueBottom = function(search, comparison, field, order, first, count)
@@ -594,34 +594,56 @@ function Jukebox(element, opts)
 
 	/**
 	* Delete an uploaded file
-	* @param {string} filename - The upload file to delete
+	* @param {string|array} filename - The upload file(s) to delete
 	* @return {Jukebox} this.
 	*/
 	this.deleteUploadedFile = function(filename)
 	{
-		_doAction(new Action("delete_uploaded_file", {file_name: filename}));
+		if(Object.prototype.toString.call( filename ) === '[object Array]'){
+			var i = 0;
+			for(i=0;i<filename.length;++i){
+				_doAction(new Action("delete_uploaded_file", {file_name: filename[i]}));
+			}
+		} else {
+			_doAction(new Action("delete_uploaded_file", {file_name: filename}));
+		}
 		return this;
 	};
 
 	/**
 	* Validate an uploaded file
-	* @param {string} filename - The upload file to validate
+	* @param {string|array} filename - The upload file(s) to validate
 	* @return {Jukebox} this.
 	*/
 	this.validateUploadedFile = function(filename)
 	{
-		_doAction(new Action("validate_uploaded_file", {file_name: filename}));
+		if(Object.prototype.toString.call( filename ) === '[object Array]'){
+			var i = 0;
+			for(i=0;i<filename.length;++i){
+				_doAction(new Action("validate_uploaded_file",{file_name: filename[i]}));
+			}
+		} else {
+			_doAction(new Action("validate_uploaded_file", {file_name: filename}));
+		}
+
 		return this;
 	};
 
 	/**
 	* Update an uploaded file
-	* @param {object} opts - The update instructions
+	* @param {object|array} opts - The update instructions
 	* @return {Jukebox} this.
 	*/
 	this.updateUploadedFile = function(opts)
 	{
-		_doAction(new Action("update_uploaded_file", opts));
+		if(Object.prototype.toString.call( opts ) === '[object Array]'){
+			var i = 0;
+			for(i=0;i<opts.length;++i){
+				_doAction(new Action("update_uploaded_file", opts[i]));
+			}
+		} else {
+			_doAction(new Action("update_uploaded_file", opts));
+		}
 		return this;
 	};
 
@@ -652,7 +674,7 @@ function Jukebox(element, opts)
 	function _update()
 	{
 		_ui.activity(true);
-		
+
 		if(_query_in_progress === false)
 		{
 			// Timeout has ended or new query arrived and timeout still in progress
@@ -747,7 +769,7 @@ function Jukebox(element, opts)
 		/*TODO
 		if(json.action_response)
 		{
-			
+
 		}*/
 		if(json.channel_infos)
 		{
@@ -755,7 +777,7 @@ function Jukebox(element, opts)
 			$this.channel = _channel.name;
 
 			var message = "",
-				nb;			
+				nb;
 			// Notification When new user connection or a user left
 			if(_last_nb_listening_users > json.channel_infos.listener_count)
 			{
@@ -784,7 +806,7 @@ function Jukebox(element, opts)
 		/*TODO
 		if(json.news)
 		{
-			
+
 		}*/
 		if(json.search_results)
 		{
@@ -846,7 +868,7 @@ function Jukebox(element, opts)
 	{
 		var action;
 		if(arguments.length === 0)
-		{		
+		{
 			// Nothing is passed as argument we want to clear all the playlist
 			for(var i = _playQueueSongs.length - 1; i >= 0; --i)
 			{
@@ -869,7 +891,7 @@ function Jukebox(element, opts)
 					play_queue_index: play_queue_index[j]
 				});
 				_nextQuery.addAction(action);
-			}        
+			}
 		}
 		else
 		{
@@ -885,13 +907,13 @@ function Jukebox(element, opts)
 
 	/**
 	* Add a whole search at a certain position of the play queue
-	* @param {string} position - rand | head | tail 
-	* @param {string} search 
-	* @param {string} comparison 
-	* @param {string} field 
-	* @param {string} order 
-	* @param {int} first 
-	* @param {int} count 
+	* @param {string} position - rand | head | tail
+	* @param {string} search
+	* @param {string} comparison
+	* @param {string} field
+	* @param {string} order
+	* @param {int} first
+	* @param {int} count
 	*/
 	function _addSearchToPlayQueue(position, search, comparison, field, order, first, count) // TODO make args facultatives
 	{
@@ -955,7 +977,7 @@ function Jukebox(element, opts)
 				}, _opts.autorefresh_delay);
 			}
 
-			if(response.readyState == 4 && response.status === 0) // No ajax response (server down) 
+			if(response.readyState == 4 && response.status === 0) // No ajax response (server down)
 			{
 				_ui.gotResponse(null);
 				return;
@@ -991,7 +1013,7 @@ function Jukebox(element, opts)
 			}
 		}
 	};
-	
+
 	/**
 	* @constructs
 	*/
@@ -1026,7 +1048,7 @@ function Jukebox(element, opts)
 							// (happens on song change for browsers using the flash player)
 							// => reload the stream
 							// This is also interesting because it allows to free memory at the end of each song.
-							
+
 							bufferchangeCount++;
 							if(bufferchangeCount > 2)
 							{
@@ -1037,7 +1059,7 @@ function Jukebox(element, opts)
 									var currentVolume = _streamPlayer.volume;
 
 									// Reload the steam
-									// [Note that .unload().play() isn't enough]									
+									// [Note that .unload().play() isn't enough]
 									_streamPlayer.destruct(); // Good for memory
 									createNewSound(true);
 
@@ -1054,7 +1076,7 @@ function Jukebox(element, opts)
 						}
 					});
 				})(false);
-				
+
 				Notifications.Display(Notifications.LEVELS.debug, "Using " + (_streamPlayer.isHTML5 ? "HTML5" : "flash") + " audio player");
 
 				_startCallback();

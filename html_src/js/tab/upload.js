@@ -21,20 +21,6 @@ this.UploadTab = Class.create(Tab,
 
 	},
 
-	deleteUploadedSong: function(file_name)
-	{
-		if(this.lastSendingDeletionIdentifier === null)
-		{
-			var fname = unescape(file_name);
-			this.lastSendingDeletionIdentifier = fname;
-			this.jukebox.deleteUploadedFile(fname);
-		}
-		else
-		{
-			Notifications.Display(3, "Please retry after the following song has been deleted: " + this.lastSendingDeletionIdentifier);
-		}
-	},
-
 	getUploadedFileEditionFromFilename: function(file_name)
 	{
 		if(this.uploadedFilesEdition === null)
@@ -51,24 +37,73 @@ this.UploadTab = Class.create(Tab,
 		return null;
 	},
 
+	deleteUploadedSong: function(file_name)
+	{
+		if(this.lastSendingDeletionIdentifier === null)
+		{
+			if( Object.prototype.toString.call( file_name ) === '[object Array]'){
+				var fnames = [];
+				var i = 0;
+				for(i=0;i<file_name.length;++i){
+					fnames.push(unescape(file_name[i]));
+				}
+				this.lastSendingDeletionIdentifier = fnames;
+				this.jukebox.deleteUploadedFile(fnames);
+			} else {
+				var fname = unescape(file_name);
+				this.lastSendingDeletionIdentifier = fname;
+				this.jukebox.deleteUploadedFile(fname);
+			}
+		}
+		else
+		{
+			Notifications.Display(3, "Please retry after the following song has been deleted: " + this.lastSendingDeletionIdentifier);
+		}
+	},
+
 	updateUploadedSong: function(file_name)
 	{
 		if(this.lastSendingUpdateIdentifier === null)
 		{
-			var fname = unescape(file_name);
-			this.lastSendingUpdateIdentifier = fname;
-			var tmp = this.getUploadedFileEditionFromFilename(fname);
-			var opts =
-			{
-				file_name: fname,
-				title: tmp.title,
-				album: tmp.album,
-				artist: tmp.artist,
-				year: tmp.year,
-				track: tmp.track,
-				genre: tmp.genre
-			};
-			this.jukebox.updateUploadedFile(opts);
+            var tmp;
+            var opts;
+
+			if( Object.prototype.toString.call( file_name ) === '[object Array]'){
+				var i=0;
+				var fnames=[];
+				opts = [];
+				tmp=null;
+				for(i=0;i<file_name.length;++i){
+					fnames.push(unescape(file_name[i]));
+					tmp = this.getUploadedFileEditionFromFilename(fnames[i]);
+					opts.push({
+						file_name: fnames[i],
+						title: tmp.title,
+						album: tmp.album,
+						artist: tmp.artist,
+						year: tmp.year,
+						track: tmp.track,
+						genre: tmp.genre
+					});
+				}
+				this.lastSendingUpdateIdentifier = fnames;
+				this.jukebox.updateUploadedFile(opts);
+			} else {
+				var fname = unescape(file_name);
+				this.lastSendingUpdateIdentifier = fname;
+				tmp = this.getUploadedFileEditionFromFilename(fname);
+				opts =
+					{
+						file_name: fname,
+						title: tmp.title,
+						album: tmp.album,
+						artist: tmp.artist,
+						year: tmp.year,
+						track: tmp.track,
+						genre: tmp.genre
+					};
+				this.jukebox.updateUploadedFile(opts);
+			}
 		}
 		else
 		{
@@ -80,9 +115,19 @@ this.UploadTab = Class.create(Tab,
 	{
 		if(this.lastSendingValidationIdentifier === null)
 		{
-			var fname = unescape(file_name);
-			this.lastSendingValidationIdentifier = fname;
-			this.jukebox.validateUploadedFile(fname);
+			if( Object.prototype.toString.call( file_name ) === '[object Array]'){
+				var i = 0;
+				var fnames = [];
+				for(i=0;i<file_name.length;++i){
+					fnames.push(unescape(file_name[i]));
+				}
+				this.lastSendingValidationIdentifier = fnames;
+				this.jukebox.validateUploadedFile(fnames);
+			} else {
+				var fname = unescape(file_name);
+				this.lastSendingValidationIdentifier = fname;
+				this.jukebox.validateUploadedFile(fname);
+			}
 		}
 		else
 		{
@@ -92,10 +137,20 @@ this.UploadTab = Class.create(Tab,
 
 	deletionResponse: function(ret, message)
 	{
-		var id = this.lastSendingDeletionIdentifier;
+		var id = null;
 
-		// Wether success or error, reset the last sending identifier to allow a new deletion
-		this.lastSendingDeletionIdentifier = null;
+		if( Object.prototype.toString.call( this.lastSendingDeletionIdentifier ) === '[object Array]'){
+			id = this.lastSendingDeletionIdentifier[0];
+			this.lastSendingDeletionIdentifier.shift();
+		} else {
+			id = this.lastSendingDeletionIdentifier;
+		}
+
+		// Wether success or error, reset the last sending identifier to allow a new validation
+
+		if( Object.prototype.toString.call( this.lastSendingDeletionIdentifier ) !== '[object Array]' || this.lastSendingDeletionIdentifier.length === 0 ){
+			this.lastSendingDeletionIdentifier = null;
+		} 
 
 		if(ret == "success")
 		{
@@ -126,125 +181,22 @@ this.UploadTab = Class.create(Tab,
 		}
 	},
 
-	change_global_action: function()
-	{
-		var select = this.DOM.down('.'+this.rootCSS+'-upload-global-action-select');
-		var selectedOption = select.options[select.selectedIndex].value;
-		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
-		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
-		if( selectedOption === "genre"){
-			input.style.display="none";
-			genres.style.display="";
-		} else if(selectedOption === "validate" ||
-				selectedOption === "update" ||
-				selectedOption === "delete"){
-			input.style.display="none";
-			genres.style.display="none";
-		} else {
-			input.style.display="";
-			genres.style.display="none";
-		}
-
-	},
-
-	apply_global_modifications: function()
-	{
-		var i =0;
-		var elements =this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
-		var select = this.DOM.down('.'+this.rootCSS+'-upload-global-action-select');
-		var selectedOption = select.options[select.selectedIndex].value;
-		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
-		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
-		var done = false;
-
-		if( selectedOption !== "genre" &&
-			selectedOption !== "delete" &&
-			selectedOption !== "update" &&
-			selectedOption !== "validate" &&
-			input.value.length === 0){
-			Notifications.Display(4, "Global textfield empty");
-			return;
-		}
-
-		for(i=0;i<elements.length;++i){
-			if(elements[i].checked){
-				done = true;
-
-				var tr = elements[i].up("tr");
-				var td = null;
-				if( selectedOption === "artist" ){
-					td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
-					this.tableKit.editCell(td);
-					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
-				} else if( selectedOption === "album" ){
-					td = tr.down('.'+this.rootCSS+'-upload-cell-album');
-					this.tableKit.editCell(td);
-					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
-				} else if( selectedOption === "year" ){
-					td = tr.down('.'+this.rootCSS+'-upload-cell-year');
-					this.tableKit.editCell(td);
-					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
-				} else if( selectedOption === "genre" ){
-					td = tr.down('.'+this.rootCSS+'-upload-cell-genre');
-					this.tableKit.editCell(td);
-					td.down("select").selectedIndex = genres.selectedIndex;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
-				} else if( selectedOption === "tracknb" ){
-					td = tr.down('.'+this.rootCSS+'-upload-cell-trackNb');
-					this.tableKit.editCell(td);
-					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
-				}
-
-			}
-		}
-
-		if(!done){
-			Notifications.Display(4, "You must select files from the uploaded list");
-			return;
-		}
-	},
-
-	toggle_checkbox_selection: function(checkbox)
-	{
-		var i=0;
-		var elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
-		for(i=0;i<elements.length;++i){
-			elements[i].checked=checkbox.checked;
-		}
-
-		elements = this.DOM.select('.'+this.rootCSS+'-upload-selector-checkbox');
-		for(i=0;i<elements.length;++i){
-			elements[i].checked=checkbox.checked;
-		}
-	},
-	resolve_toggle: function(){
-		var i=0;
-		var elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
-		var allischecked = true;
-		for(i=0;i<elements.length;++i){
-			allischecked = allischecked && elements[i].checked;
-		}
-
-		elements = this.DOM.select('.'+this.rootCSS+'-upload-selector-checkbox');
-		for(i=0;i<elements.length;++i){
-			elements[i].checked=allischecked;
-		}
-	},
-
 	updateResponse: function(ret, message)
 	{
 		if(ret == "success")
 		{
 			Notifications.Display(1, message);
+			var lastId = null;
 
-			var lastId = escape(this.lastSendingUpdateIdentifier),
-				rootCSS = this.rootCSS,
-				$uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files'),
-				$selector = $uploaded_files.down('[id="' + this.rootCSS + '-upload-line-' + lastId + '"]');
+			if( Object.prototype.toString.call( this.lastSendingUpdateIdentifier ) === '[object Array]'){
+				lastId = escape(this.lastSendingUpdateIdentifier[0]);
+				this.lastSendingUpdateIdentifier.shift();
+			} else {
+				lastId = escape(this.lastSendingUpdateIdentifier);
+			}
+			var rootCSS = this.rootCSS,
+			$uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files'),
+			$selector = $uploaded_files.down('[id="' + this.rootCSS + '-upload-line-' + lastId + '"]');
 
 			// Delete all modified styles
 			$selector.select('.'+rootCSS+'-uploaded-file-modified').each(function(e)
@@ -268,15 +220,28 @@ this.UploadTab = Class.create(Tab,
 		{
 			Notifications.Display(4, message);
 		}
-		this.lastSendingUpdateIdentifier = null;
+
+		if( Object.prototype.toString.call( this.lastSendingUpdateIdentifier ) !== '[object Array]' || this.lastSendingUpdateIdentifier.length === 0 ){
+			this.lastSendingUpdateIdentifier = null;
+		} 
 	},
 
 	validationResponse: function(ret, message)
 	{
-		var id = this.lastSendingValidationIdentifier;
+		var id = null;
+
+		if( Object.prototype.toString.call( this.lastSendingValidationIdentifier ) === '[object Array]'){
+			id = escape(this.lastSendingValidationIdentifier[0]);
+			this.lastSendingValidationIdentifier.shift();
+		} else {
+			id = escape(this.lastSendingUpdateIdentifier);
+		}
 
 		// Wether success or error, reset the last sending identifier to allow a new validation
-		this.lastSendingValidationIdentifier = null;
+
+		if( Object.prototype.toString.call( this.lastSendingValidationIdentifier ) !== '[object Array]' || this.lastSendingValidationIdentifier.length === 0 ){
+			this.lastSendingValidationIdentifier = null;
+		} 
 
 		if(ret == "success")
 		{
@@ -404,6 +369,130 @@ this.UploadTab = Class.create(Tab,
 		divs[0].on("click", this.deleteUploadedSong.bind(this, fname));
 		divs[1].on("click", this.updateUploadedSong.bind(this, fname));
 		divs[2].on("click", this.validateUploadedSong.bind(this, fname));
+	},
+
+	change_global_action: function()
+	{
+		var select = this.DOM.down('.'+this.rootCSS+'-upload-global-action-select');
+		var selectedOption = select.options[select.selectedIndex].value;
+		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
+		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
+		if( selectedOption === "genre"){
+			input.style.display="none";
+			genres.style.display="";
+		} else if(selectedOption === "validate" ||
+				selectedOption === "update" ||
+				selectedOption === "delete"){
+			input.style.display="none";
+			genres.style.display="none";
+		} else {
+			input.style.display="";
+			genres.style.display="none";
+		}
+
+	},
+
+	apply_global_modifications: function()
+	{
+		var i =0;
+		var elements =this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
+		var select = this.DOM.down('.'+this.rootCSS+'-upload-global-action-select');
+		var selectedOption = select.options[select.selectedIndex].value;
+		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
+		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
+		var done = false;
+		var identifiers = [];
+
+		if( selectedOption !== "genre" &&
+			selectedOption !== "delete" &&
+			selectedOption !== "update" &&
+			selectedOption !== "validate" &&
+			input.value.length === 0){
+			Notifications.Display(4, "Global textfield empty");
+			return;
+		}
+
+		for(i=0;i<elements.length;++i){
+			if(elements[i].checked){
+				done = true;
+
+				var tr = elements[i].up("tr");
+				var td = null;
+				if( selectedOption === "artist" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
+					this.tableKit.editCell(td);
+					td.down("input[type=text]").value = input.value;
+					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+				} else if( selectedOption === "album" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-album');
+					this.tableKit.editCell(td);
+					td.down("input[type=text]").value = input.value;
+					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+				} else if( selectedOption === "year" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-year');
+					this.tableKit.editCell(td);
+					td.down("input[type=text]").value = input.value;
+					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+				} else if( selectedOption === "genre" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-genre');
+					this.tableKit.editCell(td);
+					td.down("select").selectedIndex = genres.selectedIndex;
+					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+				} else if( selectedOption === "tracknb" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-trackNb');
+					this.tableKit.editCell(td);
+					td.down("input[type=text]").value = input.value;
+					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+				} else if( selectedOption === "delete" ){
+					identifiers.push(tr.select('.'+this.rootCSS+'-upload-cell-static')[1].innerHTML);
+				} else if( selectedOption === "update" ){
+					identifiers.push(tr.select('.'+this.rootCSS+'-upload-cell-static')[1].innerHTML);
+				} else if( selectedOption === "validate" ){
+					identifiers.push(tr.select('.'+this.rootCSS+'-upload-cell-static')[1].innerHTML);
+				}
+
+			}
+		}
+
+		if(identifiers.length > 0){
+			if( selectedOption === "delete" ){
+				this.deleteUploadedSong(identifiers);
+			} else if( selectedOption === "update" ){
+				this.updateUploadedSong(identifiers);
+			} else if( selectedOption === "validate" ){
+				this.validateUploadedSong(identifiers);
+			} else if(!done){
+				Notifications.Display(4, "You must select files from the uploaded list");
+				return;
+			}
+		}
+	},
+
+	toggle_checkbox_selection: function(checkbox)
+	{
+		var i=0;
+		var elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
+		for(i=0;i<elements.length;++i){
+			elements[i].checked=checkbox.checked;
+		}
+
+		elements = this.DOM.select('.'+this.rootCSS+'-upload-selector-checkbox');
+		for(i=0;i<elements.length;++i){
+			elements[i].checked=checkbox.checked;
+		}
+	},
+	resolve_toggle: function(){
+		var i=0;
+		var elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
+		var allischecked = true;
+		for(i=0;i<elements.length;++i){
+			allischecked = allischecked && elements[i].checked;
+		}
+
+		elements = this.DOM.select('.'+this.rootCSS+'-upload-selector-checkbox');
+		for(i=0;i<elements.length;++i){
+			elements[i].checked=allischecked;
+		}
 	},
 
 	displayUploadedFiles: function(uploaded_files)
