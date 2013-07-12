@@ -418,29 +418,35 @@ this.UploadTab = Class.create(Tab,
 
 				var tr = elements[i].up("tr");
 				var td = null;
-				var form = td.down("form");
+				var form = null;
+
 				if( selectedOption === "artist" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
+					form = td.down("form");
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
 					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "album" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-album');
+					form = td.down("form");
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
 					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "year" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-year');
+					form = td.down("form");
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
 					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "genre" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-genre');
+					form = td.down("form");
 					this.tableKit.editCell(td);
 					td.down("select").selectedIndex = genres.selectedIndex;
 					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "tracknb" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-trackNb');
+					form = td.down("form");
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
 					TableKit.Editable.getCellEditor(td).submit(td, form);
