@@ -128,7 +128,7 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 				else
 				{
 					fileE["track"] = fileE["track"].toString().split('/')[0] + "/" + firstChildVal;
-				} 
+				}
 			}
 			else
 			{
@@ -136,26 +136,31 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 			}
 
 			// Upload cell style ff the new value differs
-			if( (
-				( property == "track" && this.uploadedFiles[i][property].toString().split('/')[0] !== firstChildVal ) ||
-					( property == "trackNb" && (
-                        this.uploadedFiles[i]["track"] === null ||
-                            this.uploadedFiles[i]["track"].toString().split('/') === null ||
-                            this.uploadedFiles[i]["track"].toString().split('/')[1] !== firstChildVal )) ||
-					( property != "track" && property != "trackNb" && firstChildVal != this.uploadedFiles[i][property] )
-				) &&
-				!cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
+			var isModified = false;
+			if(!cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
+			{
+				if(property == "track" || property == "trackNb")
+				{
+					var track = this.uploadedFiles[i]["track"] || "",
+					trackSplit = track.toString().split('/');
+					if(property == "track")
+					{
+						isModified = trackSplit[0] !== firstChildVal;
+					}
+					else if(property == "trackNb")
+					{
+						isModified = trackSplit[1] !== firstChildVal;
+					}
+				} else {
+					isModified = firstChildVal !== this.uploadedFiles[i][property];
+				}
+			}
+			if(isModified)
 			{
 				// Default behaviour
 				cell.addClassName(this.rootCSS+'-uploaded-file-modified');
-
 				row.select('.'+this.rootCSS+'-uploaded-file-update').each(function(e){e.show();});
 				row.select('.'+this.rootCSS+'-uploaded-file-validate').each(function(e){e.hide();});
-
-			}
-			else if(firstChildVal == this.uploadedFiles[i][property] && cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
-			{
-				cell.removeClassName(this.rootCSS+'-uploaded-file-modified');
 			}
 
 			break;
@@ -173,7 +178,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	{
 		return;
 	}
-	
+
 	var table = cell.up('table'),
 		row = cell.up('tr'),
 		identifier = row.id,
@@ -185,7 +190,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	form.id = cell.id + '-form';
 	form.addClassName(TableKit.option('formClassName', table.id)[0]);
 	form.onsubmit = this._submit.bindAsEventListener(this);
-    
+
 	// Change behavior from field names
 	var modified = false;
 
@@ -301,16 +306,16 @@ MusicFieldEditor.prototype.edit = function(cell)
 		undoLink.href = "javascript:;";
 		undoLink.appendChild(document.createTextNode("undo "));
 		undoLink.onclick = this._undo.bindAsEventListener(this);
-		undoLink.className = this.prefix + 'editor-undo';      
+		undoLink.className = this.prefix + 'editor-undo';
 		form.appendChild(undoLink);
 		form.appendChild(document.createTextNode(" "));
 	}
-	
+
 	var cancelLink = document.createElement("a");
 	cancelLink.href = "javascript:;";
 	cancelLink.appendChild(document.createTextNode("cancel"));
 	cancelLink.onclick = this._cancel.bindAsEventListener(this);
-	cancelLink.className = this.prefix + 'editor-cancel';      
+	cancelLink.className = this.prefix + 'editor-cancel';
 	form.appendChild(cancelLink);
 
 	cell.innerHTML = '';
