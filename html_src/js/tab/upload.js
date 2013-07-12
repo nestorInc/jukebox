@@ -41,7 +41,7 @@ this.UploadTab = Class.create(Tab,
 	{
 		if(this.lastSendingDeletionIdentifier === null)
 		{
-			if( Object.prototype.toString.call( file_name ) === '[object Array]'){
+			if( file_name.isArray() ){
 				var fnames = [];
 				var i = 0;
 				for(i=0;i<file_name.length;++i){
@@ -65,10 +65,10 @@ this.UploadTab = Class.create(Tab,
 	{
 		if(this.lastSendingUpdateIdentifier === null)
 		{
-            var tmp;
-            var opts;
+			var tmp;
+			var opts;
 
-			if( Object.prototype.toString.call( file_name ) === '[object Array]'){
+			if( file_name.isArray()){
 				var i=0;
 				var fnames=[];
 				opts = [];
@@ -115,7 +115,7 @@ this.UploadTab = Class.create(Tab,
 	{
 		if(this.lastSendingValidationIdentifier === null)
 		{
-			if( Object.prototype.toString.call( file_name ) === '[object Array]'){
+			if( file_name.isArray()){
 				var i = 0;
 				var fnames = [];
 				for(i=0;i<file_name.length;++i){
@@ -139,7 +139,7 @@ this.UploadTab = Class.create(Tab,
 	{
 		var id = null;
 
-		if( Object.prototype.toString.call( this.lastSendingDeletionIdentifier ) === '[object Array]'){
+		if( this.lastSendingDeletionIdentifier.isArray()){
 			id = this.lastSendingDeletionIdentifier[0];
 			this.lastSendingDeletionIdentifier.shift();
 		} else {
@@ -148,9 +148,9 @@ this.UploadTab = Class.create(Tab,
 
 		// Wether success or error, reset the last sending identifier to allow a new validation
 
-		if( Object.prototype.toString.call( this.lastSendingDeletionIdentifier ) !== '[object Array]' || this.lastSendingDeletionIdentifier.length === 0 ){
+		if( this.lastSendingDeletionIdentifier.isArray() || this.lastSendingDeletionIdentifier.length === 0 ){
 			this.lastSendingDeletionIdentifier = null;
-		} 
+		}
 
 		if(ret == "success")
 		{
@@ -188,7 +188,7 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(1, message);
 			var lastId = null;
 
-			if( Object.prototype.toString.call( this.lastSendingUpdateIdentifier ) === '[object Array]'){
+			if( this.lastSendingUpdateIdentifier.isArray() ){
 				lastId = escape(this.lastSendingUpdateIdentifier[0]);
 				this.lastSendingUpdateIdentifier.shift();
 			} else {
@@ -221,16 +221,16 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(4, message);
 		}
 
-		if( Object.prototype.toString.call( this.lastSendingUpdateIdentifier ) !== '[object Array]' || this.lastSendingUpdateIdentifier.length === 0 ){
+		if( this.lastSendingUpdateIdentifier.isArray() || this.lastSendingUpdateIdentifier.length === 0 ){
 			this.lastSendingUpdateIdentifier = null;
-		} 
+		}
 	},
 
 	validationResponse: function(ret, message)
 	{
 		var id = null;
 
-		if( Object.prototype.toString.call( this.lastSendingValidationIdentifier ) === '[object Array]'){
+		if( this.lastSendingValidationIdentifier.isArray() ){
 			id = escape(this.lastSendingValidationIdentifier[0]);
 			this.lastSendingValidationIdentifier.shift();
 		} else {
@@ -239,9 +239,9 @@ this.UploadTab = Class.create(Tab,
 
 		// Wether success or error, reset the last sending identifier to allow a new validation
 
-		if( Object.prototype.toString.call( this.lastSendingValidationIdentifier ) !== '[object Array]' || this.lastSendingValidationIdentifier.length === 0 ){
+		if( this.lastSendingValidationIdentifier.isArray() || this.lastSendingValidationIdentifier.length === 0 ){
 			this.lastSendingValidationIdentifier = null;
-		} 
+		}
 
 		if(ret == "success")
 		{
@@ -378,16 +378,16 @@ this.UploadTab = Class.create(Tab,
 		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
 		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
 		if( selectedOption === "genre"){
-			input.style.display="none";
-			genres.style.display="";
+			input.hide();
+			genres.show();
 		} else if(selectedOption === "validate" ||
 				selectedOption === "update" ||
 				selectedOption === "delete"){
-			input.style.display="none";
-			genres.style.display="none";
+			input.hide();
+			genres.hide();
 		} else {
-			input.style.display="";
-			genres.style.display="none";
+			input.show();
+			genres.hide();
 		}
 
 	},
@@ -400,7 +400,7 @@ this.UploadTab = Class.create(Tab,
 		var selectedOption = select.options[select.selectedIndex].value;
 		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
 		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
-		var done = false;
+		var done = 0;
 		var identifiers = [];
 
 		if( selectedOption !== "genre" &&
@@ -414,58 +414,58 @@ this.UploadTab = Class.create(Tab,
 
 		for(i=0;i<elements.length;++i){
 			if(elements[i].checked){
-				done = true;
+				done = done + 1;
 
 				var tr = elements[i].up("tr");
 				var td = null;
+				var form = td.down("form");
 				if( selectedOption === "artist" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "album" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-album');
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "year" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-year');
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "genre" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-genre');
 					this.tableKit.editCell(td);
 					td.down("select").selectedIndex = genres.selectedIndex;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "tracknb" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-trackNb');
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
-				} else if( selectedOption === "delete" ){
-					identifiers.push(tr.select('.'+this.rootCSS+'-upload-cell-static')[1].innerHTML);
-				} else if( selectedOption === "update" ){
-					identifiers.push(tr.select('.'+this.rootCSS+'-upload-cell-static')[1].innerHTML);
-				} else if( selectedOption === "validate" ){
-					identifiers.push(tr.select('.'+this.rootCSS+'-upload-cell-static')[1].innerHTML);
+					TableKit.Editable.getCellEditor(td).submit(td, form);
+				} else if( selectedOption === "delete" || selectedOption === "update" || selectedOption === "validate"){
+					var fname = tr.id.split(this.rootCSS+'-upload-line-')[1];
+					identifiers.push(fname);
 				}
 
 			}
 		}
 
-		if(identifiers.length > 0){
+		if(done > 0 && identifiers.length > 0){
 			if( selectedOption === "delete" ){
 				this.deleteUploadedSong(identifiers);
 			} else if( selectedOption === "update" ){
 				this.updateUploadedSong(identifiers);
 			} else if( selectedOption === "validate" ){
 				this.validateUploadedSong(identifiers);
-			} else if(!done){
+			}
+		}
+
+		if(done === 0){
 				Notifications.Display(4, "You must select files from the uploaded list");
 				return;
 			}
-		}
 	},
 
 	toggle_checkbox_selection: function(checkbox)
