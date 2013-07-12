@@ -93,8 +93,8 @@ Jukebox.UI.skins["default"] =
 </div>',
 		song:
 '<p class="#{root}-song">\
-<a class="#{root}-song-artist" href="javascript:void(0);">#{artist}</a> - \
-<a class="#{root}-song-album" href="javascript:void(0);">#{album}</a> - \
+<a class="#{root}-song-artist" href="javascript:;">#{artist}</a> - \
+<a class="#{root}-song-album" href="javascript:;">#{album}</a> - \
 <span class="#{root}-song-title">#{title}</span>\
 </p>',
 		playQueue:
@@ -110,8 +110,8 @@ Jukebox.UI.skins["default"] =
 '<li class="#{root}-playqueue-#{index} #{root}-playqueue-droppable">\
 <div class="#{root}-playqueue-song-#{index} #{root}-playqueue-draggable">\
 	<div class="#{root}-playqueue-handle-#{index} #{root}-playqueue-handle">\
-		<a href="javascript:void(0);">#{artist}</a> - \
-		<a href="javascript:void(0);">#{album}</a> - \
+		<a href="javascript:;">#{artist}</a> - \
+		<a href="javascript:;">#{album}</a> - \
 		#{title} (#{duration})\
 	</div>\
 	<a><span class="#{root}-playqueue-move-top"></span></a>\
@@ -143,8 +143,8 @@ Jukebox.UI.skins["default"] =
 				tableHead:
 '<tr>\
 	<th class="#{root}-upload-selector">\
-    <input class="#{root}-upload-selector-checkbox" type="checkbox" />\
-    </th>\
+	<input class="#{root}-upload-selector-checkbox" type="checkbox" />\
+	</th>\
 	<th class="#{root}-upload-filename">Filename</th>\
 	<th class="#{root}-upload-artist">Artist</th>\
 	<th class="#{root}-upload-album">Album</th>\
@@ -168,13 +168,13 @@ Jukebox.UI.skins["default"] =
 	<td class="#{root}-upload-cell-genre">#{genre}</td>\
 	<td class="#{root}-uploaded-file-actions #{root}-upload-cell-static">\
 		<div>\
-			<a href="javascript:void(0);">X</a>\
+			<a href="javascript:;">X</a>\
 		</div>\
 		<div class="#{root}-uploaded-file-update" style="display:none;">\
-			<a href="javascript:void(0);">&nbsp;Update&nbsp;</a>\
+			<a href="javascript:;">&nbsp;Update&nbsp;</a>\
 		</div>\
 		<div class="#{root}-uploaded-file-validate">\
-			<a href="javascript:void(0);">&nbsp;Validate&nbsp;</a>\
+			<a href="javascript:;">&nbsp;Validate&nbsp;</a>\
 		</div>\
 	</td>\
 </tr>'
