@@ -378,17 +378,20 @@ this.UploadTab = Class.create(Tab,
 		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
 		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
 
-		var title_min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-title-min-idx');
-		var title_max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-title-max-idx');
+		var min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-min-idx');
+		var max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx');
+		var select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
 
 		if( selectedOption === "genre"){
 			input.hide();
-			title_min_idx.hide();
-			title_max_idx.hide();
+			min_idx.hide();
+			max_idx.hide();
+			select_dst.hide();
 			genres.show();
-		} else if(selectedOption === "filltitle"){
-			title_min_idx.show();
-			title_max_idx.show();
+		} else if(selectedOption === "fillfromfilename"){
+			min_idx.show();
+			max_idx.show();
+			select_dst.show();
 			genres.hide();
 			input.hide();
 		} else if(selectedOption === "validate" ||
@@ -396,21 +399,42 @@ this.UploadTab = Class.create(Tab,
 				selectedOption === "delete"){
 			input.hide();
 			genres.hide();
-			title_min_idx.hide();
-			title_max_idx.hide();
+			select_dst.hide();
+			min_idx.hide();
+			max_idx.hide();
 		} else {
 			input.show();
 			genres.hide();
-			title_min_idx.hide();
-			title_max_idx.hide();
+			min_idx.hide();
+			max_idx.hide();
+			select_dst.hide();
 		}
 
 	},
 
-	clean_numeric_field: function(element)
+	change_global_fill_labels: function(){
+		var select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
+		var dst_value = select_dst.options[select_dst.selectedIndex].value;
+		var min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-min-idx');
+		var max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx');
+
+		var max = "max";
+		if(dst_value === "tracknb"){
+			max="len";
+		}
+		if( isNaN(max_idx.value)){
+			max_idx.value=max;
+		}
+		max_idx.stopObserving("click");
+		max_idx.stopObserving("blur");
+		max_idx.on("click", this.clean_numeric_field.bind(this, max_idx, ""));
+		max_idx.on("blur", this.clean_numeric_field.bind(this, max_idx, max));
+	},
+
+	clean_numeric_field: function(element, value)
 	{
-		if(parseInt(element.value) == Nan){
-			element.value="";
+		if(isNaN(parseInt(element.value))){
+			element.value=value;
 		}
 	},
 
@@ -422,8 +446,10 @@ this.UploadTab = Class.create(Tab,
 		var selectedOption = select.options[select.selectedIndex].value;
 		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
 		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
-		var min_input = this.DOM.down('.'+this.rootCSS+'-upload-global-title-min-idx');
-		var max_input = this.DOM.down('.'+this.rootCSS+'-upload-global-title-max-idx');
+		var min_input = this.DOM.down('.'+this.rootCSS+'-upload-global-min-idx');
+		var max_input = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx');
+		var select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
+		var dst_value = select_dst.options[select_dst.selectedIndex].value;
 		var done = 0;
 		var identifiers = [];
 
@@ -431,7 +457,7 @@ this.UploadTab = Class.create(Tab,
 			selectedOption !== "delete" &&
 			selectedOption !== "update" &&
 			selectedOption !== "validate" &&
-			selectedOption !== "filltitle" &&
+			selectedOption !== "fillfromfilename" &&
 			input.value.length === 0){
 			Notifications.Display(4, "Global textfield empty");
 			return;
@@ -478,21 +504,36 @@ this.UploadTab = Class.create(Tab,
 				} else if( selectedOption === "delete" || selectedOption === "update" || selectedOption === "validate"){
 					var fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]);
 					identifiers.push(fname);
-				} else if(selectedOption === "filltitle" ){
-					td = tr.down('.'+this.rootCSS+'-upload-cell-title');
-					var fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]);
+				} else if(selectedOption === "fillfromfilename" ){
+
+					if( dst_value  === "title"){
+						td = tr.down('.'+this.rootCSS+'-upload-cell-title');
+					} else if( dst_value  === "album"){
+						td = tr.down('.'+this.rootCSS+'-upload-cell-album');
+					} else if( dst_value  === "artist"){
+						td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
+					} else if( dst_value  === "tracknb"){
+						td = tr.down('.'+this.rootCSS+'-upload-cell-track');
+					}
+
+					var fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]).replace(".mp3","");
 					form = td.down("form");
 					this.tableKit.editCell(td);
 
 					if( !isNaN(parseInt(min_input.value)) &&
 						!isNaN(parseInt(max_input.value))){
-						td.down("input[type=text]").value = fname.substring(parseInt(min_input.value), parseInt(max_input.value));
+						if( dst_value  === "tracknb"){
+							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value), parseInt(min_input.value) + parseInt(max_input.value));
+						} else {
+							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value), fname.length -parseInt(max_input.value));
+						}
 					} else if ( !isNaN(parseInt(min_input.value)) &&
 								isNaN(parseInt(max_input.value))){
-						td.down("input[type=text]").value = fname.substring(parseInt(min_input.value));
+							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value));
 					} else {
 						td.down("input[type=text]").value = fname;
 					}
+					td.down("input[type=text]").value = td.down("input[type=text]").value.replace(/^\s+|\s+$/g,'');
 					TableKit.Editable.getCellEditor(td).submit(td, form);
 				}
 
@@ -647,14 +688,21 @@ this.UploadTab = Class.create(Tab,
 					genres.appendChild(option);
 				}
 				genres.hide();
-				var title_min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-title-min-idx');
-				var title_max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-title-max-idx');
+				var min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-min-idx');
+				var max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx');
+				var select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
 
-				title_min_idx.on("click", this.clean_numeric_field.bind(this, title_min_idx));
-				title_min_idx.on("click", this.clean_numeric_field.bind(this, title_max_idx));
+				select_dst.on("change", this.change_global_fill_labels.bind(this));
 
-				title_min_idx.hide();
-				title_max_idx.hide();
+
+				min_idx.on("click", this.clean_numeric_field.bind(this, min_idx, ""));
+				max_idx.on("click", this.clean_numeric_field.bind(this, max_idx, ""));
+				min_idx.on("blur", this.clean_numeric_field.bind(this, min_idx, "min"));
+				max_idx.on("blur", this.clean_numeric_field.bind(this, max_idx, "max"));
+
+				min_idx.hide();
+				max_idx.hide();
+				select_dst.hide();
 
 				this.DOM.down('.'+this.rootCSS+'-upload-global-action-select').on("change", this.change_global_action.bind(this));
 

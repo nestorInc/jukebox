@@ -133,15 +133,21 @@ Jukebox.UI.skins["default"] =
 <option value="year">Year</option>\
 <option value="tracknb">TrackNb</option>\
 <option value="genre">Genre</option>\
-<option value="filltitle">Fill title with filename</option>\
+<option value="fillfromfilename">Fill title with filename</option>\
 <option value="delete">Delete</option>\
 <option value="update">Update</option>\
 <option value="validate">Validate</option>\
 </select>\
 <input class="#{root}-upload-global-action-input" type="text" value="" />\
 <select class="#{root}-upload-global-action-genre-select" ></select>\
-<input class="#{root}-upload-global-title-min-idx" type="text" value="min" size=4/>\
-<input class="#{root}-upload-global-title-max-idx" type="text" value="max" size=4/>\
+<select class="#{root}-upload-global-action-fill-dst" >\
+<option value="title">Title</option>\
+<option value="album">Album</option>\
+<option value="artist">Artist</option>\
+<option value="tracknb">TrackNB</option>\
+</select>\
+<input class="#{root}-upload-global-min-idx" type="text" value="min" size=4/>\
+<input class="#{root}-upload-global-max-idx" type="text" value="max" size=4/>\
 <input class="#{root}-upload-global-submit" type="submit" value="Appliquer" />',
 				tableHead:
 '<tr>\
