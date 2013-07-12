@@ -41,7 +41,7 @@ this.UploadTab = Class.create(Tab,
 	{
 		if(this.lastSendingDeletionIdentifier === null)
 		{
-			if( file_name.isArray() ){
+			if( Object.isArray(file_name)){
 				var fnames = [];
 				var i = 0;
 				for(i=0;i<file_name.length;++i){
@@ -68,7 +68,7 @@ this.UploadTab = Class.create(Tab,
 			var tmp;
 			var opts;
 
-			if( file_name.isArray()){
+			if( Object.isArray(file_name)){
 				var i=0;
 				var fnames=[];
 				opts = [];
@@ -115,7 +115,7 @@ this.UploadTab = Class.create(Tab,
 	{
 		if(this.lastSendingValidationIdentifier === null)
 		{
-			if( file_name.isArray()){
+			if( Object.isArray(file_name)){
 				var i = 0;
 				var fnames = [];
 				for(i=0;i<file_name.length;++i){
@@ -139,7 +139,7 @@ this.UploadTab = Class.create(Tab,
 	{
 		var id = null;
 
-		if( this.lastSendingDeletionIdentifier.isArray()){
+		if( Object.isArray(this.lastSendingDeletionIdentifier)){
 			id = this.lastSendingDeletionIdentifier[0];
 			this.lastSendingDeletionIdentifier.shift();
 		} else {
@@ -148,7 +148,7 @@ this.UploadTab = Class.create(Tab,
 
 		// Wether success or error, reset the last sending identifier to allow a new validation
 
-		if( this.lastSendingDeletionIdentifier.isArray() || this.lastSendingDeletionIdentifier.length === 0 ){
+		if( Object.isArray(this.lastSendingDeletionIdentifier) || this.lastSendingDeletionIdentifier.length === 0 ){
 			this.lastSendingDeletionIdentifier = null;
 		}
 
@@ -188,7 +188,7 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(1, message);
 			var lastId = null;
 
-			if( this.lastSendingUpdateIdentifier.isArray() ){
+			if( Object.isArray(this.lastSendingUpdateIdentifier) ){
 				lastId = escape(this.lastSendingUpdateIdentifier[0]);
 				this.lastSendingUpdateIdentifier.shift();
 			} else {
@@ -221,7 +221,7 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(4, message);
 		}
 
-		if( this.lastSendingUpdateIdentifier.isArray() || this.lastSendingUpdateIdentifier.length === 0 ){
+		if( Object.isArray(this.lastSendingUpdateIdentifier) || this.lastSendingUpdateIdentifier.length === 0 ){
 			this.lastSendingUpdateIdentifier = null;
 		}
 	},
@@ -230,7 +230,7 @@ this.UploadTab = Class.create(Tab,
 	{
 		var id = null;
 
-		if( this.lastSendingValidationIdentifier.isArray() ){
+		if( Object.isArray(this.lastSendingValidationIdentifier) ){
 			id = escape(this.lastSendingValidationIdentifier[0]);
 			this.lastSendingValidationIdentifier.shift();
 		} else {
@@ -239,7 +239,7 @@ this.UploadTab = Class.create(Tab,
 
 		// Wether success or error, reset the last sending identifier to allow a new validation
 
-		if( this.lastSendingValidationIdentifier.isArray() || this.lastSendingValidationIdentifier.length === 0 ){
+		if( Object.isArray(this.lastSendingValidationIdentifier) || this.lastSendingValidationIdentifier.length === 0 ){
 			this.lastSendingValidationIdentifier = null;
 		}
 
