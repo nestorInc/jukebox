@@ -133,12 +133,15 @@ Jukebox.UI.skins["default"] =
 <option value="year">Year</option>\
 <option value="tracknb">TrackNb</option>\
 <option value="genre">Genre</option>\
-<option value="delete">Supprimer</option>\
-<option value="update">Mettre à jour</option>\
-<option value="validate">Valider</option>\
+<option value="filltitle">Fill title with filename</option>\
+<option value="delete">Delete</option>\
+<option value="update">Update</option>\
+<option value="validate">Validate</option>\
 </select>\
 <input class="#{root}-upload-global-action-input" type="text" value="" />\
 <select class="#{root}-upload-global-action-genre-select" ></select>\
+<input class="#{root}-upload-global-title-min-idx" type="text" value="min" size=4/>\
+<input class="#{root}-upload-global-title-max-idx" type="text" value="max" size=4/>\
 <input class="#{root}-upload-global-submit" type="submit" value="Appliquer" />',
 				tableHead:
 '<tr>\
@@ -158,10 +161,10 @@ Jukebox.UI.skins["default"] =
 				tableBody:
 '<tr id="#{rowId}">\
 	<td class="#{root}-upload-cell-static"><input class="#{root}-upload-cell-checkbox" type="checkbox" /></td>\
-	<td class="#{root}-upload-cell-static">#{filename}</td>\
+	<td class="#{root}-upload-cell-static #{root}-upload-cell-filename">#{filename}</td>\
 	<td class="#{root}-upload-cell-artist">#{artist}</td>\
 	<td class="#{root}-upload-cell-album">#{album}</td>\
-	<td>#{title}</td>\
+	<td class="#{root}-upload-cell-title" >#{title}</td>\
 	<td class="#{root}-upload-cell-year">#{year}</td>\
 	<td class="#{root}-upload-cell-track">#{track}</td>\
 	<td class="#{root}-upload-cell-trackNb">#{trackNb}</td>\

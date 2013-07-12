@@ -377,19 +377,41 @@ this.UploadTab = Class.create(Tab,
 		var selectedOption = select.options[select.selectedIndex].value;
 		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
 		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
+
+		var title_min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-title-min-idx');
+		var title_max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-title-max-idx');
+
 		if( selectedOption === "genre"){
 			input.hide();
+			title_min_idx.hide();
+			title_max_idx.hide();
 			genres.show();
+		} else if(selectedOption === "filltitle"){
+			title_min_idx.show();
+			title_max_idx.show();
+			genres.hide();
+			input.hide();
 		} else if(selectedOption === "validate" ||
 				selectedOption === "update" ||
 				selectedOption === "delete"){
 			input.hide();
 			genres.hide();
+			title_min_idx.hide();
+			title_max_idx.hide();
 		} else {
 			input.show();
 			genres.hide();
+			title_min_idx.hide();
+			title_max_idx.hide();
 		}
 
+	},
+
+	clean_numeric_field: function(element)
+	{
+		if(parseInt(element.value) == Nan){
+			element.value="";
+		}
 	},
 
 	apply_global_modifications: function()
@@ -400,6 +422,8 @@ this.UploadTab = Class.create(Tab,
 		var selectedOption = select.options[select.selectedIndex].value;
 		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
 		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
+		var min_input = this.DOM.down('.'+this.rootCSS+'-upload-global-title-min-idx');
+		var max_input = this.DOM.down('.'+this.rootCSS+'-upload-global-title-max-idx');
 		var done = 0;
 		var identifiers = [];
 
@@ -407,6 +431,7 @@ this.UploadTab = Class.create(Tab,
 			selectedOption !== "delete" &&
 			selectedOption !== "update" &&
 			selectedOption !== "validate" &&
+			selectedOption !== "filltitle" &&
 			input.value.length === 0){
 			Notifications.Display(4, "Global textfield empty");
 			return;
@@ -451,8 +476,24 @@ this.UploadTab = Class.create(Tab,
 					td.down("input[type=text]").value = input.value;
 					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "delete" || selectedOption === "update" || selectedOption === "validate"){
-					var fname = tr.id.split(this.rootCSS+'-upload-line-')[1];
+					var fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]);
 					identifiers.push(fname);
+				} else if(selectedOption === "filltitle" ){
+					td = tr.down('.'+this.rootCSS+'-upload-cell-title');
+					var fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]);
+					form = td.down("form");
+					this.tableKit.editCell(td);
+
+					if( !isNaN(parseInt(min_input.value)) &&
+						!isNaN(parseInt(max_input.value))){
+						td.down("input[type=text]").value = fname.substring(parseInt(min_input.value), parseInt(max_input.value));
+					} else if ( !isNaN(parseInt(min_input.value)) &&
+								isNaN(parseInt(max_input.value))){
+						td.down("input[type=text]").value = fname.substring(parseInt(min_input.value));
+					} else {
+						td.down("input[type=text]").value = fname;
+					}
+					TableKit.Editable.getCellEditor(td).submit(td, form);
 				}
 
 			}
@@ -605,7 +646,15 @@ this.UploadTab = Class.create(Tab,
 					option.appendChild(document.createTextNode(genre.name));
 					genres.appendChild(option);
 				}
-				genres.style.display="none";
+				genres.hide();
+				var title_min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-title-min-idx');
+				var title_max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-title-max-idx');
+
+				title_min_idx.on("click", this.clean_numeric_field.bind(this, title_min_idx));
+				title_min_idx.on("click", this.clean_numeric_field.bind(this, title_max_idx));
+
+				title_min_idx.hide();
+				title_max_idx.hide();
 
 				this.DOM.down('.'+this.rootCSS+'-upload-global-action-select').on("change", this.change_global_action.bind(this));
 
