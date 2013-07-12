@@ -155,6 +155,8 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 					isModified = firstChildVal !== this.uploadedFiles[i][property];
 				}
 			}
+
+
 			if(isModified)
 			{
 				// Default behaviour
@@ -162,6 +164,13 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 				row.select('.'+this.rootCSS+'-uploaded-file-update').each(function(e){e.show();});
 				row.select('.'+this.rootCSS+'-uploaded-file-validate').each(function(e){e.hide();});
 			}
+
+			if(firstChildVal == this.uploadedFiles[i][property] &&
+				cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
+			{
+				cell.removeClassName(this.rootCSS+'-uploaded-file-modified');
+			}
+
 
 			break;
 		}
