@@ -415,7 +415,6 @@ this.UploadTab = Class.create(Tab,
 	change_global_fill_labels: function(){
 		var select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
 		var dst_value = select_dst.options[select_dst.selectedIndex].value;
-		var min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-min-idx');
 		var max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx');
 
 		var max = "max";
@@ -433,7 +432,7 @@ this.UploadTab = Class.create(Tab,
 
 	clean_numeric_field: function(element, value)
 	{
-		if(isNaN(parseInt(element.value))){
+		if(isNaN(parseInt(element.value,10))){
 			element.value=value;
 		}
 	},
@@ -470,7 +469,7 @@ this.UploadTab = Class.create(Tab,
 				var tr = elements[i].up("tr");
 				var td = null;
 				var form = null;
-
+				var fname = null;
 				if( selectedOption === "artist" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
 					form = td.down("form");
@@ -502,7 +501,7 @@ this.UploadTab = Class.create(Tab,
 					td.down("input[type=text]").value = input.value;
 					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "delete" || selectedOption === "update" || selectedOption === "validate"){
-					var fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]);
+					fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]);
 					identifiers.push(fname);
 				} else if(selectedOption === "fillfromfilename" ){
 
@@ -516,20 +515,20 @@ this.UploadTab = Class.create(Tab,
 						td = tr.down('.'+this.rootCSS+'-upload-cell-track');
 					}
 
-					var fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]).replace(".mp3","");
+					fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]).replace(".mp3","");
 					form = td.down("form");
 					this.tableKit.editCell(td);
 
-					if( !isNaN(parseInt(min_input.value)) &&
-						!isNaN(parseInt(max_input.value))){
+					if( !isNaN(parseInt(min_input.value,10)) &&
+						!isNaN(parseInt(max_input.value,10))){
 						if( dst_value  === "tracknb"){
-							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value), parseInt(min_input.value) + parseInt(max_input.value));
+							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value,10), parseInt(min_input.value,10) + parseInt(max_input.value,10));
 						} else {
-							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value), fname.length -parseInt(max_input.value));
+							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value,10), fname.length -parseInt(max_input.value,10));
 						}
-					} else if ( !isNaN(parseInt(min_input.value)) &&
-								isNaN(parseInt(max_input.value))){
-							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value));
+					} else if ( !isNaN(parseInt(min_input.value,10)) &&
+								isNaN(parseInt(max_input.value,10))){
+						td.down("input[type=text]").value = fname.substring(parseInt(min_input.value,10));
 					} else {
 						td.down("input[type=text]").value = fname;
 					}
