@@ -65,7 +65,7 @@ class JsonManager < HttpNode
   def parse(req, ch, user)
     resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
-        JsonManager.add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");      
+        JsonManager.add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");
     else
       begin
         json      = JSON.parse(req);
@@ -95,7 +95,7 @@ class JsonManager < HttpNode
     debug(str);
     str;
   end
-  
+
   def forward_action(resp, req, ch, user)
     resp ||= {};
     resp[:timestamp] = Time.now.to_i();
@@ -108,7 +108,7 @@ class JsonManager < HttpNode
       ch.queue.add(req["play_queue_index"], req["mid"])
     when "shuffle_play_queue"
       ch.queue.shuffle();
-    when "add_search_to_play_queue" 
+    when "add_search_to_play_queue"
       result = @library.secure_request("mid",
                                        CGI::unescape(req["search_value"]),
                                        req["search_comparison"],
@@ -138,19 +138,19 @@ class JsonManager < HttpNode
         :files			=> files
       };
     when "update_uploaded_file"
-      action_response = UploadManager.updateUploadedFiles(@upload_dir, user, 
+      action_response = UploadManager.updateUploadedFiles(@upload_dir, user,
                                                           req, resp);
       resp [:uploaded_files] = {
         :action_response        => action_response
       };
     when "validate_uploaded_file"
-      action_response = UploadManager.validateUploadedFiles(@source_dir, @upload_dir, user, 
+      action_response = UploadManager.validateUploadedFiles(@source_dir, @upload_dir, user,
                                                             req, resp);
       resp [:uploaded_files] = {
         :action_response        => action_response
       };
     when "delete_uploaded_file"
-      action_response = UploadManager.deleteUploadedFiles(@upload_dir, user, 
+      action_response = UploadManager.deleteUploadedFiles(@upload_dir, user,
                                                           req, resp);
       resp [:uploaded_files] = {
         :action_response        => action_response
@@ -166,7 +166,7 @@ class JsonManager < HttpNode
   def parse_action(resp, ch, user, req)
     begin
       if( req.kind_of?(Array) )
-        req.each { |currentAction| 
+        req.each { |currentAction|
           # Warning multi action should merge responses
           forward_action(resp, currentAction, ch, user );
         }
@@ -191,7 +191,7 @@ class JsonManager < HttpNode
                                        req["result_count"]);
 
       songs = result.map { |song|
-        { 
+        {
           :mid      => song.mid,
           :artist   => song.artist,
           :title    => song.title,
