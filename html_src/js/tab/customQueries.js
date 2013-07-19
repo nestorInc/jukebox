@@ -89,11 +89,16 @@ this.CustomQueriesTab = Class.create(Tab,
 				case "search":
 					opts = 
 					{
-						search_value: "muse",
-						search_field: "artist",
-						order_by: "artist",
-						first_result: 0,
-						result_count: 10
+                        name:"search",
+                        search_value:"muse",
+                        search_comparison:"like",
+                        search_field:"artist",
+                        order_by:"mid,artist,album,track,title",
+                        select_fields:"mid,title,album,artist,track,genre,duration",
+                        first_result:0,
+                        result_count:20,
+                        identifier:null,
+                        select:false
 					};
 					break;
 			}
@@ -127,7 +132,7 @@ this.CustomQueriesTab = Class.create(Tab,
 			if($textarea.value.isJSON())
 			{
 				var json = $textarea.value.evalJSON();
-				if(json && json.action)
+				if(json && json.action) 
 				{
 					query = new Query(json.timestamp ? json.timestamp : 0);
 					if(Object.isArray(json.action))
@@ -146,7 +151,11 @@ this.CustomQueriesTab = Class.create(Tab,
 					}
 
 					sendQueryProxy(query);
-				}
+				}  else if (json && json.search){
+		            var search = new Action(json.search.name, json.search);
+					query.addAction(search);
+					sendQueryProxy(query);
+                }
 			}
 		});
 	}
