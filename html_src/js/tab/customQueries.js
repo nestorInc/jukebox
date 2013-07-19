@@ -152,6 +152,7 @@ this.CustomQueriesTab = Class.create(Tab,
 
 					sendQueryProxy(query);
 				}  else if (json && json.search){
+					query = new Query(json.timestamp ? json.timestamp : 0);
 					var search = new Action(json.search.name, json.search);
 					query.addAction(search);
 					sendQueryProxy(query);
