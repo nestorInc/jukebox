@@ -30,11 +30,11 @@ class Playlist
   end
 
   def shuffle()
-    @list.shuffle!();
+    @list.shuffle!() if(@list);
   end
 
   def [](range)
-    @list[range];
+    @list[range] if(@list);
   end
 
   def to_db()
@@ -115,16 +115,18 @@ class SongQueue < Playlist
   end
 
   def [](range)
-    @list[@pos..-1][range];
+    return nil if @list == nil or @list[@pos..-1] == nil
+    @list[@pos..-1][range] 
   end
 
   def size()
-    @list[@pos..-1].size();
+    return 0 if @list == nil or @list[@pos..-1] == nil
+    @list[@pos..-1].size() 
   end
 
   def to_client(lib)
     queue = self[1..-1];
-    if(queue.size() != 0)
+    if(queue != nil and queue.size() != 0)
       queue = lib.get_file(*queue).reject(&:nil?).map(&:to_client);
     end
 

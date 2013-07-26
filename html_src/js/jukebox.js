@@ -27,6 +27,7 @@ function Jukebox(element, opts)
 	this.channel = "";
 	this.song = null; // Mapped to _current_song
 	this.listenersCount = 0; // Mapped to _last_nb_listening_users
+    this.user = null;
 	this.streaming = false;
 	this.playing = false;
 	this.lastServerResponse = null;
@@ -41,6 +42,7 @@ function Jukebox(element, opts)
 		_opts = Extend(true, {}, Jukebox.defaults, opts), // Recursively merge options
 
 		_timestamp = 0, // last timestamp sent by server
+        _user = null, // last user response
 		_channel = null, // current channel we're connected to
 		_songsHistory = [], // songs previously played
 		_playQueueSongs = [], // songs in current playlist
@@ -746,6 +748,14 @@ function Jukebox(element, opts)
 		if(json.timestamp)
 		{
 			_timestamp = json.timestamp;
+		}
+		if(json.user)
+		{
+            if(_user !== json.user){
+			    _user = json.user;
+                $this.user = json.user;
+                _ui.updateUser(json.user);
+            }
 		}
 		if(json.current_song)
 		{

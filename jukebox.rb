@@ -7,9 +7,6 @@ require 'cgi'
 require 'yaml.rb'
 require 'json'
 require 'yaml'
-require 'rpam'
-
-include Rpam
 
 require 'stream.rb'
 require 'http.rb'
@@ -65,6 +62,7 @@ stream = Stream.new(channelList, library);
 
 main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
+
   if(req.uri.query)
     form = Hash[URI.decode_www_form(req.uri.query)] ;
     if(form["token"])
@@ -72,15 +70,44 @@ main.addAuth() { |s, req, user, pass|
       luser = library.check_token(token);
 
       if(luser)
+        s.user.replace(luser);
         user.replace(luser);
+        stream.channel_init(luser);
+        req.options = {} if req.options == nil
+        req.options["Set-Cookie"] = []
+        req.options["Set-Cookie"] << Cookie.new({"user" => luser}, ".szchmop.net", "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+        req.options["Set-Cookie"] << Cookie.new({"method" => "token"}, ".szchmop.net", "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+        req.options["Set-Cookie"] << Cookie.new({"token" => form["token"]}, ".szchmop.net", "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
         next "token"
       end
     end
   end
-  if(pass)
-    next "guest" if(user == "guest");
-    next "PAM"   if(authpam(user, pass) == true);
+  if req.options["Cookie"]
+    cookies=Hash[req.options["Cookie"].split(';').map{ |i| i.strip().split('=')}];
+    if cookies["token"] != nil
+      token = cookies["token"];
+      luser = library.check_token(token);
+
+      if(luser)
+        s.user.replace(luser);
+        user.replace(luser);
+        stream.channel_init(luser);
+        next "cookie"
+      end
+    end
   end
+
+  if(pass)
+    if(user == "guest")
+      stream.channel_init(s.user)
+      next "guest"
+    end
+    if(user == "trashman")
+      stream.channel_init(s.user)
+      next "PAM"
+    end
+  end
+
   nil;
 }
 
@@ -139,7 +166,7 @@ rescue => e
       issue = RedmineClient::Issue.new(:subject     => e.to_s,
                                        :project_id  => cfg["project_id"],
                                        :description => detail);
-      
+
       if(issue.save)
         info.issue = issue.id
       else

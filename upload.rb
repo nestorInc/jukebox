@@ -25,7 +25,7 @@ class UploadManager < HttpNode
   def on_request(s, req)
     # TODO separate upload by users : must create a subFolder By users
     warning('Upload : File to upload request received : '+ URI.unescape(req.options['X-File-Name']) + " filesize : " + req.options['Content-Length']);
-    
+
     #Creates upload directory if doesn't exists
     if ( not File.directory?(@dst_folder))
       Dir.mkdir(@dst_folder);
@@ -46,7 +46,7 @@ class UploadManager < HttpNode
     # Extensions tests before uploading the file
     if(@allowed_extensions[File.extname(URI.unescape(req.options['X-File-Name'])).downcase()] != true)
       allowed_extensions_str = @allowed_extensions.keys.map{ |i|  "'" + i.to_s + "'" }.join(",")
-      
+
       error("Unauthorized file extension "+File.extname(URI.unescape(req.options['X-File-Name']))+". Authorized extensions are #{allowed_extensions_str}");
       rep = HttpResponse.new(req.proto, 200, "Error",
                              "Content-Type" => "application/json");
@@ -79,7 +79,7 @@ class UploadManager < HttpNode
 
     #All is ok we can begin to save file on disk
     begin
-      File.open( File.join(@dst_folder,s.user, URI.unescape(req.options['X-File-Name'])), 'w') {|f| 
+      File.open( File.join(@dst_folder,s.user, URI.unescape(req.options['X-File-Name'])), 'w') {|f|
         f.write(req.data);
       }
       rep = HttpResponse.new(req.proto, 200, "OK",
@@ -95,11 +95,11 @@ class UploadManager < HttpNode
       s.write(rep.to_s);
     end
   end
-  
+
   def self.getUploadedFiles(uploadDirectory, user)
     files = [];
     begin
-      Dir.foreach(File.join(uploadDirectory, user)) do |current_file| 
+      Dir.foreach(File.join(uploadDirectory, user)) do |current_file|
         if File.file?(File.join(uploadDirectory, user, current_file))
           begin
             id3info = Id3.decode(File.join(uploadDirectory, user, current_file));
@@ -131,7 +131,7 @@ class UploadManager < HttpNode
           end
         end
       end
-   rescue Exception=>e      
+   rescue Exception=>e
         error(e);
    end
    files;
@@ -261,7 +261,7 @@ class UploadManager < HttpNode
       end
       error_message += 'ID3 tag Artist invalid, this field should not be empty. ';
     end
-        
+
     if( nil == id3info.album or "" == id3info.album )
       if( nil == error_message )
         error_message = '';
@@ -275,7 +275,7 @@ class UploadManager < HttpNode
       end
       error_message += 'ID3 tag title invalid, this field should not be empty. ';
     end
-        
+
     # Todo regexp to check if [0-9]+
     if( nil == id3info.date or "" == id3info.date or "" == id3info.date )
       if( nil == error_message )
@@ -283,7 +283,7 @@ class UploadManager < HttpNode
       end
       error_message += 'Id3 tag Year invalid, this field must be an integer. ';
     end
-    
+
     # Todo regexp to check if [0-9]+/?[0-9]*
     if( nil == id3info.track or "" == id3info.track )
       if( nil == error_message )
@@ -299,8 +299,8 @@ class UploadManager < HttpNode
       end
       error_message += 'Could not set ID3 tag genre, it must be an integer >=0 and <= 255.';
     end
-    
-    
+
+
     if( nil != error_message )
       error("Wrong id3 informations #{req["file_name"]}");
       action_response = {
@@ -313,7 +313,7 @@ class UploadManager < HttpNode
     if( File.file?(file_path)  )
       begin
         trackStr = "#{id3info.track}";
-        if( trackStr.include?("/") ) 
+        if( trackStr.include?("/") )
           track = trackStr.split("/")[0];
         else
           track = trackStr;
@@ -406,7 +406,7 @@ class UploadManager < HttpNode
         };
         return action_response;
       end
-    else 
+    else
       action_response = {
         :name       => "delete_uploaded_file",
         :return     => "error",

@@ -161,6 +161,16 @@ function JukeboxUI(jukebox, element, opts)
 		});
 	};
 
+	this.updateUser = function(userName)
+	{
+		var items = _$.jukebox.select('.'+_opts.rootClass+'-user-display');
+		items.each(function(e)
+		{
+			e.update(userName);
+		});
+	};
+
+
 	/**
 	* Update the playing status
 	* @param {bool} audio - It is playing?
@@ -771,6 +781,8 @@ function JukeboxUI(jukebox, element, opts)
 				currentSong: songTpl.evaluate(songTplVars),
 				canalLabel: 'Canal :',
 				canalValue: 'Rejoindre',
+				welcomeLabel: 'Bienvenue :',
+				user: J.user,
 				searchLabel: 'Rechercher :',
 				searchButton: 'Rechercher',
 				UploadTabName: 'Upload',
