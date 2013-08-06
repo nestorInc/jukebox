@@ -7,6 +7,7 @@ require 'cgi'
 require 'yaml.rb'
 require 'json'
 require 'yaml'
+require 'bcrypt'
 
 require 'stream.rb'
 require 'http.rb'
@@ -62,6 +63,7 @@ stream = Stream.new(channelList, library);
 
 main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
+  library.invalidate_sessions();
 
   if(req.uri.query)
     form = Hash[URI.decode_www_form(req.uri.query)] ;
@@ -69,26 +71,36 @@ main.addAuth() { |s, req, user, pass|
       token = form["token"];
       luser = library.check_token(token);
 
+      #TODO change sudo_user with guest and add guest to db
+      sid = library.create_user_session(luser, 
+                                        luser, 
+                                        s.remote_address.ip_address, 
+                                        req.options["User-Agent"] );
       if(luser)
+      warning("token auth");
         s.user.replace(luser);
         user.replace(luser);
         stream.channel_init(luser);
         req.options = {} if req.options == nil
+
         req.options["Set-Cookie"] = []
-        req.options["Set-Cookie"] << Cookie.new({"user" => luser}, ".szchmop.net", "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-        req.options["Set-Cookie"] << Cookie.new({"method" => "token"}, ".szchmop.net", "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-        req.options["Set-Cookie"] << Cookie.new({"token" => form["token"]}, ".szchmop.net", "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+        req.options["Set-Cookie"] << Cookie.new({"user" => luser}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+        req.options["Set-Cookie"] << Cookie.new({"method" => "token"}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+        req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
         next "token"
       end
     end
   end
+
   if req.options["Cookie"]
     cookies=Hash[req.options["Cookie"].split(';').map{ |i| i.strip().split('=')}];
-    if cookies["token"] != nil
-      token = cookies["token"];
-      luser = library.check_token(token);
-
+    if cookies["session"] != nil
+      session = cookies["session"];
+      luser = library.check_session(session,
+                                    s.remote_address.ip_address,
+                                    req.options["User-Agent"]);
       if(luser)
+        warning("Cookie auth");
         s.user.replace(luser);
         user.replace(luser);
         stream.channel_init(luser);
@@ -98,13 +110,20 @@ main.addAuth() { |s, req, user, pass|
   end
 
   if(pass)
-    if(user == "guest")
+    if( library.login(user, pass) )
+      warning("http auth");
+      sid = library.create_user_session(nil, 
+                                        user, 
+                                        s.remote_address.ip_address, 
+                                        req.options["User-Agent"] );
+
+      # TODO create session and fill cookie with session hash
       stream.channel_init(s.user)
-      next "guest"
-    end
-    if(user == "trashman")
-      stream.channel_init(s.user)
-      next "PAM"
+      req.options["Set-Cookie"] = []
+      req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+      req.options["Set-Cookie"] << Cookie.new({"method" => "PAM"}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+      req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+      next "httpAuth"
     end
   end
 

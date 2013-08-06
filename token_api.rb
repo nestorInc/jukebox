@@ -14,7 +14,7 @@ class TokenManager < HttpNode
 
 
   def on_request(s, req)
-    if(s.auth != "PAM" && s.auth != "guest")
+    if(s.auth != "httpAuth" && s.auth != "cookie")
       rep = HttpResponse.generate401(req);
       s.write(rep.to_s);
       return;

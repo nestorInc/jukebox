@@ -97,40 +97,185 @@ class Library
   def initialize()
     @db = SQLite3::Database.new("jukebox.db")
     @db.results_as_hash = true 
+    # Activate the use of foreign keys contraints for sqlite 3
+    @db.execute( "PRAGMA foreign_keys = ON;");
     @db.execute( "create table if not exists library (
                        mid INTEGER PRIMARY KEY,
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
                        track INTEGER UNSIGNED NULL, trackNb INTEGER UNSIGNED NULL, genre INTEGER UNSIGNED NULL,
                        status INTEGER, frames TEXT, bitrate INTEGER, duration INTEGER);" );
-    @db.execute( "create table if not exists token (
-                       user TEXT UNIQUE,
-                       token TEXT  PRIMARY KEY);" );
+    @db.execute( "create table if not exists users (
+                       uid INTEGER PRIMARY KEY,
+                       nickname TEXT UNIQUE,
+                       hash TEXT,
+                       validated INTEGER UNSIGNED, 
+                       creation INTEGER);" );
+    @db.execute( "create table if not exists sessions (
+                       sid TEXT PRIMARY KEY,
+                       sudo_uid INTEGER UNSIGNED,
+                       uid INTEGER UNSIGNED,
+                       user_agent TEXT,
+                       remote_ip TEXT,
+                       creation INTEGER,
+                       validity INTEGER,
+                       FOREIGN KEY(uid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE,
+                       FOREIGN KEY(sudo_uid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE);" );
+    @db.execute( "create table if not exists groups ( 
+                       gid INTEGER PRIMARY KEY, 
+                       label TEXT );" );
+    @db.execute( "create table if not exists groups_users (
+                       gid INTEGER UNSIGNED,
+                       uid INTEGER UNSIGNED,
+                       PRIMARY KEY(gid, uid),
+                       FOREIGN KEY(gid) REFERENCES groups(gid) ON UPDATE CASCADE ON DELETE CASCADE,
+                       FOREIGN KEY(uid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE);" );
+
+    # A right is designed like a path
+    # The user that own's a root path is automatically the owner of sub pathes
+    @db.execute( "create table if not exists rights (
+                       rid INTEGER PRIMARY KEY,
+                       right TEXT UNIQUE,
+                       owner INTEGER UNSIGNED,
+                       flag_owner INTEGER UNSIGNED,
+                       flag_others INTEGER UNSIGNED,
+                       FOREIGN KEY(owner) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE);" );
+    @db.execute( "create table if not exists rights_groups (
+                       rid INTEGER UNSIGNED,
+                       gid INTEGER UNSIGNED,
+                       flag_group INTEGER UNSIGNED,
+                       PRIMARY KEY(rid, gid),
+                       FOREIGN KEY(rid) REFERENCES rights(rid) ON UPDATE CASCADE ON DELETE CASCADE,
+                       FOREIGN KEY(gid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE);" );
+    # Active tokens linked to a right
+    @db.execute( "create table if not exists rights_tokens (
+                       rid INTEGER UNSIGNED,
+                       tid INTEGER UNSIGNED,
+                       PRIMARY KEY(tid, rid),
+                       FOREIGN KEY(rid) REFERENCES rights(rid) ON UPDATE CASCADE ON DELETE CASCADE,
+                       FOREIGN KEY(tid) REFERENCES tokens(tid) ON UPDATE CASCADE ON DELETE CASCADE);" );
+    @db.execute( "create table if not exists tokens (
+                       tid INTEGER PRIMARY KEY,
+                       token TEXT UNIQUE,
+                       rid INTEGER UNSIGNED UNIQUE,
+                       activated INTEGER UNSIGNED, 
+                       type INTEGER UNSIGNED,
+                       FOREIGN KEY(rid) REFERENCES rights(rid)  ON UPDATE CASCADE ON DELETE CASCADE);" );
+    @db.execute( "create table if not exists sessions_tokens (
+                       tid INTEGER PRIMARY KEY);" );
+
+    create_new_user("guest", "guest", 1);
 
     req = @db.prepare("UPDATE library SET status=#{FILE_WAIT} WHERE status=#{FILE_ENCODING_PROGRESS}");
     res = req.execute!();
     req.close();
+
     res;
 
     log("library initialized.");
   end
 
-  def check_token(token)
-    req = @db.prepare("SELECT user FROM token WHERE token=?");
-    res = req.execute!(token);
+  def create_new_user( user, pass, validated )
+    bcrypt_pass = BCrypt::Password.create(pass);
+    creation = Time.now();
+    req = @db.prepare("INSERT OR IGNORE INTO users (uid, nickname, hash, validated, creation) VALUES ( ?, ?, ?, ?, ? )");
+    res = req.execute!( nil, user, bcrypt_pass, 1,creation.strftime("%s"));
     req.close();
-    return nil if(res[0] == nil);
-    res[0].at(0);
+
+  end
+
+  def login( user, pass )
+      req = @db.prepare("SELECT hash FROM users WHERE nickname='#{user}' LIMIT 1");
+      res = req.execute!();
+      req.close();
+      return false if(res == nil or res[0] == nil)
+
+      # http://blog.phusion.nl/2012/10/06/sha-3-extensions-for-ruby-and-node-js/
+      # Use bcrypt for hashing passwords
+      if( BCrypt::Password.new(res[0].at(0)) == pass )
+        return true;
+      end
+      return false;
+  end
+
+  def invalidate_sessions( )
+    #TODO       req = @db.prepare("DELETE FROM sessions WHERE validity < ")
+  end
+
+  def check_session( sid, remote_ip, user_agent )
+    req = @db.prepare("SELECT U.nickname FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND S.remote_ip='#{remote_ip}'");
+    res = req.execute!();
+    req.close();
+    return res[0].at(0) if(res[0])
+    nil;
+  end
+
+  #TODO refactor use execute and mapping values
+  def create_user_session(sudo_user, user, remote_ip, user_agent )
+    return false if(user == nil)
+
+    #retrieve user uid
+    req = @db.prepare("SELECT uid FROM users WHERE nickname='#{user}'");
+    res = req.execute!();
+    req.close();
+    uid = res[0].at(0);
+
+    #retrieve sudo_user uid
+    suid = uid;
+    if (sudo_user != nil)
+      req = @db.prepare("SELECT uid FROM users WHERE nickname='#{sudo_user}'");
+      res = req.execute!();
+      req.close();
+      suid = res[0].at(0);
+    end
+
+    creation = (Time.now()).strftime("%s");
+    #TODO constant for session validity
+    validity = (Time.now() + (24*60*60)).strftime("%s"); 
+
+    hashExists = false;
+    gen_hash_retry = 0;
+    char_set =  [('a'..'z'),('A'..'Z'), ('0'..'9')].map{|i| i.to_a}.flatten
+    random_string=nil;
+    while ( hashExists == false )
+      # generates a random string
+      # http://stackoverflow.com/questions/88311/how-best-to-generate-a-random-string-in-ruby
+      random_string = (0...50).map{ char_set[rand(char_set.length)] }.join
+      req = @db.prepare("SELECT count(*) FROM sessions WHERE sid='#{random_string}'");
+      res = req.execute!();
+      req.close();
+      hashExists = true if( res[0].at(0) == 0)
+      return nil if(gen_hash_retry >= 100)
+    end
+
+    req = @db.prepare("INSERT INTO sessions ( sid, sudo_uid, uid, user_agent, remote_ip, creation, validity ) VALUES ('#{random_string}', '#{suid}', '#{uid}', '#{user_agent}', '#{remote_ip}', #{creation}, #{validity})");
+    req.execute!();
+    req.close();
+    
+    # returns the newly session hash created
+    random_string;
+  end
+
+  def check_token(token)
+    # # TEMPORARY COMMENT BECAUSE WE HAVE TO IMPLEMENTS RIGHTS
+    # req = @db.prepare("SELECT user FROM token WHERE token=#{token}");
+    # res = req.execute!();
+    # req.close();
+    # return nil if(res[0] == nil);
+    # res[0].at(0);
+    nil;
   end
 
   def create_token(user, token)
-    req = @db.prepare("INSERT OR IGNORE INTO token (user, token) VALUES(?,?)");
-    res = req.execute!(user, token);
-    req.close();
-    req = @db.prepare("SELECT token FROM token WHERE user=?");
-    res = req.execute!(user);
-    req.close();
-    res[0].at(0);
+    # # TEMPORARY COMMENT BECAUSE WE HAVE TO IMPLEMENTS RIGHTS
+    # req = @db.prepare("INSERT OR IGNORE INTO tokens (tid, token, ) VALUES(?,?)");
+    # res = req.execute!(user, token);
+    # req.close();
+    # req = @db.prepare("SELECT token FROM token WHERE user=?");
+    # res = req.execute!(user);
+    # req.close();
+    # res[0].at(0);
+    nil;
   end
 
   # searching methods here 
