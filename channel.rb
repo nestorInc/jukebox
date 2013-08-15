@@ -172,7 +172,7 @@ class Channel
 
   def sync()
     data = [];
-
+    return data if (@currentEntry == nil)
     now = Time.now();
     if(@time == 0)
       delta = 0.2;
