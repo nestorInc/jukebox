@@ -63,9 +63,7 @@ class JsonManager < HttpNode
   private
 
   def parse(req, ch, user)
-    resp = { :timestamp => Time.now.to_i(),
-      :user => user
-    };
+    resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
         JsonManager.add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");
     else

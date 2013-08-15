@@ -3,6 +3,21 @@
 var uniqid = 0,
 	sendQueryProxy;
 
+
+function readCookie (name)
+{
+	name += '=';
+	var parts = document.cookie.split(/;\s*/);
+	for (var i = 0; i < parts.length; i++) {
+		var part = parts[i];
+		if (part.indexOf(name) === 0){
+			return part.substring(name.length);
+		}
+	}
+	return null;
+}
+
+
 /**
 * Represents a Jukebox controller.
 * @constructor
@@ -27,9 +42,9 @@ function Jukebox(element, opts)
 	this.channel = "";
 	this.song = null; // Mapped to _current_song
 	this.listenersCount = 0; // Mapped to _last_nb_listening_users
-	this.user = null;
 	this.streaming = false;
 	this.playing = false;
+	this.user = null;
 	this.lastServerResponse = null;
 
 	//---
@@ -42,7 +57,6 @@ function Jukebox(element, opts)
 		_opts = Extend(true, {}, Jukebox.defaults, opts), // Recursively merge options
 
 		_timestamp = 0, // last timestamp sent by server
-		_user = null, // last user response
 		_channel = null, // current channel we're connected to
 		_songsHistory = [], // songs previously played
 		_playQueueSongs = [], // songs in current playlist
@@ -51,6 +65,8 @@ function Jukebox(element, opts)
 		// http://www.schillmania.com/projects/soundmanager2/
 		_streamPlayer = null, // mp3 stream player (Flash/ActionScript)
 		_volume = 100,
+
+		_user = null,
 
 		// Utility
 		_last_nb_listening_users = 0,
@@ -745,18 +761,18 @@ function Jukebox(element, opts)
 	*/
 	function _parseJSONResponse(json)
 	{
+		if(_user !== json.user){
+			_user=readCookie("user");
+			$this.user = _user;
+			_ui.updateUser(_user);
+		}
+
+
 		if(json.timestamp)
 		{
 			_timestamp = json.timestamp;
 		}
-		if(json.user)
-		{
-			if(_user !== json.user){
-				_user = json.user;
-				$this.user = json.user;
-				_ui.updateUser(json.user);
-			}
-		}
+
 		if(json.current_song)
 		{
 			_current_song = json.current_song;

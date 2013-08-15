@@ -96,9 +96,24 @@ class Library
   FILE_OK                = 5;
 
   def initialize()
-    @db = SQLite3::Database.new("jukebox.db")
-    @db.results_as_hash = true
-    # Activate the use of foreign keys contraints for sqlite 3
+    @db = SQLite3::Database.new("jukebox.db");
+    @db.results_as_hash = true;
+    init_db();
+    init_root();
+
+    create_new_user("guest", "guest", 1);
+
+    req = @db.prepare("UPDATE library SET status=#{FILE_WAIT} WHERE status=#{FILE_ENCODING_PROGRESS}");
+    res = req.execute!();
+    req.close();
+
+    res;
+
+    log("library initialized.");
+  end
+
+  def init_db()
+        # Activate the use of foreign keys contraints for sqlite 3
     sql = <<SQL
     PRAGMA foreign_keys = ON;
     create table if not exists library (
@@ -111,6 +126,7 @@ class Library
                        uid INTEGER PRIMARY KEY,
                        nickname TEXT UNIQUE,
                        hash TEXT,
+                       right,
                        validated INTEGER UNSIGNED,
                        creation INTEGER);
     create table if not exists sessions (
@@ -145,7 +161,7 @@ class Library
                        flag_group INTEGER UNSIGNED,
                        PRIMARY KEY(right, gid),
                        FOREIGN KEY(right) REFERENCES rights(right) ON UPDATE CASCADE ON DELETE CASCADE,
-                       FOREIGN KEY(gid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE);
+                       FOREIGN KEY(gid) REFERENCES groups(gid) ON UPDATE CASCADE ON DELETE CASCADE);
     create table if not exists rights_tokens (
                        right INTEGER UNSIGNED,
                        tid INTEGER UNSIGNED,
@@ -164,39 +180,96 @@ class Library
 SQL
 
     @db.execute_batch( sql );
+  end
 
-    # # Generates a random password for root
+  def init_root()
+    # Generates a random password for root
     char_set =  [('a'..'z'),('A'..'Z'), ('0'..'9')].map{|i| i.to_a}.flatten
     random_string = (0...50).map{ char_set[rand(char_set.length)] }.join
+    log("root password : #{random_string}");
 
-    # # Create base users
-    # root_uid = create_new_user("root", random_string, 1);
-    # log("root password : #{random_string}");
-    # guest_uid = create_new_user("guest", "guest", 1);
-    # create_new_user("trashman", "trashing", 1);
-    # root_grp = create_new_group("root");
+    bcrypt_pass = BCrypt::Password.create(random_string);
+    creation = Time.now();
 
-    # #Create base rights
-    # create_new_right("/",
-    #                  1,
-    #                  Rights_Flag::OWNER | Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE,
-    #                  Rights_Flag::READ,
-    #                  [{ "gid" => root_grp, "flag" => Rights_Flag::OWNER | Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE}] );
+    # todo check if root exists
+    @db.execute("SELECT uid FROM users WHERE nickname='root' LIMIT 1") do |row|
+      return;
+    end
 
+    sql = <<SQL
+     BEGIN;
+     INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) VALUES (NULL, '/users/root', 'root', '#{bcrypt_pass}', 1, #{creation.strftime("%s")});
 
-    # create_new_right("/users/",
-    #                  1,
-    #                  Rights_Flag::OWNER | Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE,
-    #                  Rights_Flag::READ,
-    #                  [{ "gid" => root_grp, "flag" => Rights_Flag::OWNER | Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE}] );
+     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
+     SELECT 
+        '/', 
+        U.uid, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+        0
+     FROM users as U
+     WHERE U.nickname = 'root';
 
+     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
+     SELECT 
+        '/users/', 
+        U.uid, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+        0
+     FROM users as U
+     WHERE U.nickname = 'root';
 
-    req = @db.prepare("UPDATE library SET status=#{FILE_WAIT} WHERE status=#{FILE_ENCODING_PROGRESS}");
-    res = req.execute!();
-    req.close();
+     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
+     SELECT 
+        '/channels/', 
+        U.uid, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+        0
+     FROM users as U
+     WHERE U.nickname = 'root';
 
-    log("library initialized.");
-    res;
+     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )      
+     SELECT 
+        '/groups/', 
+        U.uid, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+        0
+     FROM users as U
+     WHERE U.nickname = 'root';
+
+     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
+     SELECT 
+        '/users/root/', 
+        U.uid, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+        0
+     FROM users as U
+     WHERE U.nickname = 'root';
+
+     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
+     SELECT 
+        '/groups/root', 
+        U.uid, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+        0
+     FROM users as U
+     WHERE U.nickname = 'root';
+
+     INSERT OR IGNORE INTO groups (gid, label) VALUES ("/groups/root", "root");
+     INSERT OR IGNORE INTO groups_users (gid, uid) 
+     SELECT 
+        '/groups/root', 
+        U.uid 
+     FROM users AS U
+     WHERE nickname="root";
+     INSERT OR REPLACE INTO rights_groups (right, gid, flag_group) VALUES ("/users/root/", "/groups/root", #{Rights_Flag::OWNER});
+     COMMIT;
+SQL
+    begin
+      @db.execute_batch( sql );
+    rescue => e
+      error("#{e}");
+    end  
+
   end
 
   def create_new_user( user, pass, validated )
@@ -205,16 +278,33 @@ SQL
 
     sql = <<SQL
      BEGIN;
-     INSERT OR IGNORE INTO users (uid, right_path, nickname, hash, validated, creation) VALUES (NULL, '/users/#{user}', '#{user}', '#{bcrypt_pass}', 1, #{creation.strftime("%s")};
+     INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) VALUES (NULL, '/users/#{user}', '#{user}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
      SELECT 
-        '/users/#{user}', 
+        '/users/#{user}/', 
         U.uid, 
-        127, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
         0
      FROM users as U
      WHERE U.nickname = '#{user}';
-     INSERT OR REPLACE INTO rights_groups (right, owner, flag_owner, flag_others ) 
+     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
+     SELECT 
+        '/channels/#{user}/', 
+        U.uid, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+         #{ Rights_Flag::READ }
+     FROM users as U
+     WHERE U.nickname = '#{user}';
+
+     INSERT OR IGNORE INTO groups (gid, label) VALUES ("/groups/#{user}", "#{user}");
+     INSERT OR IGNORE INTO groups_users (gid, uid)
+     SELECT 
+        '/groups/#{user}', 
+        U.uid
+     FROM users as U
+     WHERE U.nickname = '#{user}';
+
+     INSERT OR REPLACE INTO rights_groups (right, gid, flag_group) VALUES ("/users/#{user}/", "/groups/#{user}", #{Rights_Flag::READ | Rights_Flag::WRITE});
      COMMIT;
 SQL
     @db.execute_batch( sql );
@@ -227,7 +317,7 @@ SQL
 
 
   def login( user, pass )
-      req = @db.prepare("SELECT hash FROM users WHERE nickname='#{user}' LIMIT 1");
+      req = @db.prepare("SELECT hash FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
       res = req.execute!();
       req.close();
       return false if(res == nil or res[0] == nil)
@@ -247,9 +337,10 @@ SQL
   end
 
   def check_session( sid, remote_ip, user_agent )
-    res = @db.execute("SELECT U.nickname as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND validated=1 LIMIT 1");
+    res = @db.execute("SELECT U.nickname as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 LIMIT 1");
+    now = (Time.now()).strftime("%s");
     if(res[0])
-      @db.execute("UPDATE sessions SET last_connexion=#{(Time.now()).strftime("%s")}  WHERE sid='#{sid}'");
+      @db.execute("UPDATE sessions SET last_connexion=#{now} WHERE sid='#{sid}'");
       return res[0]["nick"]
     end
     nil;
@@ -295,6 +386,10 @@ SQL
 
     # returns the newly session hash created
     random_string;
+  end
+
+  def update_session_last_connexion(sessionID)
+    @db.execute("UPDATE sessions SET last_connexion=#{(Time.now()).strftime("%s")} WHERE sid='#{sessionID}';");
   end
 
   def create_new_group( label )

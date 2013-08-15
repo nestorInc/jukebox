@@ -47,6 +47,13 @@ height: 20px;
 border-top-right-radius: 10px;*/
 }
 
+.jukebox-user-header-deco{
+display:inline;
+vertical-align:center;
+float:right;
+font-size:15px;
+}
+
 
 .jukebox-main{
 float: left;

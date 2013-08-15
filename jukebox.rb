@@ -77,7 +77,6 @@ main.addAuth() { |s, req, user, pass|
                                         s.remote_address.ip_address, 
                                         req.options["User-Agent"] );
       if(luser)
-      warning("token auth");
         s.user.replace(luser);
         user.replace(luser);
         stream.channel_init(luser);
@@ -100,10 +99,10 @@ main.addAuth() { |s, req, user, pass|
                                     s.remote_address.ip_address,
                                     req.options["User-Agent"]);
       if(luser)
-        warning("Cookie auth");
         s.user.replace(luser);
         user.replace(luser);
         stream.channel_init(luser);
+        library.update_session_last_connexion(session);
         next "cookie"
       end
     end
@@ -111,7 +110,6 @@ main.addAuth() { |s, req, user, pass|
 
   if(pass)
     if( library.login(user, pass) )
-      warning("http auth");
       sid = library.create_user_session(nil, 
                                         user, 
                                         s.remote_address.ip_address, 
@@ -123,7 +121,7 @@ main.addAuth() { |s, req, user, pass|
       req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
       req.options["Set-Cookie"] << Cookie.new({"method" => "PAM"}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
       req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-      next "httpAuth"
+      next "HttpAuth"
     end
   end
 
