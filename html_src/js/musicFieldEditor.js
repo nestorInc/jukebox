@@ -49,11 +49,11 @@ MusicFieldEditor.prototype.undo = function(cell)
 			}
 			if(this.name == this.prefix + "track")
 			{
-				cell.update(uploadedFile["track"].split('/')[0]);
+				cell.update(uploadedFile["track"].toString().split('/')[0]);
 			}
 			else if (this.name == this.prefix + "trackNb")
 			{
-				cell.update(uploadedFile["track"].split('/')[1]);
+				cell.update(uploadedFile["track"].toString().split('/')[1]);
 			}
 			else
 			{
@@ -136,15 +136,30 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 			}
 
 			// Upload cell style ff the new value differs
-			if( (
-				( property == "track" && this.uploadedFiles[i][property].toString().split('/')[0] !== firstChildVal ) ||
-					( property == "trackNb" && (
-                        this.uploadedFiles[i]["track"] === null ||
-                            this.uploadedFiles[i]["track"].toString().split('/') === null ||
-                            this.uploadedFiles[i]["track"].toString().split('/')[1] !== firstChildVal )) ||
-					( property != "track" && property != "trackNb" && firstChildVal != this.uploadedFiles[i][property] )
-				) &&
-				!cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
+			var isModified = false;
+			if(!cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
+			{
+				if(property == "track" || property == "trackNb")
+				{
+					var track = this.uploadedFiles[i]["track"] || "",
+						trackSplit = track.toString().split('/');
+
+					if(property == "track")
+					{
+						isModified = trackSplit[0] !== firstChildVal;
+					}
+					else if(property == "trackNb")
+					{
+						isModified = trackSplit[1] !== firstChildVal;
+					}
+				}
+				else
+				{
+					isModified = firstChildVal !== this.uploadedFiles[i][property];
+				}
+			}
+
+			if(isModified)
 			{
 				// Default behaviour
 				cell.addClassName(this.rootCSS+'-uploaded-file-modified');
@@ -185,7 +200,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	form.id = cell.id + '-form';
 	form.addClassName(TableKit.option('formClassName', table.id)[0]);
 	form.onsubmit = this._submit.bindAsEventListener(this);
-    
+
 	// Change behavior from field names
 	var modified = false;
 
