@@ -599,13 +599,20 @@ function Jukebox(element, opts)
 	*/
 	this.deleteUploadedFile = function(filename)
 	{
-		if(Object.prototype.toString.call( filename ) === '[object Array]'){
-			var i = 0;
-			for(i=0;i<filename.length;++i){
-				_doAction(new Action("delete_uploaded_file", {file_name: filename[i]}));
+		var action;
+		if(Object.isArray(filename))
+		{
+			for(var i = 0; i < filename.length; ++i)
+			{
+				action = new Action("delete_uploaded_file", {file_name: filename[i]});
+				_nextQuery.addAction(action);
 			}
-		} else {
-			_doAction(new Action("delete_uploaded_file", {file_name: filename}));
+			_update();
+		}
+		else
+		{
+			action = new Action("delete_uploaded_file", {file_name: filename});
+			_doAction(action);
 		}
 		return this;
 	};
