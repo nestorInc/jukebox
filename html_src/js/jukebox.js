@@ -624,7 +624,7 @@ function Jukebox(element, opts)
 	*/
 	this.validateUploadedFile = function(filename)
 	{
-		if(Object.prototype.toString.call( filename ) === '[object Array]'){
+		if(Object.isArray(filename)){
 			var i = 0;
 			for(i=0;i<filename.length;++i){
 				_doAction(new Action("validate_uploaded_file",{file_name: filename[i]}));
@@ -643,7 +643,7 @@ function Jukebox(element, opts)
 	*/
 	this.updateUploadedFile = function(opts)
 	{
-		if(Object.prototype.toString.call( opts ) === '[object Array]'){
+		if(Object.isArray(opts)){
 			var i = 0;
 			for(i=0;i<opts.length;++i){
 				_doAction(new Action("update_uploaded_file", opts[i]));

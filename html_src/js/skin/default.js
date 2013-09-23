@@ -93,8 +93,8 @@ Jukebox.UI.skins["default"] =
 </div>',
 		song:
 '<p class="#{root}-song">\
-<a class="#{root}-song-artist" href="javascript:void(0);">#{artist}</a> - \
-<a class="#{root}-song-album" href="javascript:void(0);">#{album}</a> - \
+<a class="#{root}-song-artist" href="javascript:;">#{artist}</a> - \
+<a class="#{root}-song-album" href="javascript:;">#{album}</a> - \
 <span class="#{root}-song-title">#{title}</span>\
 </p>',
 		playQueue:
@@ -110,8 +110,8 @@ Jukebox.UI.skins["default"] =
 '<li class="#{root}-playqueue-#{index} #{root}-playqueue-droppable">\
 <div class="#{root}-playqueue-song-#{index} #{root}-playqueue-draggable">\
 	<div class="#{root}-playqueue-handle-#{index} #{root}-playqueue-handle">\
-		<a href="javascript:void(0);">#{artist}</a> - \
-		<a href="javascript:void(0);">#{album}</a> - \
+		<a href="javascript:;">#{artist}</a> - \
+		<a href="javascript:;">#{album}</a> - \
 		#{title} (#{duration})\
 	</div>\
 	<a><span class="#{root}-playqueue-move-top"></span></a>\
@@ -133,12 +133,21 @@ Jukebox.UI.skins["default"] =
 <option value="year">Year</option>\
 <option value="tracknb">TrackNb</option>\
 <option value="genre">Genre</option>\
-<option value="delete">Supprimer</option>\
-<option value="update">Mettre à jour</option>\
-<option value="validate">Valider</option>\
+<option value="fillfromfilename">Fill title with filename</option>\
+<option value="delete">Delete</option>\
+<option value="update">Update</option>\
+<option value="validate">Validate</option>\
 </select>\
 <input class="#{root}-upload-global-action-input" type="text" value="" />\
 <select class="#{root}-upload-global-action-genre-select" ></select>\
+<select class="#{root}-upload-global-action-fill-dst" >\
+<option value="title">Title</option>\
+<option value="album">Album</option>\
+<option value="artist">Artist</option>\
+<option value="tracknb">TrackNB</option>\
+</select>\
+<input class="#{root}-upload-global-min-idx" type="text" value="min" size=4/>\
+<input class="#{root}-upload-global-max-idx" type="text" value="max" size=4/>\
 <input class="#{root}-upload-global-submit" type="submit" value="Appliquer" />',
 				tableHead:
 '<tr>\
@@ -158,23 +167,23 @@ Jukebox.UI.skins["default"] =
 				tableBody:
 '<tr id="#{rowId}">\
 	<td class="#{root}-upload-cell-static"><input class="#{root}-upload-cell-checkbox" type="checkbox" /></td>\
-	<td class="#{root}-upload-cell-static">#{filename}</td>\
+	<td class="#{root}-upload-cell-static #{root}-upload-cell-filename">#{filename}</td>\
 	<td class="#{root}-upload-cell-artist">#{artist}</td>\
 	<td class="#{root}-upload-cell-album">#{album}</td>\
-	<td>#{title}</td>\
+	<td class="#{root}-upload-cell-title" >#{title}</td>\
 	<td class="#{root}-upload-cell-year">#{year}</td>\
 	<td class="#{root}-upload-cell-track">#{track}</td>\
 	<td class="#{root}-upload-cell-trackNb">#{trackNb}</td>\
 	<td class="#{root}-upload-cell-genre">#{genre}</td>\
 	<td class="#{root}-uploaded-file-actions #{root}-upload-cell-static">\
 		<div>\
-			<a href="javascript:void(0);">X</a>\
+			<a href="javascript:;">X</a>\
 		</div>\
 		<div class="#{root}-uploaded-file-update" style="display:none;">\
-			<a href="javascript:void(0);">&nbsp;Update&nbsp;</a>\
+			<a href="javascript:;">&nbsp;Update&nbsp;</a>\
 		</div>\
 		<div class="#{root}-uploaded-file-validate">\
-			<a href="javascript:void(0);">&nbsp;Validate&nbsp;</a>\
+			<a href="javascript:;">&nbsp;Validate&nbsp;</a>\
 		</div>\
 	</td>\
 </tr>'

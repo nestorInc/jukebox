@@ -65,7 +65,7 @@ class JsonManager < HttpNode
   def parse(req, ch, user)
     resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
-        JsonManager.add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");      
+        JsonManager.add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");
     else
       begin
         json      = JSON.parse(req);
@@ -95,7 +95,7 @@ class JsonManager < HttpNode
     debug(str);
     str;
   end
-  
+
   def forward_action(resp, req, ch, user)
     resp ||= {};
     resp[:timestamp] = Time.now.to_i();
@@ -108,7 +108,7 @@ class JsonManager < HttpNode
       ch.queue.add(req["play_queue_index"], req["mid"])
     when "shuffle_play_queue"
       ch.queue.shuffle();
-    when "add_search_to_play_queue" 
+    when "add_search_to_play_queue"
       result = @library.secure_request("mid",
                                        CGI::unescape(req["search_value"]),
                                        req["search_comparison"],
@@ -138,19 +138,19 @@ class JsonManager < HttpNode
         :files			=> files
       };
     when "update_uploaded_file"
-      action_response = UploadManager.updateUploadedFiles(@upload_dir, user, 
+      action_response = UploadManager.updateUploadedFiles(@upload_dir, user,
                                                           req, resp);
       resp [:uploaded_files] = {
         :action_response        => action_response
       };
     when "validate_uploaded_file"
-      action_response = UploadManager.validateUploadedFiles(@source_dir, @upload_dir, user, 
+      action_response = UploadManager.validateUploadedFiles(@source_dir, @upload_dir, user,
                                                             req, resp);
       resp [:uploaded_files] = {
         :action_response        => action_response
       };
     when "delete_uploaded_file"
-      action_response = UploadManager.deleteUploadedFiles(@upload_dir, user, 
+      action_response = UploadManager.deleteUploadedFiles(@upload_dir, user,
                                                           req, resp);
       resp [:uploaded_files] = {
         :action_response        => action_response
@@ -164,51 +164,63 @@ class JsonManager < HttpNode
   end
 
   def parse_action(resp, ch, user, req)
-    if( req.kind_of?(Array) )
-      req.each { |currentAction| 
-        # Warning multi action should merge responses
-        forward_action(resp, currentAction, ch, user );
-      }
-    else
-      forward_action(resp, req, ch, user);
+    begin
+      if( req.kind_of?(Array) )
+        req.each { |currentAction|
+          # Warning multi action should merge responses
+          forward_action(resp, currentAction, ch, user );
+        }
+      else
+        forward_action(resp, req, ch, user);
+      end
+    rescue => e
+      error("Error when parsing action query #{e.backtrace}: #{e.message} (#{e.class})");
+      JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "Error when parsing action query");
     end
   end
 
   def parse_search(resp, req)
-    result = @library.secure_request(req["select_fields"],
-                                     CGI::unescapeHTML(req["search_value"]),
-                                     req["search_comparison"],
-                                     req["search_field"],
-                                     req["order_by"],
-                                     req["first_result"],
-                                     req["result_count"]);
+    begin
 
-    songs = result.map { |song|
-      { 
-        :mid      => song.mid,
-        :artist   => song.artist,
-        :title    => song.title,
-        :album    => song.album,
-        :track    => song.track,
-        :genre    => song.genre,
-        :duration => song.duration
-      }
-    }
-    resp [:search_results] = {
-      :identifier     => req["identifier"],
-      :select         => req["select"],
-      :select_fields  => req["select_fields"],
-      :search_value	  => CGI::unescapeHTML(req["search_value"]),
-      :search_comparison  => req["search_comparison"],
-      :search_field   => req["search_field"],
-      :result_count   => req["result_count"],
-      :order_by       => req["order_by"],
-      :first_result   => req["first_result"],
-      :total_results  => @library.get_total(req["search_field"],
+      result = @library.secure_request(req["select_fields"],
+                                       CGI::unescapeHTML(req["search_value"]),
                                        req["search_comparison"],
-                                           req["search_value"]),
-      :results        => songs
-    };
+                                       req["search_field"],
+                                       req["order_by"],
+                                       req["first_result"],
+                                       req["result_count"]);
+
+      songs = result.map { |song|
+        {
+          :mid      => song.mid,
+          :artist   => song.artist,
+          :title    => song.title,
+          :album    => song.album,
+          :track    => song.track,
+          :genre    => song.genre,
+          :duration => song.duration
+        }
+      }
+      resp [:search_results] = {
+        :identifier     => req["identifier"],
+        :select         => req["select"],
+        :select_fields  => req["select_fields"],
+        :search_value	  => CGI::unescapeHTML(req["search_value"]),
+        :search_comparison  => req["search_comparison"],
+        :search_field   => req["search_field"],
+        :result_count   => req["result_count"],
+        :order_by       => req["order_by"],
+        :first_result   => req["first_result"],
+        :total_results  => @library.get_total(req["search_field"],
+                                              req["search_comparison"],
+                                              req["search_value"]),
+        :results        => songs
+      };
+    rescue => e
+      error("Error when parsing search query  #{e.backtrace}: #{e.message} (#{e.class})");
+      JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "Error when parsing search query");
+      resp;
+    end
   end
 end
 

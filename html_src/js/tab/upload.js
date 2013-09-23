@@ -40,7 +40,7 @@ this.UploadTab = Class.create(Tab,
 	{
 		if(this.lastSendingDeletionIdentifier === null)
 		{
-			if( Object.prototype.toString.call( file_name ) === '[object Array]'){
+			if( Object.isArray(file_name)){
 				var fnames = [];
 				var i = 0;
 				for(i=0;i<file_name.length;++i){
@@ -64,10 +64,10 @@ this.UploadTab = Class.create(Tab,
 	{
 		if(this.lastSendingUpdateIdentifier === null)
 		{
-            var tmp;
-            var opts;
+			var tmp;
+			var opts;
 
-			if( Object.prototype.toString.call( file_name ) === '[object Array]'){
+			if( Object.isArray(file_name)){
 				var i=0;
 				var fnames=[];
 				opts = [];
@@ -114,7 +114,7 @@ this.UploadTab = Class.create(Tab,
 	{
 		if(this.lastSendingValidationIdentifier === null)
 		{
-			if( Object.prototype.toString.call( file_name ) === '[object Array]'){
+			if( Object.isArray(file_name)){
 				var i = 0;
 				var fnames = [];
 				for(i=0;i<file_name.length;++i){
@@ -138,7 +138,7 @@ this.UploadTab = Class.create(Tab,
 	{
 		var id = null;
 
-		if( Object.prototype.toString.call( this.lastSendingDeletionIdentifier ) === '[object Array]'){
+		if( Object.isArray(this.lastSendingDeletionIdentifier)){
 			id = this.lastSendingDeletionIdentifier[0];
 			this.lastSendingDeletionIdentifier.shift();
 		} else {
@@ -147,9 +147,9 @@ this.UploadTab = Class.create(Tab,
 
 		// Wether success or error, reset the last sending identifier to allow a new validation
 
-		if( Object.prototype.toString.call( this.lastSendingDeletionIdentifier ) !== '[object Array]' || this.lastSendingDeletionIdentifier.length === 0 ){
+		if( !Object.isArray(this.lastSendingDeletionIdentifier) || this.lastSendingDeletionIdentifier.length === 0 ){
 			this.lastSendingDeletionIdentifier = null;
-		} 
+		}
 
 		if(ret == "success")
 		{
@@ -187,7 +187,7 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(1, message);
 			var lastId = null;
 
-			if( Object.prototype.toString.call( this.lastSendingUpdateIdentifier ) === '[object Array]'){
+			if( Object.isArray(this.lastSendingUpdateIdentifier) ){
 				lastId = escape(this.lastSendingUpdateIdentifier[0]);
 				this.lastSendingUpdateIdentifier.shift();
 			} else {
@@ -220,16 +220,16 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(4, message);
 		}
 
-		if( Object.prototype.toString.call( this.lastSendingUpdateIdentifier ) !== '[object Array]' || this.lastSendingUpdateIdentifier.length === 0 ){
+		if( !Object.isArray(this.lastSendingUpdateIdentifier) || this.lastSendingUpdateIdentifier.length === 0 ){
 			this.lastSendingUpdateIdentifier = null;
-		} 
+		}
 	},
 
 	validationResponse: function(ret, message)
 	{
 		var id = null;
 
-		if( Object.prototype.toString.call( this.lastSendingValidationIdentifier ) === '[object Array]'){
+		if( Object.isArray(this.lastSendingValidationIdentifier) ){
 			id = escape(this.lastSendingValidationIdentifier[0]);
 			this.lastSendingValidationIdentifier.shift();
 		} else {
@@ -238,9 +238,9 @@ this.UploadTab = Class.create(Tab,
 
 		// Wether success or error, reset the last sending identifier to allow a new validation
 
-		if( Object.prototype.toString.call( this.lastSendingValidationIdentifier ) !== '[object Array]' || this.lastSendingValidationIdentifier.length === 0 ){
+		if( !Object.isArray(this.lastSendingValidationIdentifier) || this.lastSendingValidationIdentifier.length === 0 ){
 			this.lastSendingValidationIdentifier = null;
-		} 
+		}
 
 		if(ret == "success")
 		{
@@ -376,19 +376,64 @@ this.UploadTab = Class.create(Tab,
 		var selectedOption = select.options[select.selectedIndex].value;
 		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
 		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
+
+		var min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-min-idx');
+		var max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx');
+		var select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
+
 		if( selectedOption === "genre"){
-			input.style.display="none";
-			genres.style.display="";
+			input.hide();
+			min_idx.hide();
+			max_idx.hide();
+			select_dst.hide();
+			genres.show();
+		} else if(selectedOption === "fillfromfilename"){
+			min_idx.show();
+			max_idx.show();
+			select_dst.show();
+			genres.hide();
+			input.hide();
 		} else if(selectedOption === "validate" ||
 				selectedOption === "update" ||
 				selectedOption === "delete"){
-			input.style.display="none";
-			genres.style.display="none";
+			input.hide();
+			genres.hide();
+			select_dst.hide();
+			min_idx.hide();
+			max_idx.hide();
 		} else {
-			input.style.display="";
-			genres.style.display="none";
+			input.show();
+			genres.hide();
+			min_idx.hide();
+			max_idx.hide();
+			select_dst.hide();
 		}
 
+	},
+
+	change_global_fill_labels: function(){
+		var select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
+		var dst_value = select_dst.options[select_dst.selectedIndex].value;
+		var max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx');
+
+		var max = "max";
+		if(dst_value === "tracknb"){
+			max="len";
+		}
+		if( isNaN(max_idx.value)){
+			max_idx.value=max;
+		}
+		max_idx.stopObserving("click");
+		max_idx.stopObserving("blur");
+		max_idx.on("click", this.clean_numeric_field.bind(this, max_idx, ""));
+		max_idx.on("blur", this.clean_numeric_field.bind(this, max_idx, max));
+	},
+
+	clean_numeric_field: function(element, value)
+	{
+		if(isNaN(parseInt(element.value,10))){
+			element.value=value;
+		}
 	},
 
 	apply_global_modifications: function()
@@ -399,13 +444,18 @@ this.UploadTab = Class.create(Tab,
 		var selectedOption = select.options[select.selectedIndex].value;
 		var input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input');
 		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
-		var done = false;
+		var min_input = this.DOM.down('.'+this.rootCSS+'-upload-global-min-idx');
+		var max_input = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx');
+		var select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
+		var dst_value = select_dst.options[select_dst.selectedIndex].value;
+		var done = 0;
 		var identifiers = [];
 
 		if( selectedOption !== "genre" &&
 			selectedOption !== "delete" &&
 			selectedOption !== "update" &&
 			selectedOption !== "validate" &&
+			selectedOption !== "fillfromfilename" &&
 			input.value.length === 0){
 			Notifications.Display(4, "Global textfield empty");
 			return;
@@ -413,58 +463,95 @@ this.UploadTab = Class.create(Tab,
 
 		for(i=0;i<elements.length;++i){
 			if(elements[i].checked){
-				done = true;
+				done = done + 1;
 
 				var tr = elements[i].up("tr");
 				var td = null;
+				var form = null;
+				var fname = null;
 				if( selectedOption === "artist" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
+					form = td.down("form");
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "album" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-album');
+					form = td.down("form");
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "year" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-year');
+					form = td.down("form");
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "genre" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-genre');
+					form = td.down("form");
 					this.tableKit.editCell(td);
 					td.down("select").selectedIndex = genres.selectedIndex;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
+					TableKit.Editable.getCellEditor(td).submit(td, form);
 				} else if( selectedOption === "tracknb" ){
 					td = tr.down('.'+this.rootCSS+'-upload-cell-trackNb');
+					form = td.down("form");
 					this.tableKit.editCell(td);
 					td.down("input[type=text]").value = input.value;
-					TableKit.Editable.getCellEditor(td).submit(td, td.down("form"));
-				} else if( selectedOption === "delete" ){
-					identifiers.push(tr.select('.'+this.rootCSS+'-upload-cell-static')[1].innerHTML);
-				} else if( selectedOption === "update" ){
-					identifiers.push(tr.select('.'+this.rootCSS+'-upload-cell-static')[1].innerHTML);
-				} else if( selectedOption === "validate" ){
-					identifiers.push(tr.select('.'+this.rootCSS+'-upload-cell-static')[1].innerHTML);
+					TableKit.Editable.getCellEditor(td).submit(td, form);
+				} else if( selectedOption === "delete" || selectedOption === "update" || selectedOption === "validate"){
+					fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]);
+					identifiers.push(fname);
+				} else if(selectedOption === "fillfromfilename" ){
+
+					if( dst_value  === "title"){
+						td = tr.down('.'+this.rootCSS+'-upload-cell-title');
+					} else if( dst_value  === "album"){
+						td = tr.down('.'+this.rootCSS+'-upload-cell-album');
+					} else if( dst_value  === "artist"){
+						td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
+					} else if( dst_value  === "tracknb"){
+						td = tr.down('.'+this.rootCSS+'-upload-cell-track');
+					}
+
+					fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]).replace(".mp3","");
+					form = td.down("form");
+					this.tableKit.editCell(td);
+
+					if( !isNaN(parseInt(min_input.value,10)) &&
+						!isNaN(parseInt(max_input.value,10))){
+						if( dst_value  === "tracknb"){
+							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value,10), parseInt(min_input.value,10) + parseInt(max_input.value,10));
+						} else {
+							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value,10), fname.length -parseInt(max_input.value,10));
+						}
+					} else if ( !isNaN(parseInt(min_input.value,10)) &&
+								isNaN(parseInt(max_input.value,10))){
+						td.down("input[type=text]").value = fname.substring(parseInt(min_input.value,10));
+					} else {
+						td.down("input[type=text]").value = fname;
+					}
+					td.down("input[type=text]").value = td.down("input[type=text]").value.replace(/^\s+|\s+$/g,'');
+					TableKit.Editable.getCellEditor(td).submit(td, form);
 				}
 
 			}
 		}
 
-		if(identifiers.length > 0){
+		if(done > 0 && identifiers.length > 0){
 			if( selectedOption === "delete" ){
 				this.deleteUploadedSong(identifiers);
 			} else if( selectedOption === "update" ){
 				this.updateUploadedSong(identifiers);
 			} else if( selectedOption === "validate" ){
 				this.validateUploadedSong(identifiers);
-			} else if(!done){
+			}
+		}
+
+		if(done === 0){
 				Notifications.Display(4, "You must select files from the uploaded list");
 				return;
 			}
-		}
 	},
 
 	toggle_checkbox_selection: function(checkbox)
@@ -598,7 +685,22 @@ this.UploadTab = Class.create(Tab,
 					option.appendChild(document.createTextNode(genre.name));
 					genres.appendChild(option);
 				}
-				genres.style.display="none";
+				genres.hide();
+				var min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-min-idx');
+				var max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx');
+				var select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
+
+				select_dst.on("change", this.change_global_fill_labels.bind(this));
+
+
+				min_idx.on("click", this.clean_numeric_field.bind(this, min_idx, ""));
+				max_idx.on("click", this.clean_numeric_field.bind(this, max_idx, ""));
+				min_idx.on("blur", this.clean_numeric_field.bind(this, min_idx, "min"));
+				max_idx.on("blur", this.clean_numeric_field.bind(this, max_idx, "max"));
+
+				min_idx.hide();
+				max_idx.hide();
+				select_dst.hide();
 
 				this.DOM.down('.'+this.rootCSS+'-upload-global-action-select').on("change", this.change_global_action.bind(this));
 

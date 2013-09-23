@@ -128,7 +128,7 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 				else
 				{
 					fileE["track"] = fileE["track"].toString().split('/')[0] + "/" + firstChildVal;
-				} 
+				}
 			}
 			else
 			{
@@ -168,10 +168,13 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 				row.select('.'+this.rootCSS+'-uploaded-file-validate').each(function(e){e.hide();});
 
 			}
-			else if(firstChildVal == this.uploadedFiles[i][property] && cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
+
+			if(firstChildVal == this.uploadedFiles[i][property] &&
+				cell.hasClassName(this.rootCSS+'-uploaded-file-modified'))
 			{
 				cell.removeClassName(this.rootCSS+'-uploaded-file-modified');
 			}
+
 
 			break;
 		}
@@ -188,7 +191,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 	{
 		return;
 	}
-	
+
 	var table = cell.up('table'),
 		row = cell.up('tr'),
 		identifier = row.id,
@@ -316,16 +319,16 @@ MusicFieldEditor.prototype.edit = function(cell)
 		undoLink.href = "javascript:;";
 		undoLink.appendChild(document.createTextNode("undo "));
 		undoLink.onclick = this._undo.bindAsEventListener(this);
-		undoLink.className = this.prefix + 'editor-undo';      
+		undoLink.className = this.prefix + 'editor-undo';
 		form.appendChild(undoLink);
 		form.appendChild(document.createTextNode(" "));
 	}
-	
+
 	var cancelLink = document.createElement("a");
 	cancelLink.href = "javascript:;";
 	cancelLink.appendChild(document.createTextNode("cancel"));
 	cancelLink.onclick = this._cancel.bindAsEventListener(this);
-	cancelLink.className = this.prefix + 'editor-cancel';      
+	cancelLink.className = this.prefix + 'editor-cancel';
 	form.appendChild(cancelLink);
 
 	cell.innerHTML = '';

@@ -55,7 +55,7 @@ this.CustomQueriesTab = Class.create(Tab,
 		{
 			var opts = {},
 				value = this.value; // this.options[this.selectedIndex].value;
-			
+
 			switch(value)
 			{
 				case "dummy":
@@ -67,7 +67,7 @@ this.CustomQueriesTab = Class.create(Tab,
 				case "add_to_play_queue":
 				case "remove_from_play_queue":
 				case "move_in_play_queue":
-					opts = 
+					opts =
 					{
 						mid: 123,
 						play_queue_index: 1
@@ -80,30 +80,35 @@ this.CustomQueriesTab = Class.create(Tab,
 					};
 					break;
 				case "get_news":
-					opts = 
+					opts =
 					{
 						first_result: 0,
 						result_count: 5
 					};
 					break;
 				case "search":
-					opts = 
+					opts =
 					{
-						search_value: "muse",
-						search_field: "artist",
-						order_by: "artist",
-						first_result: 0,
-						result_count: 10
+						name:"search",
+						search_value:"muse",
+						search_comparison:"like",
+						search_field:"artist",
+						order_by:"mid,artist,album,track,title",
+						select_fields:"mid,title,album,artist,track,genre,duration",
+						first_result:0,
+						result_count:20,
+						identifier:null,
+						select:false
 					};
 					break;
 			}
 			if(value == "move_in_play_queue")
 			{
-				opts.new_play_queue_index = 0;		
+				opts.new_play_queue_index = 0;
 			}
 
 			actions = value == "empty" ? [] : [new Action(value, opts)];
-			query = new Query(1317675258, actions);	
+			query = new Query(1317675258, actions);
 			$textarea.value = JSON.stringify(query.valueOf(), null, "\t"); // query.toJSON(); doesn't support custom indentation
 			this.selectedIndex = 1;
 
@@ -145,6 +150,11 @@ this.CustomQueriesTab = Class.create(Tab,
 						query.addAction(action);
 					}
 
+					sendQueryProxy(query);
+				}  else if (json && json.search){
+					query = new Query(json.timestamp ? json.timestamp : 0);
+					var search = new Action(json.search.name, json.search);
+					query.addAction(search);
 					sendQueryProxy(query);
 				}
 			}
