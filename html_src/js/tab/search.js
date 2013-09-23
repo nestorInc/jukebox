@@ -509,7 +509,13 @@ this.SearchTab = Class.create(Tab,
 				sortable: false,
 				editable: false,
 				trueResize: true,
-				keepWidth: true
+				keepWidth: true,
+
+				// Fix glitch issue when clicking one of the "Add search to play queue [Current page|Full]" button
+				// Happens because of tablekit.js generating a huge <div class="resize-handle"> on mousedown
+				// Which leads to a scrollbar in the browser -> mouse no more over the same button -> no click event
+				// Anyway we don't need showHandle to true because we already override the resize-handle css...
+				showHandle: false
 			});
 		}
 		else // this.total_results == 0
