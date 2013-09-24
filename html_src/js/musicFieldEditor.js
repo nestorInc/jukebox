@@ -49,11 +49,11 @@ MusicFieldEditor.prototype.undo = function(cell)
 			}
 			if(this.name == this.prefix + "track")
 			{
-				cell.update(uploadedFile["track"].split('/')[0]);
+				cell.update(uploadedFile["track"].toString().split('/')[0]);
 			}
 			else if (this.name == this.prefix + "trackNb")
 			{
-				cell.update(uploadedFile["track"].split('/')[1]);
+				cell.update(uploadedFile["track"].toString().split('/')[1]);
 			}
 			else
 			{
@@ -142,7 +142,8 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 				if(property == "track" || property == "trackNb")
 				{
 					var track = this.uploadedFiles[i]["track"] || "",
-					trackSplit = track.toString().split('/');
+						trackSplit = track.toString().split('/');
+
 					if(property == "track")
 					{
 						isModified = trackSplit[0] !== firstChildVal;
@@ -151,18 +152,21 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 					{
 						isModified = trackSplit[1] !== firstChildVal;
 					}
-				} else {
+				}
+				else
+				{
 					isModified = firstChildVal !== this.uploadedFiles[i][property];
 				}
 			}
-
 
 			if(isModified)
 			{
 				// Default behaviour
 				cell.addClassName(this.rootCSS+'-uploaded-file-modified');
+
 				row.select('.'+this.rootCSS+'-uploaded-file-update').each(function(e){e.show();});
 				row.select('.'+this.rootCSS+'-uploaded-file-validate').each(function(e){e.hide();});
+
 			}
 
 			if(firstChildVal == this.uploadedFiles[i][property] &&

@@ -359,6 +359,10 @@ padding-left: 5px;
 word-break: break-word;
 white-space: normal;
 }
+table.jukebox-upload-table th{
+word-break: normal;
+white-space: nowrap;
+}
 table.jukebox-search-table th{
 white-space: pre; /* For buttons column */
 }
@@ -411,7 +415,7 @@ left: 0;
 .jukebox-uploaded-files{
 overflow: auto;
 }
-.jukebox-uploaded-file-actions{
+table.jukebox-upload-table .jukebox-uploaded-file-actions{
 white-space: nowrap;
 }
 .jukebox-uploaded-file-actions div{
