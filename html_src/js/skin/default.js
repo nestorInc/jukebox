@@ -152,7 +152,7 @@ Jukebox.UI.skins["default"] =
 				tableHead:
 '<tr>\
 	<th class="#{root}-upload-selector">\
-	<input class="#{root}-upload-selector-checkbox" type="checkbox" />\
+		<input class="#{root}-upload-selector-checkbox" type="checkbox" />\
 	</th>\
 	<th class="#{root}-upload-filename">Filename</th>\
 	<th class="#{root}-upload-artist">Artist</th>\

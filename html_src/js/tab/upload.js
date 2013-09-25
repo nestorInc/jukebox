@@ -18,7 +18,6 @@ this.UploadTab = Class.create(Tab,
 		this.jukebox = jukebox;
 		this.template = template;
 		this.DOM = null;
-
 	},
 
 	getUploadedFileEditionFromFilename: function(file_name)
