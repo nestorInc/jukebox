@@ -854,37 +854,37 @@ function JukeboxUI(jukebox, element, opts)
 			$JB = $elem.down('.' + _opts.rootClass);
 		_$ =
 		{
-			jukebox:			$JB,
-			tabs:				$JB.down(rootClass+'tabs'),
-			deco_link:			$JB.down(rootClass+'user-header-deco'),
+			jukebox:		$JB,
+			tabs:			$JB.down(rootClass+'tabs'),
+			expand_button:		$JB.down(rootClass+'expand-button'),
 			collapse_button:	$JB.down(rootClass+'collapse-button'),
-			expand_button:		$JB.down(rootClass+'user-button'),
+			deco_link:		$JB.down(rootClass+'user-header-deco'),
 			search_input:		$JB.down(rootClass+'search-input'),
 			search_field:		$JB.down(rootClass+'search-field'),
 			search_genres:		$JB.down(rootClass+'search-genres'),
 			results_per_page:	$JB.down(rootClass+'results-per-page'),
-			btn_search:			$JB.down(rootClass+'search-button'),
+			btn_search:		$JB.down(rootClass+'search-button'),
 			progressbar:		$JB.down(rootClass+'progressbar'),
-			song_time:			$JB.down(rootClass+'song-time'),
+			song_time:		$JB.down(rootClass+'song-time'),
 			song_remaining_time:$JB.down(rootClass+'song-remaining-time'),
 			song_total_time:	$JB.down(rootClass+'song-total-time'),
 			activity_monitor:	$JB.down(rootClass+'activity'),
 			play_stream:		$JB.down(rootClass+'stream-play'),
 			stop_stream:		$JB.down(rootClass+'stream-stop'),
-			channel:			$JB.down(rootClass+'channel'),
+			channel:		$JB.down(rootClass+'channel'),
 			btn_join_channel:	$JB.down(rootClass+'channel-button'),
 			previous_button:	$JB.down(rootClass+'previous-button'),
 			next_button:		$JB.down(rootClass+'next-button'),
-			cb_autorefresh:		$JB.down(rootClass+'autorefresh'),
+			cb_autorefresh:	$JB.down(rootClass+'autorefresh'),
 			btn_refresh:		$JB.down(rootClass+'refresh-button'),
 			song_artist:		$JB.down(rootClass+'song-artist'),
-			song_album:			$JB.down(rootClass+'song-album'),
-			song_title:			$JB.down(rootClass+'song-title'),
+			song_album:		$JB.down(rootClass+'song-album'),
+			song_title:		$JB.down(rootClass+'song-title'),
 			play_queue_content:	$JB.down(rootClass+'playqueue-content'),
 			selection_plugin:	$JB.down(rootClass+'plugin'),
 			btn_apply_plugin:	$JB.down(rootClass+'plugin-button'),
 			volume_box_slider:	$JB.down(rootClass+'volume-slider'),
-			tabs_links:			$JB.down(rootClass+'tabs-links')
+			tabs_links:		$JB.down(rootClass+'tabs-links')
 		};
 
 		// Initial visibility state
