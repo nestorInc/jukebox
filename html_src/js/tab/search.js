@@ -154,8 +154,10 @@ this.SearchTab = Class.create(Tab,
 			var music_wrapper_width = this.DOM.up().getWidth();
 
 			var sliderTpl = '' +
-			'<div class="'+sliderCSS+' '+sliderCSS2+'" style="width:' + music_wrapper_width + 'px;">' +
-				'<div class="'+handleCSS+'"></div>' +
+			'<div class="'+sliderCSS2+'">' +
+				'<div class="'+sliderCSS+'" style="width:' + music_wrapper_width + 'px;">' +
+					'<div class="'+handleCSS+'"></div>' +
+				'</div>' +
 			'</div>';
 			var linksTpl = '<div class="'+this.rootCSS+'-search-page-links"></div>';
 

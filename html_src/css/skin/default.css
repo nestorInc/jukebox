@@ -430,13 +430,12 @@ color: #880000;
 
 /* Sliders */
 .jukebox-slider{
-margin: 15px 0;
 background-color: #ccc;
 height: 15px;
 position: relative;
 }
 .jukebox-slider-handle{
-width: 25px;
+width: 25px; /* Must match search.js slider.handleLength = 25; */
 height: 25px;
 background-color: #888;
 cursor: move;
@@ -457,6 +456,11 @@ div.jukebox-volume-slider div.jukebox-slider-handle{
 width: 10px;
 height: 20px;
 margin-left: 0;
+}
+div.jukebox-search-slider{
+margin-top: 10px; /* Add 5 extra space pixels at the top, before the handle */
+height: 25px; /* Add 5 extra space pixels at the bottom */
+/*margin-bottom: 5px; Do NOT use margin-bottom to have left border always solid */
 }
 
 /* Search page links */
