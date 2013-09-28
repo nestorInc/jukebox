@@ -16,10 +16,28 @@ this.SearchTab = Class.create(Tab,
 		this.updateNewSearchInformations(server_results);
 	},
 
+	// Implements getOptions
+	getOptions: function()
+	{
+		var opts = {},
+			count = 0,
+			toSave = ['select_fields', 'search_value', 'search_comparison', 'search_field', 'order_by', 'result_count', 'current_page'];
+		for(var i = 0; i < toSave.length; ++i)
+		{
+			var prop = toSave[i];
+			if(this.hasOwnProperty(prop))
+			{
+				opts[prop] = this[prop]; // Ensure it is a copy, not a reference
+				count++;
+			}
+		}
+		return count === 0 ? null : opts;
+	},
+
 	updateNewSearchInformations: function(server_results)
 	{
-		// Tab name
-		var search = server_results.search_value,
+		var oldOptions = this.getOptions(),
+			search = server_results.search_value,
 			field = server_results.search_field;
 		if(search === '')
 		{
@@ -50,7 +68,7 @@ this.SearchTab = Class.create(Tab,
 		this.search_comparison = server_results.search_comparison;
 		this.search_field = server_results.search_field;
 		this.first_result = server_results.first_result;
-		this.result_count = server_results.result_count;
+		this.result_count = parseInt(server_results.result_count, 10);
 		this.order_by = server_results.order_by;
 		this.total_results = server_results.total_results;
 		this.server_results = server_results.results || [];
@@ -68,12 +86,16 @@ this.SearchTab = Class.create(Tab,
 		{
 			this.current_page = 1;
 		}
+
 		this.locked = [];
+
+		// Update data in storage
+		this.refreshStorage(oldOptions);
 	},
 
 	goToPage: function(page)
 	{
-		this.jukebox.search((page - 1) * this.result_count,
+		this.jukebox.search(page,
 			this.identifier,
 			this.select_fields,
 			this.search_value,
@@ -199,7 +221,7 @@ this.SearchTab = Class.create(Tab,
 			{
 				range: $R(1, that.pages.length),
 				values: that.pages,
-				sliderValue: that.current_page || 1,
+				sliderValue: that.current_page,
 				id: i++,
 				timeout: null,
 				lastSelectedValue: null,
@@ -256,8 +278,9 @@ this.SearchTab = Class.create(Tab,
 			console.log(h.getLayout().get('width'));
 			console.log(h.clientWidth);
 			*/
-			// So we have to hard code the width specified in CSS .jukebox-search-slider-handle{}
-			slider.handleLength = 25;			
+			// So we have to hard code the width specified in CSS .jukebox-slider-handle{}
+			slider.handleLength = 25;
+			slider.setValue(that.current_page); // refresh slider position (avoid bug when current_page > 1 on start in a hidden tab)
 
 			that.sliders.push(slider);
 		});

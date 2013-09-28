@@ -1,13 +1,34 @@
-/* global HTML5Storage */
+/* global HTML5Storage, Event */
 
 var Tab = this.Tab = Class.create(
 {
 	initialize: function(tabName, rootCSS, jukebox, template)
 	{
+		/*this.DOM and this.className are defined by updateContent*/
 		this.name = tabName;
 		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
 		this.template = template;
+	},
+
+	refreshStorage: function(oldOptions)
+	{
+		if(this.DOM)
+		{
+			var data =
+			{
+				before: oldOptions,
+				now: this.getOptions()
+			};
+			Event.fire(this.DOM, "jukebox:refreshStorage", data);
+		}
+	},
+
+	// To override in sub-classes
+	// Returns a collection of property: value, or null if not implemented
+	getOptions: function()
+	{
+		return null;
 	}
 });
 
@@ -84,6 +105,10 @@ this.Tabs = Class.create(
 			this.lastUniqueId++;
 		}
 
+		// Define .className to be able to determine the class by an instance of a Tab
+		// (instance.constructor.name isn't possible with prototypejs)
+		tab.className = className;
+
 		// Set the new tab identifier and add tab
 		var id = tab.identifier = this.lastUniqueId;
 		this.tabs.push(tab);
@@ -100,7 +125,7 @@ this.Tabs = Class.create(
 			removeTab = new Element('a', {href: noHref}).update('<span> X </span>');
 
 		toggleTab.on("click", this.toggleTab.bind(this, id));
-		removeTab.on("click", this.removeTab.bind(this, id, className));
+		removeTab.on("click", this.removeTab.bind(this, id));
 
 		var tabDisplay = new Element('li', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
 		{
@@ -136,51 +161,89 @@ this.Tabs = Class.create(
 				type: className
 			};
 
-			if(className == "SearchTab")
+			var options = tab.getOptions();
+			if(options !== null) // Only define the options property if necessary
 			{
-				var toSave = ['select_fields', 'search_value', 'search_comparison', 'search_field', 'order_by', 'result_count', 'current_page'],
-					obj = {};
-				for(var i = 0; i < toSave.length; ++i)
-				{
-					var prop = toSave[i];
-					obj[prop] = tab[prop];
-				}
-				tabDescriptor.options = obj;
+				tabDescriptor.options = options;
 			}
 
 			var openedTabs = HTML5Storage.get("tabs") || [];
-			if(this.getTabIndexInStorage(openedTabs, className, tab) == -1) // Not found
+			if(this.getTabIndexInStorage(openedTabs, tab.className, tab.getOptions()) == -1) // Not found
 			{
 				//openedTabs.splice(index, 0, className); // insert at a specific index
 				openedTabs.push(tabDescriptor);
 			}
 			HTML5Storage.set("tabs", openedTabs);
+
+			// Listen to custom event
+			var that = this;
+			tabContentContainer.on("jukebox:refreshStorage", function(evt)
+			{
+				that.updateTabOptionsInStorage(tab, evt.memo.now, evt.memo.before);
+			});
 		}
 
 		return id;
 	},
 
-	getTabIndexInStorage: function(openedTabs, className, tab)
+	updateTabOptionsInStorage: function(tab, options, originalOptions)
+	{
+		if(HTML5Storage.isSupported)
+		{
+			var openedTabs = HTML5Storage.get("tabs") || [],
+				index = this.getTabIndexInStorage(openedTabs, tab.className, originalOptions);
+			if(index != -1)
+			{
+				// Set new options
+				if(options)
+				{
+					openedTabs[index].options = options;
+				}
+				else
+				{
+					delete openedTabs[index].options;
+				}
+			}
+			HTML5Storage.set("tabs", openedTabs);
+		}
+	},
+
+	compareOptions: function(opts1, opts2)
+	{
+		var prop,
+			c1 = 0,
+			c2 = 0;
+
+		// Dummy object comparison
+		if(opts1 === null || opts2 === null)
+		{
+			return opts1 == opts2;
+		}
+		for(prop in opts1)
+		{
+			if(opts1[prop] !== opts2[prop])
+			{
+				return false;
+			}
+			c1++;
+		}
+		// Check opts2 hasn't more options
+		for(prop in opts2)
+		{
+			c2++;
+		}
+		return c1 == c2;
+	},
+
+	getTabIndexInStorage: function(openedTabs, className, options)
 	{
 		var index = -1;
 		for(var i = 0; i < openedTabs.length; ++i)
 		{
 			if(openedTabs[i].type == className)
 			{
-				var opts = openedTabs[i].options;
-				if(
-					className != "SearchTab" ||
-					// Do not resave tab on restore
-					(className == "SearchTab" && // We cannot use identifier
-						tab.select_fields == opts.select_fields &&
-						tab.search_value == opts.search_value &&
-						tab.search_comparison == opts.search_comparison &&
-						tab.search_field == opts.search_field &&
-						tab.order_by == opts.order_by &&
-						tab.result_count == opts.result_count &&
-						tab.current_page == opts.current_page
-					)
-				)
+				var equals = this.compareOptions(options, openedTabs[i].options);
+				if(equals)
 				{
 					index = i;
 					break;
@@ -190,7 +253,7 @@ this.Tabs = Class.create(
 		return index;
 	},
 
-	removeTab: function(identifier, className)
+	removeTab: function(identifier)
 	{
 		var index = this.getTabIndexFromUniqueId(identifier);
 		if(index != -1)
@@ -221,7 +284,7 @@ this.Tabs = Class.create(
 			if(HTML5Storage.isSupported)
 			{
 				var openedTabs = HTML5Storage.get("tabs") || [],
-					tabIndex = this.getTabIndexInStorage(openedTabs, className, tab);
+					tabIndex = this.getTabIndexInStorage(openedTabs, tab.className, tab.getOptions());
 				if(tabIndex != -1)
 				{
 					openedTabs.splice(tabIndex, 1);

@@ -77,6 +77,11 @@ function Action(name, opts)
 */
 Action.search = function(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select)
 {
+	if(!page)
+	{
+		page = 1;
+	}
+
 	var opts =
 	{
 		identifier: identifier ? identifier : null,
@@ -86,7 +91,7 @@ Action.search = function(page, identifier, select_fields, search_value, search_c
 		search_comparison: search_comparison ? search_comparison : search_field != 'genre' ? 'like' : 'equal',
 		search_field: search_field,
 
-		first_result: (!page || page == 1) ? 0 : page,
+		first_result: (page - 1) * parseInt(result_count, 10),
 		result_count: result_count
 	};
 	if(order_by)
