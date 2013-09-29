@@ -541,6 +541,10 @@ function JukeboxUI(jukebox, element, opts)
 		{ 
 			result_count = _$.results_per_page.value;
 		}
+		if(typeof select == "undefined")
+		{
+			select = true;
+		}
 		J.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
 	}
 
