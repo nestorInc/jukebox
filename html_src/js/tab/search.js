@@ -11,8 +11,8 @@ this.SearchTab = Class.create(Tab,
 		this.tableKit = null;
 		this.DOM = null;
 
-		$super(server_results.identifier, rootCSS, jukebox, template);
-		
+		$super(rootCSS, jukebox, template);
+
 		this.updateNewSearchInformations(server_results);
 	},
 

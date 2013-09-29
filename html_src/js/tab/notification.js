@@ -1,9 +1,8 @@
 this.NotificationTab = Class.create(Tab,
 {
-	initialize: function(tabName, rootCSS)
+	initialize: function(rootCSS)
 	{
-		this.name = tabName;
-		this.uploader = null;
+		this.name = "Notifications";
 		this.rootCSS = rootCSS;
 	},
 

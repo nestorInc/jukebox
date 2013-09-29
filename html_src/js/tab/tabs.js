@@ -2,10 +2,9 @@
 
 var Tab = this.Tab = Class.create(
 {
-	initialize: function(tabName, rootCSS, jukebox, template)
+	initialize: function(rootCSS, jukebox, template)
 	{
 		/*this.DOM and this.className are defined by updateContent*/
-		this.name = tabName;
 		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
 		this.template = template;
@@ -49,9 +48,10 @@ this.Tabs = Class.create(
 	{
 		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
-			if(this.tabs[i].identifier == identifier)
+			var tab = this.tabs[i];
+			if(tab.identifier == identifier)
 			{
-				return this.tabs[i];
+				return tab;
 			}
 		}
 		return null;
@@ -73,9 +73,10 @@ this.Tabs = Class.create(
 	{
 		for(var i = 0; i < this.tabs.length; ++i)
 		{
-			if(this.tabs[i] instanceof tabClass)
+			var tab = this.tabs[i];
+			if(tab instanceof tabClass)
 			{
-				return this.tabs[i];
+				return tab;
 			}
 		}
 		return null;
@@ -311,6 +312,78 @@ this.Tabs = Class.create(
 			{
 				tabContent.hide();
 				tabHeader.removeClassName(this.rootCSS + '-tabs-active');
+			}
+		}
+	}
+});
+
+//==================================================
+
+this.TabsManager = Class.create(
+{
+	initialize: function(rootCSS, jukebox, availableTabs, tabs, tabsTemplates)
+	{
+		this.rootCSS = rootCSS;
+		this.jukebox = jukebox;
+		this.tabs = tabs; // Reference to already opened tabs (instance of Tabs class)
+		this.availableTabs = availableTabs;
+		this.tabsTemplates = tabsTemplates;
+
+		for(var tabName in availableTabs)
+		{
+			this[tabName] =
+			{
+				Open: this.openTab.bind(this, tabName),
+				Close: this.closeTab.bind(this, tabName)
+			};
+		}
+	},
+
+	openTab: function(className)
+	{
+		var tabClass = this.availableTabs[className],
+			search = this.tabs.getFirstTabByClass(tabClass),
+			identifier;
+		if(search === null) // tab inexistant -> create it
+		{
+			var template = this.tabsTemplates ? this.tabsTemplates[className] : null,
+				newTab = new tabClass(this.rootCSS, this.jukebox, template);
+			identifier = this.tabs.addTab(newTab, className);
+		}
+		else
+		{
+			identifier = search.identifier;
+		}
+		this.tabs.toggleTab(identifier); // gives focus
+	},
+
+	closeTab: function(className)
+	{
+		var tabClass = this.availableTabs[className],
+			search = this.tabs.getFirstTabByClass(tabClass);
+		if(search !== null)
+		{
+			this.tabs.removeTab(search.identifier);
+		}
+	},
+
+	restoreTabs: function()
+	{
+		if(HTML5Storage.isSupported)
+		{
+			var openedTabs = HTML5Storage.get("tabs") || [];
+			for(var i = 0; i < openedTabs.length; ++i)
+			{
+				var type = openedTabs[i].type;
+				if(type == "SearchTab")
+				{
+					var opts = openedTabs[i].options;
+					this.jukebox.search(opts.current_page, null, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
+				}
+				else
+				{
+					this.openTab(type);
+				}
 			}
 		}
 	}
