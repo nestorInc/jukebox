@@ -121,7 +121,7 @@ Jukebox.UI.skins["default"] =
 </li>',
 		tabs:
 		{
-			Uploader:
+			UploadTab:
 			{
 				main:
 '<div class="#{root}-file-uploader"></div>\
@@ -188,7 +188,7 @@ Jukebox.UI.skins["default"] =
 	</td>\
 </tr>'
 			},
-			Search:
+			SearchTab:
 			{
 				main:
 '<div class="#{pagelistClass}">\
