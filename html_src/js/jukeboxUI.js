@@ -398,15 +398,8 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.gotResponse = function(response)
 	{
-		/*TODO: use syntax like that?
-		if(TabManager.DebugTag.isDisplayed())
-		{
-			TabManager.DebugTag.updateResponse(null);
-		}
-		*/
-
 		var tab = _tabs.getFirstTabByClass(DebugTab);
-		if(tab)
+		if(tab && _tabs.isTabActive(tab.identifier))
 		{
 			tab.updateResponse(response);
 		}

@@ -299,11 +299,10 @@ this.Tabs = Class.create(
 	{
 		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
-			var tab = this.tabs[i],
-				id = tab.identifier,
+			var id = this.tabs[i].identifier,
 				tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id),
 				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+id);
-			if(tab.identifier == identifier)
+			if(id == identifier)
 			{
 				tabContent.show();
 				tabHeader.addClassName(this.rootCSS + '-tabs-active');
@@ -314,6 +313,20 @@ this.Tabs = Class.create(
 				tabHeader.removeClassName(this.rootCSS + '-tabs-active');
 			}
 		}
+	},
+
+	isTabActive: function(identifier)
+	{
+		for(var i = 0, len = this.tabs.length; i < len; ++i)
+		{
+			var id = this.tabs[i].identifier;
+			if(id == identifier)
+			{
+				var tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id);
+				return tabHeader.hasClassName(this.rootCSS + '-tabs-active');
+			}
+		}
+		return false;
 	}
 });
 
