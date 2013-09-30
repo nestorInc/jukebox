@@ -2,9 +2,9 @@
 
 this.DebugTab = Class.create(Tab, 
 {
-	initialize: function(tabName, rootCSS)
+	initialize: function(rootCSS)
 	{
-		this.name = tabName;
+		this.name = "Debug";
 		this.rootCSS = rootCSS;
 	},
 
