@@ -14,8 +14,10 @@ upload:
 server:
   -
     port: 8080
+    host: "0.0.0.0"
   -
     port: 8082
+    host: "0.0.0.0"
     ssl: true
     certificate: ca.crt
     key: ca.key

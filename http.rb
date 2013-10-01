@@ -545,12 +545,13 @@ class HttpServer < Rev::TCPServer
   #  * certificate (default nil, only use with ssl)
   def initialize(root = nil, options = {})
     port = options[:port.to_s] || 8080;
+    host = options[:host.to_s] || nil;
 
     @root   = root
     @root ||= HttpRootNode.new();
 
     log("starting http server")
-    super(nil, port, HttpSession, @root, options);
+    super(host, port, HttpSession, @root, options);
   end
 
   private
