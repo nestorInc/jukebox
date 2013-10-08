@@ -111,6 +111,7 @@ class SongQueue < Playlist
   def shuffle()
     @timestamp = Time.now().to_i();
     v = @list[@pos+1..-1] || [];
+    puts v[0];
     @list = @list[0..@pos] + v.shuffle;
   end
 
@@ -133,4 +134,43 @@ class SongQueue < Playlist
       :songs   => queue || []
     }
   end
+end
+
+module ShuffleForSongQueue
+  def SFSQsetlib(library)
+    @library = library
+  end
+
+  def SFSQcompute_min_cycle(song)
+    0
+  end
+
+  def shuffle()
+    @timestamp = Time.now().to_i();
+    v = @list[@pos+1..-1] || [];
+    puts v[0];
+    @list = @list[0..@pos] + SFSQshuffle(v);
+  end
+
+  def SFSQshuffle(songs)
+
+    min_cycle = SFSQcompute_min_cycle(songs);
+
+    discard = [];
+    pick = songs;
+    playlist = [];
+    (0..songs.size).each { playlist.push SFSQnext_item(pick, discard, min_cycle) };
+    playlist;
+  end
+
+  def SFSQnext_item pick, discard, min_cycle
+    begin
+      mid = pick.delete_at(rand(pick.count));
+      song = @library.get_file(mid).first
+    end while discard.include? song.artist;
+    discard.push song.artist;
+    discard.shift if (discard.count > min_cycle);
+    mid;
+  end
+
 end
