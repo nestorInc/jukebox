@@ -136,3 +136,36 @@ class SongQueue < Playlist
     }
   end
 end
+
+module ShuffleForSongQueue
+  def SFSQsetlib(library)
+    @library = library
+    @categories = Hash.new { |hash, key| hash[key] = [] }
+  end
+
+  def build_categories(songs)
+    @categories = Hash.new { |hash, key| hash[key] = [] }
+    songs.shuffle.each { |s| categorize s };
+  end
+
+  def categorize(mid)
+    song = @library.get_file(mid).first
+    @categories[song.artist].push(mid)
+  end
+
+  def shuffle()
+    @timestamp = Time.now().to_i();
+    v = @list[@pos+1..-1] || [];
+    @list = @list[0..@pos] + userShuffle(v);
+  end
+
+  def userShuffle(songs)
+    build_categories(songs)
+    tup = @categories.map { |k, v| r=rand(); v.map.with_index { |x, i|
+                              [x, (r+i)*1.to_f/v.size.to_f] } }
+    tup = tup.flatten(1)
+    tup.sort_by!{ |v| v[1] }
+#    puts tup.inspect
+    tup.map { |t, v| t }
+  end
+end
