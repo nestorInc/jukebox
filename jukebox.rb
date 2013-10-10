@@ -24,11 +24,8 @@ raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
 $error_file = File.open("error.log", "a+");
 
-library = Library.new();
-channelList = {};
 
 # Config
-
 config = {}
 begin
   data   = File.open("jukebox.cfg", &:read);
@@ -37,8 +34,27 @@ rescue => e
   error("Config file error: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
 end
 
-# Encode
+pid_filename = config[:pid.to_s] || "jukebox.pid";
+old_pid = File.read(pid_filename);
 
+begin
+  Process.getpgid( old_pid.to_i )
+  error("Jukebox already started with pid #{old_pid}");
+  exit
+rescue Errno::ESRCH
+  File.delete(pid_filename);
+end
+
+begin
+  File.open(pid_filename, 'w') { |file| file.write(Process.pid) }
+rescue => e
+  error("Could not save pid #{pid_filename}");
+end
+
+library = Library.new();
+channelList = {};
+
+# Encode
 Thread.new() {
   e = Encode.new(library, config[:encode.to_s]);
   e.attach(Rev::Loop.default);
@@ -159,6 +175,8 @@ end
 begin
   Rev::Loop.default.run();
 rescue => e
+  File.delete(pid_filename);
+
   stat = YAML::load(File.open("exception_stat", File::RDONLY | File::CREAT, 0600));
   stat = {} if(stat == false);
 
