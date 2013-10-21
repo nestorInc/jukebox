@@ -34,15 +34,21 @@ rescue => e
   error("Config file error: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
 end
 
-pid_filename = config[:pid.to_s] || "jukebox.pid";
-old_pid = File.read(pid_filename);
-
 begin
-  Process.getpgid( old_pid.to_i )
-  error("Jukebox already started with pid #{old_pid}");
-  exit
-rescue Errno::ESRCH
-  File.delete(pid_filename);
+  pid_filename = config[:pid.to_s] || "jukebox.pid";
+  old_pid = File.read(pid_filename);
+rescue => e
+
+end
+
+if old_pid
+  begin
+    Process.getpgid( old_pid.to_i )
+    error("Jukebox already started with pid #{old_pid}");
+    exit
+  rescue Errno::ESRCH
+    File.delete(pid_filename);
+  end
 end
 
 begin
@@ -85,23 +91,24 @@ main.addAuth() { |s, req, user, pass|
     form = Hash[URI.decode_www_form(req.uri.query)] ;
     if(form["token"])
       token = form["token"];
-      luser = library.check_token(token);
+      luser = library.check_login_token(nil, token);
+      if luser
+        sid = library.get_login_token_session(token)
+        if not sid
+          #TODO change sudo_user with guest and add guest to db
+          sid = library.create_user_session(luser, 
+                                            s.remote_address.ip_address, 
+                                            req.options["User-Agent"] );
+          library.update_login_token_session(token, sid)
+        end
 
-      #TODO change sudo_user with guest and add guest to db
-      sid = library.create_user_session(luser, 
-                                        luser, 
-                                        s.remote_address.ip_address, 
-                                        req.options["User-Agent"] );
-      if(luser)
         s.user.replace(luser);
         user.replace(luser);
         stream.channel_init(luser);
         req.options = {} if req.options == nil
-
         req.options["Set-Cookie"] = []
-        req.options["Set-Cookie"] << Cookie.new({"user" => luser}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-        req.options["Set-Cookie"] << Cookie.new({"method" => "token"}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
         req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+        req.options["Set-Cookie"] << Cookie.new({"user" => luser}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
         next "token"
       end
     end
@@ -126,17 +133,15 @@ main.addAuth() { |s, req, user, pass|
 
   if(pass)
     if( library.login(user, pass) )
-      sid = library.create_user_session(nil, 
-                                        user, 
+      sid = library.create_user_session(user, 
                                         s.remote_address.ip_address, 
                                         req.options["User-Agent"] );
 
       # TODO create session and fill cookie with session hash
       stream.channel_init(s.user)
       req.options["Set-Cookie"] = []
-      req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-      req.options["Set-Cookie"] << Cookie.new({"method" => "PAM"}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
       req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+      req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
       next "HttpAuth"
     end
   end

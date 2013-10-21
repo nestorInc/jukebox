@@ -113,7 +113,7 @@ class Library
   end
 
   def init_db()
-        # Activate the use of foreign keys contraints for sqlite 3
+    # Activate the use of foreign keys contraints for sqlite 3
     sql = <<SQL
     PRAGMA foreign_keys = ON;
     create table if not exists library (
@@ -131,15 +131,13 @@ class Library
                        creation INTEGER);
     create table if not exists sessions (
                        sid TEXT PRIMARY KEY,
-                       sudo_uid INTEGER UNSIGNED,
                        uid INTEGER UNSIGNED,
                        user_agent TEXT,
                        remote_ip TEXT,
                        creation INTEGER,
                        last_connexion INTEGER,
                        validity INTEGER,
-                       FOREIGN KEY(uid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE,
-                       FOREIGN KEY(sudo_uid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE);
+                       FOREIGN KEY(uid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE);
     create table if not exists groups (
                        gid TEXT PRIMARY KEY,
                        label TEXT );
@@ -162,12 +160,6 @@ class Library
                        PRIMARY KEY(right, gid),
                        FOREIGN KEY(right) REFERENCES rights(right) ON UPDATE CASCADE ON DELETE CASCADE,
                        FOREIGN KEY(gid) REFERENCES groups(gid) ON UPDATE CASCADE ON DELETE CASCADE);
-    create table if not exists rights_tokens (
-                       right INTEGER UNSIGNED,
-                       tid INTEGER UNSIGNED,
-                       PRIMARY KEY(tid, right),
-                       FOREIGN KEY(right) REFERENCES rights(right) ON UPDATE CASCADE ON DELETE CASCADE,
-                       FOREIGN KEY(tid) REFERENCES tokens(tid) ON UPDATE CASCADE ON DELETE CASCADE);
     create table if not exists tokens (
                        tid INTEGER PRIMARY KEY,
                        token TEXT UNIQUE,
@@ -175,8 +167,12 @@ class Library
                        activated INTEGER UNSIGNED,
                        type INTEGER UNSIGNED,
                        FOREIGN KEY(right) REFERENCES rights(right) ON UPDATE CASCADE ON DELETE CASCADE);
-    create table if not exists sessions_tokens (
-                       tid INTEGER PRIMARY KEY);
+    create table if not exists login_tokens (
+                       tid INTEGER PRIMARY KEY,
+                       uid INTEGER, 
+                       sid INTEGER,
+                       FOREIGN KEY(uid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE,
+                       FOREIGN KEY(tid) REFERENCES tokens(tid) ON UPDATE CASCADE ON DELETE CASCADE);
 SQL
 
     @db.execute_batch( sql );
@@ -198,11 +194,11 @@ SQL
 
     sql = <<SQL
      BEGIN;
-     INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) VALUES (NULL, '/users/root', 'root', '#{bcrypt_pass}', 1, #{creation.strftime("%s")});
+     INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) VALUES (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}root', 'root', '#{bcrypt_pass}', 1, #{creation.strftime("%s")});
 
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
      SELECT 
-        '/', 
+        '#{$right_paths["root"]}', 
         U.uid, 
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
         0
@@ -211,7 +207,7 @@ SQL
 
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
      SELECT 
-        '/users/', 
+        '#{$right_paths["root"]}#{$right_paths["users"]}', 
         U.uid, 
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
         0
@@ -220,7 +216,7 @@ SQL
 
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
      SELECT 
-        '/channels/', 
+        '#{$right_paths["root"]}#{$right_paths["channels"]}', 
         U.uid, 
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
         0
@@ -229,7 +225,7 @@ SQL
 
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )      
      SELECT 
-        '/groups/', 
+        '#{$right_paths["root"]}#{$right_paths["groups"]}', 
         U.uid, 
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
         0
@@ -238,7 +234,7 @@ SQL
 
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
      SELECT 
-        '/users/root/', 
+        '#{$right_paths["root"]}#{$right_paths["users"]}root/', 
         U.uid, 
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
         0
@@ -247,29 +243,28 @@ SQL
 
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
      SELECT 
-        '/groups/root', 
+        '#{$right_paths["root"]}#{$right_paths["groups"]}root', 
         U.uid, 
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
         0
      FROM users as U
      WHERE U.nickname = 'root';
 
-     INSERT OR IGNORE INTO groups (gid, label) VALUES ("/groups/root", "root");
+     INSERT OR IGNORE INTO groups (gid, label) VALUES ("#{$right_paths["root"]}#{$right_paths["groups"]}root", "root");
      INSERT OR IGNORE INTO groups_users (gid, uid) 
      SELECT 
-        '/groups/root', 
+        '#{$right_paths["root"]}#{$right_paths["groups"]}root', 
         U.uid 
      FROM users AS U
      WHERE nickname="root";
-     INSERT OR REPLACE INTO rights_groups (right, gid, flag_group) VALUES ("/users/root/", "/groups/root", #{Rights_Flag::OWNER});
+     INSERT OR REPLACE INTO rights_groups (right, gid, flag_group) VALUES ("#{$right_paths["root"]}#{$right_paths["users"]}root/", "#{$right_paths["root"]}#{$right_paths["groups"]}root", #{Rights_Flag::OWNER});
      COMMIT;
 SQL
     begin
       @db.execute_batch( sql );
     rescue => e
-      error("#{e}");
+      error("Create root user : #{e}");
     end  
-
   end
 
   def create_new_user( user, pass, validated )
@@ -277,37 +272,62 @@ SQL
     creation = Time.now();
 
     sql = <<SQL
-     BEGIN;
-     INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) VALUES (NULL, '/users/#{user}', '#{user}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
-     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
-     SELECT 
-        '/users/#{user}/', 
-        U.uid, 
-        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+      BEGIN;
+
+      INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) 
+      VALUES 
+      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}', '#{user}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
+
+      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
+      SELECT
+        '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/',
+        U.uid,
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER },
         0
-     FROM users as U
-     WHERE U.nickname = '#{user}';
-     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
-     SELECT 
-        '/channels/#{user}/', 
-        U.uid, 
-        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
-         #{ Rights_Flag::READ }
-     FROM users as U
-     WHERE U.nickname = '#{user}';
+      FROM users as U
+      WHERE U.nickname = '#{user}'; 
 
-     INSERT OR IGNORE INTO groups (gid, label) VALUES ("/groups/#{user}", "#{user}");
-     INSERT OR IGNORE INTO groups_users (gid, uid)
-     SELECT 
-        '/groups/#{user}', 
+      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
+      SELECT
+        '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/#{$right_paths["tokens"]}',
+        U.uid,
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER },
+        0
+      FROM users as U
+      WHERE U.nickname = '#{user}'; 
+
+
+      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
+      SELECT
+        '#{$right_paths["root"]}#{$right_paths["channels"]}#{user}/',
+        U.uid,
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER },
+        #{ Rights_Flag::READ }
+      FROM users as U
+      WHERE U.nickname = '#{user}';
+
+      INSERT OR IGNORE INTO groups (gid, label) 
+      VALUES ("#{$right_paths["root"]}#{$right_paths["groups"]}#{user}", "#{user}");
+
+      INSERT OR IGNORE INTO groups_users (gid, uid)
+      SELECT
+        '#{$right_paths["root"]}#{$right_paths["groups"]}#{user}',
         U.uid
-     FROM users as U
-     WHERE U.nickname = '#{user}';
+      FROM users as U
+      WHERE U.nickname = '#{user}';
 
-     INSERT OR REPLACE INTO rights_groups (right, gid, flag_group) VALUES ("/users/#{user}/", "/groups/#{user}", #{Rights_Flag::READ | Rights_Flag::WRITE});
-     COMMIT;
+      INSERT OR REPLACE INTO rights_groups (right, gid, flag_group) 
+      VALUES ("#{$right_paths["root"]}#{$right_paths["users"]}#{user}/", "#{$right_paths["root"]}#{$right_paths["groups"]}#{user}", #{Rights_Flag::READ | Rights_Flag::WRITE});
+
+      COMMIT;
 SQL
-    @db.execute_batch( sql );
+    begin 
+      @db.execute_batch( sql );
+    rescue =>e
+      error("Create user : #{e}");
+    end
+
+    create_login_token( user );
 
     @db.execute("SELECT uid FROM users WHERE nickname='#{user}' LIMIT 1") do |row|
       return row["uid"];
@@ -315,6 +335,52 @@ SQL
     nil;
   end
 
+  def create_login_token( userNickname )
+    hashExists = false;
+    gen_hash_retry = 0;
+    char_set =  [('a'..'z'),('A'..'Z'), ('0'..'9')].map{|i| i.to_a}.flatten
+    random_string=nil;
+    while ( hashExists == false )
+      random_string = (0...6).map{ char_set[rand(char_set.length)] }.join
+      res = @db.execute("SELECT count(*) as hash_exists FROM tokens WHERE token='#{random_string}'");
+      hashExists = true if( res[0] != nil and res[0]["hash_exists"] == 0)
+      return nil if(gen_hash_retry >= 100)
+    end
+
+    #TODO check if user exists
+
+    sql = <<SQL
+     BEGIN;
+
+     INSERT OR IGNORE INTO rights (right, owner, flag_owner, flag_others )
+     SELECT 
+        '#{$right_paths["root"]}#{$right_paths["users"]}#{userNickname}/#{$right_paths["tokens"]}#{random_string}', 
+        U.uid,
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER },
+        #{ Rights_Flag::READ | Rights_Flag::EXECUTE }
+     FROM users as U
+     WHERE U.nickname = '#{userNickname}';
+
+     INSERT OR IGNORE INTO tokens (tid, token, right, activated, type) 
+     VALUES (NULL, '#{random_string}', '#{$right_paths["root"]}#{$right_paths["users"]}#{userNickname}/#{$right_paths["tokens"]}#{random_string}', 0, #{Tokens_Type::LOGIN});
+
+     INSERT OR IGNORE INTO login_tokens ( tid, uid, sid )
+     SELECT 
+        T.tid,
+        U.uid,
+        NULL
+     FROM users as U, tokens as T
+     WHERE U.nickname = '#{userNickname}'
+     AND T.token = '#{random_string}';
+ 
+     COMMIT;
+SQL
+    begin
+      @db.execute_batch( sql );
+    rescue => e
+      error("#{e}");
+    end  
+  end
 
   def login( user, pass )
       req = @db.prepare("SELECT hash FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
@@ -347,20 +413,13 @@ SQL
   end
 
   #TODO refactor use execute and mapping values
-  def create_user_session(sudo_user, user, remote_ip, user_agent )
+  def create_user_session( user, remote_ip, user_agent )
     return false if(user == nil)
 
     #retrieve user uid
     uid = nil;
     res = @db.execute("SELECT uid FROM users WHERE nickname='#{user}'");
     uid = res[0]["uid"] if(res[0] != nil);
-
-    #retrieve sudo_user uid
-    suid = uid;
-    if (sudo_user != nil)
-      res = @db.execute("SELECT uid FROM users WHERE nickname='#{sudo_user}'");
-      suid = res[0]["uid"];
-    end
 
     creation = (Time.now()).strftime("%s");
     #TODO constant for session validity
@@ -379,7 +438,7 @@ SQL
       return nil if(gen_hash_retry >= 100)
     end
 
-    @db.execute("INSERT INTO sessions ( sid, sudo_uid, uid, user_agent, remote_ip, creation, last_connexion, validity ) VALUES ('#{random_string}', '#{suid}', '#{uid}', '#{user_agent}', '#{remote_ip}', #{creation}, #{creation}, #{validity})");
+    @db.execute("INSERT INTO sessions ( sid, uid, user_agent, remote_ip, creation, last_connexion, validity ) VALUES ('#{random_string}', '#{uid}', '#{user_agent}', '#{remote_ip}', #{creation}, #{creation}, #{validity})")
 
     # Wtf why this line doesn't work ?
     # @db.execute("INSERT INTO sessions ( sid, sudo_uid, uid, user_agent, remote_ip, creation, last_connexion, validity ) VALUES (?,?,?,?,?,?,?,?)", random_string, suid, uid, user_agent, remote_ip, creation, creation, validity);
@@ -416,27 +475,120 @@ SQL
     end
   end
 
-  def check_token(token)
-    # # TEMPORARY COMMENT BECAUSE WE HAVE TO IMPLEMENTS RIGHTS
-    # req = @db.prepare("SELECT user FROM token WHERE token=#{token}");
-    # res = req.execute!();
-    # req.close();
-    # return nil if(res[0] == nil);
-    # res[0].at(0);
-    nil;
+  def check_login_token(user, token)
+    @db.execute("SELECT " +
+                " U.nickname, " +
+                " T.right " +
+                "FROM tokens as T " +
+                "INNER JOIN login_tokens as LT " +
+                "ON LT.tid = T.tid " +
+                "INNER JOIN rights as R " +
+                "ON R.right = T.right " +
+                "INNER JOIN users as U " +
+                "ON LT.uid = U.uid " +
+                "WHERE T.token='#{token}' LIMIT 1") do |row|
+      if user_has_right(user, row["right"], Rights_Flag::EXECUTE ) 
+          return row["nickname"];
+      end
+    end
+    nil
   end
 
-  def create_token(user, token)
-    # # TEMPORARY COMMENT BECAUSE WE HAVE TO IMPLEMENTS RIGHTS
-    # req = @db.prepare("INSERT OR IGNORE INTO tokens (tid, token, ) VALUES(?,?)");
-    # res = req.execute!(user, token);
-    # req.close();
-    # req = @db.prepare("SELECT token FROM token WHERE user=?");
-    # res = req.execute!(user);
-    # req.close();
-    # res[0].at(0);
-    nil;
+  def get_login_token_session(token)
+    begin
+      sid = @db.execute("SELECT LT.sid FROM login_tokens as LT INNER JOIN tokens as T ON T.tid = LT.tid WHERE T.token='#{token}' LIMIT 1")[0]["sid"]
+    rescue => e
+      error("get_login_token_sessions #{e}")
+      sid = nil
+    end
+    sid
   end
+
+  def update_login_token_session(token, sid)
+    begin
+      @db.execute("UPDATE login_tokens SET sid='#{sid}' WHERE tid='#{token}'")
+      sid
+    rescue => e
+      errror("update_token_session : #{e}")
+      nil
+    end
+  end
+
+
+  def user_has_right(user, right, askedMode )
+    begin
+      userId = @db.execute("SELECT u.uid FROM users as U WHERE U.nickname='#{user}' LIMIT 1")[0]["uid"]
+    rescue => e
+      userId = -1
+    end 
+
+    # @TODO flag_other isn't well treated : user must not be right owner or group for other flag
+    req = "SELECT 1 FROM rights as R " +
+      "LEFT JOIN rights_groups AS RG " +
+      "ON RG.right = R.right " +
+      "LEFT JOIN groups AS G " +
+      "ON G.gid = RG.gid " +
+      "LEFT JOIN groups_users AS GU " +
+      "ON GU.gid = G.gid " +
+      "WHERE R.right ='#{right}' " +
+      "AND ( " +
+      "     ( R.owner='#{userId}' ) " +
+      "  OR ( RG.flag_group & #{askedMode} = #{askedMode} AND GU.uid='#{userId}') " +
+      "  OR ( R.flag_others & #{askedMode} = #{askedMode} )) " + 
+      "LIMIT 1";
+    begin
+      res = @db.execute(req)[0];
+    rescue => e
+      error("user_has_right error => #{e}");
+      return false
+    end
+    return true if(res)
+    return true if user_is_owner(user, right)
+    false;
+  end
+
+  def user_is_owner(user, right)
+    begin
+      userId = @db.execute("SELECT u.uid FROM users as U WHERE U.nickname='#{user}' LIMIT 1")[0]["uid"]
+    rescue => e
+      userId = -1
+    end 
+
+    #Split path in order to search for each parents if the user is the owner
+    splitedPath = right.split("/");
+    currentIndex = 0;
+    while ( currentIndex < splitedPath.length)
+      currentPath = splitedPath[0..currentIndex].join("/");
+      if currentIndex == (splitedPath.length-1) and right[right.length-1] == "/"
+        currentPath = currentPath + "/";
+      elsif currentIndex != (splitedPath.length-1)
+        currentPath = currentPath + "/";
+      end
+
+      req = "SELECT 1 FROM rights as R " +
+        "LEFT JOIN rights_groups AS RG " +
+        "ON RG.right = R.right " +
+        "LEFT JOIN groups AS G " +
+        "ON G.gid = RG.gid " +
+        "LEFT JOIN groups_users AS GU " +
+        "ON GU.gid = G.gid " +
+        "WHERE R.right ='#{currentPath}' " +
+        "AND ( " +
+        "     ( R.owner='#{userId}' ) " +
+        "  OR ( RG.flag_group >= #{Rights_Flag::OWNER} AND GU.uid='#{userId}' )  " +
+        "  OR ( R.flag_others >= #{Rights_Flag::OWNER} ))";
+      begin
+        res = @db.execute(req);
+      rescue => e
+        return false
+      end
+
+      return true if(res[0])
+      currentIndex = currentIndex + 1
+    end
+    false;
+  end
+
 
   # searching methods here
   def get_nb_songs()
@@ -521,7 +673,6 @@ SQL
       end
     end
 
-    #warning("Querying database : #{request}");
     begin
       req = @db.prepare(request);
       if(value != nil)
