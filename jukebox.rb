@@ -95,10 +95,10 @@ main.addAuth() { |s, req, user, pass|
       if luser
         sid = library.get_login_token_session(token)
         if not sid
-          #TODO change sudo_user with guest and add guest to db
+          #TODO check if user has right to create session
           sid = library.create_user_session(luser, 
                                             s.remote_address.ip_address, 
-                                            req.options["User-Agent"] );
+                                            req.options["User-Agent"] )
           library.update_login_token_session(token, sid)
         end
 

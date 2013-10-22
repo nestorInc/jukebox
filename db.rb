@@ -267,6 +267,19 @@ SQL
     end  
   end
 
+  def validate_user( user )
+    sql = <<SQL
+    UPDATE users
+    SET validated = 1
+    WHERE nickname="#{user}"
+SQL
+    begin 
+      @db.execute_batch( sql );
+    rescue =>e
+      error("Validate user : #{e}");
+    end
+  end
+
   def create_new_user( user, pass, validated )
     bcrypt_pass = BCrypt::Password.create(pass);
     creation = Time.now();
