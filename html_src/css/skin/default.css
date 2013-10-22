@@ -109,7 +109,7 @@ position: relative;
 background-color: #DEDEDE;
 width: 100%;
 height: 50px;
-overflow:hidden;
+overflow: hidden;
 border-right: 1px solid black;
 border-bottom: 1px solid black;
 }
@@ -143,7 +143,7 @@ position: absolute;
 left: 70px; /* 30 * 2 + 5 * 2 */
 height: 37px;
 width: 210px; /* 280px - 70px */
-overflow: hidden;
+overflow: auto;
 
 font-size: 70%;
 padding-left: 0;
@@ -372,8 +372,12 @@ width: auto;
 min-width: 5px;
 text-align: left;
 padding-left: 5px;
-word-break: break-word;
+word-wrap: break-word;
 white-space: normal;
+}
+table.jukebox-upload-table th{
+word-wrap: normal;
+white-space: nowrap;
 }
 table.jukebox-search-table th{
 white-space: pre; /* For buttons column */
@@ -427,7 +431,7 @@ left: 0;
 .jukebox-uploaded-files{
 overflow: auto;
 }
-.jukebox-uploaded-file-actions{
+table.jukebox-upload-table .jukebox-uploaded-file-actions{
 white-space: nowrap;
 }
 .jukebox-uploaded-file-actions div{
@@ -442,13 +446,12 @@ color: #880000;
 
 /* Sliders */
 .jukebox-slider{
-margin: 15px 0;
 background-color: #ccc;
 height: 15px;
 position: relative;
 }
 .jukebox-slider-handle{
-width: 25px;
+width: 25px; /* Must match search.js slider.handleLength = 25; */
 height: 25px;
 background-color: #888;
 cursor: move;
@@ -469,6 +472,11 @@ div.jukebox-volume-slider div.jukebox-slider-handle{
 width: 10px;
 height: 20px;
 margin-left: 0;
+}
+div.jukebox-search-slider{
+margin-top: 10px; /* Add 5 extra space pixels at the top, before the handle */
+height: 25px; /* Add 5 extra space pixels at the bottom */
+/*margin-bottom: 5px; Do NOT use margin-bottom to have left border always solid */
 }
 
 /* Search page links */

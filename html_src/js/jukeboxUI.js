@@ -1,4 +1,4 @@
-/* global Extend, Tabs, FormatTime, SearchTab, UploadTab, DebugTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $R, Draggable, Droppables, Event, Notifications, HTML5Storage */
+/* global Extend, Tabs, TabsManager, FormatTime, SearchTab, UploadTab, DebugTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $R, Draggable, Droppables, Event, Notifications, HTML5Storage */
 
 /**
  * Store value in the document cookie
@@ -404,7 +404,7 @@ function JukeboxUI(jukebox, element, opts)
 		else
 		{
 			// Adds the new created tab to the tabs container
-			var searchTab = new SearchTab(results, _opts.rootClass, J, _skin.templates.tabs ? _skin.templates.tabs["Search"] : null);
+			var searchTab = new SearchTab(results, _opts.rootClass, J, _skin.templates.tabs ? _skin.templates.tabs["SearchTab"] : null);
 			var id = _tabs.addTab(searchTab, "SearchTab");
 			if(results.select !== false)
 			{
@@ -432,15 +432,8 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.gotResponse = function(response)
 	{
-		/*TODO: use syntax like that?
-		if(TabManager.DebugTag.isDisplayed())
-		{
-			TabManager.DebugTag.updateResponse(null);
-		}
-		*/
-
 		var tab = _tabs.getFirstTabByClass(DebugTab);
-		if(tab)
+		if(tab && _tabs.isTabActive(tab.identifier))
 		{
 			tab.updateResponse(response);
 		}
@@ -581,6 +574,10 @@ function JukeboxUI(jukebox, element, opts)
 		if(!result_count)
 		{
 			result_count = _$.results_per_page.value;
+		}
+		if(typeof select == "undefined")
+		{
+			select = true;
 		}
 		J.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
 	}
@@ -901,8 +898,6 @@ function JukeboxUI(jukebox, element, opts)
 			}
 		}
 
-		_tabs = new Tabs(_$.tabs, _opts.rootClass);
-
 		// Register listeners
 		_$.deco_link.on("click", _events.disconnect);
 
@@ -939,7 +934,6 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			_expand();
 		}
-
 		(function() // Tabs
 		{
 			var tabsManager = {};
@@ -963,72 +957,36 @@ function JukeboxUI(jukebox, element, opts)
 				};
 			}
 
-			var possibleTabs =
-			[
-				{
-					classN: "UploadTab",
-					classC: UploadTab,
-					name: "Uploader"
-				},
-				{
-					classN: "DebugTab",
-					classC: DebugTab,
-					name: "Debug"
-				},
-				{
-					classN: "NotificationTab",
-					classC: NotificationTab,
-					name: "Notifications"
-				},
-				{
-					classN: "CustomQueriesTab",
-					classC: CustomQueriesTab,
-					name: "Custom queries"
-				},
-				{
-					classN: "PlaylistTab",
-					classC: PlaylistTab,
-					name: "Playlists"
-				}
-			];
+		if(_skin.params.allowTabs)
+		{
+			// Instanciate the Tabs control
+			_tabs = new Tabs(_$.tabs, _opts.rootClass);
 
-			for(var i = 0; i < possibleTabs.length; ++i)
+			// Collection of tab name -> tab class
+			var availableTabs =
 			{
-				createShowTab(possibleTabs[i]);
-			}
+				"UploadTab": UploadTab,
+				"DebugTab": DebugTab,
+				"NotificationTab": NotificationTab,
+				"CustomQueriesTab": CustomQueriesTab,
+				"PlaylistTab": PlaylistTab/*,
+				"SearchTab": SearchTab*/
+			};
+			var tabsM = new TabsManager(_opts.rootClass, J, availableTabs, _tabs, _skin.templates.tabs);
 
-			if(_skin.params.allowTabs)
+			// Register listeners
+			var TL = _$.tabs_links;
+			TL.down(rootClass+'tab-upload').on("click", tabsM.UploadTab.Open);
+			TL.down(rootClass+'tab-query').on("click", tabsM.CustomQueriesTab.Open);
+			TL.down(rootClass+'tab-notifs').on("click", tabsM.NotificationTab.Open);
+			TL.down(rootClass+'tab-debug').on("click", tabsM.DebugTab.Open);
+			TL.down(rootClass+'tab-playlist').on("click", tabsM.PlaylistTab.Open);
+
+			setTimeout(function()
 			{
-				var TL = _$.tabs_links;
-				TL.down(rootClass+'tab-upload').on("click", tabsManager.ShowUploadTab);
-				TL.down(rootClass+'tab-query').on("click", tabsManager.ShowCustomQueriesTab);
-				TL.down(rootClass+'tab-notifs').on("click", tabsManager.ShowNotificationTab);
-				TL.down(rootClass+'tab-debug').on("click", tabsManager.ShowDebugTab);
-				TL.down(rootClass+'tab-playlist').on("click", tabsManager.ShowPlaylistTab);
-
-				// Restore opened tabs
-				if(HTML5Storage.isSupported)
-				{
-					setTimeout(function()
-					{
-						var openedTabs = HTML5Storage.get("tabs") || [];
-						for(var i = 0; i < openedTabs.length; ++i)
-						{
-							var type = openedTabs[i].type;
-							if(type == "SearchTab")
-							{
-								var opts = openedTabs[i].options;
-								_search(opts.current_page, null, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
-							}
-							else
-							{
-								tabsManager["Show"+type]();
-							}
-						}
-					}, 0); // Avoid issue when restoring tab on jukebox instanciation (_ui undefined in jukebox.js because _init() not finished yet)
-				}
-			}
-		})();
+				tabsM.restoreTabs();
+			}, 0); // Avoid issue when restoring tab on jukebox instanciation (_ui undefined in jukebox.js because _init() not finished yet)
+		}
 	}
 
 	//---

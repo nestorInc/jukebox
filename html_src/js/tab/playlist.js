@@ -2,9 +2,9 @@
 
 this.PlaylistTab = Class.create(Tab,
 {
-	initialize: function(tabName, rootCSS, jukebox)
+	initialize: function(rootCSS, jukebox)
 	{
-		this.name = tabName;
+		this.name = "Playlists";
 		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
 	},

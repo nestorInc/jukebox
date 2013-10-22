@@ -3,9 +3,9 @@
 
 this.CustomQueriesTab = Class.create(Tab,
 {
-	initialize: function(tabName, rootCSS)
+	initialize: function(rootCSS)
 	{
-		this.name = tabName;
+		this.name = "Custom queries";
 		this.rootCSS = rootCSS;
 	},
 

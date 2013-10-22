@@ -3,9 +3,9 @@
 
 this.UploadTab = Class.create(Tab,
 {
-	initialize: function(tabName, rootCSS, jukebox, template)
+	initialize: function(rootCSS, jukebox, template)
 	{
-		this.name = tabName;
+		this.name = "Uploader";
 		this.uploader = null;
 		this.uploadedFiles = null;
 		this.uploadedFilesEdition = null;
@@ -18,7 +18,6 @@ this.UploadTab = Class.create(Tab,
 		this.jukebox = jukebox;
 		this.template = template;
 		this.DOM = null;
-
 	},
 
 	getUploadedFileEditionFromFilename: function(file_name)
