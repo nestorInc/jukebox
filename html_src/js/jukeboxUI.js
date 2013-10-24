@@ -1,6 +1,29 @@
 /* global Extend, Tabs, TabsManager, FormatTime, SearchTab, UploadTab, DebugTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $R, Draggable, Droppables, Event, Notifications, HTML5Storage */
 
 /**
+* Store value in the document cookie
+*
+* @param string name Name of the variable to store
+* @param string value Value of the variable
+* @param integer seconds Number of seconds after which the cookie will be invalid
+* @param string path Path for which the cookie will be valid
+*/
+function cookieSet(name, value, seconds, path)
+{
+	var expires = "";
+	if (seconds) {
+		var date = new Date();
+		date.setTime(date.getTime() + (seconds * 1000));
+		expires = ";expires=" + date.toGMTString();
+	}
+
+	path = ";path=" + path;
+
+	document.cookie = name + "=" + value + expires + path;
+}
+
+
+/**
 * Represents a Jukebox graphical interface.
 * @constructor
 * @param {object} jukebox - The jukebox instance.
@@ -18,12 +41,12 @@ function JukeboxUI(jukebox, element, opts)
 
 	//---
 	// [Private] Variables
-	
+
 	// `this` refers to current object, because we're in a "new" object creation
 	// Useful for private methods and events handlers
 	var $this = this,
 		$elem = $(element),
-		
+
 		_opts = Extend(true, {}, JukeboxUI.defaults, opts), // Recursively merge options
 
 		J = jukebox, // short jukebox reference
@@ -38,7 +61,7 @@ function JukeboxUI(jukebox, element, opts)
 	//---
 	// [Privileged] Functions
 	// (Publicly exposed with private data & methods access)
-	
+
 	/**
 	* Update the activity light to inform the user a processing is ongoing or not
 	* @param {bool} status - The current activity status (true = active, false = inactive).
@@ -77,9 +100,9 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			clearTimeout(_refreshSongTimer);
 		}
-		
+
 		//---
-		
+
 		// Rather than calling updateSongTime() every 100ms as before (+when manual call after a json response),
 		// only call when necessary: each time the display needs to be updated = every second (of the song)
 		//		=> less refresh calls
@@ -90,12 +113,12 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			var currentSongElapsedTime = song.elapsed + (new Date().getTime() / 1000) - lastServerResponse;
 			nextSongSecondIn = (Math.ceil(currentSongElapsedTime) - currentSongElapsedTime) * 1000;
-			
+
 			if(currentSongElapsedTime > song.duration) // Avoid >100%
 			{
 				currentSongElapsedTime = song.duration;
 			}
-		 
+
 			if(_lastCurrentSongElapsedTime === null || currentSongElapsedTime > _lastCurrentSongElapsedTime)
 			{
 				var percent = Math.round(currentSongElapsedTime / song.duration * 100);
@@ -115,7 +138,7 @@ function JukeboxUI(jukebox, element, opts)
 		}
 
 		//---
-		
+
 		_refreshSongTimer = setTimeout(function()
 		{
 			$this.updateSongTime(song, lastServerResponse);
@@ -204,7 +227,7 @@ function JukeboxUI(jukebox, element, opts)
 			playQueueLabel: 'Play queue',
 			listenersCount: J.listenersCount
 		};
-		
+
 		// Create playqueue header
 		var ul = new Element(_skin.params.playQueueNode).insert(playQueueTpl.evaluate(playQueueTplVars));
 
@@ -274,7 +297,7 @@ function JukeboxUI(jukebox, element, opts)
 			var localcurrentPQSongIndex = currentPQSongIndex, // Avoid closure issue
 				$top = li.down(rootClass+'playqueue-move-top'),
 				$bottom = li.down(rootClass+'playqueue-move-bottom');
-			
+
 			if($top)
 			{
 				$top.on("click", function()
@@ -300,7 +323,7 @@ function JukeboxUI(jukebox, element, opts)
 
 			currentPQSongIndex++;
 		});
-		
+
 
 		if(ul.nodeName == 'TBODY')
 		{
@@ -326,7 +349,7 @@ function JukeboxUI(jukebox, element, opts)
 				ul.down(rootClass+'playqueue-' + id).removeClassName(_opts.rootClass+'-being-dragged');
 			}
 		}
-		
+
 		// Create all draggables, once update is done.
 		for(var i = 0, len = playQueueSongs.length; i < len; i++)
 		{
@@ -495,7 +518,7 @@ function JukeboxUI(jukebox, element, opts)
 
 	//-----
 	// [Private] Functions
-	
+
 	/**
 	* Show full player
 	*/
@@ -532,7 +555,7 @@ function JukeboxUI(jukebox, element, opts)
 	function _search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select)
 	{
 		if(!search_field)
-		{ 
+		{
 			search_field = _$.search_field.value;
 		}
 		if(!search_value)
@@ -547,7 +570,7 @@ function JukeboxUI(jukebox, element, opts)
 			}
 		}
 		if(!result_count)
-		{ 
+		{
 			result_count = _$.results_per_page.value;
 		}
 		if(typeof select == "undefined")
@@ -606,7 +629,7 @@ function JukeboxUI(jukebox, element, opts)
 	function _makePlayQueueSongDroppable(droppable, playQueueSongs)
 	{
 		Droppables.add(droppable,
-		{ 
+		{
 			accept: [_opts.rootClass+'-playqueue-draggable', _opts.rootClass+'-search-row'],
 			overlap: 'vertical',
 			hoverclass: _opts.rootClass+'-droppable-hover',
@@ -620,7 +643,7 @@ function JukeboxUI(jukebox, element, opts)
 
 					old_index = parseInt(draggedId, 10);
 					song_mid = dragged.up().retrieve('mid');
-					
+
 					var new_index = -1;
 					if(!dropped.hasClassName(_opts.rootClass+'-playqueue-first'))
 					{
@@ -634,11 +657,11 @@ function JukeboxUI(jukebox, element, opts)
 					if(new_index != old_index)
 					{
 						J.playQueueMove(song_mid, old_index, new_index);
-						
+
 						_cleanupPlayQueue();
 						var tmp = playQueueSongs[old_index];
 						playQueueSongs.splice(old_index, 1);
-						playQueueSongs.splice(new_index, 0, tmp);						
+						playQueueSongs.splice(new_index, 0, tmp);
 						$this.displayPlayQueue(playQueueSongs);
 					}
 				}
@@ -646,7 +669,7 @@ function JukeboxUI(jukebox, element, opts)
 				{
 					var song = dragged.retrieve('song');
 					song_mid = song.mid;
-					
+
 					var play_queue_index = -1;
 					if(!dropped.hasClassName(_opts.rootClass+'-playqueue-first'))
 					{
@@ -716,6 +739,17 @@ function JukeboxUI(jukebox, element, opts)
 				Event.stop(event);
 			}
 		},
+
+		disconnect: function()
+		{
+			// Todo send a request to clean session
+			cookieSet("user", "", 0, "/");
+			cookieSet("session", "", 0, "/");
+			cookieSet("method", "", 0, "/");
+			// reset jukebox
+			window.location=window.location.protocol + "//guest:@" + window.location.host + window.location.pathname;
+		},
+
 		/**
 		* Display the select_genre input in place of input_value if the selected field is genre.
 		* Also fills the select_genre list if empty.
@@ -779,6 +813,7 @@ function JukeboxUI(jukebox, element, opts)
 				canalValue: 'Rejoindre',
 				welcomeLabel: 'Bienvenue :',
 				user: J.user,
+				decoLabel: 'Deconnexion',
 				searchLabel: 'Rechercher :',
 				searchButton: 'Rechercher',
 				UploadTabName: 'Upload',
@@ -817,6 +852,7 @@ function JukeboxUI(jukebox, element, opts)
 			jukebox:			$JB,
 			tabs:				$JB.down(rootClass+'tabs'),
 			expand_button:		$JB.down(rootClass+'expand-button'),
+			deco_link:		$JB.down(rootClass+'user-header-deco'),
 			collapse_button:	$JB.down(rootClass+'collapse-button'),
 			search_input:		$JB.down(rootClass+'search-input'),
 			search_field:		$JB.down(rootClass+'search-field'),
@@ -861,6 +897,7 @@ function JukeboxUI(jukebox, element, opts)
 		}
 
 		// Register listeners
+		_$.deco_link.on("click", _events.disconnect);
 		_$.expand_button.on("click", _events.expand);
 		_$.collapse_button.on("click", _events.collapse);
 
