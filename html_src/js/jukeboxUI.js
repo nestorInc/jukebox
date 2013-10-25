@@ -111,7 +111,10 @@ function JukeboxUI(jukebox, element, opts)
 
 		if(song)
 		{
-			var currentSongElapsedTime = song.elapsed + (new Date().getTime() / 1000) - lastServerResponse;
+			var currentSongElapsedTime = song.elapsed;
+			if( J.listenersCount > 0 ) {
+				currentSongElapsedTime += + (new Date().getTime() / 1000) - lastServerResponse;
+			}
 			nextSongSecondIn = (Math.ceil(currentSongElapsedTime) - currentSongElapsedTime) * 1000;
 
 			if(currentSongElapsedTime > song.duration) // Avoid >100%
@@ -745,9 +748,8 @@ function JukeboxUI(jukebox, element, opts)
 			// Todo send a request to clean session
 			cookieSet("user", "", 0, "/");
 			cookieSet("session", "", 0, "/");
-			cookieSet("method", "", 0, "/");
 			// reset jukebox
-			window.location=window.location.protocol + "//guest:@" + window.location.host + window.location.pathname;
+			window.location=window.location.protocol + "//void:void@" + window.location.host + window.location.pathname;
 		},
 
 		/**

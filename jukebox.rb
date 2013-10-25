@@ -132,7 +132,7 @@ main.addAuth() { |s, req, user, pass|
   end
 
   if(pass)
-    if( library.login(user, pass) )
+    if(user != "void" and  library.login(user, pass) )
       sid = library.create_user_session(user, 
                                         s.remote_address.ip_address, 
                                         req.options["User-Agent"] );

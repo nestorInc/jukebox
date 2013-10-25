@@ -179,6 +179,11 @@ SQL
   end
 
   def init_root()
+    # todo check if root exists
+    @db.execute("SELECT uid FROM users WHERE nickname='root' LIMIT 1") do |row|
+      return nil;
+    end
+
     # Generates a random password for root
     char_set =  [('a'..'z'),('A'..'Z'), ('0'..'9')].map{|i| i.to_a}.flatten
     random_string = (0...50).map{ char_set[rand(char_set.length)] }.join
@@ -186,11 +191,6 @@ SQL
 
     bcrypt_pass = BCrypt::Password.create(random_string);
     creation = Time.now();
-
-    # todo check if root exists
-    @db.execute("SELECT uid FROM users WHERE nickname='root' LIMIT 1") do |row|
-      return;
-    end
 
     sql = <<SQL
      BEGIN;
@@ -268,6 +268,7 @@ SQL
   end
 
   def validate_user( user )
+    #Todo check if user session has rights to validate
     sql = <<SQL
     UPDATE users
     SET validated = 1
@@ -283,6 +284,11 @@ SQL
   def create_new_user( user, pass, validated )
     bcrypt_pass = BCrypt::Password.create(pass);
     creation = Time.now();
+
+    @db.execute("SELECT uid FROM users WHERE nickname='#{user}'") do |row|
+      error("Could not create User #{user}, already exists in base");
+      return nil;
+    end
 
     sql = <<SQL
       BEGIN;
@@ -349,6 +355,11 @@ SQL
   end
 
   def create_login_token( userNickname )
+    @db.execute("SELECT lt.tid as hash_exists FROM login_tokens lt INNER JOIN users as u ON u.uid=lt.uid WHERE u.nickname='#{userNickname}'") do |row|
+      error("Could not create login token, already exists")
+      return nil
+    end
+
     hashExists = false;
     gen_hash_retry = 0;
     char_set =  [('a'..'z'),('A'..'Z'), ('0'..'9')].map{|i| i.to_a}.flatten
@@ -416,11 +427,9 @@ SQL
   end
 
   def check_session( sid, remote_ip, user_agent )
-    res = @db.execute("SELECT U.nickname as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 LIMIT 1");
-    now = (Time.now()).strftime("%s");
-    if(res[0])
-      @db.execute("UPDATE sessions SET last_connexion=#{now} WHERE sid='#{sid}'");
-      return res[0]["nick"]
+    @db.execute("SELECT U.nickname as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 LIMIT 1") do |row|
+      update_session_last_connexion(sid)
+      return row["nick"]
     end
     nil;
   end
@@ -428,6 +437,11 @@ SQL
   #TODO refactor use execute and mapping values
   def create_user_session( user, remote_ip, user_agent )
     return false if(user == nil)
+
+    #If session already exists return the already created session
+    @db.execute("SELECT S.sid FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE u.nickname='#{user}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 LIMIT 1") do |row|
+      return row["sid"]
+    end
 
     #retrieve user uid
     uid = nil;
@@ -501,7 +515,7 @@ SQL
                 "ON LT.uid = U.uid " +
                 "WHERE T.token='#{token}' LIMIT 1") do |row|
       if user_has_right(user, row["right"], Rights_Flag::EXECUTE ) 
-          return row["nickname"];
+          return row["nickname"]
       end
     end
     nil
@@ -550,9 +564,9 @@ SQL
       "  OR ( R.flag_others & #{askedMode} = #{askedMode} )) " + 
       "LIMIT 1";
     begin
-      res = @db.execute(req)[0];
+      res = @db.execute(req)[0]
     rescue => e
-      error("user_has_right error => #{e}");
+      error("user_has_right error => #{e}")
       return false
     end
     return true if(res)
@@ -568,7 +582,7 @@ SQL
     end 
 
     #Split path in order to search for each parents if the user is the owner
-    splitedPath = right.split("/");
+    splitedPath = right.split("/")
     currentIndex = 0;
     while ( currentIndex < splitedPath.length)
       currentPath = splitedPath[0..currentIndex].join("/");
@@ -591,7 +605,7 @@ SQL
         "  OR ( RG.flag_group >= #{Rights_Flag::OWNER} AND GU.uid='#{userId}' )  " +
         "  OR ( R.flag_others >= #{Rights_Flag::OWNER} ))";
       begin
-        res = @db.execute(req);
+        res = @db.execute(req)
       rescue => e
         return false
       end
