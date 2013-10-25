@@ -105,6 +105,7 @@ class Channel
   end
 
   def getCurrentSongInfo()
+    return nil if(@currentEntry == nil)
     rsp           = @currentEntry.to_client();
     rsp[:elapsed] = @currentEntry.duration * @frame / @cur.size;
     rsp;
@@ -132,6 +133,7 @@ class Channel
   end
 
   def to_client()
+    return nil if(@currentEntry == nil)
     rsp                  = @currentEntry.to_client();
     rsp[:elapsed]        = @currentEntry.duration * @frame / @cur.size;
     rsp[:listener_count] = @connections.size();
@@ -170,7 +172,7 @@ class Channel
 
   def sync()
     data = [];
-
+    return data if (@currentEntry == nil)
     now = Time.now();
     if(@time == 0)
       delta = 0.2;

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 require 'date'
 require 'rev/ssl'
@@ -190,7 +191,13 @@ class HttpResponse
     # Header
     data = "#{@proto} #{@status} #{@reason}\r\n";
     @options.each { |name, val|
-      data << "#{name}: #{val}\r\n";
+      if(val.kind_of?(Array))
+        val.each{ |subval|
+          data << "#{name}: #{subval}\r\n";
+        }
+      else
+        data << "#{name}: #{val}\r\n";
+      end
     }
     data << "\r\n";
     # Body
@@ -274,7 +281,7 @@ class HttpSession < Rev::SSLSocket
   def on_close()
     log("disconnected");
   end
-      
+
   def on_read(data)
     debug("HTTP data\n" + data);
     @sck_data << data;
@@ -328,10 +335,12 @@ class HttpSession < Rev::SSLSocket
         end
       }
       v = @req.options["Authorization"];
+
       if(m_auth != nil)
         pass = nil;
         if(v)
           method, code = v.split(" ", 2);
+
           if(method == "Basic" && code != nil)
             @user, pass = code.unpack("m").first.split(":", 2);
             pass ||= "";
@@ -339,6 +348,7 @@ class HttpSession < Rev::SSLSocket
         else
           @user = "unknown";
         end
+
         @auth = m_auth.call(self, @req, @user, pass) if(@user);
       end
 
@@ -369,7 +379,7 @@ class HttpSession < Rev::SSLSocket
       prefix    += uri[0..pos-1].join("/") if(pos != 0);
       remaining  = nil
       remaining  = uri[pos..-1].join("/")  if(pos != uri.size);
-      
+
       @req.remaining = remaining;
       @req.prefix    = prefix;
 
@@ -424,7 +434,7 @@ class HttpNode
 
   def add(path, node)
     n       = self;
-    
+
     if(path.size == 0)
       node.child = @child;
       return node;
@@ -498,12 +508,37 @@ class HttpNodeMapping < HttpNode
     contentType = nil;
     contentType = ContentTypeTab[ext.first]  if(ext);
     contentType = ContentTypeTab[nil]        if(contentType == nil);
-
-    rsp  = HttpResponse.new(req.proto, 200, "OK");
+    rsp  = HttpResponse.new(req.proto, 200, "OK", {"Set-Cookie" => req.options["Set-Cookie"]} );
     data = File.read(path)
     rsp.setData(data, contentType);
     s.write(rsp.to_s);
   end
+end
+
+class Cookie
+  def initialize(values, domain, path, expire, secure, httpOnly)
+    @values = values;
+    @domain = domain;
+    @path = path;
+    @expire = expire;
+    @secure = secure;
+    @httpOnly = httpOnly;
+  end
+
+  def to_s()
+    return "" if @values.length == 0
+    ret = [];
+    @values.each{ |key, value|
+      ret << "#{key}=#{value}"
+    }
+    ret << "Domain=#{@domain}" if(@domain)
+    ret << "Path=#{@path}" if(@path)
+    ret << "Expires=#{@expire.strftime("%a, %d %b %Y %H:%M:%S GMT")}" if(@expire)
+    ret << "Secure" if(@secure)
+    ret << "HttpOnly" if(@httpOnly)
+    ret.join("; ");
+  end
+
 end
 
 class HttpRootNode

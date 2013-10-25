@@ -14,6 +14,10 @@ Jukebox.UI.skins["default"] =
 	{
 		player:
 '<div class="#{root}">\
+<div class="#{root}-user-header">\
+	#{welcomeLabel} <span class="#{root}-user-display">#{user}</span>\
+    <a class="#{root}-user-header-deco" href="javascript:void(0)">#{decoLabel}</a>\
+</div>\
 <div class="#{root}-header">\
 	#{canalLabel} <input type="text" class="#{root}-channel" /><input type="button" class="#{root}-channel-button" value="#{canalValue}" />\
 	<span class="#{root}-expand-button">&gt;</span>\

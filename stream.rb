@@ -56,7 +56,7 @@ class Stream < HttpNode
         str = "StreamTitle='#{meta.to_s().gsub("\'", " ")}';"
         @meta = meta;
       end
-    
+
       padding = str.bytesize() % 16;
       padding = 16 - padding  if(padding != 0)
       str += "\x00" * padding;
@@ -72,15 +72,21 @@ class Stream < HttpNode
     super();
   end
 
-  def on_request(s, req)
-    action      = req.remaining;
-    channelName = s.user;
+  def channel_init(channelName)
     ch = @list[channelName];
-  
+
     if(ch == nil)
       ch = Channel.new(channelName, @library);
       @list[channelName] = ch;
     end
+    ch;
+  end
+
+  def on_request(s, req)
+    action      = req.remaining;
+    channelName = s.user;
+
+    ch = channel_init(channelName);
 
     s.extend(StreamSession);
     s.stream_init(req.options["Icy-MetaData"], ch, req.proto);

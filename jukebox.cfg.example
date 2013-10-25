@@ -1,3 +1,4 @@
+pid: jukebox.pid
 encode:
   source_dir: mp3
   encoded_dir: encode

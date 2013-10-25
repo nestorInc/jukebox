@@ -7,9 +7,7 @@ require 'cgi'
 require 'yaml.rb'
 require 'json'
 require 'yaml'
-require 'rpam'
-
-include Rpam
+require 'bcrypt'
 
 require 'stream.rb'
 require 'http.rb'
@@ -26,11 +24,8 @@ raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
 $error_file = File.open("error.log", "a+");
 
-library = Library.new();
-channelList = {};
 
 # Config
-
 config = {}
 begin
   data   = File.open("jukebox.cfg", &:read);
@@ -39,8 +34,33 @@ rescue => e
   error("Config file error: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
 end
 
-# Encode
+begin
+  pid_filename = config[:pid.to_s] || "jukebox.pid";
+  old_pid = File.read(pid_filename);
+rescue => e
 
+end
+
+if old_pid
+  begin
+    Process.getpgid( old_pid.to_i )
+    error("Jukebox already started with pid #{old_pid}");
+    exit
+  rescue Errno::ESRCH
+    File.delete(pid_filename);
+  end
+end
+
+begin
+  File.open(pid_filename, 'w') { |file| file.write(Process.pid) }
+rescue => e
+  error("Could not save pid #{pid_filename}");
+end
+
+library = Library.new();
+channelList = {};
+
+# Encode
 Thread.new() {
   e = Encode.new(library, config[:encode.to_s]);
   e.attach(Rev::Loop.default);
@@ -65,22 +85,67 @@ stream = Stream.new(channelList, library);
 
 main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
+  library.invalidate_sessions();
+
   if(req.uri.query)
     form = Hash[URI.decode_www_form(req.uri.query)] ;
     if(form["token"])
       token = form["token"];
-      luser = library.check_token(token);
+      luser = library.check_login_token(nil, token);
+      if luser
+        sid = library.get_login_token_session(token)
+        if not sid
+          #TODO check if user has right to create session
+          sid = library.create_user_session(luser, 
+                                            s.remote_address.ip_address, 
+                                            req.options["User-Agent"] )
+          library.update_login_token_session(token, sid)
+        end
 
-      if(luser)
+        s.user.replace(luser);
         user.replace(luser);
+        stream.channel_init(luser);
+        req.options = {} if req.options == nil
+        req.options["Set-Cookie"] = []
+        req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+        req.options["Set-Cookie"] << Cookie.new({"user" => luser}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
         next "token"
       end
     end
   end
-  if(pass)
-    next "guest" if(user == "guest");
-    next "PAM"   if(authpam(user, pass) == true);
+
+  if req.options["Cookie"]
+    cookies=Hash[req.options["Cookie"].split(';').map{ |i| i.strip().split('=')}];
+    if cookies["session"] != nil
+      session = cookies["session"];
+      luser = library.check_session(session,
+                                    s.remote_address.ip_address,
+                                    req.options["User-Agent"]);
+      if(luser)
+        s.user.replace(luser);
+        user.replace(luser);
+        stream.channel_init(luser);
+        library.update_session_last_connexion(session);
+        next "cookie"
+      end
+    end
   end
+
+  if(pass)
+    if(user != "void" and  library.login(user, pass) )
+      sid = library.create_user_session(user, 
+                                        s.remote_address.ip_address, 
+                                        req.options["User-Agent"] );
+
+      # TODO create session and fill cookie with session hash
+      stream.channel_init(s.user)
+      req.options["Set-Cookie"] = []
+      req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+      req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+      next "HttpAuth"
+    end
+  end
+
   nil;
 }
 
@@ -115,6 +180,8 @@ end
 begin
   Rev::Loop.default.run();
 rescue => e
+  File.delete(pid_filename);
+
   stat = YAML::load(File.open("exception_stat", File::RDONLY | File::CREAT, 0600));
   stat = {} if(stat == false);
 
@@ -139,7 +206,7 @@ rescue => e
       issue = RedmineClient::Issue.new(:subject     => e.to_s,
                                        :project_id  => cfg["project_id"],
                                        :description => detail);
-      
+
       if(issue.save)
         info.issue = issue.id
       else

@@ -108,6 +108,12 @@ class JsonManager < HttpNode
       ch.queue.add(req["play_queue_index"], req["mid"])
     when "shuffle_play_queue"
       ch.queue.shuffle();
+    when "create_user"
+      @library.create_new_user( req["nickname"], req["password"], 0 )
+      JsonManager.add_message(resp, MSG_LVL_INFO, nil, "user #{req["nickname"]} created");
+    when "validate_user"
+      @library.validate_user( req["nickname"] )
+      JsonManager.add_message(resp, MSG_LVL_INFO, nil, "user #{req["nickname"]} validated");
     when "add_search_to_play_queue"
       result = @library.secure_request("mid",
                                        CGI::unescape(req["search_value"]),
