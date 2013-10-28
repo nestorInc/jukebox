@@ -521,6 +521,18 @@ SQL
     nil
   end
 
+  def get_user_login_token(user)
+    begin
+      @db.execute("SELECT T.token FROM login_tokens as LT INNER JOIN tokens as T ON T.tid = LT.tid INNER JOIN users as U on U.uid = LT.uid WHERE U.nickname='#{user}' LIMIT 1") do |row|
+        return row["token"]
+      end
+    rescue => e
+      error("Could not execute get_user_login_token : #{e}")
+      return nil
+    end
+    nil
+  end
+
   def get_login_token_session(token)
     begin
       sid = @db.execute("SELECT LT.sid FROM login_tokens as LT INNER JOIN tokens as T ON T.tid = LT.tid WHERE T.token='#{token}' LIMIT 1")[0]["sid"]

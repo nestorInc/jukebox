@@ -142,7 +142,7 @@ main.addAuth() { |s, req, user, pass|
       req.options["Set-Cookie"] = []
       req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
       req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-      next "HttpAuth"
+      next "httpAuth"
     end
   end
 
