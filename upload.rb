@@ -96,6 +96,14 @@ class UploadManager < HttpNode
   end
 
   def self.getUploadedFiles(uploadDirectory, user)
+
+    if ( not File.directory?(uploadDirectory))
+      Dir.mkdir(uploadDirectory);
+    end
+    if ( not File.directory?(File.join(uploadDirectory,user)))
+      Dir.mkdir(File.join(uploadDirectory,user));
+    end
+
     files = [];
     begin
       Dir.foreach(File.join(uploadDirectory, user)) do |current_file|
