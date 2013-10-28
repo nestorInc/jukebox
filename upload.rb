@@ -23,7 +23,6 @@ class UploadManager < HttpNode
   end
 
   def on_request(s, req)
-    # TODO separate upload by users : must create a subFolder By users
     warning('Upload : File to upload request received : '+ URI.unescape(req.options['X-File-Name']) + " filesize : " + req.options['Content-Length']);
 
     #Creates upload directory if doesn't exists

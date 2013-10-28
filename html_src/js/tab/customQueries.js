@@ -82,6 +82,12 @@ this.CustomQueriesTab = Class.create(Tab,
 						password: "xxxxxx"
 					};
 					break;
+				case "validate_user":
+					opts =
+					{
+						nickname: "pseudo"
+					};
+					break;
 				case "join_channel":
 					opts =
 					{

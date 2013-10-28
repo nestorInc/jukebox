@@ -1,4 +1,4 @@
-/* global Extend, Tabs, TabsManager, FormatTime, SearchTab, UploadTab, DebugTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $R, Draggable, Droppables, Event, Notifications, HTML5Storage */
+/* global Extend, Tabs, TabsManager, FormatTime, SearchTab, UploadTab, DebugTab, AccountTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $R, Draggable, Droppables, Event, Notifications, HTML5Storage */
 
 /**
 * Store value in the document cookie
@@ -191,9 +191,9 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		var items = _$.jukebox.select('.'+_opts.rootClass+'-user-display');
 		items.each(function(e)
-		{
-			e.update(userName);
-		});
+			{
+				e.update(userName);
+			});
 	};
 
 	/**
@@ -944,6 +944,7 @@ function JukeboxUI(jukebox, element, opts)
 			{
 				"UploadTab": UploadTab,
 				"DebugTab": DebugTab,
+				"AccountTab": AccountTab,
 				"NotificationTab": NotificationTab,
 				"CustomQueriesTab": CustomQueriesTab,
 				"PlaylistTab": PlaylistTab/*,
@@ -955,6 +956,7 @@ function JukeboxUI(jukebox, element, opts)
 			var TL = _$.tabs_links;
 			TL.down(rootClass+'tab-upload').on("click", tabsM.UploadTab.Open);
 			TL.down(rootClass+'tab-query').on("click", tabsM.CustomQueriesTab.Open);
+			TL.down(rootClass+'tab-account').on("click", tabsM.AccountTab.Open);
 			TL.down(rootClass+'tab-notifs').on("click", tabsM.NotificationTab.Open);
 			TL.down(rootClass+'tab-debug').on("click", tabsM.DebugTab.Open);
 			TL.down(rootClass+'tab-playlist').on("click", tabsM.PlaylistTab.Open);

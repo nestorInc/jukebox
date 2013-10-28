@@ -24,6 +24,9 @@ SET ajaxmin="C:\Program Files (x86)\Microsoft\Microsoft Ajax Minifier\AjaxMin.ex
 %ajaxmin% -analyze tab/debug.js ^
 	-global:Class,Tab,JsonPrettyPrint ^
 	1>NUL 2>>%log%%
+%ajaxmin% -analyze tab/account.js ^
+	-global:Class,Tab ^
+	1>NUL 2>>%log%%
 %ajaxmin% -analyze tab/customQueries.js ^
 	-global:Class,Tab,JSON,Notifications,Action,Query,sendQueryProxy ^
 	1>NUL 2>>%log%%

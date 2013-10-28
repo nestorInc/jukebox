@@ -15,7 +15,7 @@ Jukebox.UI.skins["default"] =
 		player:
 '<div class="#{root}">\
 <div class="#{root}-user-header">\
-	#{welcomeLabel} <span class="#{root}-user-display">#{user}</span>\
+	#{welcomeLabel} <span class="#{root}-user-display">#{user}</span> \
     <a class="#{root}-user-header-deco" href="javascript:void(0)">#{decoLabel}</a>\
 </div>\
 <div class="#{root}-header">\
@@ -43,6 +43,7 @@ Jukebox.UI.skins["default"] =
 <div class="#{root}-tabs">\
 	<div class="#{root}-tabs-links">\
 		<a class="#{root}-tab-upload">#{UploadTabName}</a>\
+		<a class="#{root}-tab-account"><span class="#{root}-user-display">#{user}</span></a>\
 		<a class="#{root}-tab-query">#{QueryTabName}</a>\
 		<a class="#{root}-tab-notifs">#{NotificationsTabName}</a>\
 		<a class="#{root}-tab-debug">#{DebugTabName}</a>\
