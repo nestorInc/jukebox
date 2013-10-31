@@ -16,7 +16,7 @@ Jukebox.UI.skins["default"] =
 '<div class="#{root}">\
 <div class="#{root}-user-header">\
 	#{welcomeLabel} <span class="#{root}-user-display">#{user}</span> \
-    <a class="#{root}-user-header-deco" href="javascript:void(0)">#{decoLabel}</a>\
+	<a class="#{root}-user-header-deco" href="javascript:void(0)">#{decoLabel}</a>\
 </div>\
 <div class="#{root}-header">\
 	#{canalLabel} <input type="text" class="#{root}-channel" /><input type="button" class="#{root}-channel-button" value="#{canalValue}" />\
@@ -126,6 +126,46 @@ Jukebox.UI.skins["default"] =
 </li>',
 		tabs:
 		{
+			AccountTab:
+			{
+				main:
+'<h2>Informations personnelles de #{user}</h2> <br/> \
+<div class="#{root}-account-informations">\
+<ul>\
+<li>user:#{user}</li>\
+<li>token:#{token}</li>\
+<li>home:#{home}</li>\
+<li>sid:#{sid}</li>\
+<li>ip:#{ip}</li>\
+<li>user agent:#{userAgent}</li>\
+</ul>\
+</div> \
+<div class="#{root}-account-change-password"></div> \
+<div class="#{root}-account-available-rights"></div>',
+				info:
+'<div><span>sessionID : #{sessionId}</span> <br/> \
+<span>remoteIp : #{remoteIp}</span><br/> \
+<span>userAgent : #{userAgent}</span></div>',
+
+				rights_controller:
+'TODO : Right controller part',
+				rights_header:
+'TODO right header part',
+				rights_list:
+'TODO list rights',
+				rights_footer:
+'TODO footer rights',
+				token:
+'<a href="javascript:void(0);">Obtenir son token d\'identification</a><br/>\
+<div id="token_container">token</div>',
+				change_password:
+'<div>\
+Old password : <input id="#{root}-old-password" type="password" /> \
+new password : <input id="#{root}-new-password" type="password" /> \
+retype new password : <input id="#{root}-new-password2" type="password" /> \
+<input id="#{root}-change-password-submit" /> \
+</div>'
+			},
 			UploadTab:
 			{
 				main:

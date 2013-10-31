@@ -485,7 +485,7 @@ SQL
 
   def create_new_right( right_path, owner_id, flag_owner, flag_others, group_rights)
     #TODO check if subrights exists
-    #TODO check user right to create a new sub right
+    #TODO check user has right to create a new sub right
     @db.execute("INSERT OR IGNORE INTO rights (right, owner, flag_owner, flag_others) VALUES( '#{right_path}', '#{owner_id}', #{flag_owner}, #{flag_others})");
 
     begin
@@ -500,6 +500,41 @@ SQL
     rescue => e
       #ignore statment
     end
+  end
+
+  def get_user_informations( sid )
+    @db.execute("SELECT " +
+                " T.token, " +
+                " U.right, " +
+                " S.user_agent, " +
+                " S.remote_ip " +
+                "FROM users as U " +
+                "INNER JOIN sessions as S " +
+                "ON S.uid = U.uid " +
+                "INNER JOIN login_tokens as LT " +
+                "ON lt.uid = S.uid " +
+                "INNER JOIN tokens as T " +
+                "ON T.tid = LT.tid " +
+                "WHERE S.sid = '#{sid}' " +
+                "LIMIT 1") do |row|
+      return row
+    end
+    nil
+  end
+
+  def change_user_password(user, sid, nickname, old_pass, new_pass, new_pass2)
+    return nil if( new_pass != new_pass2)
+    return nil if( not login( nickname, old_pass ))
+    @db.execute("SELECT " +
+                " U.right " +
+                "FROM users as U " +
+                "WHERE U.nickname = '?' " +
+                "LIMIT 1", nickname) do |row|
+      if user_has_right(user, row["right"], Rights_Flag::WRITE ) 
+        @db.execute("UPDATE users SET hash='?' WHERE nickname='?'", BCrypt::Password.new(new_pass), nickname)
+      end
+    end
+    nil
   end
 
   def check_login_token(user, token)

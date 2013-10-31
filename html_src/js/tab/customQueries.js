@@ -38,6 +38,8 @@ this.CustomQueriesTab = Class.create(Tab,
 					<option value="search">search</option>\
 					<option value="create_user">create user</option>\
 					<option value="validate_user">validate user</option>\
+					<option value="change_user_password">change user password</option>\
+					<option value="get_user_informations">User informations</option>\
 				</select>\
 			</td>\
 			<td><input type="button" value="send custom query"/></td>\
@@ -86,6 +88,20 @@ this.CustomQueriesTab = Class.create(Tab,
 					opts =
 					{
 						nickname: "pseudo"
+					};
+					break;
+				case "change_user_password":
+					opts =
+					{
+						nickname: "pseudo",
+						old_password: "xxxxxx",
+						new_password: "xxxxxx",
+						new_password2: "xxxxxx"
+					};
+					break;
+				case "get_user_informations":
+					opts =
+					{
 					};
 					break;
 				case "join_channel":

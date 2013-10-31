@@ -591,6 +591,13 @@ function Jukebox(element, opts)
 		return this;
 	};
 
+	this.getUserAccountInformations = function()
+	{
+		_doAction(new Action("get_user_informations"));
+		return this;
+	};
+
+
 	/**
 	* Ask the server for the list of uploaded files
 	* @return {Jukebox} this.
@@ -857,6 +864,17 @@ function Jukebox(element, opts)
 			_uploadedFiles = json.uploaded_files;
 			_ui.displayUploadedFiles(_uploadedFiles);
 		}
+		
+		if(json.account){
+			_ui.displayAccount(json.account);
+		}
+
+		if(json.uploaded_files)
+		{
+			_uploadedFiles = json.uploaded_files;
+			_ui.displayUploadedFiles(_uploadedFiles);
+		}
+
 	}
 
 	/**

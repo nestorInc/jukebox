@@ -32,7 +32,7 @@ class JsonManager < HttpNode
       res = JsonManager.create_message(JsonManager::MSG_LVL_WARNING,
                                        "Unknown channel #{s.user}");
     else
-      res = parse(req.data, ch, s.user);
+      res = parse(req.data, ch, s.user, s.sid);
     end
     rep.setData(res, "application/json");
     s.write(rep.to_s);
@@ -62,7 +62,7 @@ class JsonManager < HttpNode
 
   private
 
-  def parse(req, ch, user)
+  def parse(req, ch, user, sid)
     resp = { :timestamp => Time.now.to_i() };
     if(req == nil)
         JsonManager.add_message(resp, MSG_LVL_ERROR, "JSON request not found", "Json request not found");
@@ -75,7 +75,7 @@ class JsonManager < HttpNode
           when "search"
             parse_search(resp, value);
           when "action"
-            parse_action(resp, ch, user, value);
+            parse_action(resp, ch, user, value, sid);
           else
             JsonManager.add_message(resp, MSG_LVL_ERROR, "unknown command #{type}", "Unknown command #{type}");
           end
@@ -96,7 +96,7 @@ class JsonManager < HttpNode
     str;
   end
 
-  def forward_action(resp, req, ch, user)
+  def forward_action(resp, req, ch, user, sid)
     resp ||= {};
     resp[:timestamp] = Time.now.to_i();
     case(req["name"])
@@ -108,6 +108,28 @@ class JsonManager < HttpNode
       ch.queue.add(req["play_queue_index"], req["mid"])
     when "shuffle_play_queue"
       ch.queue.shuffle();
+    when "get_user_informations"
+      result = @library.get_user_informations( sid )
+      if( result != nil )
+        resp [:account] = {
+          :nickname => user,
+          :token   => result[0],
+          :home	   => result[1],
+          :sid	   => sid,
+          :user_agent	   => result[2],
+          :ip	   => result[3]
+
+        };
+      else
+        JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "Cannot retrieve personnal informations for user :#{user}, token :#{sid}");
+      end
+    when "change_user_password"
+      result = @library.change_user_password( user, sid, req["nickname"], req["old_password"], req["new_password"], req["2_password2"] )
+      if( result )
+        JsonManager.add_message(resp, MSG_LVL_INFO, nil, "#{user}'s password successfully changed");
+      else
+        JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "You cannot change #{user}'s password");
+      end
     when "create_user"
       @library.create_new_user( req["nickname"], req["password"], 0 )
       JsonManager.add_message(resp, MSG_LVL_INFO, nil, "user #{req["nickname"]} created");
@@ -169,15 +191,15 @@ class JsonManager < HttpNode
     end
   end
 
-  def parse_action(resp, ch, user, req)
+  def parse_action(resp, ch, user, req, sid)
     begin
       if( req.kind_of?(Array) )
         req.each { |currentAction|
           # Warning multi action should merge responses
-          forward_action(resp, currentAction, ch, user );
+          forward_action(resp, currentAction, ch, user, sid );
         }
       else
-        forward_action(resp, req, ch, user);
+        forward_action(resp, req, ch, user, sid);
       end
     rescue => e
       error("Error when parsing action query #{e.backtrace}: #{e.message} (#{e.class})");

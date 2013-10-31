@@ -441,6 +441,19 @@ function JukeboxUI(jukebox, element, opts)
 	};
 
 	/**
+	* Display account informations
+	* @param {Array<file>} 
+	*/
+	this.displayAccount = function(infos)
+	{
+		var tab = _tabs.getFirstTabByClass(AccountTab);
+		if(tab)
+		{
+			tab.treatResponse(infos);
+		}
+	};
+
+	/**
 	* Display uploaded files
 	* @param {Array<file>} uploaded_files - The files that have been uploaded
 	*/
@@ -745,7 +758,9 @@ function JukeboxUI(jukebox, element, opts)
 
 		disconnect: function()
 		{
+			
 			// Todo send a request to clean session
+			// Todo reset account tab informations
 			cookieSet("user", "", 0, "/");
 			cookieSet("session", "", 0, "/");
 			// reset jukebox

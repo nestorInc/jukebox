@@ -103,6 +103,7 @@ main.addAuth() { |s, req, user, pass|
         end
 
         s.user.replace(luser);
+        s.sid.replace(sid);
         user.replace(luser);
         stream.channel_init(luser);
         req.options = {} if req.options == nil
@@ -123,6 +124,7 @@ main.addAuth() { |s, req, user, pass|
                                     req.options["User-Agent"]);
       if(luser)
         s.user.replace(luser);
+        s.sid.replace(session);
         user.replace(luser);
         stream.channel_init(luser);
         library.update_session_last_connexion(session);
@@ -136,9 +138,9 @@ main.addAuth() { |s, req, user, pass|
       sid = library.create_user_session(user, 
                                         s.remote_address.ip_address, 
                                         req.options["User-Agent"] );
-
-      # TODO create session and fill cookie with session hash
       stream.channel_init(s.user)
+      s.sid.replace(sid)
+
       req.options["Set-Cookie"] = []
       req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
       req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
