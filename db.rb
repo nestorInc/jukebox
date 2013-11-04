@@ -295,7 +295,7 @@ SQL
 
       INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) 
       VALUES 
-      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}', '#{user}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
+      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/', '#{user}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
 
       INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
       SELECT
@@ -528,13 +528,14 @@ SQL
     @db.execute("SELECT " +
                 " U.right " +
                 "FROM users as U " +
-                "WHERE U.nickname = '?' " +
-                "LIMIT 1", nickname) do |row|
+                "WHERE U.nickname = '#{nickname}' " +
+                "LIMIT 1") do |row|
       if user_has_right(user, row["right"], Rights_Flag::WRITE ) 
-        @db.execute("UPDATE users SET hash='?' WHERE nickname='?'", BCrypt::Password.new(new_pass), nickname)
+        @db.execute("UPDATE users SET hash='#{BCrypt::Password.create(new_pass)}' WHERE nickname='#{nickname}'")
+        return true
       end
     end
-    nil
+    false
   end
 
   def check_login_token(user, token)
@@ -616,6 +617,7 @@ SQL
       error("user_has_right error => #{e}")
       return false
     end
+
     return true if(res)
     return true if user_is_owner(user, right)
     false;

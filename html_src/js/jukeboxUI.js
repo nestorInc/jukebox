@@ -214,6 +214,18 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
+	this.hideCreateAccountHeader = function(){
+		var tmp;
+		if(_$.jukebox.down("."+ _opts.rootClass +"-user-header-switch").value=="1"){
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-create").hide();
+			tmp = _$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value;
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value = _$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML;
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML = tmp;
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-switch").value="0";
+		}
+	};
+
+
 	/**
 	* Render the current play queue
 	* @param {Array<song>} playQueueSongs - The current play queue
@@ -442,7 +454,7 @@ function JukeboxUI(jukebox, element, opts)
 
 	/**
 	* Display account informations
-	* @param {Array<file>} 
+	* @param {Array<file>}
 	*/
 	this.displayAccount = function(infos)
 	{
@@ -758,7 +770,7 @@ function JukeboxUI(jukebox, element, opts)
 
 		disconnect: function()
 		{
-			
+
 			// Todo send a request to clean session
 			// Todo reset account tab informations
 			cookieSet("user", "", 0, "/");
@@ -807,6 +819,34 @@ function JukeboxUI(jukebox, element, opts)
 		plugin: function()
 		{
 			J.plugin(_$.selection_plugin.value);
+		},
+		switchHeader: function()
+		{
+		var tmp;
+		if(_$.jukebox.down("."+ _opts.rootClass +"-user-header-switch").value=="0")
+		{
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-create").show();
+			tmp = _$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value;
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value = _$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML;
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML = tmp;
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-switch").value="1";
+		} else {
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-create").hide();
+			tmp = _$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value;
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value = _$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML;
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML = tmp;
+			_$.jukebox.down("."+ _opts.rootClass +"-user-header-switch").value="0";
+		}
+		},
+		createAccountHeader:function(){
+		var nick = _$.jukebox.down("."+ _opts.rootClass +"-user-header-create-nickname").value;
+		var pwd1 = _$.jukebox.down("."+ _opts.rootClass +"-user-header-create-password").value;
+		var pwd2 = _$.jukebox.down("."+ _opts.rootClass +"-user-header-create-password2").value;
+		if( pwd1 != pwd2 ){
+			Notifications.Display(Notifications.LEVELS.error, "Passwords are differents");
+		} else {
+			J.sendCreateAccountRequest(nick, pwd1);
+		}
 		}
 	};
 
@@ -826,11 +866,14 @@ function JukeboxUI(jukebox, element, opts)
 				root: _opts.rootClass,
 				theme: _opts.theme,
 				currentSong: songTpl.evaluate(songTplVars),
-				canalLabel: 'Canal :',
+				canalLabel: 'Canal',
 				canalValue: 'Rejoindre',
 				welcomeLabel: 'Bienvenue :',
 				user: J.user,
 				decoLabel: 'Deconnexion',
+				signIn: 'Inscription',
+				back: 'retour',
+				LogIn: 'Log-in',
 				searchLabel: 'Rechercher :',
 				searchButton: 'Rechercher',
 				UploadTabName: 'Upload',
@@ -896,7 +939,9 @@ function JukeboxUI(jukebox, element, opts)
 			selection_plugin:	$JB.down(rootClass+'plugin'),
 			btn_apply_plugin:	$JB.down(rootClass+'plugin-button'),
 			volume_box_slider:	$JB.down(rootClass+'volume-slider'),
-			tabs_links:			$JB.down(rootClass+'tabs-links')
+			tabs_links:			$JB.down(rootClass+'tabs-links'),
+			sign_in_link:			$JB.down(rootClass+'user-header-signin'),
+			create_account_submit:			$JB.down(rootClass+'user-header-create-submit')
 		};
 
 		// Initial visibility state
@@ -933,6 +978,8 @@ function JukeboxUI(jukebox, element, opts)
 		_$.btn_refresh.on("click", _events.refresh);
 
 		_$.btn_apply_plugin.on("click", _events.plugin);
+		_$.sign_in_link.on("click", _events.switchHeader);
+		_$.create_account_submit.on("click", _events.createAccountHeader);
 
 		var range0to100 = $R(0, 100);
 		_volumeSlider = new Control.Slider(_$.volume_box_slider.down(rootClass+'slider-handle'), _$.volume_box_slider,

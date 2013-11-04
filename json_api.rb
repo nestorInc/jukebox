@@ -131,8 +131,15 @@ class JsonManager < HttpNode
         JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "You cannot change #{user}'s password");
       end
     when "create_user"
-      @library.create_new_user( req["nickname"], req["password"], 0 )
-      JsonManager.add_message(resp, MSG_LVL_INFO, nil, "user #{req["nickname"]} created");
+      res=nil
+      res=@library.create_new_user( req["nickname"], req["password"], 0 ) if(req["nickname"] != "")
+      if(res==nil)
+        JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "user #{req["nickname"]} not created (already exists or invalid)");
+      else
+        resp[:account_created]={}
+        JsonManager.add_message(resp, MSG_LVL_INFO, nil, "user #{req["nickname"]} created (but not validated)");
+        JsonManager.add_message(resp, MSG_LVL_INFO, nil, "Wait the administrator validation");
+      end
     when "validate_user"
       @library.validate_user( req["nickname"] )
       JsonManager.add_message(resp, MSG_LVL_INFO, nil, "user #{req["nickname"]} validated");
