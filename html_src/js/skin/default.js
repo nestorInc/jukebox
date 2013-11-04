@@ -140,13 +140,15 @@ Jukebox.UI.skins["default"] =
 <li>user agent:#{userAgent}</li>\
 </ul>\
 </div> \
-<div class="#{root}-account-change-password"></div> \
+<div class="#{root}-account-change-password">\
+<ul>\
+<h2>Changer de password<h2/> \
+Old password : <input id="#{root}-account-old-password" type="password" /></br> \
+new password : <input id="#{root}-account-new-password" type="password" /></br> \
+retype new password : <input id="#{root}-account-new-password2" type="password" /></br> \
+<input id="#{root}-account-change-password-submit" type="submit" value="valider"/></br> \
+</div> \
 <div class="#{root}-account-available-rights"></div>',
-				info:
-'<div><span>sessionID : #{sessionId}</span> <br/> \
-<span>remoteIp : #{remoteIp}</span><br/> \
-<span>userAgent : #{userAgent}</span></div>',
-
 				rights_controller:
 'TODO : Right controller part',
 				rights_header:
@@ -154,17 +156,7 @@ Jukebox.UI.skins["default"] =
 				rights_list:
 'TODO list rights',
 				rights_footer:
-'TODO footer rights',
-				token:
-'<a href="javascript:void(0);">Obtenir son token d\'identification</a><br/>\
-<div id="token_container">token</div>',
-				change_password:
-'<div>\
-Old password : <input id="#{root}-old-password" type="password" /> \
-new password : <input id="#{root}-new-password" type="password" /> \
-retype new password : <input id="#{root}-new-password2" type="password" /> \
-<input id="#{root}-change-password-submit" /> \
-</div>'
+'TODO footer rights'
 			},
 			UploadTab:
 			{

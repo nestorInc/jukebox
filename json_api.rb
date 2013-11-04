@@ -124,7 +124,7 @@ class JsonManager < HttpNode
         JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "Cannot retrieve personnal informations for user :#{user}, token :#{sid}");
       end
     when "change_user_password"
-      result = @library.change_user_password( user, sid, req["nickname"], req["old_password"], req["new_password"], req["2_password2"] )
+      result = @library.change_user_password( user, sid, req["nickname"], req["old_password"], req["new_password"], req["new_password2"] )
       if( result )
         JsonManager.add_message(resp, MSG_LVL_INFO, nil, "#{user}'s password successfully changed");
       else

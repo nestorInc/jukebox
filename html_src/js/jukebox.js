@@ -597,6 +597,12 @@ function Jukebox(element, opts)
 		return this;
 	};
 
+	this.sendChangePasswordRequest = function(nick, old_pwd, new_pwd, new_pwd2)
+	{
+		_doAction(new Action("change_user_password", {nickname:nick,old_pwd:old_pwd,new_password:new_pwd, new_password2:new_pwd2 } ));
+		return this;
+	};
+
 
 	/**
 	* Ask the server for the list of uploaded files
