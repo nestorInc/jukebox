@@ -98,6 +98,11 @@ margin-left:2px;
 margin-right:2px;
 }
 
+.jukebox-user-header-create-submit{
+height: 100%;
+}
+
+
 .jukebox-user-header-chooseCanal{
 display:inline;
 vertical-align:center;
