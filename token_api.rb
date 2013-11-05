@@ -20,8 +20,12 @@ class TokenManager < HttpNode
       return;
     end
 
-    token = @library.create_token(s.user, rand(99999999999).to_s);
-    rep   = nil;
+    token = @library.get_user_login_token(s.user);
+    if( token == nil )
+      rep = HttpResponse.generate401(req);
+      s.write(rep.to_s);
+      return;
+    end
 
     rep = HttpResponse.new(req.proto, 200, "OK",
                            "Content-Type" => "audio/x-mpegurl");

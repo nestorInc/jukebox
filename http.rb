@@ -220,6 +220,7 @@ end
 
 class HttpSession < Rev::SSLSocket
   attr_reader   :user;
+  attr_reader   :sid;
   attr_reader   :ssl;
   attr_accessor :data;
   attr_accessor :auth;
@@ -233,6 +234,7 @@ class HttpSession < Rev::SSLSocket
     @certificate = options[:certificate.to_s];
     @key         = options[:key.to_s];
     @user        = nil;
+    @sid        = nil;
     # fix for quick connect disconnect
     begin
       super(socket);
@@ -348,6 +350,7 @@ class HttpSession < Rev::SSLSocket
         else
           @user = "unknown";
         end
+        @sid = "";
 
         @auth = m_auth.call(self, @req, @user, pass) if(@user);
       end

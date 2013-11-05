@@ -591,6 +591,24 @@ function Jukebox(element, opts)
 		return this;
 	};
 
+	this.getUserAccountInformations = function()
+	{
+		_doAction(new Action("get_user_informations"));
+		return this;
+	};
+
+		this.sendCreateAccountRequest = function(nick, pwd){
+		_doAction(new Action("create_user", {nickname:nick,password:pwd} ));
+		return this;
+	};
+
+	this.sendChangePasswordRequest = function(nick, old_pwd, new_pwd, new_pwd2)
+	{
+		_doAction(new Action("change_user_password", {nickname:nick,old_password:old_pwd,new_password:new_pwd, new_password2:new_pwd2 } ));
+		return this;
+	};
+
+
 	/**
 	* Ask the server for the list of uploaded files
 	* @return {Jukebox} this.
@@ -857,6 +875,22 @@ function Jukebox(element, opts)
 			_uploadedFiles = json.uploaded_files;
 			_ui.displayUploadedFiles(_uploadedFiles);
 		}
+
+		if(json.account){
+			_ui.displayAccount(json.account);
+		}
+
+		if(json.uploaded_files)
+		{
+			_uploadedFiles = json.uploaded_files;
+			_ui.displayUploadedFiles(_uploadedFiles);
+		}
+
+		if(json.account_created)
+			{
+			_ui.hideCreateAccountHeader();
+		}
+
 	}
 
 	/**

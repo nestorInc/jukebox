@@ -295,7 +295,7 @@ SQL
 
       INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) 
       VALUES 
-      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}', '#{user}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
+      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/', '#{user}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
 
       INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
       SELECT
@@ -485,7 +485,7 @@ SQL
 
   def create_new_right( right_path, owner_id, flag_owner, flag_others, group_rights)
     #TODO check if subrights exists
-    #TODO check user right to create a new sub right
+    #TODO check user has right to create a new sub right
     @db.execute("INSERT OR IGNORE INTO rights (right, owner, flag_owner, flag_others) VALUES( '#{right_path}', '#{owner_id}', #{flag_owner}, #{flag_others})");
 
     begin
@@ -500,6 +500,42 @@ SQL
     rescue => e
       #ignore statment
     end
+  end
+
+  def get_user_informations( sid )
+    @db.execute("SELECT " +
+                " T.token, " +
+                " U.right, " +
+                " S.user_agent, " +
+                " S.remote_ip " +
+                "FROM users as U " +
+                "INNER JOIN sessions as S " +
+                "ON S.uid = U.uid " +
+                "INNER JOIN login_tokens as LT " +
+                "ON lt.uid = S.uid " +
+                "INNER JOIN tokens as T " +
+                "ON T.tid = LT.tid " +
+                "WHERE S.sid = '#{sid}' " +
+                "LIMIT 1") do |row|
+      return row
+    end
+    nil
+  end
+
+  def change_user_password(user, sid, nickname, old_pass, new_pass, new_pass2)
+    return nil if( new_pass != new_pass2)
+    return nil if( not login( nickname, old_pass ))
+    @db.execute("SELECT " +
+                " U.right " +
+                "FROM users as U " +
+                "WHERE U.nickname = '#{nickname}' " +
+                "LIMIT 1") do |row|
+      if user_has_right(user, row["right"], Rights_Flag::WRITE ) 
+        @db.execute("UPDATE users SET hash='#{BCrypt::Password.create(new_pass)}' WHERE nickname='#{nickname}'")
+        return true
+      end
+    end
+    false
   end
 
   def check_login_token(user, token)
@@ -517,6 +553,18 @@ SQL
       if user_has_right(user, row["right"], Rights_Flag::EXECUTE ) 
           return row["nickname"]
       end
+    end
+    nil
+  end
+
+  def get_user_login_token(user)
+    begin
+      @db.execute("SELECT T.token FROM login_tokens as LT INNER JOIN tokens as T ON T.tid = LT.tid INNER JOIN users as U on U.uid = LT.uid WHERE U.nickname='#{user}' LIMIT 1") do |row|
+        return row["token"]
+      end
+    rescue => e
+      error("Could not execute get_user_login_token : #{e}")
+      return nil
     end
     nil
   end
@@ -569,6 +617,7 @@ SQL
       error("user_has_right error => #{e}")
       return false
     end
+
     return true if(res)
     return true if user_is_owner(user, right)
     false;

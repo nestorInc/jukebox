@@ -14,15 +14,31 @@ Jukebox.UI.skins["default"] =
 	{
 		player:
 '<div class="#{root}">\
-<div class="#{root}-user-header">\
-	#{welcomeLabel} <span class="#{root}-user-display">#{user}</span>\
-    <a class="#{root}-user-header-deco" href="javascript:void(0)">#{decoLabel}</a>\
-</div>\
 <div class="#{root}-header">\
-	#{canalLabel} <input type="text" class="#{root}-channel" /><input type="button" class="#{root}-channel-button" value="#{canalValue}" />\
+	<div class="#{root}-user-header-login">\
+	#{welcomeLabel} <span class="#{root}-user-display">#{user}</span> \
+	</div> \
 	<span class="#{root}-expand-button">&gt;</span>\
 	<span class="#{root}-collapse-button">&lt;</span>\
 	<span class="#{root}-activity"></span>\
+</div>\
+<div class="#{root}-user-header">\
+	<input class="#{root}-user-header-other-label" type="hidden" value="#{back}" /> \
+	<input class="#{root}-user-header-switch" type="hidden" value="0" /> \
+	<a class="#{root}-user-header-deco" href="javascript:void(0)">#{decoLabel}</a>\
+	<a class="#{root}-user-header-signin" href="javascript:void(0)">#{signIn}</a>\
+	<a class="#{root}-user-header-chooseCanal" href="javascript:void(0)">#{canalLabel}</a>\
+	<div class="#{root}-user-header-create" style="display:none;">\
+		Creer compte: <br/>\
+		nickname : <input type="text" class="#{root}-user-header-create-nickname" size="10" value="" /> <br/>\
+		password : <input type="password" class="#{root}-user-header-create-password" size="10"/> <br/>\
+		Retype password : <input type="password" class="#{root}-user-header-create-password2" size="10"/> <br/>\
+		<input type="submit" class="#{root}-user-header-create-submit" value="creer"> \
+	</div> \
+	<div class="#{root}-user-header-canal" style="display:none;">\
+	#{canalLabel} <br/> \
+<input type="text" class="#{root}-channel" /><input type="button" class="#{root}-channel-button" value="#{canalValue}" />\
+	</div> \
 </div>\
 <div class="#{root}-main">\
 	<div class="#{root}-controls">\
@@ -43,6 +59,7 @@ Jukebox.UI.skins["default"] =
 <div class="#{root}-tabs">\
 	<div class="#{root}-tabs-links">\
 		<a class="#{root}-tab-upload">#{UploadTabName}</a>\
+		<a class="#{root}-tab-account"><span class="#{root}-user-display">#{user}</span></a>\
 		<a class="#{root}-tab-query">#{QueryTabName}</a>\
 		<a class="#{root}-tab-notifs">#{NotificationsTabName}</a>\
 		<a class="#{root}-tab-debug">#{DebugTabName}</a>\
@@ -125,6 +142,38 @@ Jukebox.UI.skins["default"] =
 </li>',
 		tabs:
 		{
+			AccountTab:
+			{
+				main:
+'<h2>Informations personnelles de #{user}</h2> <br/> \
+<div class="#{root}-account-informations">\
+<ul>\
+<li>user:#{user}</li>\
+<li>token:#{token}</li>\
+<li>home:#{home}</li>\
+<li>sid:#{sid}</li>\
+<li>ip:#{ip}</li>\
+<li>user agent:#{userAgent}</li>\
+</ul>\
+</div> \
+<div class="#{root}-account-change-password">\
+<ul>\
+<h2>Changer de password<h2/> \
+Old password : <input id="#{root}-account-old-password" type="password" /></br> \
+New password : <input id="#{root}-account-new-password" type="password" /></br> \
+Retype new password : <input id="#{root}-account-new-password2" type="password" /></br> \
+<input id="#{root}-account-change-password-submit" type="submit" value="valider"/></br> \
+</div> \
+<div class="#{root}-account-available-rights"></div>',
+				rights_controller:
+'TODO : Right controller part',
+				rights_header:
+'TODO right header part',
+				rights_list:
+'TODO list rights',
+				rights_footer:
+'TODO footer rights'
+			},
 			UploadTab:
 			{
 				main:

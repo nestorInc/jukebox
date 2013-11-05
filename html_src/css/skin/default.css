@@ -32,33 +32,102 @@ width: 900px;
 
 /* Page layout */
 .jukebox-header{
-background-color: #6B6B6B;
+background-color: #555555;
+color:#EEEEEE;
 width: 100%;
 height: 20px;
+clear:both;
+float:left;
 /*border-top-left-radius: 10px;
 border-top-right-radius: 10px;*/
 }
 
 .jukebox-user-header{
-background-color: #668833;
+background-color: #333333;
+color:#EEEEEE;
 width: 100%;
-height: 20px;
+min-height: 20px;
+display:inline;
+clear:both;
+float:left;
 /*border-top-left-radius: 10px;
 border-top-right-radius: 10px;*/
 }
+
+.jukebox-user-header a:link{
+color: #4D67B1;
+}
+
+.jukebox-user-header a:hover{
+color: #AA88EE;
+}
+
+.jukebox-user-header-login{
+display:inline;
+vertical-align:center;
+float:left;
+font-size:15px;
+clear:both;
+}
+
+.jukebox-user-header-canal{
+display:inline;
+vertical-align:center;
+float:left;
+font-size:15px;
+clear:both;
+}
+
+
+.jukebox-user-header-create{
+display:inline;
+vertical-align:center;
+float:left;
+font-size:15px;
+clear:both;
+}
+
+
+.jukebox-user-header-signin{
+display:inline;
+vertical-align:center;
+float:right;
+font-size:15px;
+color: #4D67B1;
+margin-left:2px;
+margin-right:2px;
+}
+
+.jukebox-user-header-create-submit{
+height: 100%;
+}
+
+
+.jukebox-user-header-chooseCanal{
+display:inline;
+vertical-align:center;
+float:right;
+font-size:15px;
+color: #4D67B1;
+margin-left:2px;
+margin-right:2px;
+}
+
 
 .jukebox-user-header-deco{
 display:inline;
 vertical-align:center;
 float:right;
 font-size:15px;
+margin-left:2px;
+margin-right:2px;
 }
-
 
 .jukebox-main{
 float: left;
 display: inline;
 width: 280px;
+clear:both;
 }
 
 .jukebox-footer{

@@ -55,14 +55,20 @@ function Action(name, opts)
 		case "validate_uploaded_file":
 			this.file_name = opts.file_name;
 			break;
+		case "get_user_informations":
+			break;
 		case "create_user":
-			this.channel = opts.channel;
 			this.nickname = opts.nickname;
 			this.password = opts.password;
 			break;
 		case "validate_user":
-			this.channel = opts.channel;
 			this.nickname = opts.nickname;
+			break;
+		case "change_user_password":
+			this.nickname = opts.nickname;
+			this.old_password = opts.old_password;
+			this.new_password = opts.new_password;
+			this.new_password2 = opts.new_password2;
 			break;
 		default:
 			throw new Error("Invalid action");
