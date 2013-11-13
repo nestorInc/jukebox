@@ -64,21 +64,25 @@ module SongQueueMixin
 
   # log any action on current entry to channel_action.log file
   def log_action(action, mid)
-    puts mid
-    song = @library.get_file(mid).first
+    begin
+      puts mid
+      song = @library.get_file(mid).first
+      
+      filename = "channel_action.log"
+      log_store = YAML::Store.new filename
+      
+      action_object = [action,
+                       ["artist" => song.artist,
+                        "album" => song.album,
+                        "genre" => song.genre]]
 
-    filename = "channel_action.log"
-    log_store = YAML::Store.new filename
+      puts action_object.to_yaml
 
-    action_object = [action,
-                     ["artist" => song.artist,
-                      "album" => song.album,
-                      "genre" => song.genre]]
-
-    puts action_object.to_yaml
-
-    log_store.transaction do
-      log_store['actions'] += action_object
+      log_store.transaction do
+        log_store['actions'] += action_object
+      end
+    rescue => e
+      error("error scoring #{e}")
     end
   end
 end

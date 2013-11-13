@@ -64,7 +64,7 @@ color: #AA88EE;
 
 .jukebox-user-header-login{
 display:inline;
-vertical-align:center;
+vertical-align:middle;
 float:left;
 font-size:15px;
 clear:both;
@@ -72,7 +72,7 @@ clear:both;
 
 .jukebox-user-header-canal{
 display:inline;
-vertical-align:center;
+vertical-align:middle;
 float:left;
 font-size:15px;
 clear:both;
@@ -81,7 +81,7 @@ clear:both;
 
 .jukebox-user-header-create{
 display:inline;
-vertical-align:center;
+vertical-align:middle;
 float:left;
 font-size:15px;
 clear:both;
@@ -90,7 +90,7 @@ clear:both;
 
 .jukebox-user-header-signin{
 display:inline;
-vertical-align:center;
+vertical-align:middle;
 float:right;
 font-size:15px;
 color: #4D67B1;
@@ -105,7 +105,7 @@ height: 100%;
 
 .jukebox-user-header-chooseCanal{
 display:inline;
-vertical-align:center;
+vertical-align:middle;
 float:right;
 font-size:15px;
 color: #4D67B1;
@@ -116,7 +116,7 @@ margin-right:2px;
 
 .jukebox-user-header-deco{
 display:inline;
-vertical-align:center;
+vertical-align:middle;
 float:right;
 font-size:15px;
 margin-left:2px;
