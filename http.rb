@@ -407,7 +407,11 @@ class HttpNode
     @authBlock  = block;
 
     def self.on_auth(s, req, user, pass)
-      @authBlock.call(s, req, user, pass, *@authArgs);
+      begin
+        @authBlock.call(s, req, user, pass, *@authArgs);
+      rescue => e
+        error("on auth : #{e}")
+      end
     end
   end
 
