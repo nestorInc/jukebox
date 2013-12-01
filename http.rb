@@ -170,7 +170,7 @@ class HttpResponse
   end
 
   def HttpResponse.generate401(req, realm = "")
-    rsp = HttpResponse.generateError(req, 401, "Unauthorized Hahahahaha!");
+    rsp = HttpResponse.generateError(req, 401, "Unauthorized");
     rsp.options["WWW-Authenticate"] = "Basic realm=\"#{realm}\"";
     rsp;
   end
