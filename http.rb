@@ -59,19 +59,19 @@ class HttpRequest
   end
 
   def HttpRequest.parse(header)
-    lines = header.split("\r\n");
-    # parse response line
-    request_line = lines.shift(1)[0];
-    method, page, proto = request_line.split(/[ \t]/);
-    return nil if(proto == nil);
-    # decode header options
-    options = {}
-    lines.each { |l|
+    begin
+      lines = header.split("\r\n");
+      # parse response line
+      request_line = lines.shift(1)[0]; 
+      method, page, proto = request_line.split(/[ \t]/);
+      return nil if(proto == nil);
+      # decode header options
+      options = {}
+      lines.each { |l|
       name, val = l.split(":", 2)
       val ||= "";
       options[name] = val.strip();
-    }
-    begin
+      }
       uri = URI.parse(page);
     rescue
       return nil;
