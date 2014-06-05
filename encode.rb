@@ -50,16 +50,31 @@ class EncodingThread < Rev::IO
       song.bitrate = bitrate;
 
       @song = song;
-      rd, wr = IO.pipe
-      @pid = fork {
+      rd,  wr = IO.pipe
+      rd2, wr2 = IO.pipe
+      @pid_encoder = fork {
+        wr2.close();
+        rd2.close();
         rd.close()
         STDOUT.reopen(wr)
         wr.close();
-        exec("mpg123 --stereo -r 44100 -s \"#{src}\" | lame - \"#{dst}\" -r -b #{bitrate} -t > /dev/null 2> /dev/null");
+        Process.setpriority(Process::PRIO_PROCESS, 0, 2)
+        exec("mpg123 --stereo -r 44100 -s \"#{src}\"");
       }
-      debug("Process encoding PID=#{@pid}");
-      wr.close();
-      @fd  = rd;
+      @pid_decoder = fork {
+        rd2.close();
+        wr.close();
+        STDIN.reopen(rd)
+        STDOUT.reopen(wr2)
+        rd.close()
+        Process.setpriority(Process::PRIO_PROCESS, 0, 2)
+        exec("lame - \"#{dst}\" -r -b #{bitrate} -t > /dev/null 2> /dev/null");
+      }
+      rd.close();
+      wr.close()
+      debug("Process encoding #{@pid_encoder} decoding#{@pid_decoder}");
+      wr2.close();
+      @fd  = rd2;
       super(@fd);
     rescue => e
       error("Encode execution error on file #{src}: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
@@ -79,7 +94,7 @@ class EncodingThread < Rev::IO
     @song.frames   = frames;
     
     @song.duration = frames.inject(&:+) * 8 / (@song.bitrate * 1000);
-    pid, status = Process.waitpid2(@pid);
+    pid, status = Process.waitpid2(@pid_decoder);
     if(status.exitstatus() == 0)
       @song.status = Library::FILE_OK;
     else
