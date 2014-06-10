@@ -6,6 +6,8 @@ http.log
 exception_stat
 jukebox.cfg
 jukebox.db
+jukebox.pid
+jukebox.db-journal
 mp3/
 uploads/
 node_modules/
