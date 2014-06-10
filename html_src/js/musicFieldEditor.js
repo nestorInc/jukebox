@@ -207,6 +207,8 @@ MusicFieldEditor.prototype.edit = function(cell)
 	// Change behavior from field names
 	var modified = false;
 
+	var elementToFocus = null;
+
 	var property = this.name.substring(this.prefix.length);
 	if(property == "genre")
 	{
@@ -221,6 +223,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 			select.appendChild(option);
 		}
 		form.appendChild(select);
+		elementToFocus = select;
 
 		for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 		{
@@ -305,6 +308,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 			}
 		}
 		form.appendChild(input);
+		elementToFocus = input;
 	}
 
 	var okButton = document.createElement("input");
@@ -333,4 +337,5 @@ MusicFieldEditor.prototype.edit = function(cell)
 
 	cell.innerHTML = '';
 	cell.appendChild(form);
+	elementToFocus.focus(); // Only once attached to DOM ; Tried to put caret at the beginning but it is complicated
 };

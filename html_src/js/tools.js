@@ -70,6 +70,42 @@ function Extend(/*deep, */target/*, obj1, obj2, obj3, objN*/)
 	return target; // Return the modified object
 }
 
+function ReadCookie (name)
+{
+	name += '=';
+	var parts = document.cookie.split(/;\s*/);
+	for (var i = 0; i < parts.length; i++)
+	{
+		var part = parts[i];
+		if (part.indexOf(name) === 0)
+		{
+			return part.substring(name.length);
+		}
+	}
+	return null;
+}
+
+/**
+* Store value in the document cookie
+*
+* @param string name Name of the variable to store
+* @param string value Value of the variable
+* @param integer seconds Number of seconds after which the cookie will be invalid
+* @param string path Path for which the cookie will be valid
+*/
+function SetCookie(name, value, seconds, path)
+{
+	var expires = "";
+	if (seconds)
+	{
+		var date = new Date();
+		date.setTime(date.getTime() + (seconds * 1000));
+		expires = ";expires=" + date.toGMTString();
+	}
+
+	path = ";path=" + path;
+	document.cookie = name + "=" + value + expires + path;
+}
 
 // UI Tools
 //----------
