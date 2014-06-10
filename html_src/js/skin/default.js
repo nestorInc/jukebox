@@ -190,7 +190,7 @@ Jukebox.UI.skins["default"] =
 	<option value="artist">Artist</option>\
 	<option value="album">Album</option>\
 	<option value="year">Year</option>\
-	<option value="tracknb">TrackNb</option>\
+	<option value="trackNb">TrackNb</option>\
 	<option value="genre">Genre</option>\
 	<option value="fillfromfilename">Fill title with filename</option>\
 	<option value="delete">Delete</option>\
@@ -203,7 +203,7 @@ Jukebox.UI.skins["default"] =
 	<option value="title">Title</option>\
 	<option value="album">Album</option>\
 	<option value="artist">Artist</option>\
-	<option value="tracknb">TrackNB</option>\
+	<option value="trackNb">TrackNb</option>\
 </select>\
 <input class="#{root}-upload-global-min-idx" type="text" value="min" size=4/>\
 <input class="#{root}-upload-global-max-idx" type="text" value="max" size=4/>\
