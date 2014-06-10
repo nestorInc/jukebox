@@ -87,6 +87,14 @@ font-size:15px;
 clear:both;
 }
 
+.jukebox-user-header-create table,
+.jukebox-account-change-password table{
+border: 0;
+}
+.jukebox-user-header-create table td:first-child,
+.jukebox-account-change-password table td:first-child{
+text-align: right;
+}
 
 .jukebox-user-header-signin{
 display:inline;

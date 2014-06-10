@@ -1,22 +1,7 @@
-/* global Extend, Query, Action, JukeboxUI, soundManager, Notifications, Ajax, $R, HTML5Storage */
+/* global Extend, Query, Action, JukeboxUI, soundManager, Notifications, Ajax, $R, HTML5Storage, ReadCookie */
 
 var uniqid = 0,
 	sendQueryProxy;
-
-
-function readCookie (name)
-{
-	name += '=';
-	var parts = document.cookie.split(/;\s*/);
-	for (var i = 0; i < parts.length; i++) {
-		var part = parts[i];
-		if (part.indexOf(name) === 0){
-			return part.substring(name.length);
-		}
-	}
-	return null;
-}
-
 
 /**
 * Represents a Jukebox controller.
@@ -660,15 +645,17 @@ function Jukebox(element, opts)
 	*/
 	this.validateUploadedFile = function(filename)
 	{
-		if(Object.isArray(filename)){
-			var i = 0;
-			for(i=0;i<filename.length;++i){
-				_doAction(new Action("validate_uploaded_file",{file_name: filename[i]}));
+		if(Object.isArray(filename))
+		{
+			for(var i = 0; i < filename.length; ++i)
+			{
+				_doAction(new Action("validate_uploaded_file", {file_name: filename[i]}));
 			}
-		} else {
+		}
+		else
+		{
 			_doAction(new Action("validate_uploaded_file", {file_name: filename}));
 		}
-
 		return this;
 	};
 
@@ -679,12 +666,15 @@ function Jukebox(element, opts)
 	*/
 	this.updateUploadedFile = function(opts)
 	{
-		if(Object.isArray(opts)){
-			var i = 0;
-			for(i=0;i<opts.length;++i){
+		if(Object.isArray(opts))
+		{
+			for(var i = 0; i < opts.length; ++i)
+			{
 				_doAction(new Action("update_uploaded_file", opts[i]));
 			}
-		} else {
+		}
+		else
+		{
 			_doAction(new Action("update_uploaded_file", opts));
 		}
 		return this;
@@ -786,8 +776,9 @@ function Jukebox(element, opts)
 	*/
 	function _parseJSONResponse(json)
 	{
-		if(_user !== json.user){
-			_user=readCookie("user");
+		if(_user !== json.user)
+		{
+			_user = ReadCookie("user");
 			$this.user = _user;
 			_ui.updateUser(_user);
 		}

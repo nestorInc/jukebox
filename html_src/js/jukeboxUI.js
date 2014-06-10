@@ -1,27 +1,4 @@
-/* global Extend, Tabs, TabsManager, FormatTime, SearchTab, UploadTab, DebugTab, AccountTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $R, Draggable, Droppables, Event, Notifications, HTML5Storage */
-
-/**
-* Store value in the document cookie
-*
-* @param string name Name of the variable to store
-* @param string value Value of the variable
-* @param integer seconds Number of seconds after which the cookie will be invalid
-* @param string path Path for which the cookie will be valid
-*/
-function cookieSet(name, value, seconds, path)
-{
-	var expires = "";
-	if (seconds) {
-		var date = new Date();
-		date.setTime(date.getTime() + (seconds * 1000));
-		expires = ";expires=" + date.toGMTString();
-	}
-
-	path = ";path=" + path;
-
-	document.cookie = name + "=" + value + expires + path;
-}
-
+/* global Extend, Tabs, TabsManager, FormatTime, SearchTab, UploadTab, DebugTab, AccountTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $R, Draggable, Droppables, Event, Notifications, HTML5Storage, SetCookie */
 
 /**
 * Represents a Jukebox graphical interface.
@@ -56,7 +33,8 @@ function JukeboxUI(jukebox, element, opts)
 		_$, // Selectors cache
 
 		_refreshSongTimer = null,
-		_lastCurrentSongElapsedTime = null;
+		_lastCurrentSongElapsedTime = null,
+		_accountHeaderOtherLabel = "retour";
 
 	//---
 	// [Privileged] Functions
@@ -191,9 +169,9 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		var items = _$.jukebox.select('.'+_opts.rootClass+'-user-display');
 		items.each(function(e)
-			{
-				e.update(userName);
-			});
+		{
+			e.update(userName);
+		});
 	};
 
 	/**
@@ -214,17 +192,17 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	};
 
-	this.hideCreateAccountHeader = function(){
-		var tmp;
-		if(_$.jukebox.down("."+ _opts.rootClass +"-user-header-switch").value=="1"){
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-create").hide();
-			tmp = _$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value;
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value = _$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML;
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML = tmp;
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-switch").value="0";
-		}
+	this.showCreateAccountHeader = function()
+	{
+		_$.header_account.show();		
+		_switchHeaderCreateLabel();		
 	};
 
+	this.hideCreateAccountHeader = function()
+	{
+		_$.header_account.hide();
+		_switchHeaderCreateLabel();
+	};
 
 	/**
 	* Render the current play queue
@@ -577,6 +555,14 @@ function JukeboxUI(jukebox, element, opts)
 		}
 	}
 
+	function _switchHeaderCreateLabel()
+	{
+		// Switch label
+		var tmp = _accountHeaderOtherLabel;
+		_accountHeaderOtherLabel = _$.sign_in_link.innerHTML;
+		_$.sign_in_link.innerHTML = tmp;
+	}
+
 	/**
 	* Do a search
 	*/
@@ -770,13 +756,12 @@ function JukeboxUI(jukebox, element, opts)
 
 		disconnect: function()
 		{
-
 			// Todo send a request to clean session
 			// Todo reset account tab informations
-			cookieSet("user", "", 0, "/");
-			cookieSet("session", "", 0, "/");
-			// reset jukebox
-			window.location=window.location.protocol + "//void:void@" + window.location.host + window.location.pathname;
+			SetCookie("user", "", 0, "/");
+			SetCookie("session", "", 0, "/");
+			// Reset jukebox
+			window.location = window.location.protocol + "//void:void@" + window.location.host + window.location.pathname;
 		},
 
 		/**
@@ -822,31 +807,28 @@ function JukeboxUI(jukebox, element, opts)
 		},
 		switchHeader: function()
 		{
-		var tmp;
-		if(_$.jukebox.down("."+ _opts.rootClass +"-user-header-switch").value=="0")
-		{
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-create").show();
-			tmp = _$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value;
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value = _$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML;
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML = tmp;
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-switch").value="1";
-		} else {
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-create").hide();
-			tmp = _$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value;
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-other-label").value = _$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML;
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-signin").innerHTML = tmp;
-			_$.jukebox.down("."+ _opts.rootClass +"-user-header-switch").value="0";
-		}
+			if (_$.header_account.visible())
+			{
+				$this.hideCreateAccountHeader();
+			}
+			else
+			{
+				$this.showCreateAccountHeader();
+			}
 		},
-		createAccountHeader:function(){
-		var nick = _$.jukebox.down("."+ _opts.rootClass +"-user-header-create-nickname").value;
-		var pwd1 = _$.jukebox.down("."+ _opts.rootClass +"-user-header-create-password").value;
-		var pwd2 = _$.jukebox.down("."+ _opts.rootClass +"-user-header-create-password2").value;
-		if( pwd1 != pwd2 ){
-			Notifications.Display(Notifications.LEVELS.error, "Passwords are differents");
-		} else {
-			J.sendCreateAccountRequest(nick, pwd1);
-		}
+		createAccountHeader: function()
+		{
+			var nick = _$.jukebox.down("."+ _opts.rootClass +"-user-header-create-nickname").value,
+				pwd1 = _$.jukebox.down("."+ _opts.rootClass +"-user-header-create-password").value,
+				pwd2 = _$.jukebox.down("."+ _opts.rootClass +"-user-header-create-password2").value;
+			if( pwd1 != pwd2 )
+			{
+				Notifications.Display(Notifications.LEVELS.error, "Passwords are differents");
+			}
+			else
+			{
+				J.sendCreateAccountRequest(nick, pwd1);
+			}
 		}
 	};
 
@@ -872,10 +854,10 @@ function JukeboxUI(jukebox, element, opts)
 				user: J.user,
 				decoLabel: 'Deconnexion',
 				signIn: 'Inscription',
-				back: 'retour',
 				LogIn: 'Log-in',
 				searchLabel: 'Rechercher :',
 				searchButton: 'Rechercher',
+				AccountTabName: 'Account',
 				UploadTabName: 'Upload',
 				QueryTabName: 'Query',
 				NotificationsTabName: 'Notifications',
@@ -912,7 +894,7 @@ function JukeboxUI(jukebox, element, opts)
 			jukebox:			$JB,
 			tabs:				$JB.down(rootClass+'tabs'),
 			expand_button:		$JB.down(rootClass+'expand-button'),
-			deco_link:		$JB.down(rootClass+'user-header-deco'),
+			deco_link:			$JB.down(rootClass+'user-header-deco'),
 			collapse_button:	$JB.down(rootClass+'collapse-button'),
 			search_input:		$JB.down(rootClass+'search-input'),
 			search_field:		$JB.down(rootClass+'search-field'),
@@ -940,8 +922,9 @@ function JukeboxUI(jukebox, element, opts)
 			btn_apply_plugin:	$JB.down(rootClass+'plugin-button'),
 			volume_box_slider:	$JB.down(rootClass+'volume-slider'),
 			tabs_links:			$JB.down(rootClass+'tabs-links'),
-			sign_in_link:			$JB.down(rootClass+'user-header-signin'),
-			create_account_submit:			$JB.down(rootClass+'user-header-create-submit')
+			header_account:		$JB.down(rootClass+'user-header-create'),
+			sign_in_link:		$JB.down(rootClass+'user-header-signin'),
+			create_account_submit:	$JB.down(rootClass+'user-header-create-submit')
 		};
 
 		// Initial visibility state

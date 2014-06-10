@@ -23,17 +23,19 @@ Jukebox.UI.skins["default"] =
 	<span class="#{root}-activity"></span>\
 </div>\
 <div class="#{root}-user-header">\
-	<input class="#{root}-user-header-other-label" type="hidden" value="#{back}" /> \
-	<input class="#{root}-user-header-switch" type="hidden" value="0" /> \
 	<a class="#{root}-user-header-deco" href="javascript:void(0)">#{decoLabel}</a>\
 	<a class="#{root}-user-header-signin" href="javascript:void(0)">#{signIn}</a>\
 	<a class="#{root}-user-header-chooseCanal" href="javascript:void(0)">#{canalLabel}</a>\
 	<div class="#{root}-user-header-create" style="display:none;">\
-		Creer compte: <br/>\
-		nickname : <input type="text" class="#{root}-user-header-create-nickname" size="10" value="" /> <br/>\
-		password : <input type="password" class="#{root}-user-header-create-password" size="10"/> <br/>\
-		Retype password : <input type="password" class="#{root}-user-header-create-password2" size="10"/> <br/>\
-		<input type="submit" class="#{root}-user-header-create-submit" value="creer"> \
+		Créer un compte :<br/>\
+		<table>\
+		<tbody>\
+			<tr><td>Identifiant : </td><td><input type="text" class="#{root}-user-header-create-nickname" size="10" value="" /></td></tr>\
+			<tr><td>Mot de passe : </td><td><input type="password" class="#{root}-user-header-create-password" size="10"/></td></tr>\
+			<tr><td>Confirmer le mot de passe : </td><td><input type="password" class="#{root}-user-header-create-password2" size="10"/></td></tr>\
+		</tbody>\
+		</table><br />\
+		<input type="submit" class="#{root}-user-header-create-submit" value="Créer">\
 	</div> \
 	<div class="#{root}-user-header-canal" style="display:none;">\
 	#{canalLabel} <br/> \
@@ -59,7 +61,7 @@ Jukebox.UI.skins["default"] =
 <div class="#{root}-tabs">\
 	<div class="#{root}-tabs-links">\
 		<a class="#{root}-tab-upload">#{UploadTabName}</a>\
-		<a class="#{root}-tab-account"><span class="#{root}-user-display">#{user}</span></a>\
+		<a class="#{root}-tab-account">#{AccountTabName} <span class="#{root}-user-display">#{user}</span></a>\
 		<a class="#{root}-tab-query">#{QueryTabName}</a>\
 		<a class="#{root}-tab-notifs">#{NotificationsTabName}</a>\
 		<a class="#{root}-tab-debug">#{DebugTabName}</a>\
@@ -147,22 +149,25 @@ Jukebox.UI.skins["default"] =
 				main:
 '<h2>Informations personnelles de #{user}</h2> <br/> \
 <div class="#{root}-account-informations">\
-<ul>\
-<li>user:#{user}</li>\
-<li>token:#{token}</li>\
-<li>home:#{home}</li>\
-<li>sid:#{sid}</li>\
-<li>ip:#{ip}</li>\
-<li>user agent:#{userAgent}</li>\
-</ul>\
-</div> \
+	<ul>\
+		<li><b>user:</b>#{user}</li>\
+		<li><b>token:</b>#{token}</li>\
+		<li><b>home:</b>#{home}</li>\
+		<li><b>sid:</b>#{sid}</li>\
+		<li><b>ip:</b>#{ip}</li>\
+		<li><b>user agent:</b>#{userAgent}</li>\
+	</ul>\
+</div>\
 <div class="#{root}-account-change-password">\
-<ul>\
-<h2>Changer de password<h2/> \
-Old password : <input id="#{root}-account-old-password" type="password" /></br> \
-New password : <input id="#{root}-account-new-password" type="password" /></br> \
-Retype new password : <input id="#{root}-account-new-password2" type="password" /></br> \
-<input id="#{root}-account-change-password-submit" type="submit" value="valider"/></br> \
+<h2>Changer de mot de passe</h2>\
+<table>\
+<tbody>\
+	<tr><td>Ancien mot de passe : </td><td><input class="#{root}-account-old-password" type="password" /></td></tr>\
+	<tr><td>Nouveau mot de passe : </td><td><input class="#{root}-account-new-password" type="password" /></td></tr>\
+	<tr><td>Confirmer le nouveau mot de passe : </td><td><input class="#{root}-account-new-password2" type="password" /></td></tr>\
+</tbody>\
+</table>\
+<input class="#{root}-account-change-password-submit" type="submit" value="Valider"/></br> \
 </div> \
 <div class="#{root}-account-available-rights"></div>',
 				rights_controller:
@@ -180,24 +185,25 @@ Retype new password : <input id="#{root}-account-new-password2" type="password" 
 '<div class="#{root}-file-uploader"></div>\
 <h2>#{uploadedFilesLabel}</h2>\
 <div class="#{root}-uploaded-files"></div>',
-				tableController: '<select class="#{root}-upload-global-action-select">\
-<option value="artist">Artist</option>\
-<option value="album">Album</option>\
-<option value="year">Year</option>\
-<option value="tracknb">TrackNb</option>\
-<option value="genre">Genre</option>\
-<option value="fillfromfilename">Fill title with filename</option>\
-<option value="delete">Delete</option>\
-<option value="update">Update</option>\
-<option value="validate">Validate</option>\
+				tableController:
+'<select class="#{root}-upload-global-action-select">\
+	<option value="artist">Artist</option>\
+	<option value="album">Album</option>\
+	<option value="year">Year</option>\
+	<option value="tracknb">TrackNb</option>\
+	<option value="genre">Genre</option>\
+	<option value="fillfromfilename">Fill title with filename</option>\
+	<option value="delete">Delete</option>\
+	<option value="update">Update</option>\
+	<option value="validate">Validate</option>\
 </select>\
 <input class="#{root}-upload-global-action-input" type="text" value="" />\
 <select class="#{root}-upload-global-action-genre-select" ></select>\
 <select class="#{root}-upload-global-action-fill-dst" >\
-<option value="title">Title</option>\
-<option value="album">Album</option>\
-<option value="artist">Artist</option>\
-<option value="tracknb">TrackNB</option>\
+	<option value="title">Title</option>\
+	<option value="album">Album</option>\
+	<option value="artist">Artist</option>\
+	<option value="tracknb">TrackNB</option>\
 </select>\
 <input class="#{root}-upload-global-min-idx" type="text" value="min" size=4/>\
 <input class="#{root}-upload-global-max-idx" type="text" value="max" size=4/>\
