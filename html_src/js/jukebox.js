@@ -875,22 +875,14 @@ function Jukebox(element, opts)
 			_uploadedFiles = json.uploaded_files;
 			_ui.displayUploadedFiles(_uploadedFiles);
 		}
-
-		if(json.account){
+		if(json.account)
+		{
 			_ui.displayAccount(json.account);
 		}
-
-		if(json.uploaded_files)
-		{
-			_uploadedFiles = json.uploaded_files;
-			_ui.displayUploadedFiles(_uploadedFiles);
-		}
-
 		if(json.account_created)
-			{
+		{
 			_ui.hideCreateAccountHeader();
 		}
-
 	}
 
 	/**
