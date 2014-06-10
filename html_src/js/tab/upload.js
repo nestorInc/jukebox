@@ -386,10 +386,13 @@ this.UploadTab = Class.create(Tab,
 		tr = tbody.childElements().last();
 
 		// Register listeners
-		var divs = tr.select('div');
-		divs[0].on("click", this.deleteUploadedSong.bind(this, fname));
-		divs[1].on("click", this.updateUploadedSong.bind(this, fname));
-		divs[2].on("click", this.validateUploadedSong.bind(this, fname));
+		var linkDelete = tr.down('.'+this.rootCSS+'-uploaded-file-delete'),
+			linkUpdate = tr.down('.'+this.rootCSS+'-uploaded-file-update'),
+			linkValidate = tr.down('.'+this.rootCSS+'-uploaded-file-validate');
+		
+		linkDelete.on("click", this.deleteUploadedSong.bind(this, fname));
+		linkUpdate.on("click", this.updateUploadedSong.bind(this, fname));
+		linkValidate.on("click", this.validateUploadedSong.bind(this, fname));
 	},
 
 	change_global_action: function()

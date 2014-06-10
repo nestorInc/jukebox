@@ -235,15 +235,9 @@ Jukebox.UI.skins["default"] =
 	<td class="#{root}-upload-cell-trackNb">#{trackNb}</td>\
 	<td class="#{root}-upload-cell-genre">#{genre}</td>\
 	<td class="#{root}-uploaded-file-actions #{root}-upload-cell-static">\
-		<div>\
-			<a href="javascript:;">X</a>\
-		</div>\
-		<div class="#{root}-uploaded-file-update" style="display:none;">\
-			<a href="javascript:;">&nbsp;Update&nbsp;</a>\
-		</div>\
-		<div class="#{root}-uploaded-file-validate">\
-			<a href="javascript:;">&nbsp;Validate&nbsp;</a>\
-		</div>\
+		<a href="javascript:;" class="#{root}-uploaded-file-delete">X</a>\
+		<a href="javascript:;" class="#{root}-uploaded-file-update" style="display:none;">Update</a>\
+		<a href="javascript:;" class="#{root}-uploaded-file-validate">Validate</a>\
 	</td>\
 </tr>'
 			},

@@ -511,9 +511,6 @@ overflow: auto;
 table.jukebox-upload-table .jukebox-uploaded-file-actions{
 white-space: nowrap;
 }
-.jukebox-uploaded-file-actions div{
-float: left;
-}
 table.jukebox-upload-table td form{
 overflow: auto;
 }
