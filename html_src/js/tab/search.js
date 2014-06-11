@@ -419,7 +419,14 @@ this.SearchTab = Class.create(Tab,
 		function doSearch(search, category, mouseEvent)
 		{
 			var focusTab = (mouseEvent.which == 2 || mouseEvent.ctrlKey) ? false : true; // Open in background with middle clic or ctrl+clic
-			J.search(1, null, null, search.toString(), 'equal', category, 'artist,album,track,title', count, focusTab);
+
+			var orderby = 'artist,album,track,title';
+			if (category == 'album')
+			{
+				orderby = 'track,title'/*,artist*/;
+			}
+
+			J.search(1, null, null, search.toString(), 'equal', category, orderby, count, focusTab);
 		}
 		function createLink(text, search, category)
 		{
@@ -516,6 +523,14 @@ this.SearchTab = Class.create(Tab,
 					revert: function(element)
 					{
 						element.style.position = "relative";
+					},
+					onStart: function(obj)
+					{
+						obj.element.setStyle({display: 'table'});
+					},
+					onEnd: function(obj)
+					{
+						obj.element.setStyle({display: ''});
 					}
 				});
 			});

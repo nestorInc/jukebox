@@ -112,7 +112,6 @@ module.exports = function(grunt)
 				src:
 				[
 					/* prototype.js and scriptaculous.js not included, see copy task */
-					SRC.libs + 'json2.js',
 					SRC.libs + 'tablekit.js',
 					SRC.libs + 'fileuploader.js',
 

@@ -603,7 +603,14 @@ function JukeboxUI(jukebox, element, opts)
 	function _searchCategory(search, category, mouseEvent)
 	{
 		var focusTab = (mouseEvent.which == 2 || mouseEvent.ctrlKey) ? false : true; // Open in background with middle clic or ctrl+clic
-		_search(1, null, null, search, 'equal', category, 'artist,album,track,title', null, focusTab);
+
+		var orderby = 'artist,album,track,title';
+		if (category == 'album')
+		{
+			orderby = 'track,title'/*,artist*/;
+		}
+
+		_search(1, null, null, search, 'equal', category, orderby, null, focusTab);
 	}
 
 	/**
