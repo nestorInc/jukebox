@@ -352,8 +352,9 @@ this.UploadTab = Class.create(Tab,
 			trackNb;
 		if(trackSlashIndex != -1)
 		{
-			track = obj.track.split("/")[0];
-			trackNb = obj.track.split("/")[1];
+			var parts = obj.track.split("/");
+			track = parts[0];
+			trackNb = parts[1];
 		}
 		else
 		{
@@ -449,7 +450,7 @@ this.UploadTab = Class.create(Tab,
 			max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx');
 
 		var max = "max";
-		if(dst_value === "trackNb")
+		if(dst_value === "track")
 		{
 			max = "len";
 		}
@@ -501,12 +502,12 @@ this.UploadTab = Class.create(Tab,
 		{
 			if(elements[i].checked)
 			{
-				done = done + 1;
+				done++;
 
-				var tr = elements[i].up("tr");
-				var td = null;
-				var form = null;
-				var fname = null;
+				var tr = elements[i].up("tr"),
+					td = null,
+					form = null,
+					fname = null;
 
 				if( selectedOption === "artist" ||
 					selectedOption === "album" ||
@@ -546,7 +547,7 @@ this.UploadTab = Class.create(Tab,
 					{
 						td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
 					}
-					else if( dst_value  === "trackNb")
+					else if( dst_value  === "track")
 					{
 						td = tr.down('.'+this.rootCSS+'-upload-cell-track');
 					}
@@ -555,28 +556,32 @@ this.UploadTab = Class.create(Tab,
 					form = td.down("form");
 					this.tableKit.editCell(td);
 
-					if( !isNaN(parseInt(min_input.value,10)) &&
-						!isNaN(parseInt(max_input.value,10)))
+					var min_val = parseInt(min_input.value, 10),
+						max_val = parseInt(max_input.value, 10),
+						field = td.down("input[type=text]");
+
+					if( !isNaN(min_val) &&
+						!isNaN(max_val) )
 					{
-						if( dst_value  === "trackNb")
+						if( dst_value  === "track" )
 						{
-							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value,10), parseInt(min_input.value,10) + parseInt(max_input.value,10));
+							field.value = fname.substring(min_val, min_val + max_val);
 						}
 						else
 						{
-							td.down("input[type=text]").value = fname.substring(parseInt(min_input.value,10), fname.length -parseInt(max_input.value,10));
+							field.value = fname.substring(min_val, fname.length - max_val);
 						}
 					}
-					else if ( !isNaN(parseInt(min_input.value,10)) &&
-								isNaN(parseInt(max_input.value,10)))
+					else if ( !isNaN(min_val) && isNaN(max_val) )
 					{
-						td.down("input[type=text]").value = fname.substring(parseInt(min_input.value,10));
+						field.value = fname.substring(min_val);
 					}
 					else
 					{
-						td.down("input[type=text]").value = fname;
+						field.value = fname;
 					}
-					td.down("input[type=text]").value = td.down("input[type=text]").value.replace(/^\s+|\s+$/g,'');
+					field.value = field.value.trim();
+
 					TableKit.Editable.getCellEditor(td).submit(td, form);
 				}
 			}
