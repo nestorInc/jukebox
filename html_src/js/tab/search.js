@@ -523,6 +523,14 @@ this.SearchTab = Class.create(Tab,
 					revert: function(element)
 					{
 						element.style.position = "relative";
+					},
+					onStart: function(obj)
+					{
+						obj.element.setStyle({display: 'table'});
+					},
+					onEnd: function(obj)
+					{
+						obj.element.setStyle({display: ''});
 					}
 				});
 			});
