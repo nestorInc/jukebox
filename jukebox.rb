@@ -87,6 +87,10 @@ main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
   library.invalidate_sessions();
 
+  isMainPage = ['/', '/index.html'].include?(req.uri.path)
+  #log(req.uri.path)
+  #log(isMainPage)
+
   if(req.uri.query)
     form = Hash[URI.decode_www_form(req.uri.query)] ;
     if(form["token"])
@@ -116,7 +120,7 @@ main.addAuth() { |s, req, user, pass|
   end
 
   if req.options["Cookie"]
-    cookies=Hash[req.options["Cookie"].split(';').map{ |i| i.strip().split('=')}];
+    cookies = Hash[req.options["Cookie"].split(';').map{ |i| i.strip().split('=')}];
     if cookies["session"] != nil
       session = cookies["session"];
       luser = library.check_session(session,
@@ -127,16 +131,19 @@ main.addAuth() { |s, req, user, pass|
         s.sid.replace(session);
         user.replace(luser);
         stream.channel_init(luser);
-        library.update_session_last_connexion(session);
+
+        if(isMainPage)
+          library.update_session_last_connexion(session);
+        end
         next "cookie"
       end
     end
   end
 
-  if(pass)
-    if(user != "void" and  library.login(user, pass) )
-      sid = library.create_user_session(user, 
-                                        s.remote_address.ip_address, 
+  if(isMainPage and pass)
+    if(user != "void" and library.login(user, pass) )
+      sid = library.create_user_session(user,
+                                        s.remote_address.ip_address,
                                         req.options["User-Agent"] );
       stream.channel_init(s.user)
       s.sid.replace(sid)
