@@ -436,7 +436,6 @@ SQL
     #TODO Change a flag in order to add a message to the response when the user try to access an invalidated session
     now = (Time.now()).strftime("%s");
     @db.execute("SELECT U.nickname as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 AND validity > ? LIMIT 1", now) do |row|
-      update_session_last_connexion(sid)
       return row["nick"]
     end
     nil;
