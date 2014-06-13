@@ -96,6 +96,8 @@ class Library
   FILE_OK                = 5;
 
   def initialize()
+    @lastSessionsCleanUpTime = 0;
+
     @db = SQLite3::Database.new("jukebox.db");
     @db.results_as_hash = true;
     init_db();
@@ -421,13 +423,19 @@ SQL
   end
 
   def invalidate_sessions( )
-    #TODO Change a flag in order to add a message to the response when the user try to access an invalidated session
-    now = (Time.now()).strftime("%s");
-    @db.execute("DELETE FROM sessions WHERE validity <= ?", now);
+    currentTime = Time.now()
+    diff = currentTime - @lastSessionsCleanUpTime
+    if(diff.to_i > 60*10) # 10min
+      now = currentTime.strftime("%s");
+      @db.execute("DELETE FROM sessions WHERE validity <= ?", now);
+      @lastSessionsCleanUpTime = currentTime;
+    end
   end
 
   def check_session( sid, remote_ip, user_agent )
-    @db.execute("SELECT U.nickname as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 LIMIT 1") do |row|
+    #TODO Change a flag in order to add a message to the response when the user try to access an invalidated session
+    now = (Time.now()).strftime("%s");
+    @db.execute("SELECT U.nickname as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 AND validity > ? LIMIT 1", now) do |row|
       update_session_last_connexion(sid)
       return row["nick"]
     end
