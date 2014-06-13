@@ -88,8 +88,6 @@ main.addAuth() { |s, req, user, pass|
   library.invalidate_sessions();
 
   isMainPage = ['/', '/index.html'].include?(req.uri.path)
-  #log(req.uri.path)
-  #log(isMainPage)
 
   if(req.uri.query)
     form = Hash[URI.decode_www_form(req.uri.query)] ;
