@@ -83,25 +83,35 @@ main   = HttpNodeMapping.new("html");
 main_src = HttpNodeMapping.new("html_src");
 stream = Stream.new(channelList, library);
 
+sessions = HttpSessionStateCollection.new;
+
 main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
+
+  # Remove invalid HttpSessionState objects from memory
+  sessions.removeExpired();
+
+  # For now we haven't attach the current request to any HttpSessionState
+  currentSession = nil;
+
+  # Remove invalid sessions in database
   library.invalidate_sessions();
 
   isMainPage = ['/', '/index.html'].include?(req.uri.path)
+  ip_address = s.remote_address.ip_address;
+  user_agent = req.options["User-Agent"];
 
   if(req.uri.query)
-    form = Hash[URI.decode_www_form(req.uri.query)] ;
+    form = Hash[URI.decode_www_form(req.uri.query)];
     if(form["token"])
       token = form["token"];
       luser = library.check_login_token(nil, token);
       if luser
-        sid = library.get_login_token_session(token)
+        sid = library.get_login_token_session(token);
         if not sid
           #TODO check if user has right to create session
-          sid = library.create_user_session(luser, 
-                                            s.remote_address.ip_address, 
-                                            req.options["User-Agent"] )
-          library.update_login_token_session(token, sid)
+          sid = library.create_user_session(luser, ip_address, user_agent);
+          library.update_login_token_session(token, sid);
         end
 
         s.user.replace(luser);
@@ -121,16 +131,26 @@ main.addAuth() { |s, req, user, pass|
     cookies = Hash[req.options["Cookie"].split(';').map{ |i| i.strip().split('=')}];
     if cookies["session"] != nil
       session = cookies["session"];
-      luser = library.check_session(session,
-                                    s.remote_address.ip_address,
-                                    req.options["User-Agent"]);
-      if(luser)
+
+      # Check if the session is known in RAM
+      if sessions.exists(session)
+        currentSession = sessions.get(session);
+        luser = currentSession.Items["user"];
+      else # Check in db
+        luser = library.check_session(session, ip_address, user_agent);
+        if luser
+          currentSession = sessions.add(session, luser, ip_address, user_agent);
+        end
+      end
+
+      if luser
         s.user.replace(luser);
         s.sid.replace(session);
         user.replace(luser);
         stream.channel_init(luser);
 
-        if(isMainPage)
+        if isMainPage
+          currentSession.updateLastRequest() if currentSession;
           library.update_session_last_connexion(session);
         end
         next "cookie"
@@ -140,9 +160,14 @@ main.addAuth() { |s, req, user, pass|
 
   if(isMainPage and pass)
     if(user != "void" and library.login(user, pass) )
-      sid = library.create_user_session(user,
-                                        s.remote_address.ip_address,
-                                        req.options["User-Agent"] );
+      sid = library.create_user_session(user, ip_address, user_agent);
+
+      if sessions.exists(sid)
+        currentSession = sessions.get(sid);
+      else
+        currentSession = sessions.add(sid, user, ip_address, user_agent);
+      end
+
       stream.channel_init(s.user)
       s.sid.replace(sid)
 
