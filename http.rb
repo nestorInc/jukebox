@@ -285,7 +285,7 @@ class HttpSession < Rev::SSLSocket
   end
 
   def on_read(data)
-    debug("HTTP data\n" + data);
+    #debug("HTTP data\n" + data);
     @sck_data << data;
     while(@sck_data.bytesize != 0)
       # Decode header
