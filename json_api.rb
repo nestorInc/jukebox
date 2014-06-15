@@ -27,7 +27,7 @@ class JsonManager < HttpNode
     rep = HttpResponse.new(req.proto, 200, "OK");
 
     res = "";
-    debug(req.data);
+    #debug("IN: " + req.data);
     if(ch == nil)
       res = JsonManager.create_message(JsonManager::MSG_LVL_WARNING,
                                        "Unknown channel #{s.user}");
@@ -56,7 +56,7 @@ class JsonManager < HttpNode
     JsonManager.add_message(resp, lvl, code, msg);
 
     str = JSON.generate(resp);
-    debug(str);
+    #debug("OUT: " + str);
     str;
   end
 
@@ -92,7 +92,7 @@ class JsonManager < HttpNode
       end
     end
     str = JSON.generate(resp);
-    debug(str);
+    #debug("OUT: " + str);
     str;
   end
 

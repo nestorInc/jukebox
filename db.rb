@@ -106,6 +106,7 @@ class Library
     create_new_user("guest", "guest", 1);
 
     req = @db.prepare("UPDATE library SET status=#{FILE_WAIT} WHERE status=#{FILE_ENCODING_PROGRESS}");
+    debug("[DB] initialize");
     res = req.execute!();
     req.close();
 
@@ -177,11 +178,13 @@ class Library
                        FOREIGN KEY(tid) REFERENCES tokens(tid) ON UPDATE CASCADE ON DELETE CASCADE);
 SQL
 
+    debug("[DB] init_db");
     @db.execute_batch( sql );
   end
 
   def init_root()
     # todo check if root exists
+    debug("[DB] init_root 1/2");
     @db.execute("SELECT uid FROM users WHERE nickname='root' LIMIT 1") do |row|
       return nil;
     end
@@ -263,10 +266,11 @@ SQL
      COMMIT;
 SQL
     begin
+      debug("[DB] init_root 2/2");
       @db.execute_batch( sql );
     rescue => e
       error("Create root user : #{e}");
-    end  
+    end
   end
 
   def validate_user( user )
@@ -276,7 +280,8 @@ SQL
     SET validated = 1
     WHERE nickname="#{user}"
 SQL
-    begin 
+    begin
+      debug("[DB] validate_user");
       @db.execute_batch( sql );
     rescue =>e
       error("Validate user : #{e}");
@@ -287,6 +292,7 @@ SQL
     bcrypt_pass = BCrypt::Password.create(pass);
     creation = Time.now();
 
+    debug("[DB] create_new_user 1/3");
     @db.execute("SELECT uid FROM users WHERE nickname='#{user}'") do |row|
       error("Could not create User #{user}, already exists in base");
       return nil;
@@ -342,7 +348,8 @@ SQL
 
       COMMIT;
 SQL
-    begin 
+    begin
+      debug("[DB] create_new_user 2/3");
       @db.execute_batch( sql );
     rescue =>e
       error("Create user : #{e}");
@@ -350,6 +357,7 @@ SQL
 
     create_login_token( user );
 
+    debug("[DB] create_new_user 3/3");
     @db.execute("SELECT uid FROM users WHERE nickname='#{user}' LIMIT 1") do |row|
       return row["uid"];
     end
@@ -357,6 +365,7 @@ SQL
   end
 
   def create_login_token( userNickname )
+    debug("[DB] create_login_token check");
     @db.execute("SELECT lt.tid as hash_exists FROM login_tokens lt INNER JOIN users as u ON u.uid=lt.uid WHERE u.nickname='#{userNickname}'") do |row|
       error("Could not create login token, already exists")
       return nil
@@ -368,6 +377,7 @@ SQL
     random_string=nil;
     while ( hashExists == false )
       random_string = (0...6).map{ char_set[rand(char_set.length)] }.join
+      debug("[DB] create_login_token retry check");
       res = @db.execute("SELECT count(*) as hash_exists FROM tokens WHERE token='#{random_string}'");
       hashExists = true if( res[0] != nil and res[0]["hash_exists"] == 0)
       return nil if(gen_hash_retry >= 100)
@@ -402,6 +412,7 @@ SQL
      COMMIT;
 SQL
     begin
+      debug("[DB] create_login_token insert");
       @db.execute_batch( sql );
     rescue => e
       error("#{e}");
@@ -410,6 +421,7 @@ SQL
 
   def login( user, pass )
       req = @db.prepare("SELECT hash FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
+      debug("[DB] login");
       res = req.execute!();
       req.close();
       return false if(res == nil or res[0] == nil)
@@ -427,6 +439,7 @@ SQL
     diff = currentTime - @lastSessionsCleanUpTime
     if(diff.to_i > 60*10) # 10min
       now = currentTime.strftime("%s");
+      debug("[DB] invalidate_sessions");
       @db.execute("DELETE FROM sessions WHERE validity <= ?", now);
       @lastSessionsCleanUpTime = currentTime;
     end
@@ -435,6 +448,7 @@ SQL
   def check_session( sid, remote_ip, user_agent )
     #TODO Change a flag in order to add a message to the response when the user try to access an invalidated session
     now = (Time.now()).strftime("%s");
+    debug("[DB] check_session");
     @db.execute("SELECT U.nickname as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 AND validity > ? LIMIT 1", now) do |row|
       return row["nick"]
     end
@@ -446,12 +460,14 @@ SQL
     return false if(user == nil)
 
     #If session already exists return the already created session
+    debug("[DB] create_user_session select existing");
     @db.execute("SELECT S.sid FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE u.nickname='#{user}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 LIMIT 1") do |row|
       return row["sid"]
     end
 
     #retrieve user uid
     uid = nil;
+    debug("[DB] create_user_session retrieve user uid");
     res = @db.execute("SELECT uid FROM users WHERE nickname='#{user}'");
     uid = res[0]["uid"] if(res[0] != nil);
 
@@ -467,11 +483,13 @@ SQL
       # generates a random string
       # http://stackoverflow.com/questions/88311/how-best-to-generate-a-random-string-in-ruby
       random_string = (0...50).map{ char_set[rand(char_set.length)] }.join
+      debug("[DB] create_user_session generate check hash existence");
       res = @db.execute("SELECT count(*) as hash_exists FROM sessions WHERE sid='#{random_string}'");
       hashExists = true if( res[0] != nil and res[0]["hash_exists"] == 0)
       return nil if(gen_hash_retry >= 100)
     end
 
+    debug("[DB] create_user_session insert");
     @db.execute("INSERT INTO sessions ( sid, uid, user_agent, remote_ip, creation, last_connexion, validity ) VALUES ('#{random_string}', '#{uid}', '#{user_agent}', '#{remote_ip}', #{creation}, #{creation}, #{validity})")
 
     # Wtf why this line doesn't work ?
@@ -482,10 +500,12 @@ SQL
   end
 
   def update_session_last_connexion(sessionID)
+    debug("[DB] update_session_last_connexion");
     @db.execute("UPDATE sessions SET last_connexion=#{(Time.now()).strftime("%s")} WHERE sid='#{sessionID}';");
   end
 
   def create_new_group( label )
+    debug("[DB] create_new_group");
     @db.execute("INSERT INTO groups (gid, label) VALUES (?,?)", nil, label);
     @db.last_insert_row_id;
   end
@@ -493,9 +513,11 @@ SQL
   def create_new_right( right_path, owner_id, flag_owner, flag_others, group_rights)
     #TODO check if subrights exists
     #TODO check user has right to create a new sub right
+    debug("[DB] create_new_right 1/2");
     @db.execute("INSERT OR IGNORE INTO rights (right, owner, flag_owner, flag_others) VALUES( '#{right_path}', '#{owner_id}', #{flag_owner}, #{flag_others})");
 
     begin
+      debug("[DB] create_new_right 2/2");
       @db.prepare("INSERT OR IGNORE INTO rights_groups (right, gid, flag_group) VALUES ( ?, ?, ? )") do |stmt|
         group_rights.each { |grp|
           stmt.bind_param(1, right_path);
@@ -510,6 +532,7 @@ SQL
   end
 
   def get_user_informations( sid )
+    debug("[DB] get_user_informations");
     @db.execute("SELECT " +
                 " T.token, " +
                 " U.right, " +
@@ -532,12 +555,14 @@ SQL
   def change_user_password(user, sid, nickname, old_pass, new_pass, new_pass2)
     return nil if( new_pass != new_pass2)
     return nil if( not login( nickname, old_pass ))
+    debug("[DB] change_user_password select");
     @db.execute("SELECT " +
                 " U.right " +
                 "FROM users as U " +
                 "WHERE U.nickname = '#{nickname}' " +
                 "LIMIT 1") do |row|
       if user_has_right(user, row["right"], Rights_Flag::WRITE ) 
+        debug("[DB] change_user_password update");
         @db.execute("UPDATE users SET hash='#{BCrypt::Password.create(new_pass)}' WHERE nickname='#{nickname}'")
         return true
       end
@@ -546,6 +571,7 @@ SQL
   end
 
   def check_login_token(user, token)
+    debug("[DB] check_login_token");
     @db.execute("SELECT " +
                 " U.nickname, " +
                 " T.right " +
@@ -566,6 +592,7 @@ SQL
 
   def get_user_login_token(user)
     begin
+      debug("[DB] get_user_login_token");
       @db.execute("SELECT T.token FROM login_tokens as LT INNER JOIN tokens as T ON T.tid = LT.tid INNER JOIN users as U on U.uid = LT.uid WHERE U.nickname='#{user}' LIMIT 1") do |row|
         return row["token"]
       end
@@ -578,6 +605,7 @@ SQL
 
   def get_login_token_session(token)
     begin
+      debug("[DB] get_login_token_session");
       sid = @db.execute("SELECT LT.sid FROM login_tokens as LT INNER JOIN tokens as T ON T.tid = LT.tid WHERE T.token='#{token}' LIMIT 1")[0]["sid"]
     rescue => e
       error("get_login_token_sessions #{e}")
@@ -588,6 +616,7 @@ SQL
 
   def update_login_token_session(token, sid)
     begin
+      debug("[DB] update_login_token_session");
       @db.execute("UPDATE login_tokens SET sid='#{sid}' WHERE tid='#{token}'")
       sid
     rescue => e
@@ -599,6 +628,7 @@ SQL
 
   def user_has_right(user, right, askedMode )
     begin
+      debug("[DB] user_has_right 1/2");
       userId = @db.execute("SELECT u.uid FROM users as U WHERE U.nickname='#{user}' LIMIT 1")[0]["uid"]
     rescue => e
       userId = -1
@@ -619,6 +649,7 @@ SQL
       "  OR ( R.flag_others & #{askedMode} = #{askedMode} )) " + 
       "LIMIT 1";
     begin
+      debug("[DB] user_has_right 2/2");
       res = @db.execute(req)[0]
     rescue => e
       error("user_has_right error => #{e}")
@@ -632,6 +663,7 @@ SQL
 
   def user_is_owner(user, right)
     begin
+      debug("[DB] user_is_owner 1/2");
       userId = @db.execute("SELECT u.uid FROM users as U WHERE U.nickname='#{user}' LIMIT 1")[0]["uid"]
     rescue => e
       userId = -1
@@ -661,6 +693,7 @@ SQL
         "  OR ( RG.flag_group >= #{Rights_Flag::OWNER} AND GU.uid='#{userId}' )  " +
         "  OR ( R.flag_others >= #{Rights_Flag::OWNER} ))";
       begin
+        debug("[DB] user_is_owner 2/2");
         res = @db.execute(req)
       rescue => e
         return false
@@ -676,6 +709,7 @@ SQL
   # searching methods here
   def get_nb_songs()
     req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK}");
+    debug("[DB] get_nb_songs");
     res = req.execute!();
     req.close();
     res[0].at(0);
@@ -688,9 +722,11 @@ SQL
       else
         req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK} AND #{field} LIKE :name");
       end
+      debug("[DB] get_total field");
       res = req.execute!(:name => value);
     else
-      req=@db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK}");
+      req = @db.prepare("SELECT COUNT (*) FROM library WHERE status=#{FILE_OK}");
+      debug("[DB] get_total");
       res = req.execute!();
     end
     req.close();
@@ -698,6 +734,7 @@ SQL
   end
 
   def get_file(*mids)
+    debug("[DB] get_file");
     if(mids.size == 0 || mids[0] == nil)
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
       res = req.execute().map(&Song.from_db);
@@ -716,6 +753,7 @@ SQL
   def get_random_from_artist(artist)
     if(artist != nil)
       req = @db.prepare("SELECT * FROM library WHERE artist LIKE \"%#{artist}%\" AND status=#{FILE_OK} ORDER BY RANDOM() LIMIT 1");
+      debug("[DB] get_random_from_artist");
       res = req.execute();
       req.close();
     end
@@ -758,6 +796,7 @@ SQL
 
     begin
       req = @db.prepare(request);
+      debug("[DB] request");
       if(value != nil)
         res = req.execute(:name => value).map(&Song.from_db);
       else
@@ -774,6 +813,7 @@ SQL
   def encode_file()
     begin
       req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_WAIT} LIMIT 1");
+      debug("[DB] encode_file");
       res = req.execute().map(&Song.from_db);
       req.close();
       return nil if(res[0] == nil)
@@ -788,6 +828,7 @@ SQL
 
   def change_stat(mid, state)
     req = @db.prepare("UPDATE library SET status=? WHERE mid=?");
+    debug("[DB] change_stat");
     res = req.execute!(state, mid);
     req.close();
     res;
@@ -795,6 +836,7 @@ SQL
 
   def check_file(src)
     req = @db.prepare("SELECT mid FROM library WHERE src=?");
+    debug("[DB] check_file");
     res = req.execute!(src);
     req.close();
     res.size == 0;
@@ -812,6 +854,7 @@ SQL
     }.join(", ");
     req << ");";
     st = @db.prepare(req);
+    debug("[DB] add");
     st.execute(v);
     st.close();
   end
@@ -825,6 +868,7 @@ SQL
     req << " WHERE mid=:mid";
 
     st = @db.prepare(req);
+    debug("[DB] update");
     st.execute(v);
     st.close();
   end

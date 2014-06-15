@@ -341,7 +341,7 @@ class HttpSession < Rev::SSLSocket
   end
 
   def on_read(data)
-    debug("HTTP data\n" + data);
+    #debug("HTTP data\n" + data);
     @sck_data << data;
     while(@sck_data.bytesize != 0)
       # Decode header
@@ -355,6 +355,7 @@ class HttpSession < Rev::SSLSocket
           close();
           return;
         end
+        debug(@req.uri);
         length = @req.options["Content-Length"];
         if(length == nil)
           @length = 0;
@@ -572,7 +573,7 @@ class HttpNodeMapping < HttpNode
     contentType = ContentTypeTab[ext.first]  if(ext);
     contentType = ContentTypeTab[nil]        if(contentType == nil);
     rsp  = HttpResponse.new(req.proto, 200, "OK", {"Set-Cookie" => req.options["Set-Cookie"]} );
-    #log(path)
+    #debug(path);
     data = File.read(path)
     rsp.setData(data, contentType);
     s.write(rsp.to_s);
