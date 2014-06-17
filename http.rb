@@ -161,6 +161,11 @@ class HttpResponse
     HttpResponse.generateMoveError(req, 301, "Moved Permanently", location);
   end
 
+  def HttpResponse.generate403(req, realm = "")
+    rsp = HttpResponse.generateError(req, 403, "Forbidden");
+    rsp;
+  end
+
   def HttpResponse.generate404(req)
     HttpResponse.generateError(req, 404, "Not found");
   end
@@ -174,6 +179,7 @@ class HttpResponse
     rsp.options["WWW-Authenticate"] = "Basic realm=\"#{realm}\"";
     rsp;
   end
+
 
   def HttpResponse.generate500(req)
     HttpResponse.generateError(req, 500, "Internal Server Error");
