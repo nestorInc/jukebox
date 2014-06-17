@@ -907,7 +907,11 @@ this.UploadTab = Class.create(Tab,
 			{
 				id: this.identifier
 			},
-			debug: true
+			allowedExtensions: ['mp3'],
+			showMessage: function (msg)
+			{
+				Notifications.Display(4, msg);
+			}
 		});
 
 		// Send a json query to obtain the list of uploaded files
