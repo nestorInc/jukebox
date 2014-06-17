@@ -563,8 +563,14 @@ class HttpNodeMapping < HttpNode
         path += "/index.html"
         st   = File.stat(path);
       end
+      resolved_path = File.dirname(path);
+      raise "try to access files outside jukebox root path" if( not resolved_path.start_with?(@dir) )
     rescue Errno::ENOENT
-      rsp = HttpResponse.generate404(req)
+      rsp = HttpResponse.generate404(req);
+      s.write(rsp.to_s);
+      return;
+    rescue  => e
+      rsp = HttpResponse.generate403(req);
       s.write(rsp.to_s);
       return;
     end
