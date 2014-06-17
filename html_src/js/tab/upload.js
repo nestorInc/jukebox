@@ -911,8 +911,7 @@ this.UploadTab = Class.create(Tab,
 			showMessage: function (msg)
 			{
 				Notifications.Display(4, msg);
-			},
-			debug: true
+			}
 		});
 
 		// Send a json query to obtain the list of uploaded files
