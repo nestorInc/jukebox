@@ -206,14 +206,70 @@ class HttpResponse
   end
 end
 
-# durty fix for catch exception
-module SocketDurtyFix
+# Dirty fix for catch exception
+module SocketDirtyFix
   def on_readable
     begin
       super();
     rescue Errno::EAGAIN
     rescue Errno::ECONNRESET, EOFError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH
       close
+    end
+  end
+end
+
+class HttpSessionStateCollection
+  def initialize()
+    @items = Hash.new;
+  end
+
+  def add(sid, user, ip_address, user_agent)
+    #log("Add session " + sid);
+    sessionState = HttpSessionState.new(sid);
+    sessionState.Items["user"] = user;
+    sessionState.Items["ip_address"] = ip_address;
+    sessionState.Items["user_agent"] = user_agent;
+    @items.store(sid, sessionState);
+    return sessionState;
+  end
+
+  # Remove invalid HttpSessionState objects from memory
+  def removeExpired()
+    now = DateTime.now;
+    @items.each do |sid, sessionState|
+      if sessionState.Timeout < now
+        #log("Removing expired session " + sid);
+        @items.delete(sid);
+      end
+    end
+  end
+
+  def exists(sid)
+    return @items.has_key?(sid);
+  end
+
+  def get(sid)
+    return @items[sid];
+  end
+end
+
+class HttpSessionState
+  @@SessionDuration = Rational(20 * 60, 86400); # 20min
+  @@SlidingExpiration = true;
+
+  attr_reader     :Timeout;
+  attr_accessor   :Items;
+
+  def initialize(sid)
+    @SessionID = sid;
+    @Items = Hash.new;
+    self.updateLastRequest();
+  end
+
+  def updateLastRequest()
+    @LastRequest = DateTime.now;
+    if (@@SlidingExpiration)
+      @Timeout = @LastRequest + @@SessionDuration;
     end
   end
 end
@@ -234,7 +290,7 @@ class HttpSession < Rev::SSLSocket
     @certificate = options[:certificate.to_s];
     @key         = options[:key.to_s];
     @user        = nil;
-    @sid        = nil;
+    @sid         = nil;
     # fix for quick connect disconnect
     begin
       super(socket);
@@ -277,7 +333,7 @@ class HttpSession < Rev::SSLSocket
       extend Rev::SSL
       @_connecting ? ssl_client_start : ssl_server_start
     end
-    extend SocketDurtyFix;
+    extend SocketDirtyFix;
   end
 
   def on_close()
@@ -285,7 +341,7 @@ class HttpSession < Rev::SSLSocket
   end
 
   def on_read(data)
-    debug("HTTP data\n" + data);
+    #debug("HTTP data\n" + data);
     @sck_data << data;
     while(@sck_data.bytesize != 0)
       # Decode header
@@ -299,6 +355,7 @@ class HttpSession < Rev::SSLSocket
           close();
           return;
         end
+        debug(@req.uri);
         length = @req.options["Content-Length"];
         if(length == nil)
           @length = 0;
@@ -516,6 +573,7 @@ class HttpNodeMapping < HttpNode
     contentType = ContentTypeTab[ext.first]  if(ext);
     contentType = ContentTypeTab[nil]        if(contentType == nil);
     rsp  = HttpResponse.new(req.proto, 200, "OK", {"Set-Cookie" => req.options["Set-Cookie"]} );
+    #debug(path);
     data = File.read(path)
     rsp.setData(data, contentType);
     s.write(rsp.to_s);
