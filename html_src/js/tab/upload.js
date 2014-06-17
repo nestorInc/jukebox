@@ -907,6 +907,11 @@ this.UploadTab = Class.create(Tab,
 			{
 				id: this.identifier
 			},
+			allowedExtensions: ['mp3'],
+			showMessage: function (msg)
+			{
+				Notifications.Display(4, msg);
+			},
 			debug: true
 		});
 
