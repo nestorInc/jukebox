@@ -97,11 +97,14 @@ main.addAuth() { |s, req, user, pass|
   # Remove invalid sessions in database
   library.invalidate_sessions();
 
-  isMainPage = ['/', '/index.html'].include?(req.uri.path)
-  ip_address = s.remote_address.ip_address;
-  user_agent = req.options["User-Agent"];
+  req.options = {} if req.options == nil
 
-  if(req.uri.query)
+  isStreamPage = req.uri.path.end_with?("/stream");
+  ip_address = s.remote_address.ip_address;
+  user_agent = "";
+  user_agent = req.options["User-Agent"] if( req.options["User-Agent"] )
+
+  if req.uri.query
     form = Hash[URI.decode_www_form(req.uri.query)];
     if(form["token"])
       token = form["token"];
@@ -118,16 +121,18 @@ main.addAuth() { |s, req, user, pass|
         s.sid.replace(sid);
         user.replace(luser);
         stream.channel_init(luser);
-        req.options = {} if req.options == nil
-        req.options["Set-Cookie"] = []
-        req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-        req.options["Set-Cookie"] << Cookie.new({"user" => luser}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+        if not isStreamPage
+          req.options["Set-Cookie"] = []
+          req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+          req.options["Set-Cookie"] << Cookie.new({"user" => luser}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+        end
+        print "token"
         next "token"
       end
     end
   end
 
-  if req.options["Cookie"]
+  if ( not isStreamPage and req.options["Cookie"] )
     cookies = Hash[req.options["Cookie"].split(';').map{ |i| i.strip().split('=')}];
     if cookies["session"] != nil
       session = cookies["session"];
@@ -149,16 +154,17 @@ main.addAuth() { |s, req, user, pass|
         user.replace(luser);
         stream.channel_init(luser);
 
-        if isMainPage
+        if not isStreamPage
           currentSession.updateLastRequest() if currentSession;
           library.update_session_last_connexion(session);
         end
+        print "cookie"
         next "cookie"
       end
     end
   end
 
-  if(isMainPage and pass)
+  if pass
     if(user != "void" and library.login(user, pass) )
       sid = library.create_user_session(user, ip_address, user_agent);
 
@@ -170,10 +176,12 @@ main.addAuth() { |s, req, user, pass|
 
       stream.channel_init(s.user)
       s.sid.replace(sid)
-
-      req.options["Set-Cookie"] = []
-      req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-      req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+      if not isStreamPage
+        req.options["Set-Cookie"] = []
+        req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+        req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+      end
+      print "httpAuth"
       next "httpAuth"
     end
   end
