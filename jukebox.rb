@@ -100,6 +100,7 @@ main.addAuth() { |s, req, user, pass|
   req.options = {} if req.options == nil
 
   isStreamPage = req.uri.path.end_with?("/stream");
+  isMainPage = ['/','/index.html'].include?(req.uri.path);
   ip_address = s.remote_address.ip_address;
   user_agent = "";
   user_agent = req.options["User-Agent"] if( req.options["User-Agent"] )
@@ -126,15 +127,14 @@ main.addAuth() { |s, req, user, pass|
           req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
           req.options["Set-Cookie"] << Cookie.new({"user" => luser}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
         end
-        print "token"
         next "token"
       end
     end
   end
 
-  if ( not isStreamPage and req.options["Cookie"] )
+  if not isStreamPage and req.options["Cookie"]
     cookies = Hash[req.options["Cookie"].split(';').map{ |i| i.strip().split('=')}];
-    if cookies["session"] != nil
+    if cookies["session"]
       session = cookies["session"];
 
       # Check if the session is known in RAM
@@ -154,11 +154,11 @@ main.addAuth() { |s, req, user, pass|
         user.replace(luser);
         stream.channel_init(luser);
 
-        if not isStreamPage
+        # Avoid update session last_access for each resources
+        if isMainPage 
           currentSession.updateLastRequest() if currentSession;
           library.update_session_last_connexion(session);
         end
-        print "cookie"
         next "cookie"
       end
     end
@@ -181,7 +181,6 @@ main.addAuth() { |s, req, user, pass|
         req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
         req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
       end
-      print "httpAuth"
       next "httpAuth"
     end
   end
