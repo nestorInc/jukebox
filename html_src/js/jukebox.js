@@ -1086,10 +1086,16 @@ function Jukebox(element, opts)
 
 				(function createNewSound(autoplay)
 				{
+					var url = _opts.streamURL + '?t=' + new Date().getTime(); // Has to be unique, else SM2 re-use previous stream...
+					if (_opts.token)
+					{
+						url += "&token=" + encodeURIComponent(_opts.token);
+					}
+
 					_streamPlayer = soundManager.createSound(
 					{
 						id: $this.id,
-						url: _opts.streamURL + '?t=' + new Date().getTime(), // Has to be unique, else SM2 re-use previous stream...
+						url: url,
 						autoPlay: autoplay,
 						onbufferchange: function()
 						{
