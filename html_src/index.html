@@ -71,11 +71,31 @@
 -->
 
 <script type="text/javascript">
-var hrefLower = window.location.href.toLowerCase(),
+var URL = window.location.href,
+	hrefLower = URL.toLowerCase(),
 	DEBUG = (hrefLower.indexOf('#debug') != -1 || hrefLower.indexOf('/src') != -1),
+	questionMarkIndex = URL.lastIndexOf('?'),
+	token = null,
+	i;
+
+	if (questionMarkIndex > -1)
+	{
+		var params = URL.substr(questionMarkIndex + 1).split('&');
+		for (i = 0; i < params.length; ++i)
+		{
+			var parts = params[i].split('='),
+				name = parts[0],
+				value = decodeURIComponent(parts[1]);
+			if (name == "token")
+			{
+				token = value;
+				break;
+			}
+		}
+	}
 
 	// requirejs specifics (RELEASE)
-	requirejsConfig =
+	var requirejsConfig =
 	{
 		waitSeconds: 20,
 		baseUrl: '/js/',
@@ -209,7 +229,7 @@ if(DEBUG)
 //----------
 // Here we go
 
-for(var i = 0, len = CSS.length; i < len; ++i)
+for(i = 0, len = CSS.length; i < len; ++i)
 {
 	loadCss(CSS[i]);
 }
@@ -225,7 +245,8 @@ requirejs(requirejsScripts, function()
 		{
 			j = new Jukebox("player",
 			{
-				SM2Folder: DEBUG ? '/src/' : '/'
+				SM2Folder: DEBUG ? '/src/' : '/',
+				token: token
 			});
 			j.ready(function() // Wait that .swf player is loaded
 			{
