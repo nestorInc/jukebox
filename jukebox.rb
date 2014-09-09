@@ -105,9 +105,16 @@ main.addAuth() { |s, req, user, pass|
   user_agent = "";
   user_agent = req.options["User-Agent"] if( req.options["User-Agent"] )
 
-  if req.uri.query
-    form = Hash[URI.decode_www_form(req.uri.query)];
-    if(form["token"])
+  if req.uri.query or req.data
+    form = nil;
+    if req.data
+      json = JSON.parse(req.data);
+      form = json["login"] if(json and json["login"]);
+    else
+      form = Hash[URI.decode_www_form(req.uri.query)];
+    end
+
+    if(form and form["token"])
       token = form["token"];
       luser = library.check_login_token(nil, token);
       if luser
