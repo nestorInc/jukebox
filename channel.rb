@@ -51,6 +51,10 @@ class Channel
     @nb_songs	  = 0;
     @remaining    = 0;
 
+    # add shuffle capacity
+    @queue.extend(ShuffleForSongQueue)
+    @queue.SFSQsetlib(@library)
+
     log("Creating new channel #{name}");
     set_plugin();
     set_nb_songs();
