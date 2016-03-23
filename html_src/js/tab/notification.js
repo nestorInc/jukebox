@@ -3,12 +3,15 @@ this.NotificationTab = Class.create(Tab,
 	initialize: function(rootCSS)
 	{
 		this.name = "Notifications";
+		this.iconName = "sms";
+		this.category = "debug";
+		this.permanent = true;
 		this.rootCSS = rootCSS;
 	},
 
 	updateContent: function(DOM)
 	{
-		DOM.update('<h1>Notification tests</h1>');
+		DOM.update('<p class="' + this.rootCSS + '-tab-title">Notification tests</p>');
 
 		function addButton(level)
 		{

@@ -6,6 +6,9 @@ this.UploadTab = Class.create(Tab,
 	initialize: function(rootCSS, jukebox, template)
 	{
 		this.name = "Uploader";
+		this.iconName = "cloud_upload";
+		this.category = "tail";
+		this.permanent = true;
 		this.uploader = null;
 		this.uploadedFiles = null;
 		this.uploadedFilesEdition = null;
@@ -648,15 +651,9 @@ this.UploadTab = Class.create(Tab,
 			len,
 			found,
 			$uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files'),
-			$uploaded_files_tbody = $uploaded_files.down('tbody'),
-			that = this;
+			$uploaded_files_tbody = $uploaded_files.down('tbody');
 
-		// Check for new files in 5 seconds
-		clearTimeout(this.refresher);
-		this.refresher = setTimeout(function()
-		{
-			that.getUploadedFiles();
-		}, 5000);
+		this.scheduleUpdate();
 
 		/*TODO:
 		The following code doesn't work in a multi-users scenario where users upload/delete/validate files at the same time
@@ -870,7 +867,11 @@ this.UploadTab = Class.create(Tab,
 
 	getUploadedFiles: function()
 	{
-		this.jukebox.getUploadedFiles();
+		if (this.jukebox.getAutoRefresh() === true) {
+			this.jukebox.getUploadedFiles();
+		} else {
+			this.scheduleUpdate();
+		}
 	},
 
 	clear: function()
@@ -883,6 +884,17 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(1, "All current uploads canceled.");
 		}
 		this.uploader._handler.cancelAll();
+	},
+
+	scheduleUpdate: function()
+	{
+		var that = this;
+		// Check for new files in 5 seconds
+		clearTimeout(this.refresher);
+		this.refresher = setTimeout(function()
+		{
+			that.getUploadedFiles();
+		}, 5000);
 	},
 
 	updateContent: function(DOM)

@@ -1,11 +1,14 @@
 /* jshint loopfunc: true */
-/* global $R, FormatTime, Draggable, TableKit, SortUnique */
+/* global $R, FormatTime, TableKit, SortUnique */
 
 this.SearchTab = Class.create(Tab,
 {
 	initialize: function($super, server_results, rootCSS, jukebox, template)
 	{
 		this.reloadControllers = true;
+		this.iconName = "search";
+		this.category = "search";
+		this.permanent = false;
 		this.pages = [];
 		this.sliders = [];
 		this.tableKit = null;
@@ -13,6 +16,7 @@ this.SearchTab = Class.create(Tab,
 
 		$super(rootCSS, jukebox, template);
 
+		this.permanent = false;
 		this.updateNewSearchInformations(server_results);
 	},
 
@@ -105,6 +109,22 @@ this.SearchTab = Class.create(Tab,
 			this.result_count);
 	},
 
+	goToPageOffset: function(pageOffset)
+	{
+		var newPage = this.current_page + pageOffset;
+		if(newPage > this.page_count)
+		{
+			newPage = this.page_count;
+		}
+
+		if (newPage <= 0)
+		{
+			newPage = 1;
+		}
+
+		this.goToPage(newPage);
+	},
+
 	sort: function(order_by)
 	{
 		this.jukebox.search(this.page,
@@ -129,8 +149,10 @@ this.SearchTab = Class.create(Tab,
 			var mainTpl = new Template(this.template.main),
 				mainTplVars =
 				{
+					root: this.rootCSS,
 					pagelistClass: pagelistClass,
-					contentClass: contentClass
+					contentClass: contentClass,
+					pageName: this.name
 				},
 				search_page = mainTpl.evaluate(mainTplVars);
 			
@@ -167,21 +189,27 @@ this.SearchTab = Class.create(Tab,
 		var sliderCSS = this.rootCSS + '-slider',
 			sliderCSS2 = this.rootCSS + '-search-slider',
 			handleCSS = sliderCSS + '-handle',
-			pageListCollection = this.DOM.select('.' + pagelistClass);
+			pageListCollection = this.DOM.select('.' + pagelistClass),
+			that = this;
 
 		// Only display slider and pages results links if nb pages > 1
 		if(this.total_results > 0 && this.page_count > 1)
 		{
-			// We have to specified a fixed width, 100% doesn't work : the slider is lost
-			var music_wrapper_width = this.DOM.up().getWidth();
+			//TODO: skin this
+			var linksTpl = '<div class="page-count '+this.rootCSS+'-search-page-links">page 12 / 454</div>';
 
 			var sliderTpl = '' +
-			'<div class="'+sliderCSS2+'">' +
-				'<div class="'+sliderCSS+'" style="width:' + music_wrapper_width + 'px;">' +
-					'<div class="'+handleCSS+'"></div>' +
+			'<div class="jukebox-search-page-slider">' +
+				'<a class="jukebox-search-fast-rewind-button"><i class="material-icons">fast_rewind</i></a>' +
+				'<a class="jukebox-search-left-button"><i class="material-icons">keyboard_arrow_left</i></a>' +
+				'<div class="'+sliderCSS2+'">' +
+					'<div class="'+sliderCSS+'" style="width: 534px;">' +
+						'<div class="'+handleCSS+'"></div>' +
+					'</div>' +
 				'</div>' +
+				'<a class="jukebox-search-right-button"><i class="material-icons">keyboard_arrow_right</i></a>' +
+				'<a class="jukebox-search-fast-forward-button"><i class="material-icons">fast_forward</i></a>' +
 			'</div>';
-			var linksTpl = '<div class="'+this.rootCSS+'-search-page-links"></div>';
 
 			// Display sliders and links
 			pageListCollection.each(function(s)
@@ -192,6 +220,11 @@ this.SearchTab = Class.create(Tab,
 					links: linksTpl
 				});
 				s.update(replace);
+
+				s.down('.jukebox-search-right-button').on('click', that.goToPageOffset.bind(that, 1));
+				s.down('.jukebox-search-fast-forward-button').on('click', that.goToPageOffset.bind(that, 3));
+				s.down('.jukebox-search-left-button').on('click', that.goToPageOffset.bind(that, -1));
+				s.down('.jukebox-search-fast-rewind-button').on('click', that.goToPageOffset.bind(that, -3));
 			});
 		}
 		else
@@ -213,7 +246,6 @@ this.SearchTab = Class.create(Tab,
 
 		// Init each sliders behavior
 		var resultsSliders = this.DOM.select('.'+sliderCSS),
-			that = this,
 			i = 0;
 		resultsSliders.each(function(sliderBox)
 		{
@@ -279,7 +311,7 @@ this.SearchTab = Class.create(Tab,
 			console.log(h.clientWidth);
 			*/
 			// So we have to hard code the width specified in CSS .jukebox-slider-handle{}
-			slider.handleLength = 25;
+			slider.handleLength = 10;
 			slider.setValue(that.current_page); // refresh slider position (avoid bug when current_page > 1 on start in a hidden tab)
 
 			that.sliders.push(slider);
@@ -385,9 +417,9 @@ this.SearchTab = Class.create(Tab,
 	// Utility to create the 3 buttons in the last cell of each row (standards rows and header row of the table)
 	createControlsCell: function(cell, funcRandom, funcTop, funcBottom, title)
 	{
-		var addRandom = new Element('a').update('<span class="add-to-play-queue-rand"></span>'),
-			addTop = new Element('a').update('<span class="add-to-play-queue-top"></span>'),
-			addBottom = new Element('a').update('<span class="add-to-play-queue-bottom"></span>');
+		var addRandom = new Element('a').update('<span class="add-to-play-queue-rand"><i class="material-icons">shuffle</i></span>'),
+			addTop = new Element('a').update('<span class="add-to-play-queue-top"><i class="material-icons">vertical_align_top</i></span>'),
+			addBottom = new Element('a').update('<span class="add-to-play-queue-bottom"><i class="material-icons">vertical_align_bottom</i></span>');
 
 		if(title)
 		{
@@ -405,6 +437,8 @@ this.SearchTab = Class.create(Tab,
 		addRandom.on('click', funcRandom);
 		addTop.on('click', funcTop);
 		addBottom.on('click', funcBottom);
+
+		cell.addClassName('song-list-controls');
 	},
 
 	initAndDisplaySearchResults: function()
@@ -441,11 +475,9 @@ this.SearchTab = Class.create(Tab,
 		if(this.total_results > 0)
 		{
 			var table = new Element('table').addClassName(this.rootCSS + '-search-table'),
-				thead = new Element('thead'),
-				tfoot = new Element('tfoot');
+				thead = new Element('thead');
 
 			this.declareTableHeader(thead);
-			this.declareTableHeader(tfoot);
 
 			var possibleColumns = ['artist', 'album', 'title', 'track', 'genre', 'duration', 'controls'],
 				columns = [],
@@ -468,7 +500,7 @@ this.SearchTab = Class.create(Tab,
 
 			this.server_results.each(function(s)
 			{
-				style = that.rootCSS + "-search-" + (isOdd ? "rowodd" : "roweven");
+				style = isOdd ? "rowodd" : "roweven";
 				isOdd = !isOdd;
 
 				var tr = new Element('tr').addClassName(that.rootCSS + '-search-row ' + style);
@@ -482,13 +514,16 @@ this.SearchTab = Class.create(Tab,
 						case 'artist':
 							var artist = createLink(s.artist, s.artist, 'artist');
 							td.update(artist);
+							td.addClassName('left-text');
 							break;
 						case 'album':
 							var album = createLink(s.album, s.album, 'album');
 							td.update(album);
+							td.addClassName('left-text');
 							break;
 						case 'title':
 							td.update(s.title);
+							td.addClassName('left-text');
 							break;
 						case 'track':
 							td.update(s.track);
@@ -515,30 +550,11 @@ this.SearchTab = Class.create(Tab,
 				}
 
 				tbody.insert(tr);
-
-				new Draggable(tr,
-				{
-					scroll: window,
-					ghosting: true,
-					revert: function(element)
-					{
-						element.style.position = "relative";
-					},
-					onStart: function(obj)
-					{
-						obj.element.setStyle({display: 'table'});
-					},
-					onEnd: function(obj)
-					{
-						obj.element.setStyle({display: ''});
-					}
-				});
 			});
 
 			table.insert(tbody).insert(
 			{
-				top: thead,
-				bottom: tfoot
+				top: thead
 			});
 
 			// Replace the DOM
@@ -666,48 +682,10 @@ this.SearchTab = Class.create(Tab,
 
 		pages = SortUnique(pages);
 
-		var tab = this;
-		function createLink(num, className)
-		{
-			var item = new Element('a', {href: 'javascript:;'}).addClassName(tab.rootCSS + '-' + className).update(num + " ");
-			item.on('click', function()
-			{
-				tab.goToPage(num);
-			});
-			return item;
-		}
-
 		this.DOM.select('.' + this.rootCSS + '-search-page-links').each(function(s)
 		{
 			s.update(); // Empty
-
-			var lastdisplayedValue = null;
-			for(i = 0; i < pages.length; ++i)
-			{
-				if(lastdisplayedValue != null && lastdisplayedValue != pages[i] - 1)
-				{
-					s.insert(" ..... ");
-				}
-
-				var className;
-				if(pages[i] == currentPage)
-				{
-					className = "search-page-link-current-page";
-				}
-				else if(pages[i] == currentSelection)
-				{
-					className = "search-page-link-current-selection";
-				}
-				else
-				{
-					className = "search-page-link";
-				}
-
-				var link = createLink(pages[i], className);
-				s.insert(link);
-
-				lastdisplayedValue = pages[i];
-			}
+			s.insert('Page ' + currentPage + '&nbsp;/&nbsp' + pages[pages.length-1]);
 		});
 	}
 });

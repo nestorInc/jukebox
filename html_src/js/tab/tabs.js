@@ -35,9 +35,10 @@ var Tab = this.Tab = Class.create(
 
 this.Tabs = Class.create(
 {
-	initialize: function(DOM, rootCSS)
+	initialize: function(DOM, contentDOM, rootCSS)
 	{
 		this.DOM = DOM;
+		this.contentDOM = contentDOM;
 		this.rootCSS = rootCSS;
 		this.tabs = [];
 		this.currentTabUniqueId = -1;
@@ -115,20 +116,27 @@ this.Tabs = Class.create(
 		this.tabs.push(tab);
 
 		// Init html containers
-		if(this.tabs.length == 1)
+		/*if(this.tabs.length == 1)
 		{
 			this.DOM.down('.'+this.rootCSS+'-tabs-header').update('<ul class="'+this.rootCSS+'-tabs-list"></ul>');
-		}
+		}*/
 
 		// Add tab Header
-		var noHref = 'javascript:;',
-			toggleTab = new Element('a', {href: noHref}).update('<span>' + tab.name + '</span>'),
-			removeTab = new Element('a', {href: noHref}).update('<span> X </span>');
+		var noHref = 'javascript:;';
+		var listClass = 'list-element';
 
+		var removeTab = '';
+		if (tab.permanent === false)
+		{
+			removeTab = new Element('a', {href: noHref}).update('<span class="list-delete-icon"><i class="material-icons">delete</i></span>');
+			removeTab.on("click", this.removeTab.bind(this, id));
+			listClass += ' removable-list-element';
+		}
+
+		var toggleTab = new Element('a', {href: noHref}).update('<span class="' + listClass + '"><i class="material-icons">' + tab.iconName + '</i><span class="list-title">' + tab.name + '</span></span>');
 		toggleTab.on("click", this.toggleTab.bind(this, id));
-		removeTab.on("click", this.removeTab.bind(this, id));
 
-		var tabDisplay = new Element('li', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
+		var tabDisplay = new Element('p', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
 		{
 			top: toggleTab,
 			bottom: removeTab
@@ -145,8 +153,8 @@ this.Tabs = Class.create(
 		}
 
 		// DOM insertion
-		this.DOM.down('.'+this.rootCSS+'-tabs-list').insert(tabDisplay);
-		this.DOM.down('.'+this.rootCSS+'-tabs-content').insert(tabContentContainer);
+		this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tab-list-'+tab.category).insert(tabDisplay);
+		this.contentDOM.insert(tabContentContainer);
 
 		// Init tab content
 		if(typeof tab.updateContent === 'function')
@@ -261,7 +269,7 @@ this.Tabs = Class.create(
 		{
 			// If the tab to delete is the current active tab we want to select the first available tab
 			var tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+identifier),
-				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+identifier);
+				tabContent = this.contentDOM.down('.'+this.rootCSS+'-tabContent-'+identifier);
 			if(tabHeader && tabHeader.hasClassName(this.rootCSS + '-tabs-active'))
 			{
 				// Find the tabs position index available near from tab
@@ -301,7 +309,7 @@ this.Tabs = Class.create(
 		{
 			var id = this.tabs[i].identifier,
 				tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id),
-				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+id);
+				tabContent = this.contentDOM.down('.'+this.rootCSS+'-tabContent-'+id);
 			if(id == identifier)
 			{
 				tabContent.show();
@@ -380,6 +388,14 @@ this.TabsManager = Class.create(
 		}
 	},
 
+	openDefaultTabs: function()
+	{
+		for(var tabName in this.availableTabs)
+		{
+			this.openTab(tabName);
+		}
+	},
+
 	restoreTabs: function()
 	{
 		if(HTML5Storage.isSupported)
@@ -391,7 +407,7 @@ this.TabsManager = Class.create(
 				if(type == "SearchTab")
 				{
 					var opts = openedTabs[i].options;
-					this.jukebox.search(opts.current_page, null, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
+					this.jukebox.search(opts.current_page, null, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count);
 				}
 				else
 				{

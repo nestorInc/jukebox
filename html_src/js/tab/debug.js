@@ -2,10 +2,15 @@
 
 this.DebugTab = Class.create(Tab, 
 {
-	initialize: function(rootCSS)
+	initialize: function(rootCSS, jukebox, template)
 	{
 		this.name = "Debug";
+		this.iconName = "bug_report";
+		this.category = "debug";
+		this.permanent = true;
 		this.rootCSS = rootCSS;
+		this.jukebox = jukebox;
+		this.template = template;
 	},
 
 	updateSendingQuery: function(query)
@@ -22,9 +27,7 @@ this.DebugTab = Class.create(Tab,
 		}
 		else
 		{
-			this.$debug2.update('<h2>Data received:</h2>' +
-				'<p> ' + responseText + '</p>' +
-				'<h2>JSON response: </h2>' +
+			this.$debug2.update('<h2>JSON response: </h2>' +
 				'<p>' + JsonPrettyPrint(responseText.evalJSON()) + '</p>'
 			);
 		}
@@ -33,21 +36,38 @@ this.DebugTab = Class.create(Tab,
 	updateContent: function(DOM)
 	{
 		var debug_display = '' +
-		'<h1>Debug console</h1>' +
+		'<p class="' + this.rootCSS + '-tab-title">Debug console</p>' +
+		'<div class="' + this.rootCSS + '-debug-tab">' +
+		'<input type="button" class="' + this.rootCSS + '-refresh-button" value="Refresh" />' +
+		'<input type="checkbox" name="' + this.rootCSS + '-autorefresh" class="' + this.rootCSS + '-autorefresh" checked="checked" value="autorefresh" />' +
 		'<table width="100%">' +
 		'<tr>' +
 			'<td width="50%">' +
-				'<div></div>' +
+				'<div class="sent"></div>' +
 			'</td>' +
 			'<td width="50%">' +
-				'<div></div>' +
+				'<div class="received"></div>' +
 			'</td>' +
 		'</tr>' +
-		'</table>';
+		'</table>' +
+		'</div>';
 		DOM.update(debug_display);
 
-		this.$debug1 = DOM.down('div:first');
-		this.$debug2 = DOM.down('div:last');
+		this.$debug1 = DOM.down('.sent');
+		this.$debug2 = DOM.down('.received');
+
+		DOM.down('.jukebox-refresh-button').on('click', this.refresh.bind(this));
+		this.cbAutoRefresh = DOM.down('.jukebox-autorefresh');
+		this.cbAutoRefresh.on('change', this.autoRefreshChange.bind(this));
+
+	},
+	autoRefreshChange: function()
+	{
+		this.jukebox.autoRefresh(this.cbAutoRefresh.getValue());
+	},
+	refresh: function()
+	{
+		this.jukebox.refresh();
 	}
 });
 

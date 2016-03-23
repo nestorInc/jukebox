@@ -28,7 +28,7 @@ class TokenManager < HttpNode
     end
 
     rep = HttpResponse.new(req.proto, 200, "OK",
-                           "Content-Type" => "audio/x-mpegurl");
+                           "Content-Type" => "application/x-mpegURL");
     rep.setData("http://#{Socket.gethostname}:#{s.local_address.ip_port}/stream?token=#{token}\n");
     s.write(rep.to_s);
   end

@@ -45,6 +45,7 @@ module.exports = function(grunt)
 
 					// Tabs
 					SRC.js + 'tab/tabs.js',
+					SRC.js + 'tab/playqueue.js',
 					SRC.js + 'tab/search.js',
 					SRC.js + 'tab/upload.js',
 					SRC.js + 'tab/debug.js',
@@ -96,9 +97,7 @@ module.exports = function(grunt)
 			{
 				src:
 				[
-					SRC.skinjs + 'default.js',
-					SRC.skinjs + 'light.js',
-					SRC.skinjs + 'hype.js'
+					SRC.skinjs + 'default.js'
 				],
 				dest: OUT.js + 'skins.min.js'
 			},
@@ -137,7 +136,7 @@ module.exports = function(grunt)
 			},
 			cssSkins: // For now, concat all skins inside a single minified file
 			{
-				src: [SRC.skin + 'default.css', SRC.skin + 'light.css', SRC.skin + 'hype.css'],
+				src: [SRC.skin + 'default.css'],
 				dest: OUT.skin + 'jukebox-skins.min.css'
 			}
 		},
@@ -157,6 +156,7 @@ module.exports = function(grunt)
 			jukebox: SRC.js + 'jukebox.js',
 			jukeboxui: SRC.js + 'jukeboxUI.js',
 			tabs: SRC.tab + 'tabs.js',
+			tab_playqueue: SRC.tab + 'playqueue.js',
 			tab_customQueries: SRC.tab + 'customQueries.js',
 			tab_debug: SRC.tab + 'debug.js',
 			tab_account: SRC.tab + 'account.js',
@@ -164,9 +164,7 @@ module.exports = function(grunt)
 			tab_search: SRC.tab + 'search.js',
 			tab_upload: SRC.tab + 'upload.js',
 			tab_playlist: SRC.tab + 'playlist.js',
-			skin_default: SRC.skinjs + 'default.js',
-			skin_light: SRC.skinjs + 'light.js',
-			skin_hype: SRC.skinjs + 'hype.js'
+			skin_default: SRC.skinjs + 'default.js'
 		},
 		copy:
 		{
@@ -187,9 +185,8 @@ module.exports = function(grunt)
 					SRC.img + '*.png',
 					SRC.img + '*.jpg',
 					SRC.img + '*.gif',
-					SRC.img + 'icons/*.png',
-					SRC.img + 'hype/*.png',
-					SRC.img + 'hype/*.ttf'
+					SRC.img + '*.woff',
+					SRC.img + 'icons/*.png'
 				],
 				dest: OUT_DIR
 			},

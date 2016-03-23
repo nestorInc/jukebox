@@ -106,6 +106,14 @@ function Jukebox(element, opts)
 	};
 
 	/**
+	* @return {bool} autorefresh.
+	*/
+	this.getAutoRefresh = function()
+	{
+		return _opts.autorefresh;
+	};
+
+	/**
 	* Force an update right now.
 	* @return {Jukebox} this.
 	*/
