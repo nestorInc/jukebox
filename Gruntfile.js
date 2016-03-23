@@ -186,6 +186,10 @@ module.exports = function(grunt)
 					SRC.img + '*.jpg',
 					SRC.img + '*.gif',
 					SRC.img + '*.woff',
+					SRC.img + '*.woff2',
+					SRC.img + '*.eot',
+					SRC.img + '*.ttf',
+					SRC.img + '*.svg',
 					SRC.img + 'icons/*.png'
 				],
 				dest: OUT_DIR
