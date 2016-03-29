@@ -42,6 +42,7 @@ module.exports = function(grunt)
 					SRC.js + 'genres.js',
 					SRC.js + 'tools.js',
 					SRC.js + 'storage.js',
+					SRC.js + 'songlist.js',
 
 					// Tabs
 					SRC.js + 'tab/tabs.js',
@@ -147,6 +148,7 @@ module.exports = function(grunt)
 				jshintrc: SRC.js + ".jshintrc"
 			},
 			notifications: SRC.js + 'notifications.js',
+			songlist: SRC.js + 'songlist.js',
 			action: SRC.js + 'action.js',
 			query: SRC.js + 'query.js',
 			genre: SRC.js + 'genres.js',

@@ -1,5 +1,5 @@
 /* jshint loopfunc: true */
-/* global $R, FormatTime, TableKit, SortUnique */
+/* global $R, SortUnique, Songlist */
 
 this.SearchTab = Class.create(Tab,
 {
@@ -180,7 +180,53 @@ this.SearchTab = Class.create(Tab,
 		}
 
 		// Display search results and init dragabble items
+		var headerActions = [
+			{ name: 'add-shuffle', icon: 'shuffle', callback: this.addAllRandom.bind(this) },
+			{ name: 'add-top', icon: 'vertical_align_top', callback: this.addAllTop.bind(this) },
+			{ name: 'add-bottom', icon: 'vertical_align_bottom', callback: this.addAllBottom.bind(this) }
+		];
+		var songActions = [
+			{ name: 'add-shuffle', icon: 'shuffle', callback: this.addSongRandom.bind(this) },
+			{ name: 'add-top', icon: 'vertical_align_top', callback: this.addSongTop.bind(this) },
+			{ name: 'add-bottom', icon: 'vertical_align_bottom', callback: this.addSongBottom.bind(this) }
+		];
+
+		var columns = [ 'artist', 'album', 'title', 'track', 'genre', 'duration', 'controls' ];
+		this.songList = new Songlist(this.rootCSS, this.jukebox, this.template, this.DOM.down('.' + this.rootCSS + "-search"),
+							columns, headerActions, songActions, // Content
+							false); // Drag and drop
+
 		this.initAndDisplaySearchResults();
+	},
+
+	addAllRandom: function()
+	{
+		this.jukebox.addSearchToPlayQueueRandom(this.search_value, this.search_comparison, this.search_field, this.order_by, this.first_result, this.result_count);
+	},
+
+	addAllTop: function()
+	{
+		this.jukebox.addSearchToPlayQueueTop(this.search_value, this.search_comparison, this.search_field, this.order_by, this.first_result, this.result_count);
+	},
+
+	addAllBottom: function()
+	{
+		this.jukebox.addSearchToPlayQueueBottom(this.search_value, this.search_comparison, this.search_field, this.order_by, this.first_result, this.result_count);
+	},
+
+	addSongRandom: function(mid)
+	{
+		this.jukebox.addToPlayQueueRandom(mid);
+	},
+
+	addSongTop: function(mid)
+	{
+		this.jukebox.addToPlayQueueTop(mid);
+	},
+
+	addSongBottom: function(mid)
+	{
+		this.jukebox.addToPlayQueueBottom(mid);
 	},
 
 	// Update sliders and pages
@@ -318,10 +364,9 @@ this.SearchTab = Class.create(Tab,
 		});
 	},
 
-	declareTableHeader: function(tparent)
+	setupSortableHeaders: function()
 	{
-		var firstSort = this.order_by.split(",")[0],
-			J = this.jukebox;
+		var firstSort = this.order_by.split(",")[0];
 
 		//-----
 
@@ -331,22 +376,22 @@ this.SearchTab = Class.create(Tab,
 			var order = "DESC";
 			if(firstSort.indexOf(column) != -1)
 			{
-				cell.addClassName(that.rootCSS + "-search-sortcol");
+				cell.addClassName('song-list-sortcol');
 				if(firstSort.indexOf(order) == -1)
 				{
-					cell.addClassName(that.rootCSS + "-search-sortasc");
-					cell.removeClassName(that.rootCSS + "-search-sortdesc");
+					cell.addClassName('song-list-sortcol-sortasc');
+					cell.removeClassName('song-list-sortcol-sortdesc');
 				}
 				else
 				{
-					cell.removeClassName(that.rootCSS + "-search-sortasc");
-					cell.addClassName(that.rootCSS + "-search-sortdesc");
+					cell.removeClassName('song-list-sortcol-sortasc');
+					cell.addClassName('song-list-sortcol-sortdesc');
 					order = "ASC";
 				}
 			}
 			else
 			{
-				cell.removeClassName(that.rootCSS + "-search-sortcol");
+				cell.removeClassName('song-list-sortcol');
 			}
 			sql = sql.replace('${ORDER}', order);
 			cell.on("click", that.sort.bind(that, sql));
@@ -362,21 +407,16 @@ this.SearchTab = Class.create(Tab,
 			duration: 'duration ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC'
 		};
 
-		var tableHeadTpl = new Template(this.template.tableHead),
-			tableHeadTplVars = {root: this.rootCSS},
-			tr = tableHeadTpl.evaluate(tableHeadTplVars);
-		
-		tparent.insert(tr); // Inject template
-
 		// For each dom column present in template
-		tparent.select('th').each(function(th)
+		this.DOM.select('th').each(function(th)
 		{
 			var classes = th.classNames();
 
 			// Check associated SQL and sort order
 			for(var column in sql)
 			{
-				var expectedCSS = that.rootCSS + '-search-' + column;
+				var expectedCSS = 'song-list-cell-' + column;
+				th.addClassName('song-list-sortable-header');
 				if(classes.include(expectedCSS)) // No column is mandatory in skin
 				{
 					manageSort(th, column, sql[column]);
@@ -384,199 +424,18 @@ this.SearchTab = Class.create(Tab,
 				}
 			}
 		});
-
-		//-----
-		// Controls
-		// 
-		function funcRandom()
-		{
-			J.addSearchToPlayQueueRandom(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
-		}
-		function funcTop()
-		{
-			J.addSearchToPlayQueueTop(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
-		}
-		function funcBottom()
-		{
-			J.addSearchToPlayQueueBottom(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
-		}
-		
-		var controlsTh = tparent.down('.' + this.rootCSS + '-search-controls');
-		if(controlsTh) // Not mandatory in skin
-		{
-			var title = 'Add search to play queue [Full]'; // See jukebox.js : _addSearchToPlayQueue
-			if(this.search_comparison == 'like')
-			{
-				title = 'Add search to play queue [Current page]';
-			}
-
-			this.createControlsCell(controlsTh, funcRandom, funcTop, funcBottom, title);
-		}
-	},
-
-	// Utility to create the 3 buttons in the last cell of each row (standards rows and header row of the table)
-	createControlsCell: function(cell, funcRandom, funcTop, funcBottom, title)
-	{
-		var addRandom = new Element('a').update('<span class="add-to-play-queue-rand"><i class="material-icons">shuffle</i></span>'),
-			addTop = new Element('a').update('<span class="add-to-play-queue-top"><i class="material-icons">vertical_align_top</i></span>'),
-			addBottom = new Element('a').update('<span class="add-to-play-queue-bottom"><i class="material-icons">vertical_align_bottom</i></span>');
-
-		if(title)
-		{
-			addRandom.writeAttribute('title', title + ' [RANDOM]');
-			addTop.writeAttribute('title', title + ' [TOP]');
-			addBottom.writeAttribute('title', title + ' [BOTTOM]');
-		}
-
-		cell.insert(addTop).insert(
-		{
-			top: addRandom,
-			bottom: addBottom
-		});
-
-		addRandom.on('click', funcRandom);
-		addTop.on('click', funcTop);
-		addBottom.on('click', funcBottom);
-
-		cell.addClassName('song-list-controls');
 	},
 
 	initAndDisplaySearchResults: function()
 	{
-		var tbody = new Element('tbody'),
-			count = this.result_count,
-			$content = this.DOM.down('.' + this.rootCSS + "-search"),
-			isOdd = true,
-			style,
-			J = this.jukebox;
-
-		function doSearch(search, category, mouseEvent)
-		{
-			var focusTab = (mouseEvent.which == 2 || mouseEvent.ctrlKey) ? false : true; // Open in background with middle clic or ctrl+clic
-
-			var orderby = 'artist,album,track,title';
-			if (category == 'album')
-			{
-				orderby = 'track,title'/*,artist*/;
-			}
-
-			J.search(1, null, null, search.toString(), 'equal', category, orderby, count, focusTab);
-		}
-		function createLink(text, search, category)
-		{
-			var item = new Element('a', {href: 'javascript:;'}).update(text);
-			item.on('click', function(evt)
-			{
-				doSearch(search, category, evt);
-			});
-			return item;
-		}
-
 		if(this.total_results > 0)
 		{
-			var table = new Element('table').addClassName(this.rootCSS + '-search-table'),
-				thead = new Element('thead');
-
-			this.declareTableHeader(thead);
-
-			var possibleColumns = ['artist', 'album', 'title', 'track', 'genre', 'duration', 'controls'],
-				columns = [],
-				that = this;
-
-			// Get columns according to current thead definition
-			thead.select('th').each(function(th)
-			{
-				var classes = th.classNames();
-				for(var i = 0; i < possibleColumns.length; ++i)
-				{
-					var column = possibleColumns[i];
-					if(classes.include(that.rootCSS + "-search-" + column))
-					{
-						columns.push(column);
-						break;
-					}
-				}
-			});
-
-			this.server_results.each(function(s)
-			{
-				style = isOdd ? "rowodd" : "roweven";
-				isOdd = !isOdd;
-
-				var tr = new Element('tr').addClassName(that.rootCSS + '-search-row ' + style);
-				tr.store('song', s); // For drag'n drop to playqueue
-
-				for(var i = 0; i < columns.length; ++i) // Only display specified thead columns
-				{
-					var td = new Element('td');
-					switch(columns[i])
-					{
-						case 'artist':
-							var artist = createLink(s.artist, s.artist, 'artist');
-							td.update(artist);
-							td.addClassName('left-text');
-							break;
-						case 'album':
-							var album = createLink(s.album, s.album, 'album');
-							td.update(album);
-							td.addClassName('left-text');
-							break;
-						case 'title':
-							td.update(s.title);
-							td.addClassName('left-text');
-							break;
-						case 'track':
-							td.update(s.track);
-							break;
-						case 'genre':
-							if(genres[s.genre])
-							{
-								var genre = createLink(genres[s.genre], s.genre, 'genre');
-								td.update(genre);
-							}							
-							break;
-						case 'duration':
-							td.update(FormatTime(s.duration));
-							break;
-						case 'controls':
-							that.createControlsCell(td,
-								function funcRandom(){J.addToPlayQueueRandom(s.mid);},
-								function funcTop(){J.addToPlayQueueTop(s.mid);},
-								function funcBottom(){J.addToPlayQueueBottom(s.mid);}
-							);
-							break;
-					}
-					tr.insert(td);
-				}
-
-				tbody.insert(tr);
-			});
-
-			table.insert(tbody).insert(
-			{
-				top: thead
-			});
-
-			// Replace the DOM
-			$content.update(table);
-
-			this.tableKit = new TableKit(table,
-			{
-				sortable: false,
-				editable: false,
-				trueResize: true,
-				keepWidth: true,
-
-				// Fix glitch issue when clicking one of the "Add search to play queue [Current page|Full]" button
-				// Happens because of tablekit.js generating a huge <div class="resize-handle"> on mousedown
-				// Which leads to a scrollbar in the browser -> mouse no more over the same button -> no click event
-				// Anyway we don't need showHandle to true because we already override the resize-handle css...
-				showHandle: false
-			});
+			this.songList.setSongs(this.server_results);
+			this.setupSortableHeaders();
 		}
-		else // this.total_results == 0
+		else
 		{
-			$content.update("No results found");
+			this.songList.DOM.update('No match');
 		}
 	},
 

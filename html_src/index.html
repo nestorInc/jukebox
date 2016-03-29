@@ -146,9 +146,10 @@ if(DEBUG)
 		shim: // Dependencies
 		{
 			'jukebox': ['query', 'action', 'tools', 'storage', 'notifications', 'jukeboxUI', 'lib/soundmanager2'],
-			'jukeboxUI': ['lib/prototype', 'tools', 'storage', 'genres', 'tab/tabs', 'tab/playqueue', 'tab/search', 'tab/playqueue', 'tab/upload', 'tab/debug', 'tab/account', 'tab/playlist', 'tab/customQueries', 'tab/notification', 'lib/slider', 'lib/dragdrop'],
+			'jukeboxUI': ['lib/prototype', 'songlist', 'tools', 'storage', 'genres', 'tab/tabs', 'tab/playqueue', 'tab/search', 'tab/playqueue', 'tab/upload', 'tab/debug', 'tab/account', 'tab/playlist', 'tab/customQueries', 'tab/notification', 'lib/slider', 'lib/dragdrop'],
 			'musicFieldEditor': ['lib/prototype', 'genres', 'lib/tablekit'],
 			'notifications': ['lib/prototype', 'lib/effects'],
+			'songlist': ['lib/prototype', 'tools'],
 			'query': ['action'],
 			'action': ['tools'],
 			'tools': [],
@@ -161,7 +162,7 @@ if(DEBUG)
 			'tab/account': ['lib/prototype', 'tab/tabs'],
 			'tab/playlist': ['lib/prototype', 'tab/tabs'],
 			'tab/upload': ['lib/prototype', 'tab/tabs', 'lib/fileuploader', 'lib/tablekit', 'musicFieldEditor', 'notifications', 'genres'],
-			'tab/playqueue': ['lib/prototype', 'tab/tabs', 'lib/tablekit'],
+			'tab/playqueue': ['lib/prototype', 'tab/tabs', 'lib/tablekit', 'songlist'],
 			'tab/search': ['lib/prototype', 'tab/tabs', 'lib/tablekit', 'genres', 'tools', 'lib/dragdrop'],
 			'lib/tablekit': ['lib/prototype'],
 			'lib/effects': ['lib/prototype'],

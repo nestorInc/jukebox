@@ -1,4 +1,4 @@
-/* global Extend, Tabs, TabsManager, FormatTime, SearchTab, PlayQueueTab, UploadTab, DebugTab, AccountTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $$, $R, Draggable, Droppables, Event, Notifications, SetCookie */
+/* global Extend, Tabs, TabsManager, FormatTime, SearchTab, PlayQueueTab, UploadTab, DebugTab, AccountTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $$, $R, Event, Notifications, SetCookie */
 
 /**
 * Represents a Jukebox graphical interface.
@@ -133,13 +133,14 @@ function JukeboxUI(jukebox, element, opts)
 	{
 		if(songObj)
 		{
+			var that = this;
 			_$.song_artist.update(songObj.artist).stopObserving().on("click", function(evt)
 			{
-				_searchCategory(songObj.artist, 'artist', evt);
+				that.searchCategory(songObj.artist, 'artist', evt);
 			});
 			_$.song_album.update(songObj.album).stopObserving().on("click", function(evt)
 			{
-				_searchCategory(songObj.album, 'album', evt);
+				that.searchCategory(songObj.album, 'album', evt);
 			});
 			_$.song_title.update(songObj.title);
 
@@ -197,176 +198,11 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.displayPlayQueue = function(playQueueSongs)
 	{
-		_cleanupPlayQueue();
-
-		// Playqueue header template
-		var playQueueTpl = new Template(_skin.templates.playQueue),
-		playQueueTplVars =
+		var playQueue = _tabs.getFirstTabByClass(PlayQueueTab);
+		if (playQueue)
 		{
-			root: _opts.rootClass,
-			playQueueLabel: 'Play queue',
-			listenersCount: J.listenersCount
-		};
-
-
-		// Create playqueue header
-		var ul = new Element(_skin.params.playQueueNode).insert(playQueueTpl.evaluate(playQueueTplVars));
-
-		var playQueueHeaderTpl = new Template(_skin.templates.playQueueHead),
-		playQueueHeaderTplVars =
-		{
-			root: _opts.rootClass
-		};
-
-		ul.insert('<table>');
-		ul.insert(playQueueHeaderTpl.evaluate(playQueueHeaderTplVars));
-
-		// Declare listeners
-		var rootClass = '.' + _opts.rootClass + '-',
-			$shuffle = ul.down(rootClass+"playqueue-shuffle"),
-			$delete = ul.down(rootClass+"playqueue-delete");
-		if($shuffle)
-		{
-			$shuffle.on("click", function()
-			{
-				J.playQueueShuffle();
-			});
+			playQueue.setSongs(playQueueSongs);
 		}
-		if($delete)
-		{
-			$delete.on("click", function()
-			{
-				J.playQueueDelete();  // no args = all
-			});
-		}
-
-		// Each song template
-		var currentPQSongIndex = 0,
-			lastPQIndex = playQueueSongs.length - 1;
-		playQueueSongs.each(function(song)
-		{
-			// Playqueue song template
-			var playQueueSongTpl = new Template(_skin.templates.playQueueSong),
-			playQueueSongTplVars =
-			{
-				root: _opts.rootClass,
-				index: currentPQSongIndex,
-				artist: song.artist,
-				album: song.album,
-				title: song.title,
-				duration: FormatTime(song.duration),
-				oddoreven: (currentPQSongIndex%2 === 0) ? 'roweven' : 'rowodd'
-			};
-			ul.insert(playQueueSongTpl.evaluate(playQueueSongTplVars));
-
-			// Declare listeners
-			var li = ul.down((_skin.params.songNode) + ':last');
-
-			// Store mid
-			li.store('mid', song.mid);
-
-			// Artist
-			var $artist = li.down('.artist-link');
-			if($artist)
-			{
-				$artist.on("click", function(evt)
-				{
-					_searchCategory(song.artist, 'artist', evt);
-				});
-			}
-
-			// Album
-			var $album = li.down('.album-link');
-			if($album)
-			{
-				$album.on("click", function(evt)
-				{
-					_searchCategory(song.album, 'album', evt);
-				});
-			}
-
-			var localcurrentPQSongIndex = currentPQSongIndex, // Avoid closure issue
-				$top = li.down(rootClass+'playqueue-move-top'),
-				$bottom = li.down(rootClass+'playqueue-move-bottom');
-
-			if($top)
-			{
-				$top.on("click", function()
-				{
-					J.playQueueMove(1, localcurrentPQSongIndex, 0);
-				});
-			}
-			if($bottom)
-			{
-				$bottom.on("click", function()
-				{
-					J.playQueueMove(1, localcurrentPQSongIndex, lastPQIndex);
-				});
-			}
-			$delete = li.down(rootClass+'playqueue-delete');
-			if($delete)
-			{
-				$delete.on("click", function()
-				{
-					J.playQueueDelete(1, localcurrentPQSongIndex);
-				});
-			}
-
-			currentPQSongIndex++;
-		});
-
-
-		if(ul.nodeName == 'TBODY')
-		{
-			ul = ul.wrap('table');
-		}
-
-		_$.play_queue_content.update(ul);
-
-		function dragStart(dragged)
-		{
-			var id = _findDraggedId(dragged.element);
-			if(id !== null)
-			{
-				ul.down('.' +_opts.rootClass + '-song-' + id).addClassName(_opts.rootClass+'-being-dragged');
-			}
-		}
-
-		function dragEnd(dragged)
-		{
-			var id = _findDraggedId(dragged.element);
-			if(id !== null)
-			{
-				ul.down('.' +_opts.rootClass + '-song-' + id).removeClassName(_opts.rootClass+'-being-dragged');
-			}
-		}
-
-		// Create all draggables, once update is done.
-		for(var i = 0, len = playQueueSongs.length; i < len; i++)
-		{
-			var draggable = ul.down(rootClass+'song-' + i);
-
-			if(draggable)
-			{
-				var handle = draggable.down(rootClass+'playqueue-handle-' + i);
-				new Draggable(draggable,
-				{
-					scroll: window,
-					constraint: 'vertical',
-					revert: true,
-					handle: handle,
-					onStart: dragStart,
-					onEnd: dragEnd
-				});
-				_makePlayQueueSongDroppable(draggable, playQueueSongs);
-			}
-		}
-		var first = ul.down(rootClass+'song-first');
-		if(first)
-		{
-			_makePlayQueueSongDroppable(first, playQueueSongs);
-		}
-		ul.insert('</table>');
 	};
 
 	/**
@@ -557,7 +393,7 @@ function JukeboxUI(jukebox, element, opts)
 	* @param {string} category - artist or album
 	* @param {int} mouseEvent - Clic event to detect left/middle click
 	*/
-	function _searchCategory(search, category, mouseEvent)
+	this.searchCategory = function(search, category, mouseEvent)
 	{
 		var focusTab = (mouseEvent.which == 2 || mouseEvent.ctrlKey) ? false : true; // Open in background with middle clic or ctrl+clic
 
@@ -568,80 +404,7 @@ function JukeboxUI(jukebox, element, opts)
 		}
 
 		_search(1, null, null, search, 'equal', category, orderby, null, focusTab);
-	}
-
-	/**
-	* Remove droppability for playqueue items
-	*/
-	function _cleanupPlayQueue()
-	{
-		_$.play_queue_content.select('.'+_opts.rootClass+'-song').each(function(e)
-		{
-			Droppables.remove(e);
-		});
-	}
-
-	/**
-	* Helper to get the id of a playqueue item
-	* @param {DOM} element Item to get id from
-	* @return {string} id extracted from css jukebox-song-<id>, null if not found
-	*/
-	function _findDraggedId(element)
-	{
-		var str = _opts.rootClass+'-song-';
-		var id = null;
-		var match = element.classNames().detect(function(n){return n.indexOf(str) != -1;});
-		if(match)
-		{
-			id = match.substring(str.length);
-		}
-		return id;
-	}
-
-	/**
-	* Make play queue songs droppables
-	* @param {int} droppable - The element to make droppable (same as draggable)
-	* @param {Array<song>} playQueueSongs - The play queue
-	*/
-	function _makePlayQueueSongDroppable(droppable, playQueueSongs)
-	{
-		Droppables.add(droppable,
-		{
-			accept: [_opts.rootClass+'-song', _opts.rootClass+'-search-row'],
-			overlap: 'vertical',
-			hoverclass: _opts.rootClass+'-droppable-hover',
-			onDrop: function(dragged, dropped)
-			{
-				var old_index,
-					song_mid,
-					draggedId = _findDraggedId(dragged);
-
-				old_index = parseInt(draggedId, 10);
-				song_mid = dragged.up().retrieve('mid');
-
-				var new_index = -1;
-				if(!dropped.hasClassName(_opts.rootClass+'-song-first'))
-				{
-					var droppedId = _findDraggedId(dropped);
-					new_index = parseInt(droppedId, 10);
-				}
-				if(new_index <= old_index)
-				{
-					new_index++;
-				}
-				if(new_index != old_index)
-				{
-					J.playQueueMove(song_mid, old_index, new_index);
-
-					_cleanupPlayQueue();
-					var tmp = playQueueSongs[old_index];
-					playQueueSongs.splice(old_index, 1);
-					playQueueSongs.splice(new_index, 0, tmp);
-					$this.displayPlayQueue(playQueueSongs);
-				}
-			}
-		});
-	}
+	};
 
 	//---
 	// Events handlers
@@ -748,17 +511,11 @@ function JukeboxUI(jukebox, element, opts)
 		// Create HTML player
 		try
 		{
-			var songTpl = new Template(_skin.templates.song),
-			songTplVars =
-			{
-				root: _opts.rootClass
-			},
-			jukeboxTpl = new Template(_skin.templates.player),
+			var jukeboxTpl = new Template(_skin.templates.player),
 			jukeboxTplVars =
 			{
 				root: _opts.rootClass,
 				theme: _opts.theme,
-				currentSong: songTpl.evaluate(songTplVars),
 				canalLabel: 'Canal',
 				canalValue: 'Rejoindre',
 				welcomeLabel: 'Bienvenue :',
@@ -823,7 +580,6 @@ function JukeboxUI(jukebox, element, opts)
 			song_artist:		$JB.down(rootClass+'song-artist'),
 			song_album:			$JB.down(rootClass+'song-album'),
 			song_title:			$JB.down(rootClass+'song-title'),
-			play_queue_content:	$JB.down(rootClass+'playqueue-content'),
 			selection_plugin:	$JB.down(rootClass+'plugin'),
 			btn_apply_plugin:	$JB.down(rootClass+'plugin-button'),
 			volume_box_slider:	$JB.down(rootClass+'volume-slider'),
@@ -900,7 +656,6 @@ function JukeboxUI(jukebox, element, opts)
 			{
 				tabsM.openDefaultTabs();
 				tabsM.restoreTabs();
-				_$.play_queue_content = $JB.down(rootClass+'playqueue-content');
 			}, 0); // Avoid issue when restoring tab on jukebox instanciation (_ui undefined in jukebox.js because _init() not finished yet)
 		}
 	}
@@ -926,9 +681,7 @@ JukeboxUI.defaults =
 	skinParams:
 	{
 		allowTabs: false,
-		dragdrop: true,
-		playQueueNode: 'ul',
-		songNode: 'li'
+		dragdrop: true
 	}
 };
 

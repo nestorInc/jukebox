@@ -6,9 +6,7 @@ Jukebox.UI.skins["default"] =
 	params:
 	{
 		allowTabs: true,
-		dragdrop: true,
-		playQueueNode: 'tbody',
-		songNode: 'tr'
+		dragdrop: true
 	},
 	templates:
 	{
@@ -108,42 +106,6 @@ Jukebox.UI.skins["default"] =
 	<div style="clear: both;"> </div>\
 	<footer>Home made jukebox over streaming</footer>\
 </div>',
-	song:
-'<p class="#{root}-song">\
-<a class="#{root}-song-artist" href="javascript:;">#{artist}</a> - \
-<a class="#{root}-song-album" href="javascript:;">#{album}</a> - \
-<span class="#{root}-song-title">#{title}</span>\
-</p>',
-	playQueueHead:
-'<tr class="#{root}-song-first">\
-	<th class="#{root}-search-artist song-list-artist">Artist</th>\
-	<th class="#{root}-search-album">Album</th>\
-	<th class="#{root}-search-title song-list-track">Title</th>\
-	<th class="#{root}-search-duration song-list-duration">Time</th>\
-	<th class="#{root}-search-controls song-list-controls">\
-	<a><span class="#{root}-playqueue-shuffle"><i class="material-icons">shuffle</i></span></a>\
-	<a><span class="#{root}-playqueue-delete"><i class="material-icons">delete_forever</i></span></a></td>\
-	</th>\
-</tr>',
-		playQueue:
-'<li class="#{root}-playqueue-first #{root}-playqueue-droppable">#{playQueueLabel}\
-<div>\
-	<span class="#{root}-listening-ico"></span>\
-	<span class="#{root}-listening-count">#{listenersCount}</span>\
-</div>\
-<a><span class="#{root}-playqueue-shuffle"></span></a>\
-<a><span class="#{root}-playqueue-delete"></span></a>\
-</li>',
-		playQueueSong:
-'<tr class="#{oddoreven} #{root}-song-#{index} #{root}-song #{root}-playqueue-handle-#{index} #{root}-playqueue-handle">\
-<td class="left-text"><a class="artist-link">#{artist}</a></td>\
-<td class="left-text"><a class="album-link">#{album}</a></td>\
-<td class="left-text">#{title}</td>\
-<td>#{duration}</td>\
-<td class="song-list-controls"><a href="javascript:;"><span class="#{root}-playqueue-move-top"><i class="material-icons">vertical_align_top</i></span></a>\
-<a href="javascript:;"><span class="#{root}-playqueue-move-bottom"><i class="material-icons">vertical_align_bottom</i></span></a>\
-<a href="javascript:;"><span class="#{root}-playqueue-delete"><i class="material-icons">delete_forever</i></span></a></td>\
-</tr>',
 		tabs:
 		{
 			AccountTab:
@@ -268,6 +230,7 @@ Jukebox.UI.skins["default"] =
 	\\#{slider}\
 </div>\
 <div class="#{contentClass} song-list"></div>',
+				controlButton: '<span class="#{root}-#{name}"><i class="material-icons">#{icon}</i></span>',
 				tableHead:
 '<tr>\
 	<th class="#{root}-search-artist">Artist</th>\
@@ -286,7 +249,8 @@ Jukebox.UI.skins["default"] =
 <div class="#{root}-playqueue">\
 <div class="#{root}-playqueue-content song-list">\
 </div>\
-</div>'
+</div>',
+				controlButton: '<span class="#{root}-#{name}"><i class="material-icons">#{icon}</i></span>'
 			}
 		}
 	}

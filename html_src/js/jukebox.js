@@ -114,6 +114,14 @@ function Jukebox(element, opts)
 	};
 
 	/**
+	* @return {JukeboxUI} current UI.
+	*/
+	this.getUI = function()
+	{
+		return _ui;
+	};
+
+	/**
 	* Force an update right now.
 	* @return {Jukebox} this.
 	*/
