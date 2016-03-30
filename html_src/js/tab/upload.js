@@ -679,7 +679,7 @@ this.UploadTab = Class.create(Tab,
 					tableControllerTplVars = {root: this.rootCSS},
 					controller = tableControllerTpl.evaluate(tableControllerTplVars);
 
-				var html = controller + '<table id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '" class="' + this.rootCSS + '-upload-table">';
+				var html = controller + '<table id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '" class="' + this.rootCSS + '-upload-table song-list">';
 				var tableHeadTpl = new Template(this.template.tableHead),
 					tableHeadTplVars = {root: this.rootCSS},
 					tr = tableHeadTpl.evaluate(tableHeadTplVars);
@@ -903,8 +903,7 @@ this.UploadTab = Class.create(Tab,
 			uploadTplVars =
 			{
 				root: this.rootCSS,
-				title: this.name,
-				uploadedFilesLabel: "Uploaded files"
+				title: this.name
 			},
 			upload_form = uploadTpl.evaluate(uploadTplVars);
 

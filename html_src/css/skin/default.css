@@ -119,6 +119,7 @@ tr:hover {
 	background-color: #393939;
 }
 
+th.sortcol:hover,
 th.song-list-sortable-header:hover,
 .button:hover i,
 .toggle-category-container-button:hover i,
@@ -543,25 +544,33 @@ div.jukebox-search-page-slider input[type=range]::-moz-range-track {
 	font-size: 14px;
 }
 
+.jukebox-upload-table {
+	font-size: 11px;
+}
+
 .song-list th {
 	border-right: 1px solid;
 }
 
-th.song-list-sortable-header:hover {
+th.song-list-sortable-header:hover,
+th.sortcol:hover {
 	cursor: pointer;
 }
 
-th.song-list-sortcol {
+th.song-list-sortcol,
+th.sortcol {
 	padding-right: 20px;
 	background-repeat: no-repeat;
 	background-position: right center;
 }
 
-th.song-list-sortcol-sortasc {
+th.song-list-sortcol-sortasc,
+th.sortasc {
 	background-image: url(../../images/up.gif);
 }
 
-th.song-list-sortcol-sortdesc {
+th.song-list-sortcol-sortdesc,
+th.sortdesc {
 	background-image: url(../../images/down.gif);
 }
 
