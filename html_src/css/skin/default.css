@@ -96,12 +96,12 @@ select,
 .roweven,
 div.jukebox-search-pagelist {
 	background-color: #202020;
-	color: #40e440;
+	color: #00cc6a;
 }
 
 .rowodd {
 	background-color: #292929;
-	color: #40e440;
+	color: #00cc6a;
 }
 
 footer,
@@ -111,7 +111,7 @@ footer,
 .song-list th,
 .song-list th.song-list-cell-controls:hover,
 div.song-list thead {
-	background-color: #40e440;
+	background-color: #00cc6a;
 	color: #202020;
 }
 

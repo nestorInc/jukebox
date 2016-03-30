@@ -230,17 +230,7 @@ Jukebox.UI.skins["default"] =
 	\\#{slider}\
 </div>\
 <div class="#{contentClass} song-list"></div>',
-				controlButton: '<span class="#{root}-#{name}"><i class="material-icons">#{icon}</i></span>',
-				tableHead:
-'<tr>\
-	<th class="#{root}-search-artist">Artist</th>\
-	<th class="#{root}-search-album">Album</th>\
-	<th class="#{root}-search-title">Title</th>\
-	<th class="#{root}-search-track">Track</th>\
-	<th class="#{root}-search-genre">Genre</th>\
-	<th class="#{root}-search-duration">Duration</th>\
-	<th class="#{root}-search-controls song-list-controls"></th>\
-</tr>'
+				controlButton: '<span class="#{root}-#{name}"><i class="material-icons">#{icon}</i></span>'
 			},
 			PlayQueueTab:
 			{
