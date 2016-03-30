@@ -19,7 +19,8 @@ this.PlayQueueTab = Class.create(Tab,
 		var tpl = new Template(this.template.main),
 		tplVars =
 		{
-			root: this.rootCSS
+			root: this.rootCSS,
+			title: this.name
 		},
 		evaluated = tpl.evaluate(tplVars);
 

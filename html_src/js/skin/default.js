@@ -162,7 +162,7 @@ Jukebox.UI.skins["default"] =
 			UploadTab:
 			{
 				main:
-'<p class="#{root}-tab-title">Upload</p>\
+'<p class="#{root}-tab-title">#{title}</p>\
 <div class="#{root}-file-uploader"></div>\
 <h2>#{uploadedFilesLabel}</h2>\
 <div class="#{root}-uploaded-files"></div>',
@@ -225,7 +225,7 @@ Jukebox.UI.skins["default"] =
 			SearchTab:
 			{
 				main:
-'<p class="#{root}-tab-title">#{pageName}</p>\
+'<p class="#{root}-tab-title">#{title}</p>\
 <div class="#{pagelistClass}">\
 	\\#{links}\
 	\\#{slider}\
@@ -236,7 +236,7 @@ Jukebox.UI.skins["default"] =
 			PlayQueueTab:
 			{
 				main:
-'<p class="#{root}-tab-title">On air</p>\
+'<p class="#{root}-tab-title">#{title}</p>\
 <div class="#{root}-playqueue">\
 <div class="#{root}-playqueue-content song-list">\
 </div>\

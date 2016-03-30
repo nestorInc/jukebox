@@ -903,6 +903,7 @@ this.UploadTab = Class.create(Tab,
 			uploadTplVars =
 			{
 				root: this.rootCSS,
+				title: this.name,
 				uploadedFilesLabel: "Uploaded files"
 			},
 			upload_form = uploadTpl.evaluate(uploadTplVars);

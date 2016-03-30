@@ -13,6 +13,7 @@ this.SearchTab = Class.create(Tab,
 		this.sliders = [];
 		this.tableKit = null;
 		this.DOM = null;
+		this.reverseHeaderOrder = true;
 
 		$super(rootCSS, jukebox, template);
 
@@ -152,7 +153,7 @@ this.SearchTab = Class.create(Tab,
 					root: this.rootCSS,
 					pagelistClass: pagelistClass,
 					contentClass: contentClass,
-					pageName: this.name
+					title: this.name
 				},
 				search_page = mainTpl.evaluate(mainTplVars);
 			

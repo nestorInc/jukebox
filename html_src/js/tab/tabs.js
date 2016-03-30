@@ -148,7 +148,15 @@ this.Tabs = Class.create(
 		}
 
 		// DOM insertion
-		this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tab-list-'+tab.category).insert(tabDisplay);
+		var headerContainer = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tab-list-'+tab.category);
+		if (tab.reverseHeaderOrder === true)
+		{
+			headerContainer.insert({top: tabDisplay});
+		}
+		else
+		{
+			headerContainer.insert(tabDisplay);
+		}
 
 		tab.contentLoaded = false;
 		return id;
