@@ -84,6 +84,7 @@ this.Tabs = Class.create(
 	},
 
 	// Add the tab in the html layout and in the tabs array
+	// Does not generate content or toggle the tab.
 	addTab: function(tab, className)
 	{
 		// Check tab class
@@ -146,14 +147,23 @@ this.Tabs = Class.create(
 			tabDisplay.addClassName(this.rootCSS+'-tabs-active');
 		}
 
-		var tabContentContainer = new Element('div', {"class": this.rootCSS + '-tabContent-' + id});
+		// DOM insertion
+		this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tab-list-'+tab.category).insert(tabDisplay);
+
+		tab.contentLoaded = false;
+		return id;
+	},
+
+	// Actually create tab content
+	createTabContent: function(tab)
+	{
+		// split this
+		var tabContentContainer = new Element('div', {"class": this.rootCSS + '-tabContent-' + tab.identifier});
 		if(this.tabs.length > 1)
 		{
 			tabContentContainer.hide();
 		}
 
-		// DOM insertion
-		this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tab-list-'+tab.category).insert(tabDisplay);
 		this.contentDOM.insert(tabContentContainer);
 
 		// Init tab content
@@ -167,7 +177,7 @@ this.Tabs = Class.create(
 		{
 			var tabDescriptor =
 			{
-				type: className
+				type: tab.className
 			};
 
 			var options = tab.getOptions();
@@ -192,7 +202,8 @@ this.Tabs = Class.create(
 			});
 		}
 
-		return id;
+		tab.contentLoaded = true;
+		return tab.identifier;
 	},
 
 	updateTabOptionsInStorage: function(tab, options, originalOptions)
@@ -307,17 +318,34 @@ this.Tabs = Class.create(
 	{
 		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
-			var id = this.tabs[i].identifier,
-				tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id),
+			var shouldDisplay = false;
+			var tab = this.tabs[i];
+			var id = tab.identifier;
+
+			if (id == identifier)
+			{
+				shouldDisplay = true;
+
+				if (tab.contentLoaded === false)
+				{
+					this.createTabContent(tab);
+				}
+			}
+
+			var tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id),
 				tabContent = this.contentDOM.down('.'+this.rootCSS+'-tabContent-'+id);
-			if(id == identifier)
+
+			if(shouldDisplay === true)
 			{
 				tabContent.show();
 				tabHeader.addClassName(this.rootCSS + '-tabs-active');
 			}
 			else
 			{
-				tabContent.hide();
+				if (tab.contentLoaded === true)
+				{
+					tabContent.hide();
+				}
 				tabHeader.removeClassName(this.rootCSS + '-tabs-active');
 			}
 		}
@@ -375,6 +403,13 @@ this.TabsManager = Class.create(
 		{
 			identifier = search.identifier;
 		}
+
+		return identifier;
+	},
+
+	toggleTab: function(className)
+	{
+		var identifier = this.openTab(className);
 		this.tabs.toggleTab(identifier); // gives focus
 	},
 
@@ -388,7 +423,7 @@ this.TabsManager = Class.create(
 		}
 	},
 
-	openDefaultTabs: function()
+	createDefaultTabs: function()
 	{
 		for(var tabName in this.availableTabs)
 		{

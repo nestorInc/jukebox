@@ -6,7 +6,8 @@ Jukebox.UI.skins["default"] =
 	params:
 	{
 		allowTabs: true,
-		dragdrop: true
+		dragdrop: true,
+		defaultTab: "PlayQueueTab"
 	},
 	templates:
 	{

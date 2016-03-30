@@ -654,8 +654,9 @@ function JukeboxUI(jukebox, element, opts)
 
 			setTimeout(function()
 			{
-				tabsM.openDefaultTabs();
+				tabsM.createDefaultTabs();
 				tabsM.restoreTabs();
+				tabsM.toggleTab(_skin.params.defaultTab);
 			}, 0); // Avoid issue when restoring tab on jukebox instanciation (_ui undefined in jukebox.js because _init() not finished yet)
 		}
 	}
@@ -681,7 +682,8 @@ JukeboxUI.defaults =
 	skinParams:
 	{
 		allowTabs: false,
-		dragdrop: true
+		dragdrop: true,
+		defaultTab: "PlayQueueTab"
 	}
 };
 
