@@ -47,7 +47,3 @@ border-color: black;
 .qq-upload-button input{
 height: 30px; /* Height of the button, so that pointer is ok on all height. 100% doesn't work */
 }
-
-#skinSelectors{
-text-align: center;
-}

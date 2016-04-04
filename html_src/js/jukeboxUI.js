@@ -353,6 +353,25 @@ function JukeboxUI(jukebox, element, opts)
 		return _opts.theme;
 	};
 
+	/**
+	* Helper to do a search in a specific category
+	* @param {string} search - The text search
+	* @param {string} category - artist or album
+	* @param {int} mouseEvent - Clic event to detect left/middle click
+	*/
+	this.searchCategory = function(search, category, mouseEvent)
+	{
+		var focusTab = (mouseEvent.which == 2 || mouseEvent.ctrlKey) ? false : true; // Open in background with middle clic or ctrl+clic
+
+		var orderby = 'artist,album,track,title';
+		if (category == 'album')
+		{
+			orderby = 'track,title'/*,artist*/;
+		}
+
+		_search(1, null, null, search, 'equal', category, orderby, null, focusTab);
+	};
+
 	//-----
 	// [Private] Functions
 
@@ -386,25 +405,6 @@ function JukeboxUI(jukebox, element, opts)
 		}
 		J.search(page, identifier, select_fields, search_value, search_comparison, search_field, order_by, result_count, select);
 	}
-
-	/**
-	* Helper to do a search in a specific category
-	* @param {string} search - The text search
-	* @param {string} category - artist or album
-	* @param {int} mouseEvent - Clic event to detect left/middle click
-	*/
-	this.searchCategory = function(search, category, mouseEvent)
-	{
-		var focusTab = (mouseEvent.which == 2 || mouseEvent.ctrlKey) ? false : true; // Open in background with middle clic or ctrl+clic
-
-		var orderby = 'artist,album,track,title';
-		if (category == 'album')
-		{
-			orderby = 'track,title'/*,artist*/;
-		}
-
-		_search(1, null, null, search, 'equal', category, orderby, null, focusTab);
-	};
 
 	//---
 	// Events handlers
