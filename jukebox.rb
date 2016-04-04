@@ -19,6 +19,7 @@ require 'upload.rb'
 require 'basic_api.rb'
 require 'web_debug.rb'
 require 'token_api.rb'
+require 'user.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
@@ -58,6 +59,7 @@ rescue => e
 end
 
 library = Library.new();
+users = Users.new()
 channelList = {};
 
 # Encode
@@ -78,7 +80,7 @@ json   = JsonManager.new(channelList, library, config[:upload.to_s], config[:enc
 basic  = BasicApi.new(channelList);
 upload = UploadManager.new(config[:upload.to_s]);
 debug  = DebugPage.new();
-token  = TokenManager.new(library, config);
+token  = TokenManager.new(users, config);
 main   = HttpNodeMapping.new("html");
 main_src = HttpNodeMapping.new("html_src");
 stream = Stream.new(channelList, library);
@@ -95,7 +97,7 @@ main.addAuth() { |s, req, user, pass|
   currentSession = nil;
 
   # Remove invalid sessions in database
-  library.invalidate_sessions();
+  users.invalidate_sessions();
 
   req.options = {} if req.options == nil
 
@@ -116,13 +118,13 @@ main.addAuth() { |s, req, user, pass|
 
     if(form and form["token"])
       token = form["token"];
-      luser = library.check_login_token(nil, token);
+      luser = users.check_login_token(nil, token);
       if luser
-        sid = library.get_login_token_session(token);
+        sid = users.get_login_token_session(token);
         if not sid
           #TODO check if user has right to create session
-          sid = library.create_user_session(luser, ip_address, user_agent);
-          library.update_login_token_session(token, sid);
+          sid = users.create_user_session(luser, ip_address, user_agent);
+          users.update_login_token_session(token, sid);
         end
 
         s.user.replace(luser);
@@ -149,7 +151,7 @@ main.addAuth() { |s, req, user, pass|
         currentSession = sessions.get(session);
         luser = currentSession.Items["user"];
       else # Check in db
-        luser = library.check_session(session, ip_address, user_agent);
+        luser = users.check_session(session, ip_address, user_agent);
         if luser
           currentSession = sessions.add(session, luser, ip_address, user_agent);
         end
@@ -164,7 +166,7 @@ main.addAuth() { |s, req, user, pass|
         # Avoid update session last_access for each resources
         if isMainPage 
           currentSession.updateLastRequest() if currentSession;
-          library.update_session_last_connexion(session);
+          users.update_session_last_connexion(session);
         end
         next "cookie"
       end
@@ -172,8 +174,8 @@ main.addAuth() { |s, req, user, pass|
   end
 
   if pass
-    if(user != "void" and library.login(user, pass) )
-      sid = library.create_user_session(user, ip_address, user_agent);
+    if(user != "void" and users.login(user, pass) )
+      sid = users.create_user_session(user, ip_address, user_agent);
 
       if sessions.exists(sid)
         currentSession = sessions.get(sid);

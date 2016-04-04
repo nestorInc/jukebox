@@ -7,8 +7,8 @@ require 'display.rb'
 require 'db.rb'
 
 class TokenManager < HttpNode
-  def initialize(library, conf)
-    @library  = library;
+  def initialize(users, conf)
+    @users  = users;
     @conf = conf;
     super();
   end
@@ -21,7 +21,7 @@ class TokenManager < HttpNode
       return;
     end
 
-    token = @library.get_user_login_token(s.user);
+    token = @users.get_user_login_token(s.user);
     if( token == nil )
       rep = HttpResponse.generate401(req);
       s.write(rep.to_s);
