@@ -546,6 +546,7 @@ function JukeboxUI(jukebox, element, opts)
 				listenersCount: J.listenersCount
 			};
 			$elem.update(jukeboxTpl.evaluate(jukeboxTplVars)); // DOM insertion ; Only location where $elem is modified
+			$elem.up(1).setStyle({backgroundColor: _skin.params.backgroundColor});
 		}
 		catch(skinEx)
 		{
@@ -682,7 +683,8 @@ JukeboxUI.defaults =
 	{
 		allowTabs: false,
 		dragdrop: true,
-		defaultTab: "PlayQueueTab"
+		defaultTab: 'PlayQueueTab',
+		backgroundColor: 'white'
 	}
 };
 
