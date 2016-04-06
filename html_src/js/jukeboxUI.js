@@ -581,7 +581,6 @@ function JukeboxUI(jukebox, element, opts)
 			song_album:			$JB.down(rootClass+'song-album'),
 			song_title:			$JB.down(rootClass+'song-title'),
 			selection_plugin:	$JB.down(rootClass+'plugin'),
-			btn_apply_plugin:	$JB.down(rootClass+'plugin-button'),
 			volume_box_slider:	$JB.down(rootClass+'volume-slider'),
 			header_account:		$JB.down(rootClass+'user-header-create'),
 			sign_in_link:		$JB.down(rootClass+'user-header-signin'),

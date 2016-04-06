@@ -72,7 +72,6 @@ module.exports = function(grunt)
 			{
 				src:
 				[
-					SRC.css + 'normalize.css',
 					SRC.css + 'style.css',
 					SRC.css + 'fileuploader.css',
 					SRC.css + 'flashblock.css'

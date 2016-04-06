@@ -20,7 +20,7 @@ this.CustomQueriesTab = Class.create(Tab,
 		<tr>\
 			<td colspan="2">\
 			<center>\
-				<textarea style="width:620px;height:160px;"></textarea>\
+				<textarea style="width:100%;height:160px;"></textarea>\
 			</center>\
 			</td>\
 		</tr>\

@@ -1,3 +1,53 @@
+/* reset css */
+/* http://meyerweb.com/eric/tools/css/reset/
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
 /* Google fonts imported */
 /* open-sans-regular - latin */
 @font-face {
@@ -91,7 +141,7 @@ select,
 .jukebox-volume-slider,
 .jukebox-progressbar-wrapper,
 .bg-color-light,
-.jukebox-main-wrapper,
+div.jukebox,
 .jukebox-mainpanel-wrapper,
 .roweven,
 div.jukebox-search-pagelist {
@@ -121,7 +171,7 @@ tr:hover {
 
 th.sortcol:hover,
 th.song-list-sortable-header:hover,
-.button:hover i,
+.jukebox-button:hover i,
 .toggle-category-container-button:hover i,
 .jukebox-song-artist:hover,
 .jukebox-song-album:hover,
@@ -139,7 +189,7 @@ div.jukebox-search-page-slider a:hover i {
 }
 
 .jukebox-topbar-wrapper a:hover,
-.button:hover i,
+.jukebox-button:hover i,
 .toggle-category-container-button:hover i,
 .jukebox-song-artist:hover,
 .jukebox-song-album:hover,
@@ -164,6 +214,11 @@ div.jukebox-sidepanel-wrapper .list-delete-icon:hover {
 }
 
 /* basic element types setups */
+.jukebox textarea {
+	border: 0;
+	padding: 0;
+}
+
 a:link,
 a:visited,
 a:active,
@@ -222,7 +277,7 @@ select {
 
 /* main layout */
 
-div.jukebox-main-wrapper {
+div.jukebox {
 	width: 800px;
 	min-height: 600px;
 	margin-left: auto;
@@ -289,12 +344,12 @@ div.jukebox-playcontrols-wrapper {
 	text-align: center;
 }
 
-.button-skip i {
+.jukebox-button-skip i {
 	font-size: 48px;
 }
 
-.button-stop i,
-.button-play i {
+.jukebox-button-stop i,
+.jukebox-button-play i {
 	font-size: 60px;
 }
 

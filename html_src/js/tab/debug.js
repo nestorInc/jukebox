@@ -2,7 +2,7 @@
 
 this.DebugTab = Class.create(Tab, 
 {
-	initialize: function(rootCSS, jukebox, template)
+	initialize: function(rootCSS, jukebox)
 	{
 		this.name = "Debug";
 		this.iconName = "bug_report";
@@ -10,7 +10,6 @@ this.DebugTab = Class.create(Tab,
 		this.permanent = true;
 		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
-		this.template = template;
 	},
 
 	updateSendingQuery: function(query)
@@ -56,8 +55,8 @@ this.DebugTab = Class.create(Tab,
 		this.$debug1 = DOM.down('.sent');
 		this.$debug2 = DOM.down('.received');
 
-		DOM.down('.jukebox-refresh-button').on('click', this.refresh.bind(this));
-		this.cbAutoRefresh = DOM.down('.jukebox-autorefresh');
+		DOM.down('.'+this.rootCSS+'-refresh-button').on('click', this.refresh.bind(this));
+		this.cbAutoRefresh = DOM.down('.'+this.rootCSS+'-autorefresh');
 		this.cbAutoRefresh.on('change', this.autoRefreshChange.bind(this));
 
 	},

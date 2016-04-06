@@ -867,7 +867,7 @@ this.UploadTab = Class.create(Tab,
 
 	getUploadedFiles: function()
 	{
-		if (this.jukebox.getAutoRefresh() === true) {
+		if (this.jukebox.getAutoRefresh()) {
 			this.jukebox.getUploadedFiles();
 		} else {
 			this.scheduleUpdate();

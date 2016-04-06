@@ -37,8 +37,8 @@ this.Tabs = Class.create(
 {
 	initialize: function(DOM, contentDOM, rootCSS)
 	{
-		this.DOM = DOM;
-		this.contentDOM = contentDOM;
+		this.DOM = DOM; // for clickable tab headers
+		this.contentDOM = contentDOM; // for tab content
 		this.rootCSS = rootCSS;
 		this.tabs = [];
 		this.currentTabUniqueId = -1;
@@ -116,18 +116,12 @@ this.Tabs = Class.create(
 		var id = tab.identifier = this.lastUniqueId;
 		this.tabs.push(tab);
 
-		// Init html containers
-		/*if(this.tabs.length == 1)
-		{
-			this.DOM.down('.'+this.rootCSS+'-tabs-header').update('<ul class="'+this.rootCSS+'-tabs-list"></ul>');
-		}*/
-
 		// Add tab Header
 		var noHref = 'javascript:;';
 		var listClass = 'list-element';
 
 		var removeTab = '';
-		if (tab.permanent === false)
+		if (!tab.permanent)
 		{
 			removeTab = new Element('a', {href: noHref}).update('<span class="list-delete-icon"><i class="material-icons">delete</i></span>');
 			removeTab.on("click", this.removeTab.bind(this, id));
@@ -149,7 +143,7 @@ this.Tabs = Class.create(
 
 		// DOM insertion
 		var headerContainer = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tab-list-'+tab.category);
-		if (tab.reverseHeaderOrder === true)
+		if (tab.reverseHeaderOrder)
 		{
 			headerContainer.insert({top: tabDisplay});
 		}
@@ -334,7 +328,7 @@ this.Tabs = Class.create(
 			{
 				shouldDisplay = true;
 
-				if (tab.contentLoaded === false)
+				if (!tab.contentLoaded)
 				{
 					this.createTabContent(tab);
 				}
@@ -343,14 +337,14 @@ this.Tabs = Class.create(
 			var tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id),
 				tabContent = this.contentDOM.down('.'+this.rootCSS+'-tabContent-'+id);
 
-			if(shouldDisplay === true)
+			if(shouldDisplay)
 			{
 				tabContent.show();
 				tabHeader.addClassName(this.rootCSS + '-tabs-active');
 			}
 			else
 			{
-				if (tab.contentLoaded === true)
+				if (tab.contentLoaded)
 				{
 					tabContent.hide();
 				}
@@ -435,7 +429,10 @@ this.TabsManager = Class.create(
 	{
 		for(var tabName in this.availableTabs)
 		{
-			this.openTab(tabName);
+			if (this.availableTabs.hasOwnProperty(tabName))
+			{
+				this.openTab(tabName);
+			}
 		}
 	},
 

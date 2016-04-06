@@ -12,7 +12,7 @@ Jukebox.UI.skins["default"] =
 	templates:
 	{
 	player:
-'<div class="jukebox #{root}-main-wrapper">\
+'<div class="#{root}">\
 	<div class="#{root}-topbar-wrapper bg-color-darkest">\
 		<div class="left-icon">\
 			<i class="material-icons #{root}-activity">import_export</i>&nbsp;\
@@ -29,10 +29,10 @@ Jukebox.UI.skins["default"] =
 		</div>\
 	</div>\
 	<div class="#{root}-playcontrols-wrapper bg-color-light">\
-		<a href="javascript:;" class="#{root}-previous-button button button-skip"><i class="material-icons">skip_previous</i></a>\
-		<a href="javascript:;" class="#{root}-stream-play button button-play"><i class="material-icons">play_circle_outline</i></a>\
-		<a href="javascript:;" class="#{root}-stream-stop button button-stop" style="display: none;"><i class="material-icons">stop</i></a>\
-		<a href="javascript:;" class="#{root}-next-button button button-skip"><i class="material-icons">skip_next</i></a>\
+		<a href="javascript:;" class="#{root}-previous-button #{root}-button #{root}-button-skip"><i class="material-icons">skip_previous</i></a>\
+		<a href="javascript:;" class="#{root}-stream-play #{root}-button #{root}-button-play"><i class="material-icons">play_circle_outline</i></a>\
+		<a href="javascript:;" class="#{root}-stream-stop #{root}-button #{root}-button-stop" style="display: none;"><i class="material-icons">stop</i></a>\
+		<a href="javascript:;" class="#{root}-next-button #{root}-button #{root}-button-skip"><i class="material-icons">skip_next</i></a>\
 		<div class="#{root}-volume">\
 			<i class="material-icons">volume_up</i>\
 			<span class="#{root}-slider #{root}-volume-slider">\
