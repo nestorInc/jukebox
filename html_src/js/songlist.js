@@ -159,7 +159,7 @@ var Songlist = this.Songlist = Class.create(
 			tr.addClassName(that.rootCSS + '-song-list-song');
 			tr.addClassName(that.rootCSS + '-song-list-song-' + currentSongIndex);
 
-			if (this.allowDragAndDrop)
+			if (that.allowDragAndDrop)
 			{
 				tr.store('song-mid', song.mid);
 				tr.store('song-index', currentSongIndex);
