@@ -4,19 +4,19 @@
    License: none (public domain)
 */
 
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
+div, .jukebox span, .jukebox applet, .jukebox object, .jukebox iframe,
+.jukebox h1, .jukebox h2, .jukebox h3, .jukebox h4, .jukebox h5, .jukebox h6, .jukebox p, .jukebox blockquote, .jukebox pre,
+.jukebox a, .jukebox abbr, .jukebox acronym, .jukebox address, .jukebox big, .jukebox cite, .jukebox code,
+.jukebox del, .jukebox dfn, .jukebox em, .jukebox img, .jukebox ins, .jukebox kbd, .jukebox q, .jukebox s, .jukebox samp,
+.jukebox small, .jukebox strike, .jukebox strong, .jukebox sub, .jukebox sup, .jukebox tt, .jukebox var,
+.jukebox b, .jukebox u, .jukebox i, .jukebox center,
+.jukebox dl, .jukebox dt, .jukebox dd, .jukebox ol, .jukebox ul, .jukebox li,
+.jukebox fieldset, .jukebox form, .jukebox label, .jukebox legend,
+.jukebox table, .jukebox caption, .jukebox tbody, .jukebox tfoot, .jukebox thead, .jukebox tr, .jukebox th, .jukebox td,
+.jukebox article, .jukebox aside, .jukebox canvas, .jukebox details, .jukebox embed,
+.jukebox figure, .jukebox figcaption, .jukebox footer, .jukebox header, .jukebox hgroup,
+.jukebox menu, .jukebox nav, .jukebox output, .jukebox ruby, .jukebox section, .jukebox summary,
+.jukebox time, .jukebox mark, .jukebox audio, .jukebox video {
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -25,25 +25,25 @@ time, mark, audio, video {
 	vertical-align: baseline;
 }
 /* HTML5 display-role reset for older browsers */
-article, aside, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section {
+.jukebox article, .jukebox aside, .jukebox details, .jukebox figcaption, .jukebox figure,
+.jukebox footer, .jukebox header, .jukebox hgroup, .jukebox menu, .jukebox nav, .jukebox section {
 	display: block;
 }
-body {
+.jukebox {
 	line-height: 1;
 }
-ol, ul {
+.jukebox ol, .jukebox ul {
 	list-style: none;
 }
-blockquote, q {
+.jukebox blockquote, .jukebox q {
 	quotes: none;
 }
-blockquote:before, blockquote:after,
-q:before, q:after {
+.jukebox blockquote:before, .jukebox blockquote:after,
+.jukebox q:before, .jukebox q:after {
 	content: '';
 	content: none;
 }
-table {
+.jukebox table {
 	border-collapse: collapse;
 	border-spacing: 0;
 }
@@ -75,7 +75,7 @@ table {
        url(../../images/MaterialIcons-Regular.ttf) format('truetype');
 }
 
-.material-icons {
+.jukebox .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
@@ -123,28 +123,28 @@ table {
 	background-color: white;
 }
 
-.selected,
-.jukebox-slider:hover .jukebox-slider-handle,
-.jukebox-sidepanel-wrapper .list-element:active,
-.jukebox-tabs-active .list-element {
+.jukebox .selected,
+.jukebox .jukebox-slider:hover .jukebox-slider-handle,
+.jukebox .jukebox-sidepanel-wrapper .list-element:active,
+.jukebox .jukebox-tabs-active .list-element {
 	background-color: #ff9f29;
 	color: black;
 }
 
-.jukebox-topbar-wrapper a:hover,
-.jukebox-activity-on,
+.jukebox .jukebox-topbar-wrapper a:hover,
+.jukebox .jukebox-activity-on,
 .jukebox input[type=text],
 .jukebox input[type=password],
 .jukebox input[type=button],
 .jukebox input[type=submit],
 .jukebox select,
-.jukebox-volume-slider,
-.jukebox-progressbar-wrapper,
+.jukebox .jukebox-volume-slider,
+.jukebox .jukebox-progressbar-wrapper,
 .jukebox .bg-color-light,
 .jukebox,
-.jukebox-mainpanel-wrapper,
+.jukebox .jukebox-mainpanel-wrapper,
 .jukebox .roweven,
-.jukebox-search-pagelist {
+.jukebox .jukebox-search-pagelist {
 	background-color: #202020;
 	color: #00e074;
 }
@@ -155,8 +155,8 @@ table {
 }
 
 .jukebox footer,
-.jukebox-slider-handle,
-.jukebox-progressbar,
+.jukebox .jukebox-slider-handle,
+.jukebox .jukebox-progressbar,
 .jukebox .bg-color-dark,
 .jukebox .song-list th,
 .jukebox .song-list th.song-list-cell-controls:hover,
@@ -171,33 +171,33 @@ table {
 
 .jukebox th.sortcol:hover,
 .jukebox th.song-list-sortable-header:hover,
-.jukebox-button:hover i,
+.jukebox .jukebox-button:hover i,
 .jukebox .toggle-category-container-button:hover i,
-.jukebox-song-artist:hover,
-.jukebox-song-album:hover,
+.jukebox .jukebox-song-artist:hover,
+.jukebox .jukebox-song-album:hover,
 .jukebox input[type=text]:focus,
 .jukebox input[type=password]:focus,
 .jukebox select:focus,
 .jukebox .dark-hover,
-.jukebox-sidepanel-wrapper .list-element:hover,
+.jukebox .jukebox-sidepanel-wrapper .list-element:hover,
 .jukebox td a:hover,
 .jukebox td a:hover i,
 .jukebox th a:hover i,
-.jukebox-search-page-slider a:hover i {
+.jukebox .jukebox-search-page-slider a:hover i {
 	background-color: #ff9f29;
 	color: #422400;
 }
 
-.jukebox-topbar-wrapper a:hover,
-.jukebox-button:hover i,
+.jukebox .jukebox-topbar-wrapper a:hover,
+.jukebox .jukebox-button:hover i,
 .jukebox .toggle-category-container-button:hover i,
-.jukebox-song-artist:hover,
-.jukebox-song-album:hover,
+.jukebox .jukebox-song-artist:hover,
+.jukebox .jukebox-song-album:hover,
 .jukebox .dark-hover,
 .jukebox td a:hover,
 .jukebox td a:hover i,
 .jukebox th a:hover i,
-.jukebox-search-page-slider a:hover i {
+.jukebox .jukebox-search-page-slider a:hover i {
 	cursor: pointer;
 	border-radius: 2px;
 }
@@ -239,7 +239,7 @@ table {
 }
 
 /* Sliders */
-.jukebox-slider-handle{
+.jukebox .jukebox-slider-handle{
 cursor: move;
 position: absolute;
 top: -5px;
@@ -248,11 +248,11 @@ height: 20px;
 margin-left: 0;
 }
 
-.jukebox-volume{
+.jukebox .jukebox-volume{
 	text-align: center;
 }
 
-.jukebox-slider{
+.jukebox .jukebox-slider{
 position: relative;
 display: inline-block;
 height: 10px;
@@ -261,7 +261,7 @@ border: 1px solid;
 border-radius: 2px;
 }
 
-.jukebox-volume-slider {
+.jukebox .jukebox-volume-slider {
 	width: 120px;
 margin: 5px 0;
 }
@@ -285,7 +285,7 @@ margin: 5px 0;
 }
 
 
-.jukebox-mainpanel-wrapper {
+.jukebox .jukebox-mainpanel-wrapper {
 	box-sizing: border-box;
 	float: left;
 	width: 627px;
@@ -293,48 +293,48 @@ margin: 5px 0;
 	border-left: 1px solid;
 }
 
-.jukebox-droppable-hover {
+.jukebox .jukebox-droppable-hover {
 	border-bottom: 5px solid #422400;
 	background-color: transparent;
 }
 
 /* top bar */
 
-.jukebox-topbar-wrapper {
+.jukebox .jukebox-topbar-wrapper {
 	box-sizing: border-box;
 	height: 20px;
 	font-size: 75%;
 	overflow: hidden;
 }
 
-.jukebox-topbar-wrapper i {
+.jukebox .jukebox-topbar-wrapper i {
 	font-size: 18px;
 }
 
-.jukebox-topbar-wrapper .left {
+.jukebox .jukebox-topbar-wrapper .left {
 	margin: 3px 3px 0 2px;
 	float: left;
 }
 
-.jukebox-topbar-wrapper .left-icon {
+.jukebox .jukebox-topbar-wrapper .left-icon {
 	padding-left: 3px;
 	padding-top: 1px;
 	float: left;
 }
 
-.jukebox-topbar-wrapper .right {
+.jukebox .jukebox-topbar-wrapper .right {
 	margin: 3px 6px 0 6px;
 	float: right;
 }
 
-.jukebox-topbar-wrapper .right-icon {
+.jukebox .jukebox-topbar-wrapper .right-icon {
 	padding-top: 1px;
 	float: right;
 }
 
 /* play controls */
 
-.jukebox-playcontrols-wrapper {
+.jukebox .jukebox-playcontrols-wrapper {
 	box-sizing: border-box;
 	float: left;
 	width: 180px;
@@ -344,31 +344,31 @@ margin: 5px 0;
 	text-align: center;
 }
 
-.jukebox-button-skip i {
+.jukebox .jukebox-button-skip i {
 	font-size: 48px;
 }
 
-.jukebox-button-stop i,
-.jukebox-button-play i {
+.jukebox .jukebox-button-stop i,
+.jukebox .jukebox-button-play i {
 	font-size: 60px;
 }
 
 /* current song */
-.jukebox-currentsong-wrapper {
+.jukebox .jukebox-currentsong-wrapper {
 	box-sizing: border-box;
 	float: left;
 	width: 620px;
 	min-height: 95px;
 }
 
-.jukebox-currentsong-wrapper .coverart-wrapper {
+.jukebox .jukebox-currentsong-wrapper .coverart-wrapper {
 	float: left;
 	box-sizing: border-box;
 	height: 100px;
 	width: 100px;
 }
 
-.jukebox-currentsong-wrapper .songinfos-wrapper {
+.jukebox .jukebox-currentsong-wrapper .songinfos-wrapper {
 	float: left;
 	box-sizing: border-box;
 	height: 100%;
@@ -410,7 +410,7 @@ margin: 5px 0;
 }
 
 /* Progressbar */
-.jukebox-progressbar-wrapper {
+.jukebox .jukebox-progressbar-wrapper {
 	display: inline-block;
 	width: 350px;
 	height: 10px;
@@ -418,7 +418,7 @@ margin: 5px 0;
 	border-radius: 2px;
 }
 
-.jukebox-progressbar {
+.jukebox .jukebox-progressbar {
 	display: block;
 	height: 100%;
 	width: 0; /* Not 100% at start */
@@ -430,7 +430,7 @@ margin: 5px 0;
 
 /* Side panel */
 
-.jukebox-sidepanel-wrapper {
+.jukebox .jukebox-sidepanel-wrapper {
 	box-sizing: border-box;
 	clear: left;
 	float: left;
@@ -439,7 +439,7 @@ margin: 5px 0;
 }
 
 
-.jukebox-sidepanel-wrapper .list-search-input {
+.jukebox .jukebox-sidepanel-wrapper .list-search-input {
 	text-align: right;
 	padding: 5px 3px 5px 0px;
 	clear: both;
@@ -448,21 +448,21 @@ margin: 5px 0;
 	background-color: #393939;
 }
 
-.jukebox-sidepanel-wrapper .list-search-input input[type=text] {
+.jukebox .jukebox-sidepanel-wrapper .list-search-input input[type=text] {
 	font-size: 12px;
 }
 
-.jukebox-sidepanel-wrapper .list-search-input input[type=button],
-.jukebox-sidepanel-wrapper .list-search-input select {
+.jukebox .jukebox-sidepanel-wrapper .list-search-input input[type=button],
+.jukebox .jukebox-sidepanel-wrapper .list-search-input select {
 	font-size: 10px;
 }
 
 
-.jukebox-sidepanel-wrapper .list-search-input input[type=text] {
+.jukebox .jukebox-sidepanel-wrapper .list-search-input input[type=text] {
 	width: 157px;
 }
 
-.jukebox-sidepanel-wrapper .list-element {
+.jukebox .jukebox-sidepanel-wrapper .list-element {
 	white-space: nowrap;
 	overflow: hidden;
 	clear: both;
@@ -472,51 +472,51 @@ margin: 5px 0;
 	height: 30px;
 }
 
-.jukebox-sidepanel-wrapper .removable-list-element {
+.jukebox .jukebox-sidepanel-wrapper .removable-list-element {
 	width: 157px;
 }
 
-.jukebox-sidepanel-wrapper .list-delete-icon {
+.jukebox .jukebox-sidepanel-wrapper .list-delete-icon {
 	display: block;
 	float: right;
 	height: 30px;
 }
 
-.jukebox-sidepanel-wrapper .list-delete-icon i {
+.jukebox .jukebox-sidepanel-wrapper .list-delete-icon i {
 	font-size: 16px;
 	margin-top: 6px;
 }
 
-.jukebox-sidepanel-wrapper .list-element i {
+.jukebox .jukebox-sidepanel-wrapper .list-element i {
 	vertical-align: middle;
 	margin: 3px 0 0 4px;
 	float: left;
 }
 
-.jukebox-sidepanel-wrapper .list-element .list-title {
+.jukebox .jukebox-sidepanel-wrapper .list-element .list-title {
 	display: block;
 	padding: 6px 0px 0px 32px;
 }
 
-.jukebox-sidepanel-wrapper .jukebox-tab-list-search .list-element {
+.jukebox .jukebox-sidepanel-wrapper .jukebox-tab-list-search .list-element {
 	font-size: 12px;
 	height: 22px;
 }
 
-.jukebox-sidepanel-wrapper.jukebox-tab-list-search .list-element .list-title {
+.jukebox .jukebox-tab-list-search .list-element .list-title {
 	padding: 4px 0px 0px 22px;
 }
 
-.jukebox-sidepanel-wrapper .jukebox-tab-list-search .list-element i {
+.jukebox .jukebox-sidepanel-wrapper .jukebox-tab-list-search .list-element i {
 	font-size: 16px;
 }
 
 
-.jukebox-sidepanel-wrapper .jukebox-tab-list-search .list-delete-icon {
+.jukebox .jukebox-sidepanel-wrapper .jukebox-tab-list-search .list-delete-icon {
 	height: 22px;
 }
 
-.jukebox-sidepanel-wrapper .jukebox-tab-list-search .list-delete-icon i {
+.jukebox .jukebox-sidepanel-wrapper .jukebox-tab-list-search .list-delete-icon i {
 	margin-top: 3px;
 }
 
@@ -526,7 +526,7 @@ margin: 5px 0;
 	height: 13px;
 }
 
-.jukebox-sidepanel-wrapper .list-category {
+.jukebox .jukebox-sidepanel-wrapper .list-category {
 	clear: both;
 	display: block;
 	float: left;
@@ -535,26 +535,26 @@ margin: 5px 0;
 	font-size: 90%;
 }
 
-.jukebox-sidepanel-wrapper .list-category i {
+.jukebox .jukebox-sidepanel-wrapper .list-category i {
 	vertical-align: middle;
 	margin: 0;
 	float: left;
 	font-size: 120%;
 }
 
-.jukebox-sidepanel-wrapper .list-category .list-title {
+.jukebox .jukebox-sidepanel-wrapper .list-category .list-title {
 	display: block;
 	padding: 1px 0px 0px 17px;
 }
 
 /* tab content */
 
-.jukebox-tab-title {
+.jukebox .jukebox-tab-title {
 	font-size: 24px;
 	padding: 12px;
 }
 
-.jukebox-debug-tab {
+.jukebox .jukebox-debug-tab {
 	font-size: 12px;
 }
 
@@ -567,11 +567,11 @@ margin: 5px 0;
 	padding: 10px 0 10px 6px;
 }
 
-.jukebox-search-slider {
+.jukebox .jukebox-search-slider {
 	display: inline-block;
 }
 
-.jukebox-search-page-slider {
+.jukebox .jukebox-search-page-slider {
 	clear: both;
 	text-align: center;
 }
@@ -581,16 +581,16 @@ margin: 5px 0;
 	margin: 2px 5px 2px 0px;
 }
 
-.jukebox-search-page-slider i {
+.jukebox .jukebox-search-page-slider i {
 	font-size: 18px;
 }
 
-.jukebox-search-page-slider .slider {
+.jukebox .jukebox-search-page-slider .slider {
 	width: 506px;
 	margin-bottom: 0;
 }
 
-.jukebox-search-page-slider input[type=range]::-moz-range-track {
+.jukebox .jukebox-search-page-slider input[type=range]::-moz-range-track {
   background: #878787;
 }
 
@@ -598,7 +598,7 @@ margin: 5px 0;
 	font-size: 14px;
 }
 
-.jukebox-upload-table {
+.jukebox .jukebox-upload-table {
 	font-size: 11px;
 }
 
@@ -685,7 +685,7 @@ margin: 5px 0;
 	text-align: left;
 }
 
-.jukebox-search.song-list {
+.jukebox .jukebox-search.song-list {
 	margin: 15px 0;
 }
 

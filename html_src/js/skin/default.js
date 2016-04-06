@@ -47,7 +47,7 @@ Jukebox.UI.skins["default"] =
 			<img src="images/no_cover.png" alt="cover art" />\
 		</div>\
 		<div class="songinfos-wrapper">\
-			<p class="song-title #{root}-song-title"><a href="javascript:;">Crossminds v12</a></p>\
+			<p class="song-title #{root}-song-title"><a href="javascript:;"></a></p>\
 			<p class="song-title-details"><span class="#{root}-song-artist"><a href="javascript:;"></a></span>&nbsp;-&nbsp;<span class="#{root}-song-album"><a href="javascript:;"></a></span></p>\
 			<div class="song-progress">\
 				<span class="#{root}-song-time time">00:00</span>\

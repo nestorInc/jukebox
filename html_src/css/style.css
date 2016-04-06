@@ -8,6 +8,14 @@ width: 100%;
 .notification-wrapper{
 position: relative;
 }
+
+.notification-wrapper,
+.notification-wrapper div,
+.notification-wrapper p{
+padding: 0;
+margin: 0;
+}
+
 .notification-wrapper-debug,
 .notification-wrapper-info,
 .notification-wrapper-warning,
