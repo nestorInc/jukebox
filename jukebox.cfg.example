@@ -1,4 +1,5 @@
 pid: jukebox.pid
+host: localhost:8080
 encode:
   source_dir: mp3
   encoded_dir: encode

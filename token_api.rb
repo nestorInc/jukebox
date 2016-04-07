@@ -7,8 +7,9 @@ require 'display.rb'
 require 'db.rb'
 
 class TokenManager < HttpNode
-  def initialize(library)
+  def initialize(library, conf)
     @library  = library;
+    @conf = conf;
     super();
   end
 
@@ -29,7 +30,7 @@ class TokenManager < HttpNode
 
     rep = HttpResponse.new(req.proto, 200, "OK",
                            "Content-Type" => "application/x-mpegURL");
-    rep.setData("http://#{Socket.gethostname}:#{s.local_address.ip_port}/stream?token=#{token}\n");
+    rep.setData("http://#{@conf['host']}/stream?token=#{token}\n");
     s.write(rep.to_s);
   end
 
