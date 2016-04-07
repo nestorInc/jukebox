@@ -14,9 +14,10 @@ class JsonManager < HttpNode
   MSG_LVL_ERROR   = 4
   MSG_LVL_FATAL   = 5
 
-  def initialize(list, library, conf_upload, conf_encode)
+  def initialize(list, users, library, conf_upload, conf_encode)
     @list     = list;
     @library  = library;
+    @users    = users
     @upload_dir = conf_upload  && conf_upload["dst_folder"] || "uploads";
     @source_dir = conf_encode  && conf_encode["source_dir"] || "../../musik/sorted/";
     super();
@@ -109,7 +110,7 @@ class JsonManager < HttpNode
     when "shuffle_play_queue"
       ch.queue.shuffle();
     when "get_user_informations"
-      result = @library.get_user_informations( sid )
+      result = @users.get_user_informations( sid )
       if( result != nil )
         resp [:account] = {
           :nickname => user,

@@ -13,12 +13,16 @@ require 'stream.rb'
 require 'http.rb'
 require 'channel.rb'
 require 'encode.rb'
+require 'user.rb'
+require 'sessions.rb'
+require 'library.rb'
 require 'db.rb'
 require 'json_api.rb'
 require 'upload.rb'
 require 'basic_api.rb'
 require 'web_debug.rb'
 require 'token_api.rb'
+require 'user.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
@@ -58,6 +62,9 @@ rescue => e
 end
 
 library = Library.new();
+users = Users.new()
+sessions = Sessions.new()
+db = DBlite.new("jukebox.db", [library, users, sessions]);
 channelList = {};
 
 # Encode
@@ -74,28 +81,28 @@ Thread.new() {
 
 
 # Create HTTP server
-json   = JsonManager.new(channelList, library, config[:upload.to_s], config[:encode.to_s]);
+json   = JsonManager.new(channelList, users, library, config[:upload.to_s], config[:encode.to_s]);
 basic  = BasicApi.new(channelList);
 upload = UploadManager.new(config[:upload.to_s]);
 debug  = DebugPage.new();
-token  = TokenManager.new(library, config);
+token  = TokenManager.new(users, config);
 main   = HttpNodeMapping.new("html");
 main_src = HttpNodeMapping.new("html_src");
 stream = Stream.new(channelList, library);
 
-sessions = HttpSessionStateCollection.new;
+sessionsHttp = HttpSessionStateCollection.new;
 
 main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
 
   # Remove invalid HttpSessionState objects from memory
-  sessions.removeExpired();
+  sessionsHttp.removeExpired();
 
   # For now we haven't attach the current request to any HttpSessionState
   currentSession = nil;
 
   # Remove invalid sessions in database
-  library.invalidate_sessions();
+  sessions.invalidate();
 
   req.options = {} if req.options == nil
 
@@ -116,13 +123,13 @@ main.addAuth() { |s, req, user, pass|
 
     if(form and form["token"])
       token = form["token"];
-      luser = library.check_login_token(nil, token);
+      luser = users.check_login_token(nil, token);
       if luser
-        sid = library.get_login_token_session(token);
+        sid = users.get_login_token_session(token);
         if not sid
           #TODO check if user has right to create session
-          sid = library.create_user_session(luser, ip_address, user_agent);
-          library.update_login_token_session(token, sid);
+          sid = sessions.create(luser, ip_address, user_agent);
+          users.update_login_token_session(token, sid);
         end
 
         s.user.replace(luser);
@@ -145,13 +152,13 @@ main.addAuth() { |s, req, user, pass|
       session = cookies["session"];
 
       # Check if the session is known in RAM
-      if sessions.exists(session)
-        currentSession = sessions.get(session);
+      if sessionsHttp.exists(session)
+        currentSession = sessionsHttp.get(session);
         luser = currentSession.Items["user"];
       else # Check in db
-        luser = library.check_session(session, ip_address, user_agent);
+        luser = sessions.check(session, ip_address, user_agent);
         if luser
-          currentSession = sessions.add(session, luser, ip_address, user_agent);
+          currentSession = sessionsHttp.add(session, luser, ip_address, user_agent);
         end
       end
 
@@ -164,7 +171,7 @@ main.addAuth() { |s, req, user, pass|
         # Avoid update session last_access for each resources
         if isMainPage 
           currentSession.updateLastRequest() if currentSession;
-          library.update_session_last_connexion(session);
+          sessions.updateLastConnexion(session);
         end
         next "cookie"
       end
@@ -172,13 +179,13 @@ main.addAuth() { |s, req, user, pass|
   end
 
   if pass
-    if(user != "void" and library.login(user, pass) )
-      sid = library.create_user_session(user, ip_address, user_agent);
+    if(user != "void" and users.login(user, pass) )
+      sid = sessions.create(user, ip_address, user_agent);
 
-      if sessions.exists(sid)
-        currentSession = sessions.get(sid);
+      if sessionsHttp.exists(sid)
+        currentSession = sessionsHttp.get(sid);
       else
-        currentSession = sessions.add(sid, user, ip_address, user_agent);
+        currentSession = sessionsHttp.add(sid, user, ip_address, user_agent);
       end
 
       stream.channel_init(s.user)
