@@ -13,6 +13,8 @@ require 'stream.rb'
 require 'http.rb'
 require 'channel.rb'
 require 'encode.rb'
+require 'user.rb'
+require 'library.rb'
 require 'db.rb'
 require 'json_api.rb'
 require 'upload.rb'
@@ -60,6 +62,7 @@ end
 
 library = Library.new();
 users = Users.new()
+db = DBlite.new("jukebox.db", [library, users]);
 channelList = {};
 
 # Encode

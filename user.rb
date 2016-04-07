@@ -1,24 +1,15 @@
 require "sqlite3"
 
+require 'display.rb'
+require 'user_space.rb'
+
 class Users
   def initialize()
     @lastSessionsCleanUpTime = 0;
-
-    @db = SQLite3::Database.new("jukebox_user.db");
-    @db.results_as_hash = true;
-
-    init_db();
-    init_root();
-
-    create_new_user("guest", "guest", 1);
-
-    debug("[DB] initialize");
-
-    log("library initialized.");
   end
 
-
-  def init_db()
+  def load(db)
+    @db = db
     sql = <<SQL
     PRAGMA foreign_keys = ON;
     create table if not exists users (
@@ -75,6 +66,10 @@ class Users
 SQL
     debug("[DB] init_db");
     @db.execute_batch( sql );
+
+    init_root();
+
+    create_new_user("guest", "guest", 1);
   end
 
   def init_root()
@@ -242,6 +237,21 @@ SQL
       return row["uid"];
     end
     nil;
+  end
+
+  def validate_user( user )
+    #Todo check if user session has rights to validate
+    sql = <<SQL
+    UPDATE users
+    SET validated = 1
+    WHERE nickname="#{user}"
+SQL
+    begin
+      debug("[DB] validate_user");
+      @db.execute_batch( sql );
+    rescue =>e
+      error("Validate user : #{e}");
+    end
   end
 
   def create_login_token( userNickname )
