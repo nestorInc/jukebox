@@ -35,9 +35,10 @@ var Tab = this.Tab = Class.create(
 
 this.Tabs = Class.create(
 {
-	initialize: function(DOM, rootCSS)
+	initialize: function(DOM, contentDOM, rootCSS)
 	{
-		this.DOM = DOM;
+		this.DOM = DOM; // for clickable tab headers
+		this.contentDOM = contentDOM; // for tab content
 		this.rootCSS = rootCSS;
 		this.tabs = [];
 		this.currentTabUniqueId = -1;
@@ -83,6 +84,7 @@ this.Tabs = Class.create(
 	},
 
 	// Add the tab in the html layout and in the tabs array
+	// Does not generate content or toggle the tab.
 	addTab: function(tab, className)
 	{
 		// Check tab class
@@ -114,21 +116,22 @@ this.Tabs = Class.create(
 		var id = tab.identifier = this.lastUniqueId;
 		this.tabs.push(tab);
 
-		// Init html containers
-		if(this.tabs.length == 1)
+		// Add tab Header
+		var noHref = 'javascript:;';
+		var listClass = 'list-element';
+
+		var removeTab = '';
+		if (!tab.permanent)
 		{
-			this.DOM.down('.'+this.rootCSS+'-tabs-header').update('<ul class="'+this.rootCSS+'-tabs-list"></ul>');
+			removeTab = new Element('a', {href: noHref}).update('<span class="list-delete-icon"><i class="material-icons">delete</i></span>');
+			removeTab.on("click", this.removeTab.bind(this, id));
+			listClass += ' removable-list-element';
 		}
 
-		// Add tab Header
-		var noHref = 'javascript:;',
-			toggleTab = new Element('a', {href: noHref}).update('<span>' + tab.name + '</span>'),
-			removeTab = new Element('a', {href: noHref}).update('<span> X </span>');
-
+		var toggleTab = new Element('a', {href: noHref}).update('<span class="' + listClass + '"><i class="material-icons">' + tab.iconName + '</i><span class="list-title">' + tab.name + '</span></span>');
 		toggleTab.on("click", this.toggleTab.bind(this, id));
-		removeTab.on("click", this.removeTab.bind(this, id));
 
-		var tabDisplay = new Element('li', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
+		var tabDisplay = new Element('p', {"class": this.rootCSS + '-tabHeader-' + id}).insert(
 		{
 			top: toggleTab,
 			bottom: removeTab
@@ -138,15 +141,32 @@ this.Tabs = Class.create(
 			tabDisplay.addClassName(this.rootCSS+'-tabs-active');
 		}
 
-		var tabContentContainer = new Element('div', {"class": this.rootCSS + '-tabContent-' + id});
+		// DOM insertion
+		var headerContainer = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tab-list-'+tab.category);
+		if (tab.reverseHeaderOrder)
+		{
+			headerContainer.insert({top: tabDisplay});
+		}
+		else
+		{
+			headerContainer.insert(tabDisplay);
+		}
+
+		tab.contentLoaded = false;
+		return id;
+	},
+
+	// Actually create tab content
+	createTabContent: function(tab)
+	{
+		// split this
+		var tabContentContainer = new Element('div', {"class": this.rootCSS + '-tabContent-' + tab.identifier});
 		if(this.tabs.length > 1)
 		{
 			tabContentContainer.hide();
 		}
 
-		// DOM insertion
-		this.DOM.down('.'+this.rootCSS+'-tabs-list').insert(tabDisplay);
-		this.DOM.down('.'+this.rootCSS+'-tabs-content').insert(tabContentContainer);
+		this.contentDOM.insert(tabContentContainer);
 
 		// Init tab content
 		if(typeof tab.updateContent === 'function')
@@ -159,7 +179,7 @@ this.Tabs = Class.create(
 		{
 			var tabDescriptor =
 			{
-				type: className
+				type: tab.className
 			};
 
 			var options = tab.getOptions();
@@ -184,7 +204,8 @@ this.Tabs = Class.create(
 			});
 		}
 
-		return id;
+		tab.contentLoaded = true;
+		return tab.identifier;
 	},
 
 	updateTabOptionsInStorage: function(tab, options, originalOptions)
@@ -261,7 +282,7 @@ this.Tabs = Class.create(
 		{
 			// If the tab to delete is the current active tab we want to select the first available tab
 			var tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+identifier),
-				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+identifier);
+				tabContent = this.contentDOM.down('.'+this.rootCSS+'-tabContent-'+identifier);
 			if(tabHeader && tabHeader.hasClassName(this.rootCSS + '-tabs-active'))
 			{
 				// Find the tabs position index available near from tab
@@ -299,17 +320,34 @@ this.Tabs = Class.create(
 	{
 		for(var i = 0, len = this.tabs.length; i < len; ++i)
 		{
-			var id = this.tabs[i].identifier,
-				tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id),
-				tabContent = this.DOM.down('.'+this.rootCSS+'-tabs-content').down('.'+this.rootCSS+'-tabContent-'+id);
-			if(id == identifier)
+			var shouldDisplay = false;
+			var tab = this.tabs[i];
+			var id = tab.identifier;
+
+			if (id == identifier)
+			{
+				shouldDisplay = true;
+
+				if (!tab.contentLoaded)
+				{
+					this.createTabContent(tab);
+				}
+			}
+
+			var tabHeader = this.DOM.down('.'+this.rootCSS+'-tabs-list').down('.'+this.rootCSS+'-tabHeader-'+id),
+				tabContent = this.contentDOM.down('.'+this.rootCSS+'-tabContent-'+id);
+
+			if(shouldDisplay)
 			{
 				tabContent.show();
 				tabHeader.addClassName(this.rootCSS + '-tabs-active');
 			}
 			else
 			{
-				tabContent.hide();
+				if (tab.contentLoaded)
+				{
+					tabContent.hide();
+				}
 				tabHeader.removeClassName(this.rootCSS + '-tabs-active');
 			}
 		}
@@ -367,6 +405,13 @@ this.TabsManager = Class.create(
 		{
 			identifier = search.identifier;
 		}
+
+		return identifier;
+	},
+
+	toggleTab: function(className)
+	{
+		var identifier = this.openTab(className);
 		this.tabs.toggleTab(identifier); // gives focus
 	},
 
@@ -377,6 +422,17 @@ this.TabsManager = Class.create(
 		if(search !== null)
 		{
 			this.tabs.removeTab(search.identifier);
+		}
+	},
+
+	createDefaultTabs: function()
+	{
+		for(var tabName in this.availableTabs)
+		{
+			if (this.availableTabs.hasOwnProperty(tabName))
+			{
+				this.openTab(tabName);
+			}
 		}
 	},
 
@@ -391,7 +447,7 @@ this.TabsManager = Class.create(
 				if(type == "SearchTab")
 				{
 					var opts = openedTabs[i].options;
-					this.jukebox.search(opts.current_page, null, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count/*, select*/);
+					this.jukebox.search(opts.current_page, null, opts.select_fields, opts.search_value, opts.search_comparison, opts.search_field, opts.order_by, opts.result_count);
 				}
 				else
 				{

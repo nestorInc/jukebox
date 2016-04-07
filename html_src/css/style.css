@@ -1,19 +1,3 @@
-p, ol, ul{
-margin: 0;
-font-size: 80%;
-padding-left: 0.5em;
-padding-right: 1em;
-text-align: left;
-text-indent: 0.5em;
-}
-
-footer{
-margin-top: 15px;
-text-align: center;
-font-style: italic;
-font-size: 12px;
-}
-
 #notifications{
 position: fixed; /* Notifications are visible even if there is a vertical scrollbar */
 top: 0;
@@ -24,6 +8,14 @@ width: 100%;
 .notification-wrapper{
 position: relative;
 }
+
+.notification-wrapper,
+.notification-wrapper div,
+.notification-wrapper p{
+padding: 0;
+margin: 0;
+}
+
 .notification-wrapper-debug,
 .notification-wrapper-info,
 .notification-wrapper-warning,
@@ -62,12 +54,4 @@ border-color: black;
 
 .qq-upload-button input{
 height: 30px; /* Height of the button, so that pointer is ok on all height. 100% doesn't work */
-}
-
-#player{
-margin-top: 50px; /* 2 notifications height*/
-}
-
-#skinSelectors{
-text-align: center;
 }

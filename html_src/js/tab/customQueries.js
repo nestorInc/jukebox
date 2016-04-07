@@ -6,13 +6,16 @@ this.CustomQueriesTab = Class.create(Tab,
 	initialize: function(rootCSS)
 	{
 		this.name = "Custom queries";
+		this.iconName = "send";
+		this.category = "debug";
+		this.permanent = true;
 		this.rootCSS = rootCSS;
 	},
 
 	updateContent: function(DOM)
 	{
 		var custom_queries_display = '\
-		<h1>Custom Json Query</h1>\
+		<p class="' + this.rootCSS + '-tab-title">Custom queries</p>\
 		<table width="100%">\
 		<tr>\
 			<td colspan="2">\

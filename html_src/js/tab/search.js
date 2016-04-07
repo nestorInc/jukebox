@@ -1,18 +1,23 @@
 /* jshint loopfunc: true */
-/* global $R, FormatTime, Draggable, TableKit, SortUnique */
+/* global $R, SortUnique, Songlist */
 
 this.SearchTab = Class.create(Tab,
 {
 	initialize: function($super, server_results, rootCSS, jukebox, template)
 	{
 		this.reloadControllers = true;
+		this.iconName = "search";
+		this.category = "search";
+		this.permanent = false;
 		this.pages = [];
 		this.sliders = [];
 		this.tableKit = null;
 		this.DOM = null;
+		this.reverseHeaderOrder = true;
 
 		$super(rootCSS, jukebox, template);
 
+		this.permanent = false;
 		this.updateNewSearchInformations(server_results);
 	},
 
@@ -105,6 +110,22 @@ this.SearchTab = Class.create(Tab,
 			this.result_count);
 	},
 
+	goToPageOffset: function(pageOffset)
+	{
+		var newPage = this.current_page + pageOffset;
+		if(newPage > this.page_count)
+		{
+			newPage = this.page_count;
+		}
+
+		if (newPage <= 0)
+		{
+			newPage = 1;
+		}
+
+		this.goToPage(newPage);
+	},
+
 	sort: function(order_by)
 	{
 		this.jukebox.search(this.page,
@@ -129,8 +150,10 @@ this.SearchTab = Class.create(Tab,
 			var mainTpl = new Template(this.template.main),
 				mainTplVars =
 				{
+					root: this.rootCSS,
 					pagelistClass: pagelistClass,
-					contentClass: contentClass
+					contentClass: contentClass,
+					title: this.name
 				},
 				search_page = mainTpl.evaluate(mainTplVars);
 			
@@ -158,7 +181,53 @@ this.SearchTab = Class.create(Tab,
 		}
 
 		// Display search results and init dragabble items
+		var headerActions = [
+			{ name: 'add-shuffle', icon: 'shuffle', callback: this.addAllRandom.bind(this) },
+			{ name: 'add-top', icon: 'vertical_align_top', callback: this.addAllTop.bind(this) },
+			{ name: 'add-bottom', icon: 'vertical_align_bottom', callback: this.addAllBottom.bind(this) }
+		];
+		var songActions = [
+			{ name: 'add-shuffle', icon: 'shuffle', callback: this.addSongRandom.bind(this) },
+			{ name: 'add-top', icon: 'vertical_align_top', callback: this.addSongTop.bind(this) },
+			{ name: 'add-bottom', icon: 'vertical_align_bottom', callback: this.addSongBottom.bind(this) }
+		];
+
+		var columns = [ 'artist', 'album', 'title', 'track', 'genre', 'duration', 'controls' ];
+		this.songList = new Songlist(this.rootCSS, this.jukebox, this.template, this.DOM.down('.' + this.rootCSS + "-search"),
+							columns, headerActions, songActions, // Content
+							false); // Drag and drop
+
 		this.initAndDisplaySearchResults();
+	},
+
+	addAllRandom: function()
+	{
+		this.jukebox.addSearchToPlayQueueRandom(this.search_value, this.search_comparison, this.search_field, this.order_by, this.first_result, this.result_count);
+	},
+
+	addAllTop: function()
+	{
+		this.jukebox.addSearchToPlayQueueTop(this.search_value, this.search_comparison, this.search_field, this.order_by, this.first_result, this.result_count);
+	},
+
+	addAllBottom: function()
+	{
+		this.jukebox.addSearchToPlayQueueBottom(this.search_value, this.search_comparison, this.search_field, this.order_by, this.first_result, this.result_count);
+	},
+
+	addSongRandom: function(mid)
+	{
+		this.jukebox.addToPlayQueueRandom(mid);
+	},
+
+	addSongTop: function(mid)
+	{
+		this.jukebox.addToPlayQueueTop(mid);
+	},
+
+	addSongBottom: function(mid)
+	{
+		this.jukebox.addToPlayQueueBottom(mid);
 	},
 
 	// Update sliders and pages
@@ -167,21 +236,27 @@ this.SearchTab = Class.create(Tab,
 		var sliderCSS = this.rootCSS + '-slider',
 			sliderCSS2 = this.rootCSS + '-search-slider',
 			handleCSS = sliderCSS + '-handle',
-			pageListCollection = this.DOM.select('.' + pagelistClass);
+			pageListCollection = this.DOM.select('.' + pagelistClass),
+			that = this;
 
 		// Only display slider and pages results links if nb pages > 1
 		if(this.total_results > 0 && this.page_count > 1)
 		{
-			// We have to specified a fixed width, 100% doesn't work : the slider is lost
-			var music_wrapper_width = this.DOM.up().getWidth();
+			//TODO: skin this
+			var linksTpl = '<div class="page-count '+this.rootCSS+'-search-page-links">page 12 / 454</div>';
 
 			var sliderTpl = '' +
-			'<div class="'+sliderCSS2+'">' +
-				'<div class="'+sliderCSS+'" style="width:' + music_wrapper_width + 'px;">' +
-					'<div class="'+handleCSS+'"></div>' +
+			'<div class="jukebox-search-page-slider">' +
+				'<a class="jukebox-search-fast-rewind-button"><i class="material-icons">fast_rewind</i></a>' +
+				'<a class="jukebox-search-left-button"><i class="material-icons">keyboard_arrow_left</i></a>' +
+				'<div class="'+sliderCSS2+'">' +
+					'<div class="'+sliderCSS+'" style="width: 534px;">' +
+						'<div class="'+handleCSS+'"></div>' +
+					'</div>' +
 				'</div>' +
+				'<a class="jukebox-search-right-button"><i class="material-icons">keyboard_arrow_right</i></a>' +
+				'<a class="jukebox-search-fast-forward-button"><i class="material-icons">fast_forward</i></a>' +
 			'</div>';
-			var linksTpl = '<div class="'+this.rootCSS+'-search-page-links"></div>';
 
 			// Display sliders and links
 			pageListCollection.each(function(s)
@@ -192,6 +267,11 @@ this.SearchTab = Class.create(Tab,
 					links: linksTpl
 				});
 				s.update(replace);
+
+				s.down('.jukebox-search-right-button').on('click', that.goToPageOffset.bind(that, 1));
+				s.down('.jukebox-search-fast-forward-button').on('click', that.goToPageOffset.bind(that, 3));
+				s.down('.jukebox-search-left-button').on('click', that.goToPageOffset.bind(that, -1));
+				s.down('.jukebox-search-fast-rewind-button').on('click', that.goToPageOffset.bind(that, -3));
 			});
 		}
 		else
@@ -213,7 +293,6 @@ this.SearchTab = Class.create(Tab,
 
 		// Init each sliders behavior
 		var resultsSliders = this.DOM.select('.'+sliderCSS),
-			that = this,
 			i = 0;
 		resultsSliders.each(function(sliderBox)
 		{
@@ -279,17 +358,16 @@ this.SearchTab = Class.create(Tab,
 			console.log(h.clientWidth);
 			*/
 			// So we have to hard code the width specified in CSS .jukebox-slider-handle{}
-			slider.handleLength = 25;
+			slider.handleLength = 10;
 			slider.setValue(that.current_page); // refresh slider position (avoid bug when current_page > 1 on start in a hidden tab)
 
 			that.sliders.push(slider);
 		});
 	},
 
-	declareTableHeader: function(tparent)
+	setupSortableHeaders: function()
 	{
-		var firstSort = this.order_by.split(",")[0],
-			J = this.jukebox;
+		var firstSort = this.order_by.split(",")[0];
 
 		//-----
 
@@ -299,22 +377,22 @@ this.SearchTab = Class.create(Tab,
 			var order = "DESC";
 			if(firstSort.indexOf(column) != -1)
 			{
-				cell.addClassName(that.rootCSS + "-search-sortcol");
+				cell.addClassName('song-list-sortcol');
 				if(firstSort.indexOf(order) == -1)
 				{
-					cell.addClassName(that.rootCSS + "-search-sortasc");
-					cell.removeClassName(that.rootCSS + "-search-sortdesc");
+					cell.addClassName('song-list-sortcol-sortasc');
+					cell.removeClassName('song-list-sortcol-sortdesc');
 				}
 				else
 				{
-					cell.removeClassName(that.rootCSS + "-search-sortasc");
-					cell.addClassName(that.rootCSS + "-search-sortdesc");
+					cell.removeClassName('song-list-sortcol-sortasc');
+					cell.addClassName('song-list-sortcol-sortdesc');
 					order = "ASC";
 				}
 			}
 			else
 			{
-				cell.removeClassName(that.rootCSS + "-search-sortcol");
+				cell.removeClassName('song-list-sortcol');
 			}
 			sql = sql.replace('${ORDER}', order);
 			cell.on("click", that.sort.bind(that, sql));
@@ -330,21 +408,16 @@ this.SearchTab = Class.create(Tab,
 			duration: 'duration ${ORDER}, artist COLLATE NOCASE DESC, album COLLATE NOCASE DESC, track DESC, title COLLATE NOCASE DESC'
 		};
 
-		var tableHeadTpl = new Template(this.template.tableHead),
-			tableHeadTplVars = {root: this.rootCSS},
-			tr = tableHeadTpl.evaluate(tableHeadTplVars);
-		
-		tparent.insert(tr); // Inject template
-
 		// For each dom column present in template
-		tparent.select('th').each(function(th)
+		this.DOM.select('th').each(function(th)
 		{
 			var classes = th.classNames();
 
 			// Check associated SQL and sort order
 			for(var column in sql)
 			{
-				var expectedCSS = that.rootCSS + '-search-' + column;
+				var expectedCSS = 'song-list-cell-' + column;
+				th.addClassName('song-list-sortable-header');
 				if(classes.include(expectedCSS)) // No column is mandatory in skin
 				{
 					manageSort(th, column, sql[column]);
@@ -352,215 +425,18 @@ this.SearchTab = Class.create(Tab,
 				}
 			}
 		});
-
-		//-----
-		// Controls
-		// 
-		function funcRandom()
-		{
-			J.addSearchToPlayQueueRandom(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
-		}
-		function funcTop()
-		{
-			J.addSearchToPlayQueueTop(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
-		}
-		function funcBottom()
-		{
-			J.addSearchToPlayQueueBottom(that.search_value, that.search_comparison, that.search_field, that.order_by, that.first_result, that.result_count);
-		}
-		
-		var controlsTh = tparent.down('.' + this.rootCSS + '-search-controls');
-		if(controlsTh) // Not mandatory in skin
-		{
-			var title = 'Add search to play queue [Full]'; // See jukebox.js : _addSearchToPlayQueue
-			if(this.search_comparison == 'like')
-			{
-				title = 'Add search to play queue [Current page]';
-			}
-
-			this.createControlsCell(controlsTh, funcRandom, funcTop, funcBottom, title);
-		}
-	},
-
-	// Utility to create the 3 buttons in the last cell of each row (standards rows and header row of the table)
-	createControlsCell: function(cell, funcRandom, funcTop, funcBottom, title)
-	{
-		var addRandom = new Element('a').update('<span class="add-to-play-queue-rand"></span>'),
-			addTop = new Element('a').update('<span class="add-to-play-queue-top"></span>'),
-			addBottom = new Element('a').update('<span class="add-to-play-queue-bottom"></span>');
-
-		if(title)
-		{
-			addRandom.writeAttribute('title', title + ' [RANDOM]');
-			addTop.writeAttribute('title', title + ' [TOP]');
-			addBottom.writeAttribute('title', title + ' [BOTTOM]');
-		}
-
-		cell.insert(addTop).insert(
-		{
-			top: addRandom,
-			bottom: addBottom
-		});
-
-		addRandom.on('click', funcRandom);
-		addTop.on('click', funcTop);
-		addBottom.on('click', funcBottom);
 	},
 
 	initAndDisplaySearchResults: function()
 	{
-		var tbody = new Element('tbody'),
-			count = this.result_count,
-			$content = this.DOM.down('.' + this.rootCSS + "-search"),
-			isOdd = true,
-			style,
-			J = this.jukebox;
-
-		function doSearch(search, category, mouseEvent)
-		{
-			var focusTab = (mouseEvent.which == 2 || mouseEvent.ctrlKey) ? false : true; // Open in background with middle clic or ctrl+clic
-
-			var orderby = 'artist,album,track,title';
-			if (category == 'album')
-			{
-				orderby = 'track,title'/*,artist*/;
-			}
-
-			J.search(1, null, null, search.toString(), 'equal', category, orderby, count, focusTab);
-		}
-		function createLink(text, search, category)
-		{
-			var item = new Element('a', {href: 'javascript:;'}).update(text);
-			item.on('click', function(evt)
-			{
-				doSearch(search, category, evt);
-			});
-			return item;
-		}
-
 		if(this.total_results > 0)
 		{
-			var table = new Element('table').addClassName(this.rootCSS + '-search-table'),
-				thead = new Element('thead'),
-				tfoot = new Element('tfoot');
-
-			this.declareTableHeader(thead);
-			this.declareTableHeader(tfoot);
-
-			var possibleColumns = ['artist', 'album', 'title', 'track', 'genre', 'duration', 'controls'],
-				columns = [],
-				that = this;
-
-			// Get columns according to current thead definition
-			thead.select('th').each(function(th)
-			{
-				var classes = th.classNames();
-				for(var i = 0; i < possibleColumns.length; ++i)
-				{
-					var column = possibleColumns[i];
-					if(classes.include(that.rootCSS + "-search-" + column))
-					{
-						columns.push(column);
-						break;
-					}
-				}
-			});
-
-			this.server_results.each(function(s)
-			{
-				style = that.rootCSS + "-search-" + (isOdd ? "rowodd" : "roweven");
-				isOdd = !isOdd;
-
-				var tr = new Element('tr').addClassName(that.rootCSS + '-search-row ' + style);
-				tr.store('song', s); // For drag'n drop to playqueue
-
-				for(var i = 0; i < columns.length; ++i) // Only display specified thead columns
-				{
-					var td = new Element('td');
-					switch(columns[i])
-					{
-						case 'artist':
-							var artist = createLink(s.artist, s.artist, 'artist');
-							td.update(artist);
-							break;
-						case 'album':
-							var album = createLink(s.album, s.album, 'album');
-							td.update(album);
-							break;
-						case 'title':
-							td.update(s.title);
-							break;
-						case 'track':
-							td.update(s.track);
-							break;
-						case 'genre':
-							if(genres[s.genre])
-							{
-								var genre = createLink(genres[s.genre], s.genre, 'genre');
-								td.update(genre);
-							}							
-							break;
-						case 'duration':
-							td.update(FormatTime(s.duration));
-							break;
-						case 'controls':
-							that.createControlsCell(td,
-								function funcRandom(){J.addToPlayQueueRandom(s.mid);},
-								function funcTop(){J.addToPlayQueueTop(s.mid);},
-								function funcBottom(){J.addToPlayQueueBottom(s.mid);}
-							);
-							break;
-					}
-					tr.insert(td);
-				}
-
-				tbody.insert(tr);
-
-				new Draggable(tr,
-				{
-					scroll: window,
-					ghosting: true,
-					revert: function(element)
-					{
-						element.style.position = "relative";
-					},
-					onStart: function(obj)
-					{
-						obj.element.setStyle({display: 'table'});
-					},
-					onEnd: function(obj)
-					{
-						obj.element.setStyle({display: ''});
-					}
-				});
-			});
-
-			table.insert(tbody).insert(
-			{
-				top: thead,
-				bottom: tfoot
-			});
-
-			// Replace the DOM
-			$content.update(table);
-
-			this.tableKit = new TableKit(table,
-			{
-				sortable: false,
-				editable: false,
-				trueResize: true,
-				keepWidth: true,
-
-				// Fix glitch issue when clicking one of the "Add search to play queue [Current page|Full]" button
-				// Happens because of tablekit.js generating a huge <div class="resize-handle"> on mousedown
-				// Which leads to a scrollbar in the browser -> mouse no more over the same button -> no click event
-				// Anyway we don't need showHandle to true because we already override the resize-handle css...
-				showHandle: false
-			});
+			this.songList.setSongs(this.server_results);
+			this.setupSortableHeaders();
 		}
-		else // this.total_results == 0
+		else
 		{
-			$content.update("No results found");
+			this.songList.DOM.update('No match');
 		}
 	},
 
@@ -666,48 +542,10 @@ this.SearchTab = Class.create(Tab,
 
 		pages = SortUnique(pages);
 
-		var tab = this;
-		function createLink(num, className)
-		{
-			var item = new Element('a', {href: 'javascript:;'}).addClassName(tab.rootCSS + '-' + className).update(num + " ");
-			item.on('click', function()
-			{
-				tab.goToPage(num);
-			});
-			return item;
-		}
-
 		this.DOM.select('.' + this.rootCSS + '-search-page-links').each(function(s)
 		{
 			s.update(); // Empty
-
-			var lastdisplayedValue = null;
-			for(i = 0; i < pages.length; ++i)
-			{
-				if(lastdisplayedValue != null && lastdisplayedValue != pages[i] - 1)
-				{
-					s.insert(" ..... ");
-				}
-
-				var className;
-				if(pages[i] == currentPage)
-				{
-					className = "search-page-link-current-page";
-				}
-				else if(pages[i] == currentSelection)
-				{
-					className = "search-page-link-current-selection";
-				}
-				else
-				{
-					className = "search-page-link";
-				}
-
-				var link = createLink(pages[i], className);
-				s.insert(link);
-
-				lastdisplayedValue = pages[i];
-			}
+			s.insert('Page ' + currentPage + '&nbsp;/&nbsp' + pages[pages.length-1]);
 		});
 	}
 });

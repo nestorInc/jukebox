@@ -5,13 +5,16 @@ this.PlaylistTab = Class.create(Tab,
 	initialize: function(rootCSS, jukebox)
 	{
 		this.name = "Playlists";
+		this.iconName = "playlist_play";
+		this.category = "playlist";
+		this.permanent = true;
 		this.rootCSS = rootCSS;
 		this.jukebox = jukebox;
 	},
 
 	updateContent: function(DOM)
 	{
-		DOM.update('<h1>Playlists</h1>');
+		DOM.update('<p class="' + this.rootCSS + '-tab-title">Playlists</p>');
 
 		var that = this;
 

@@ -4,20 +4,7 @@
 	<meta charset="utf-8">
 	<title>Jukebox Reloaded</title>
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
-
-	<!-- RELEASE
-	<link rel="stylesheet" type="text/css" href="css/jukebox.min.css" />
-	<link rel="stylesheet" type="text/css" href="css/skin/jukebox-skins.min.css" />
-	 -->
-	<!-- DEBUG
-	<link rel="stylesheet" type="text/css" href="src/css/normalize.css" />
-	<link rel="stylesheet" type="text/css" href="src/css/fileuploader.css" />
-	<link rel="stylesheet" type="text/css" href="src/css/flashblock.css" />
-	<link rel="stylesheet" type="text/css" href="src/css/style.css" />
-	<link rel="stylesheet" type="text/css" href="src/css/skin/default.css" />
-	<link rel="stylesheet" type="text/css" href="src/css/skin/light.css" />
-	<link rel="stylesheet" type="text/css" href="src/css/skin/hype.css" />
-	 -->
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
 </head>
 <body>
 
@@ -25,50 +12,13 @@
 	<div id="notifications"></div>
 </header>
 
-<div role="main" id="page-wrapper">
-	<div id="player"></div>
-	<div id="skinSelectors">
-		<input type="button" id="skin_default" value="default" /> <input type="button" id="skin_light" value="light" /> <input type="button" id="skin_hype" value="hype" />
-	</div>
+
+<div id="player">
+	<center><img src="images/server_down.jpg" /></center>
 </div>
 
-<footer>Home made jukebox over streaming</footer>
 
 <script type="text/javascript" src="js/lib/require.min.js"></script>
-
-<!-- Common to RELEASE and DEBUG
-<script type="text/javascript" src="js/lib/prototype.js"></script>
--->
-
-<!-- RELEASE
-<script type="text/javascript" src="js/lib/libs.min.js"></script>
-<script type="text/javascript" src="js/jukebox.min.js"></script>
--->
-
-<!-- DEBUG
-<script type="text/javascript" src="js/lib/scriptaculous.js?load=effects,dragdrop,slider"></script>
-<script type="text/javascript" src="js/lib/tablekit.js"></script>
-<script type="text/javascript" src="js/lib/fileuploader.js"></script>
-<script type="text/javascript" src="js/lib/soundmanager2.js"></script>
-<script type="text/javascript" src="js/tab/tabs.js"></script>
-<script type="text/javascript" src="js/tab/search.js"></script>
-<script type="text/javascript" src="js/tab/upload.js"></script>
-<script type="text/javascript" src="js/tab/debug.js"></script>
-<script type="text/javascript" src="js/tab/account.js"></script>
-<script type="text/javascript" src="js/tab/customQueries.js"></script>
-<script type="text/javascript" src="js/tab/notification.js"></script>
-<script type="text/javascript" src="js/notifications.js"></script>
-<script type="text/javascript" src="js/musicFieldEditor.js"></script>
-<script type="text/javascript" src="js/genres.js"></script>
-<script type="text/javascript" src="js/action.js"></script>
-<script type="text/javascript" src="js/query.js"></script>
-<script type="text/javascript" src="js/tools.js"></script>
-<script type="text/javascript" src="js/storage.js"></script>
-<script type="text/javascript" src="js/jukebox.js"></script>
-<script type="text/javascript" src="skin/default.js"></script>
-<script type="text/javascript" src="skin/light.js"></script>
-<script type="text/javascript" src="js/jukeboxUI.js"></script>
--->
 
 <script type="text/javascript">
 var URL = window.location.href,
@@ -150,9 +100,10 @@ if(DEBUG)
 		shim: // Dependencies
 		{
 			'jukebox': ['query', 'action', 'tools', 'storage', 'notifications', 'jukeboxUI', 'lib/soundmanager2'],
-			'jukeboxUI': ['lib/prototype', 'tools', 'storage', 'genres', 'tab/tabs', 'tab/search', 'tab/upload', 'tab/debug', 'tab/account', 'tab/playlist', 'tab/customQueries', 'tab/notification', 'lib/slider', 'lib/dragdrop'],
+			'jukeboxUI': ['lib/prototype', 'songlist', 'tools', 'storage', 'genres', 'tab/tabs', 'tab/playqueue', 'tab/search', 'tab/playqueue', 'tab/upload', 'tab/debug', 'tab/account', 'tab/playlist', 'tab/customQueries', 'tab/notification', 'lib/slider', 'lib/dragdrop'],
 			'musicFieldEditor': ['lib/prototype', 'genres', 'lib/tablekit'],
 			'notifications': ['lib/prototype', 'lib/effects'],
+			'songlist': ['lib/prototype', 'tools'],
 			'query': ['action'],
 			'action': ['tools'],
 			'tools': [],
@@ -164,6 +115,7 @@ if(DEBUG)
 			'tab/account': ['lib/prototype', 'tab/tabs'],
 			'tab/playlist': ['lib/prototype', 'tab/tabs'],
 			'tab/upload': ['lib/prototype', 'tab/tabs', 'lib/fileuploader', 'lib/tablekit', 'musicFieldEditor', 'notifications', 'genres'],
+			'tab/playqueue': ['lib/prototype', 'tab/tabs', 'lib/tablekit', 'songlist'],
 			'tab/search': ['lib/prototype', 'tab/tabs', 'lib/tablekit', 'genres', 'tools', 'lib/dragdrop'],
 			'lib/tablekit': ['lib/prototype'],
 			'lib/effects': ['lib/prototype'],
@@ -178,39 +130,14 @@ if(DEBUG)
 		// Prototypejs wasn't fireing the event for IE :-(
 		// This plugin works properly for everyone!
 		'lib/domReady!',
-
-		/*'lib/prototype',
-		'lib/tablekit',
-		'lib/fileuploader',
-		'lib/soundmanager2',
-		'tab/tabs',
-		'tab/search',
-		'tab/upload',
-		'tab/debug',
-		'tab/account',
-		'tab/playlist',
-		'tab/customQueries',
-		'tab/notification',
-		'notifications',
-		'musicFieldEditor',
-		'genres',
-		'action',
-		'query',
-		'tools',
-		'storage',
-		'jukebox',
-		'jukeboxUI',*/
 		'jukebox'
 	];	
 	CSS =
 	[
-		'src/css/normalize.css',
 		'src/css/fileuploader.css',
 		'src/css/flashblock.css',
 		'src/css/style.css',
-		'src/css/skin/default.css',
-		'src/css/skin/light.css',
-		'src/css/skin/hype.css'
+		'src/css/skin/default.css'
 	];
 
 	requirejsSkinsConfig =
@@ -220,9 +147,7 @@ if(DEBUG)
 	};
 	requirejsSkinsScripts =
 	[
-		'default',
-		'light',
-		'hype'
+		'default'
 	];
 }
 
@@ -294,19 +219,6 @@ requirejs(requirejsScripts, function()
 				j.theme(name);
 				j.volume(volume);
 				*/
-			});
-
-			$("skin_default").on("click", function()
-			{
-				j.skin("default");
-			});
-			$("skin_light").on("click", function()
-			{
-				j.skin("light");
-			});
-			$("skin_hype").on("click", function()
-			{
-				j.skin("hype");
 			});
 		}
 		catch(fatalEx)

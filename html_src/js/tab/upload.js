@@ -6,6 +6,9 @@ this.UploadTab = Class.create(Tab,
 	initialize: function(rootCSS, jukebox, template)
 	{
 		this.name = "Uploader";
+		this.iconName = "cloud_upload";
+		this.category = "tail";
+		this.permanent = true;
 		this.uploader = null;
 		this.uploadedFiles = null;
 		this.uploadedFilesEdition = null;
@@ -648,15 +651,9 @@ this.UploadTab = Class.create(Tab,
 			len,
 			found,
 			$uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files'),
-			$uploaded_files_tbody = $uploaded_files.down('tbody'),
-			that = this;
+			$uploaded_files_tbody = $uploaded_files.down('tbody');
 
-		// Check for new files in 5 seconds
-		clearTimeout(this.refresher);
-		this.refresher = setTimeout(function()
-		{
-			that.getUploadedFiles();
-		}, 5000);
+		this.scheduleUpdate();
 
 		/*TODO:
 		The following code doesn't work in a multi-users scenario where users upload/delete/validate files at the same time
@@ -682,7 +679,7 @@ this.UploadTab = Class.create(Tab,
 					tableControllerTplVars = {root: this.rootCSS},
 					controller = tableControllerTpl.evaluate(tableControllerTplVars);
 
-				var html = controller + '<table id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '" class="' + this.rootCSS + '-upload-table">';
+				var html = controller + '<table id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '" class="' + this.rootCSS + '-upload-table song-list">';
 				var tableHeadTpl = new Template(this.template.tableHead),
 					tableHeadTplVars = {root: this.rootCSS},
 					tr = tableHeadTpl.evaluate(tableHeadTplVars);
@@ -870,7 +867,11 @@ this.UploadTab = Class.create(Tab,
 
 	getUploadedFiles: function()
 	{
-		this.jukebox.getUploadedFiles();
+		if (this.jukebox.getAutoRefresh()) {
+			this.jukebox.getUploadedFiles();
+		} else {
+			this.scheduleUpdate();
+		}
 	},
 
 	clear: function()
@@ -885,13 +886,24 @@ this.UploadTab = Class.create(Tab,
 		this.uploader._handler.cancelAll();
 	},
 
+	scheduleUpdate: function()
+	{
+		var that = this;
+		// Check for new files in 5 seconds
+		clearTimeout(this.refresher);
+		this.refresher = setTimeout(function()
+		{
+			that.getUploadedFiles();
+		}, 5000);
+	},
+
 	updateContent: function(DOM)
 	{
 		var uploadTpl = new Template(this.template.main),
 			uploadTplVars =
 			{
 				root: this.rootCSS,
-				uploadedFilesLabel: "Uploaded files"
+				title: this.name
 			},
 			upload_form = uploadTpl.evaluate(uploadTplVars);
 

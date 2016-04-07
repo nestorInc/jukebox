@@ -7,147 +7,113 @@ Jukebox.UI.skins["default"] =
 	{
 		allowTabs: true,
 		dragdrop: true,
-		playQueueNode: 'ul',
-		songNode: 'li'
+		defaultTab: 'PlayQueueTab',
+		backgroundColor: '#383838'
 	},
 	templates:
 	{
-		player:
+	player:
 '<div class="#{root}">\
-<div class="#{root}-header">\
-	<div class="#{root}-user-header-login">\
-	#{welcomeLabel} <span class="#{root}-user-display">#{user}</span> \
-	</div> \
-	<span class="#{root}-expand-button">&gt;</span>\
-	<span class="#{root}-collapse-button">&lt;</span>\
-	<span class="#{root}-activity"></span>\
-</div>\
-<div class="#{root}-user-header">\
-	<a class="#{root}-user-header-deco" href="javascript:void(0)">#{decoLabel}</a>\
-	<a class="#{root}-user-header-signin" href="javascript:void(0)">#{signIn}</a>\
-	<a class="#{root}-user-header-chooseCanal" href="javascript:void(0)">#{canalLabel}</a>\
-	<div class="#{root}-user-header-create" style="display:none;">\
-		Créer un compte :<br/>\
-		<table>\
-		<tbody>\
-			<tr><td>Identifiant : </td><td><input type="text" class="#{root}-user-header-create-nickname" size="10" value="" /></td></tr>\
-			<tr><td>Mot de passe : </td><td><input type="password" class="#{root}-user-header-create-password" size="10"/></td></tr>\
-			<tr><td>Confirmer le mot de passe : </td><td><input type="password" class="#{root}-user-header-create-password2" size="10"/></td></tr>\
-		</tbody>\
-		</table><br />\
-		<input type="submit" class="#{root}-user-header-create-submit" value="Créer">\
-	</div> \
-	<div class="#{root}-user-header-canal" style="display:none;">\
-	#{canalLabel} <br/> \
-<input type="text" class="#{root}-channel" /><input type="button" class="#{root}-channel-button" value="#{canalValue}" />\
-	</div> \
-</div>\
-<div class="#{root}-main">\
-	<div class="#{root}-controls">\
-		<span class="#{root}-previous-button"></span><span class="#{root}-next-button"></span>\
-		#{currentSong}\
-		<div class="#{root}-progressbar-wrapper">\
-			<div class="#{root}-progressbar"></div>\
-			<p class="#{root}-song-time-box">\
-				<span class="#{root}-song-time"></span> / <span class="#{root}-song-total-time"></span>\
-			</p>\
+	<div class="#{root}-topbar-wrapper bg-color-darkest">\
+		<div class="left-icon">\
+			<i class="material-icons #{root}-activity">import_export</i>&nbsp;\
+		</div>\
+		<div class="left">\
+			<span class="#{root}-channel-display">channel_name</span> (<span class="#{root}-listening-count"></span> listeners)\
+			<a href="/api/token.m3u">Open stream</a>\
+		</div>\
+		<div class="right">\
+				<span class="#{root}-user-display"></span>\
+		</div>\
+		<div class="right-icon">\
+			<i class="material-icons">account_box</i>&nbsp;\
 		</div>\
 	</div>\
-	<div class="#{root}-playqueue">\
-		<div class="#{root}-playqueue-content"></div>\
+	<div class="#{root}-playcontrols-wrapper bg-color-light">\
+		<a href="javascript:;" class="#{root}-previous-button #{root}-button #{root}-button-skip"><i class="material-icons">skip_previous</i></a>\
+		<a href="javascript:;" class="#{root}-stream-play #{root}-button #{root}-button-play"><i class="material-icons">play_circle_outline</i></a>\
+		<a href="javascript:;" class="#{root}-stream-stop #{root}-button #{root}-button-stop" style="display: none;"><i class="material-icons">stop</i></a>\
+		<a href="javascript:;" class="#{root}-next-button #{root}-button #{root}-button-skip"><i class="material-icons">skip_next</i></a>\
+		<div class="#{root}-volume">\
+			<i class="material-icons">volume_up</i>\
+			<span class="#{root}-slider #{root}-volume-slider">\
+				<div class="#{root}-slider-handle"></div>\
+			</span>\
+			<br clear="all" />\
+		</div>\
 	</div>\
-</div>\
-\
-<div class="#{root}-tabs">\
-	<div class="#{root}-tabs-links">\
-		<a class="#{root}-tab-upload">#{UploadTabName}</a>\
-		<a class="#{root}-tab-account">#{AccountTabName} <span class="#{root}-user-display">#{user}</span></a>\
-		<a class="#{root}-tab-query">#{QueryTabName}</a>\
-		<a class="#{root}-tab-notifs">#{NotificationsTabName}</a>\
-		<a class="#{root}-tab-debug">#{DebugTabName}</a>\
-		<a class="#{root}-tab-playlist">#{PlaylistTabName}</a>\
+	<div class="#{root}-currentsong-wrapper bg-color-light">\
+		<div class="coverart-wrapper">\
+			<img src="images/no_cover.png" alt="cover art" />\
+		</div>\
+		<div class="songinfos-wrapper">\
+			<p class="song-title #{root}-song-title"><a href="javascript:;"></a></p>\
+			<p class="song-title-details"><span class="#{root}-song-artist"><a href="javascript:;"></a></span>&nbsp;-&nbsp;<span class="#{root}-song-album"><a href="javascript:;"></a></span></p>\
+			<div class="song-progress">\
+				<span class="#{root}-song-time time">00:00</span>\
+				<span class="#{root}-progressbar-wrapper">\
+					<span class="#{root}-progressbar"></span>\
+				</span>\
+				<span class="#{root}-song-total-time time">00:00</span>\
+			</div>\
+		</div>\
 	</div>\
-	<div class="#{root}-tabs-head">\
-		#{searchLabel} <input type="text" class="#{root}-search-input" />\
-		<select class="#{root}-search-genres" style="display:none;"></select>\
-		<select class="#{root}-search-field">\
-			<option value="artist">#{artist}</option>\
-			<option value="title">#{title}</option>\
-			<option value="album">#{album}</option>\
-			<option value="genre">#{genre}</option>\
-		</select> \
-		<select class="#{root}-results-per-page">\
-			<option value="10">10</option>\
-			<option value="20" selected="selected">20</option>\
-			<option value="30">30</option>\
-			<option value="40">40</option>\
-			<option value="50">50</option>\
-			<option value="60">60</option>\
-			<option value="70">70</option>\
-			<option value="80">80</option>\
-			<option value="90">90</option>\
-			<option value="100">100</option>\
-		</select> \
-		<input type="button" class="#{root}-search-button" value="#{searchButton}" />\
+	<div class="#{root}-tabs-links #{root}-sidepanel-wrapper bg-color-light">\
+		<div class="list-separator"></div>\
+		<div class="#{root}-tabs"><div class="#{root}-tabs-list">\
+		<div class="#{root}-tab-list-head"></div>\
+		<div class="list-separator"></div>\
+		<div class="toggle-category-container">\
+			<p><a href="javascript:;" class="toggle-category-container-button"><span class="list-category"><i class="material-icons toggle-category-item">keyboard_arrow_down</i><i class="material-icons toggle-category-item" style="display: none;">keyboard_arrow_right</i><span class="list-title">Playlists</span></span></a></p>\
+			<div class="#{root}-tab-list-playlist toggle-category-item"></div>\
+		</div>\
+		<div class="list-separator"></div>\
+		<div class="toggle-category-container">\
+			<p><a href="javascript:;" class="toggle-category-container-button"><span class="list-category"><i class="material-icons toggle-category-item">keyboard_arrow_down</i><i class="material-icons toggle-category-item" style="display: none;">keyboard_arrow_right</i><span class="list-title">Browse</span></span></a></p>\
+			<div class="list-search-input toggle-category-item">\
+				<input type="text" class="#{root}-search-input"/>\
+				<select class="#{root}-search-field">\
+					<option value="artist">Artist</option>\
+					<option value="title">Title</option>\
+					<option value="album">Album</option>\
+					<option value="genre">Genre</option>\
+				</select>\
+				<select class="#{root}-results-per-page">\
+					<option value="10" selected="selected">10</option>\
+					<option value="20">20</option>\
+					<option value="30">30</option>\
+					<option value="40">40</option>\
+					<option value="50">50</option>\
+					<option value="60">60</option>\
+					<option value="70">70</option>\
+					<option value="80">80</option>\
+					<option value="90">90</option>\
+					<option value="100">100</option>\
+				</select>\
+				<input type="button" class="#{root}-search-button" value="Search" />\
+			</div>\
+			<div class="#{root}-tab-list-search toggle-category-item"></div>\
+		</div>\
+		<div class="list-separator"></div>\
+		<div class="list-separator"></div>\
+		<div class="#{root}-tab-list-tail"></div>\
+		<div class="list-separator"></div>\
+		<div class="toggle-category-container">\
+			<p><a href="javascript:;" class="toggle-category-container-button"><span class="list-category"><i class="material-icons toggle-category-item" style="display: none;">keyboard_arrow_down</i><i class="material-icons toggle-category-item">keyboard_arrow_right</i><span class="list-title">Debug</span></span></a></p>\
+			<div class="#{root}-tab-list-debug toggle-category-item" style="display: none;"></div>\
+		</div>\
+		</div></div>\
 	</div>\
-	<div class="#{root}-tabs-header"></div>\
-	<div class="#{root}-tabs-content"></div>\
-</div>\
-\
-<div class="#{root}-footer">\
-	<input type="button" class="#{root}-refresh-button" value="#{refreshButton}" />\
-	<input type="checkbox" name="#{root}-autorefresh" class="#{root}-autorefresh" checked="checked" value="autorefresh" /><label for="#{root}-autorefresh"> #{refreshLabel}</label>\
-	<br />\
-	#{pluginLabel} <input type="text" class="#{root}-plugin" value="#{pluginDefault}" style="width: 100px;" />\
-	<input type="button" class="#{root}-plugin-button" value="#{pluginButton}" />\
-</div>\
-\
-<div class="#{root}-stream">\
-	<a class="#{root}-stream-play">#{play}</a>\
-	<a class="#{root}-stream-stop">#{stop}</a>\
-</div>\
-<span class="#{root}-volume">\
-	<span>#{volume}&nbsp;</span>\
-	<div class="#{root}-slider #{root}-volume-slider">\
-		<div class="#{root}-slider-handle"></div>\
-	</div>\
-	<br clear="all" />\
-</span>\
+	<div class="#{root}-mainpanel-wrapper #{root}-tabs-content"></div>\
+	<div style="clear: both;"> </div>\
+	<footer>Home made jukebox over streaming</footer>\
 </div>',
-		song:
-'<p class="#{root}-song">\
-<a class="#{root}-song-artist" href="javascript:;">#{artist}</a> - \
-<a class="#{root}-song-album" href="javascript:;">#{album}</a> - \
-<span class="#{root}-song-title">#{title}</span>\
-</p>',
-		playQueue:
-'<li class="#{root}-playqueue-first #{root}-playqueue-droppable">#{playQueueLabel}\
-<div>\
-	<span class="#{root}-listening-ico"></span>\
-	<span class="#{root}-listening-count">#{listenersCount}</span>\
-</div>\
-<a><span class="#{root}-playqueue-shuffle"></span></a>\
-<a><span class="#{root}-playqueue-delete"></span></a>\
-</li>',
-		playQueueSong:
-'<li class="#{root}-playqueue-#{index} #{root}-playqueue-droppable">\
-<div class="#{root}-playqueue-song-#{index} #{root}-playqueue-draggable">\
-	<div class="#{root}-playqueue-handle-#{index} #{root}-playqueue-handle">\
-		<a href="javascript:;">#{artist}</a> - \
-		<a href="javascript:;">#{album}</a> - \
-		#{title} (#{duration})\
-	</div>\
-	<a><span class="#{root}-playqueue-move-top"></span></a>\
-	<a><span class="#{root}-playqueue-move-bottom"></span></a>\
-	<a><span class="#{root}-playqueue-delete"></span></a>\
-</div>\
-</li>',
 		tabs:
 		{
 			AccountTab:
 			{
 				main:
-'<h2>Informations personnelles de #{user}</h2> <br/> \
+'<p class="#{root}-tab-title">Informations personnelles de #{user}</p>\
 <div class="#{root}-account-informations">\
 	<ul>\
 		<li><b>user:</b>#{user}</li>\
@@ -169,7 +135,22 @@ Jukebox.UI.skins["default"] =
 </table>\
 <input class="#{root}-account-change-password-submit" type="submit" value="Valider"/></br> \
 </div> \
-<div class="#{root}-account-available-rights"></div>',
+<div class="#{root}-account-available-rights"></div>\
+<div class="#{root}-user-header-create">\
+		Créer un compte :<br/>\
+		<table>\
+		<tbody>\
+			<tr><td>Identifiant : </td><td><input type="text" class="#{root}-user-header-create-nickname" size="10" value="" /></td></tr>\
+			<tr><td>Mot de passe : </td><td><input type="password" class="#{root}-user-header-create-password" size="10"/></td></tr>\
+			<tr><td>Confirmer le mot de passe : </td><td><input type="password" class="#{root}-user-header-create-password2" size="10"/></td></tr>\
+		</tbody>\
+		</table><br />\
+		<input type="submit" class="#{root}-user-header-create-submit" value="Créer">\
+	</div> \
+	<div class="#{root}-user-header-canal">\
+	#{canalLabel} <br/> \
+<input type="text" class="#{root}-channel" /><input type="button" class="#{root}-channel-button" value="#{canalValue}" />\
+	</div>',
 				rights_controller:
 'TODO : Right controller part',
 				rights_header:
@@ -182,8 +163,8 @@ Jukebox.UI.skins["default"] =
 			UploadTab:
 			{
 				main:
-'<div class="#{root}-file-uploader"></div>\
-<h2>#{uploadedFilesLabel}</h2>\
+'<p class="#{root}-tab-title">#{title}</p>\
+<div class="#{root}-file-uploader"></div>\
 <div class="#{root}-uploaded-files"></div>',
 				tableController:
 '<select class="#{root}-upload-global-action-select">\
@@ -244,25 +225,23 @@ Jukebox.UI.skins["default"] =
 			SearchTab:
 			{
 				main:
-'<div class="#{pagelistClass}">\
-	\\#{slider}\
-	\\#{links}\
-</div>\
-<div class="#{contentClass}"></div>\
+'<p class="#{root}-tab-title">#{title}</p>\
 <div class="#{pagelistClass}">\
 	\\#{links}\
 	\\#{slider}\
+</div>\
+<div class="#{contentClass} song-list"></div>',
+				controlButton: '<span class="#{root}-#{name}"><i class="material-icons">#{icon}</i></span>'
+			},
+			PlayQueueTab:
+			{
+				main:
+'<p class="#{root}-tab-title">#{title}</p>\
+<div class="#{root}-playqueue">\
+<div class="#{root}-playqueue-content song-list">\
+</div>\
 </div>',
-				tableHead:
-'<tr>\
-	<th class="#{root}-search-artist">Artist</th>\
-	<th class="#{root}-search-album">Album</th>\
-	<th class="#{root}-search-title">Title</th>\
-	<th class="#{root}-search-track">Track</th>\
-	<th class="#{root}-search-genre">Genre</th>\
-	<th class="#{root}-search-duration">Duration</th>\
-	<th class="#{root}-search-controls"></th>\
-</tr>'
+				controlButton: '<span class="#{root}-#{name}"><i class="material-icons">#{icon}</i></span>'
 			}
 		}
 	}

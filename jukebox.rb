@@ -200,7 +200,7 @@ root = HttpRootNode.new({ "/api/json"  => json,
                           "/upload"    => upload,
                           "/"          => main,
                           "/src"       => main_src,
-                          "/api/token" => token,
+                          "/api/token.m3u" => token,
                           "/stream"    => stream});
 #                          "/debug"    => debug,
 

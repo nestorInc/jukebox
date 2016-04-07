@@ -5,6 +5,9 @@ this.AccountTab = Class.create(Tab,
 	initialize: function(rootCSS, jukebox, template)
 	{
 		this.name = "Account";
+		this.iconName = "account_box";
+		this.category = "tail";
+		this.permanent = true;
 		this.nickname = null;
 		this.token = null;
 		this.sid = null;
@@ -43,7 +46,25 @@ this.AccountTab = Class.create(Tab,
 			Notifications.Display(Notifications.LEVELS["error"], "The passwords you typed do not match");
 		}
 	},
-
+	createAccountHeader: function()
+	{
+		var nick = this.DOM.down("."+ this.rootCSS +"-user-header-create-nickname").value,
+			pwd1 = this.DOM.down("."+ this.rootCSS +"-user-header-create-password").value,
+			pwd2 = this.DOM.down("."+ this.rootCSS +"-user-header-create-password2").value;
+		if( pwd1 != pwd2 )
+		{
+			Notifications.Display(Notifications.LEVELS.error, "Passwords are differents");
+		}
+		else
+		{
+			this.jukebox.sendCreateAccountRequest(nick, pwd1);
+		}
+	},
+	joinChannel: function()
+	{
+		var channel = this.DOM.down('.'+this.rootCSS+'-channel').value;
+		this.jukebox.joinChannel(channel);
+	},
 	updateContent: function(DOM)
 	{
 		if(this.nickname == null)
@@ -70,6 +91,12 @@ this.AccountTab = Class.create(Tab,
 			this.DOM.update(account_form);
 			var submit_button = this.DOM.down('.'+this.rootCSS+'-account-change-password-submit');
 			submit_button.on("click", this.sendChangePasswordRequest.bind(this));
+
+			var create_account_submit = this.DOM.down('.'+this.rootCSS+'-user-header-create-submit');
+			create_account_submit.on("click", this.createAccountHeader.bind(this));
+
+			var btn_join_channel = this.DOM.down('.'+this.rootCSS+'-channel-button');
+			btn_join_channel.on("click", this.joinChannel.bind(this));
 		}
 	}
 });
