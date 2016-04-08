@@ -14,9 +14,10 @@ class JsonManager < HttpNode
   MSG_LVL_ERROR   = 4
   MSG_LVL_FATAL   = 5
 
-  def initialize(list, library, conf_upload, conf_encode)
+  def initialize(list, users, library, conf_upload, conf_encode)
     @list     = list;
     @library  = library;
+    @users    = users
     @upload_dir = conf_upload  && conf_upload["dst_folder"] || "uploads";
     @source_dir = conf_encode  && conf_encode["source_dir"] || "../../musik/sorted/";
     super();
@@ -109,7 +110,7 @@ class JsonManager < HttpNode
     when "shuffle_play_queue"
       ch.queue.shuffle();
     when "get_user_informations"
-      result = @library.get_user_informations( sid )
+      result = @users.get_user_informations( sid )
       if( result != nil )
         resp [:account] = {
           :nickname => user,
@@ -124,7 +125,7 @@ class JsonManager < HttpNode
         JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "Cannot retrieve personnal informations for user :#{user}, token :#{sid}");
       end
     when "change_user_password"
-      result = @library.change_user_password( user, sid, req["nickname"], req["old_password"], req["new_password"], req["new_password2"] )
+      result = @users.change_user_password( user, sid, req["nickname"], req["old_password"], req["new_password"], req["new_password2"] )
       if( result )
         JsonManager.add_message(resp, MSG_LVL_INFO, nil, "#{user}'s password successfully changed");
       else
@@ -132,7 +133,7 @@ class JsonManager < HttpNode
       end
     when "create_user"
       res=nil
-      res=@library.create_new_user( req["nickname"], req["password"], 0 ) if(req["nickname"] != "")
+      res=@users.create_new_user( req["nickname"], req["password"], 0 ) if(req["nickname"] != "")
       if(res==nil)
         JsonManager.add_message(resp, MSG_LVL_ERROR, nil, "user #{req["nickname"]} not created (already exists or invalid)");
       else
@@ -141,7 +142,7 @@ class JsonManager < HttpNode
         JsonManager.add_message(resp, MSG_LVL_INFO, nil, "Wait the administrator validation");
       end
     when "validate_user"
-      @library.validate_user( req["nickname"] )
+      @users.validate_user( req["nickname"] )
       JsonManager.add_message(resp, MSG_LVL_INFO, nil, "user #{req["nickname"]} validated");
     when "add_search_to_play_queue"
       result = @library.secure_request("mid",
