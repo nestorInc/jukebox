@@ -35,27 +35,21 @@ SQL
     #TODO Change a flag in order to add a message to the response when the user try to access an invalidated session
     now = (Time.now()).strftime("%s");
     debug("[DB] check_session");
-    @db.execute("SELECT U.nickname as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 AND validity > ? LIMIT 1", now) do |row|
-      return row["nick"]
+    @db.execute("SELECT U.nickname, U.uid as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 AND validity > ? LIMIT 1", now) do |row|
+      return row["nick"], row["uid"]
     end
     nil;
   end
 
   #TODO refactor use execute and mapping values
-  def create(user, remote_ip, user_agent)
-    return false if(user == nil)
+  def create(uid, remote_ip, user_agent)
+    return false if(uid == nil)
 
     #If session already exists return the already created session
     debug("[DB] create_user_session select existing");
-    @db.execute("SELECT S.sid FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE u.nickname='#{user}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 LIMIT 1") do |row|
+    @db.execute("SELECT S.sid FROM sessions as S WHERE S.uid = #{uid} AND S.user_agent='#{user_agent}' AND S.remote_ip='#{remote_ip}'") do |row|
       return row["sid"]
     end
-
-    #retrieve user uid
-    uid = nil;
-    debug("[DB] create_user_session retrieve user uid");
-    res = @db.execute("SELECT uid FROM users WHERE nickname='#{user}'");
-    uid = res[0]["uid"] if(res[0] != nil);
 
     creation = (Time.now()).strftime("%s");
     #TODO constant for session validity
@@ -77,9 +71,6 @@ SQL
 
     debug("[DB] create_user_session insert");
     @db.execute("INSERT INTO sessions ( sid, uid, user_agent, remote_ip, creation, last_connexion, validity ) VALUES ('#{random_string}', '#{uid}', '#{user_agent}', '#{remote_ip}', #{creation}, #{creation}, #{validity})")
-
-    # Wtf why this line doesn't work ?
-    # @db.execute("INSERT INTO sessions ( sid, sudo_uid, uid, user_agent, remote_ip, creation, last_connexion, validity ) VALUES (?,?,?,?,?,?,?,?)", random_string, suid, uid, user_agent, remote_ip, creation, creation, validity);
 
     # returns the newly session hash created
     random_string;

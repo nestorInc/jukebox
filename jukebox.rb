@@ -123,12 +123,12 @@ main.addAuth() { |s, req, user, pass|
 
     if(form and form["token"])
       token = form["token"];
-      luser = users.check_login_token(nil, token);
+      luser, uid = users.check_login_token(token);
       if luser
         sid = users.get_login_token_session(token);
         if not sid
           #TODO check if user has right to create session
-          sid = sessions.create(luser, ip_address, user_agent);
+          sid = sessions.create(uid, ip_address, user_agent);
           users.update_login_token_session(token, sid);
         end
 
@@ -155,10 +155,11 @@ main.addAuth() { |s, req, user, pass|
       if sessionsHttp.exists(session)
         currentSession = sessionsHttp.get(session);
         luser = currentSession.Items["user"];
+        uid = currentSession.Items["uid"];
       else # Check in db
-        luser = sessions.check(session, ip_address, user_agent);
+        luser, uid = sessions.check(session, ip_address, user_agent);
         if luser
-          currentSession = sessionsHttp.add(session, luser, ip_address, user_agent);
+          currentSession = sessionsHttp.add(session, uid, luser, ip_address, user_agent);
         end
       end
 
@@ -179,13 +180,13 @@ main.addAuth() { |s, req, user, pass|
   end
 
   if pass
-    if(user != "void" and users.login(user, pass) )
-      sid = sessions.create(user, ip_address, user_agent);
+    if(user != "void" and uid = users.login(user, pass) )
+      sid = sessions.create(uid, ip_address, user_agent);
 
       if sessionsHttp.exists(sid)
         currentSession = sessionsHttp.get(sid);
       else
-        currentSession = sessionsHttp.add(sid, user, ip_address, user_agent);
+        currentSession = sessionsHttp.add(sid, uid, user, ip_address, user_agent);
       end
 
       stream.channel_init(s.user)

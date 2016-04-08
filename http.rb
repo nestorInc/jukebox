@@ -229,10 +229,11 @@ class HttpSessionStateCollection
     @items = Hash.new;
   end
 
-  def add(sid, user, ip_address, user_agent)
+  def add(sid, uid, user, ip_address, user_agent)
     #log("Add session " + sid);
     sessionState = HttpSessionState.new(sid);
     sessionState.Items["user"] = user;
+    sessionState.Items["uid"] = uid;
     sessionState.Items["ip_address"] = ip_address;
     sessionState.Items["user_agent"] = user_agent;
     @items.store(sid, sessionState);

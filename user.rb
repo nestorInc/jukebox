@@ -296,19 +296,18 @@ SQL
     end  
   end
 
-  def login( user, pass )
-      req = @db.prepare("SELECT hash FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
+  def login(user, pass)
+      req = @db.prepare("SELECT uid, hash FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
       debug("[DB] login");
       res = req.execute!();
       req.close();
       return false if(res == nil or res[0] == nil)
-
       # http://blog.phusion.nl/2012/10/06/sha-3-extensions-for-ruby-and-node-js/
       # Use bcrypt for hashing passwords
-      if( BCrypt::Password.new(res[0].at(0)) == pass )
-        return true;
+      if( BCrypt::Password.new(res[0].at(1)) == pass )
+        return res[0][0];
       end
-      return false;
+      return nil;
   end
 
   def create_new_group( label )
@@ -377,10 +376,12 @@ SQL
     false
   end
 
-  def check_login_token(user, token)
+  def check_login_token(token)
     debug("[DB] check_login_token");
+    user = nil
     @db.execute("SELECT " +
                 " U.nickname, " +
+                " U.uid, " +
                 " T.right " +
                 "FROM tokens as T " +
                 "INNER JOIN login_tokens as LT " +
@@ -391,7 +392,7 @@ SQL
                 "ON LT.uid = U.uid " +
                 "WHERE T.token='#{token}' LIMIT 1") do |row|
       if user_has_right(user, row["right"], Rights_Flag::EXECUTE ) 
-          return row["nickname"]
+          return row["nickname"], row["uid"]
       end
     end
     nil
