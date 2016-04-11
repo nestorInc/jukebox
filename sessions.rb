@@ -1,3 +1,5 @@
+require 'sqlite3'
+
 class Sessions
   def initialize()
     @lastSessionsCleanUpTime = 0;
@@ -13,17 +15,17 @@ class Sessions
                        user_agent TEXT,
                        remote_ip TEXT,
                        creation INTEGER,
-                       last_connexion INTEGER,
+                       last_connection INTEGER,
                        validity INTEGER,
                        FOREIGN KEY(uid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE);
 SQL
     @db.execute_batch(sql);
   end
 
-  def invalidate( )
+  def purge()
     currentTime = Time.now()
     diff = currentTime - @lastSessionsCleanUpTime
-    if(diff.to_i > 60*10) # 10min
+    if(diff.to_i > 60 * 10) # 10min
       now = currentTime.strftime("%s");
       debug("[DB] invalidate_sessions");
       @db.execute("DELETE FROM sessions WHERE validity <= ?", now);
@@ -70,14 +72,71 @@ SQL
     end
 
     debug("[DB] create_user_session insert");
-    @db.execute("INSERT INTO sessions ( sid, uid, user_agent, remote_ip, creation, last_connexion, validity ) VALUES ('#{random_string}', '#{uid}', '#{user_agent}', '#{remote_ip}', #{creation}, #{creation}, #{validity})")
+    @db.execute("INSERT INTO sessions ( sid, uid, user_agent, remote_ip, creation, last_connection, validity ) VALUES ('#{random_string}', '#{uid}', '#{user_agent}', '#{remote_ip}', #{creation}, #{creation}, #{validity})")
 
     # returns the newly session hash created
     random_string;
   end
 
   def updateLastConnexion(sessionID)
-    debug("[DB] update_session_last_connexion");
-    @db.execute("UPDATE sessions SET last_connexion=#{(Time.now()).strftime("%s")} WHERE sid='#{sessionID}';");
+    debug("[DB] update_session_last_connection");
+    @db.execute("UPDATE sessions SET last_connection=#{(Time.now()).strftime("%s")} WHERE sid='#{sessionID}';");
+  end
+end
+
+class HttpSessionStateCollection
+  def initialize()
+    @items = Hash.new;
+  end
+
+  def add(sid, uid, user, ip_address, user_agent)
+    #log("Add session " + sid);
+    sessionState = HttpSessionState.new(sid);
+    sessionState.Items["user"] = user;
+    sessionState.Items["uid"] = uid;
+    sessionState.Items["ip_address"] = ip_address;
+    sessionState.Items["user_agent"] = user_agent;
+    @items.store(sid, sessionState);
+    return sessionState;
+  end
+
+  # Remove invalid HttpSessionState objects from memory
+  def removeExpired()
+    now = DateTime.now;
+    @items.each do |sid, sessionState|
+      if sessionState.Timeout < now
+        #log("Removing expired session " + sid);
+        @items.delete(sid);
+      end
+    end
+  end
+
+  def exists(sid)
+    return @items.has_key?(sid);
+  end
+
+  def get(sid)
+    return @items[sid];
+  end
+end
+
+class HttpSessionState
+  @@SessionDuration = Rational(20 * 60, 86400); # 20min
+  @@SlidingExpiration = true;
+
+  attr_reader     :Timeout;
+  attr_accessor   :Items;
+
+  def initialize(sid)
+    @SessionID = sid;
+    @Items = Hash.new;
+    self.updateLastRequest();
+  end
+
+  def updateLastRequest()
+    @LastRequest = DateTime.now;
+    if (@@SlidingExpiration)
+      @Timeout = @LastRequest + @@SessionDuration;
+    end
   end
 end

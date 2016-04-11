@@ -102,7 +102,7 @@ main.addAuth() { |s, req, user, pass|
   currentSession = nil;
 
   # Remove invalid sessions in database
-  sessions.invalidate();
+  sessions.purge();
 
   req.options = {} if req.options == nil
 
@@ -191,7 +191,7 @@ main.addAuth() { |s, req, user, pass|
 
       stream.channel_init(s.user)
       s.sid.replace(sid)
-      if not isStreamPage
+      if not isStreamPage 
         req.options["Set-Cookie"] = []
         req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
         req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();

@@ -224,63 +224,6 @@ module SocketDirtyFix
   end
 end
 
-class HttpSessionStateCollection
-  def initialize()
-    @items = Hash.new;
-  end
-
-  def add(sid, uid, user, ip_address, user_agent)
-    #log("Add session " + sid);
-    sessionState = HttpSessionState.new(sid);
-    sessionState.Items["user"] = user;
-    sessionState.Items["uid"] = uid;
-    sessionState.Items["ip_address"] = ip_address;
-    sessionState.Items["user_agent"] = user_agent;
-    @items.store(sid, sessionState);
-    return sessionState;
-  end
-
-  # Remove invalid HttpSessionState objects from memory
-  def removeExpired()
-    now = DateTime.now;
-    @items.each do |sid, sessionState|
-      if sessionState.Timeout < now
-        #log("Removing expired session " + sid);
-        @items.delete(sid);
-      end
-    end
-  end
-
-  def exists(sid)
-    return @items.has_key?(sid);
-  end
-
-  def get(sid)
-    return @items[sid];
-  end
-end
-
-class HttpSessionState
-  @@SessionDuration = Rational(20 * 60, 86400); # 20min
-  @@SlidingExpiration = true;
-
-  attr_reader     :Timeout;
-  attr_accessor   :Items;
-
-  def initialize(sid)
-    @SessionID = sid;
-    @Items = Hash.new;
-    self.updateLastRequest();
-  end
-
-  def updateLastRequest()
-    @LastRequest = DateTime.now;
-    if (@@SlidingExpiration)
-      @Timeout = @LastRequest + @@SessionDuration;
-    end
-  end
-end
-
 class HttpSession < Rev::SSLSocket
   attr_reader   :user;
   attr_reader   :sid;
