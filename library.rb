@@ -20,8 +20,8 @@ class Song
 
   def initialize(params = {})
     @mid      = params["mid"];
-    @src      = params["src"] && params["src"].encode(Encoding.locale_charmap);
-    @dst      = params["dst"] && params["dst"].encode(Encoding.locale_charmap);
+    @src      = params["src"] && params["src"];
+    @dst      = params["dst"] && params["dst"];
     @title    = params["title"];
     @artist   = params["artist"];
     @album    = params["album"];

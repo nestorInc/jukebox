@@ -181,7 +181,7 @@ class Encode < Rev::TimerWatcher
     @cfile = files;
     now = Time.now;
     new_files.each { | f |
-      name = f.scan(/.*\/(.*)/);
+      name = f.force_encoding("BINARY").scan(/.*\/(.*)/);
       name = name[0][0];
       if(@library.check_file(f))
         # Check file is not used actualy
