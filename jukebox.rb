@@ -132,6 +132,9 @@ def check_token(s, req, users, sessions, stream)
   sid = users.get_login_token_session(token);
   if not sid
     #TODO check if user has right to create session
+    ip_address = s.remote_address.ip_address;
+    user_agent = req.options["User-Agent"] || ""
+
     sid = sessions.create(uid, ip_address, user_agent);
     users.update_login_token_session(token, sid);
   end
@@ -157,8 +160,6 @@ def check_cookie(s, req, sessions, stream)
 
   currentSession = s.udata
   if(currentSession && currentSession != "")
-    p currentSession;
-    p session
     if(currentSession[:session].sid != session)
       s.udata = nil
       return nil;
