@@ -226,7 +226,7 @@ end
 
 class HttpSession < Rev::SSLSocket
   attr_reader   :user;
-  attr_reader   :sid;
+  attr_accessor :udata;
   attr_reader   :ssl;
   attr_accessor :data;
   attr_accessor :auth;
@@ -239,8 +239,6 @@ class HttpSession < Rev::SSLSocket
     @ssl         = options[:ssl.to_s] || false;
     @certificate = options[:certificate.to_s];
     @key         = options[:key.to_s];
-    @user        = nil;
-    @sid         = nil;
     # fix for quick connect disconnect
     begin
       super(socket);
@@ -351,15 +349,14 @@ class HttpSession < Rev::SSLSocket
           method, code = v.split(" ", 2);
 
           if(method == "Basic" && code != nil)
-            @user, pass = code.unpack("m").first.split(":", 2);
+            user, pass = code.unpack("m").first.split(":", 2);
             pass ||= "";
           end
         else
-          @user = "unknown";
+          user = "unknown";
         end
-        @sid = "";
 
-        @auth = m_auth.call(self, @req, @user, pass) if(@user);
+        @auth = m_auth.call(self, @req, user, pass) if(user);
       end
 
       if(m_auth != nil && @auth == nil)

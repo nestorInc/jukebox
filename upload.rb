@@ -29,8 +29,8 @@ class UploadManager < HttpNode
     if ( not File.directory?(@dst_folder))
       Dir.mkdir(@dst_folder);
     end
-    if ( not File.directory?(File.join(@dst_folder,s.user)))
-      Dir.mkdir(File.join(@dst_folder,s.user));
+    if ( not File.directory?(File.join(@dst_folder,s.udata[:user])))
+      Dir.mkdir(File.join(@dst_folder,s.udata[:user]));
     end
 
     if( req.to_s.length > @max_request_size_in_bytes )
@@ -66,7 +66,7 @@ class UploadManager < HttpNode
     end
 
     #Checks if the file already exists
-    if( File.exists?(File.join(@dst_folder, s.user, URI.unescape(req.options['X-File-Name']))) )
+    if( File.exists?(File.join(@dst_folder, s.udata[:user], URI.unescape(req.options['X-File-Name']))) )
       error("File " + URI.unescape(req.options['X-File-Name']) + " already uploaded. Upload canceled.");
       rep = HttpResponse.new(req.proto, 200, "Error",
                              "Content-Type" => "application/json");
@@ -78,7 +78,7 @@ class UploadManager < HttpNode
 
     #All is ok we can begin to save file on disk
     begin
-      File.open( File.join(@dst_folder,s.user, URI.unescape(req.options['X-File-Name'])), 'w') {|f|
+      File.open( File.join(@dst_folder, s.udata[:user], URI.unescape(req.options['X-File-Name'])), 'w') {|f|
         f.write(req.data);
       }
       rep = HttpResponse.new(req.proto, 200, "OK",

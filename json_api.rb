@@ -24,16 +24,16 @@ class JsonManager < HttpNode
   end
 
   def on_request(s, req)
-    ch  = @list[s.user];
+    ch  = @list[s.udata[:user]];
     rep = HttpResponse.new(req.proto, 200, "OK");
 
     res = "";
     #debug("IN: " + req.data);
     if(ch == nil)
       res = JsonManager.create_message(JsonManager::MSG_LVL_WARNING,
-                                       "Unknown channel #{s.user}");
+                                       "Unknown channel #{s.udata[:user]}");
     else
-      res = parse(req.data, ch, s.user, s.sid);
+      res = parse(req.data, ch, s.udata[:user], s.udata[:session]);
     end
     rep.setData(res, "application/json");
     s.write(rep.to_s);
@@ -113,12 +113,12 @@ class JsonManager < HttpNode
       result = @users.get_user_informations( sid )
       if( result != nil )
         resp [:account] = {
-          :nickname => user,
-          :token   => result[0],
-          :home	   => result[1],
-          :sid	   => sid,
+          :nickname        => user,
+          :token           => result[0],
+          :home	           => result[1],
+          :sid	           => sid,
           :user_agent	   => result[2],
-          :ip	   => result[3]
+          :ip	           => result[3]
 
         };
       else

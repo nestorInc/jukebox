@@ -1,7 +1,6 @@
 require 'http.rb'
 
 class BasicApi < HttpNode
-
   def initialize(list)
     @list     = list;
 
@@ -10,13 +9,13 @@ class BasicApi < HttpNode
 
   def on_request(s, req)
     action      = req.remaining;
-    ch          = @list[s.user];
+    ch          = @list[s.udata[:user]];
 
     rep = HttpResponse.new(req.proto, 200, "OK");
     if(ch == nil)
       msg = JsonManager.create_message(JsonManager::MSG_LVL_WARNING,
                                        "Unknown channel #{channelName}");
-      rep.setData("<html><head><title>Channel not found</title></head><body><H1>Channel #{s.user}not found</H1></body></head>");
+      rep.setData("<html><head><title>Channel not found</title></head><body><H1>Channel #{s.udata[:user]}not found</H1></body></head>");
     else
       case(action)
       when "previous"

@@ -84,7 +84,7 @@ class Stream < HttpNode
 
   def on_request(s, req)
     action      = req.remaining;
-    channelName = s.user;
+    channelName = s.udata[:user];
 
     ch = channel_init(channelName);
 

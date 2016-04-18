@@ -90,13 +90,98 @@ main   = HttpNodeMapping.new("html");
 main_src = HttpNodeMapping.new("html_src");
 stream = Stream.new(channelList, library);
 
-sessionsHttp = HttpSessionStateCollection.new;
+def check_login(user, pass, s, req, users, sessions, stream)
+  return nil if(pass == nil)
+  return nil if(user == "void")
+
+  uid = users.login(user, pass)
+  if(uid == nil)
+    s.udata = nil;
+    return nil
+  end
+
+  ip_address = s.remote_address.ip_address;
+  user_agent = req.options["User-Agent"] || ""
+
+  sid = sessions.create(uid, ip_address, user_agent);
+
+  stream.channel_init(user)
+  s.udata = { :user => user, :session => sid }
+
+  req.options["Set-Cookie"] = []
+  req.options["Set-Cookie"] << Cookie.new({"session" => sid.sid }, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+
+  return "httpAuth"
+end
+
+def check_token(s, req, users, sessions, stream)
+  return nil if req.uri.query == nil and req.data == nil
+  form = if req.data
+           json = JSON.parse(req.data);
+           json["login"] if(json and json["login"]);
+         else
+           Hash[URI.decode_www_form(req.uri.query)];
+         end
+
+  token = form && form["token"];
+  return nil if(form == nil)
+
+  luser, uid = users.check_login_token(token);
+  return nil if(luser == nil)
+
+  sid = users.get_login_token_session(token);
+  if not sid
+    #TODO check if user has right to create session
+    sid = sessions.create(uid, ip_address, user_agent);
+    users.update_login_token_session(token, sid);
+  end
+
+  s.udata = {:user => luser, :session => sid};
+  stream.channel_init(luser);
+
+  req.options["Set-Cookie"] = []
+  req.options["Set-Cookie"] << Cookie.new({"session" => s["sid"]}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+  return "token"
+end
+
+def check_cookie(s, req, sessions, stream)
+  ip_address = s.remote_address.ip_address;
+  user_agent = req.options["User-Agent"] || ""
+
+  cookies = req.options["Cookie"]
+  return nil if cookies == nil
+  cookies = Hash[cookies.split(';').map{ |i| i.strip().split('=')}];
+
+  return nil if cookies["session"] == nil
+  session = cookies["session"];
+
+  currentSession = s.udata
+  if(currentSession && currentSession != "")
+    p currentSession;
+    p session
+    if(currentSession[:session].sid != session)
+      s.udata = nil
+      return nil;
+    end
+  else
+    sid = sessions.get(session, ip_address, user_agent);
+    return nil if(sid == nil)
+    u = users.get(i.uid)
+    return nil if(u == nil)
+    currentSession = { :user => u, :session => sid }
+    s.uid = currentSession;
+  end
+
+  stream.channel_init(currentSession[:user]);
+
+  currentSession.updateLastRequest() if currentSession;
+  sessions.updateLastConnexion(session);
+
+  return "cookie"
+end
 
 main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
-
-  # Remove invalid HttpSessionState objects from memory
-  sessionsHttp.removeExpired();
 
   # For now we haven't attach the current request to any HttpSessionState
   currentSession = nil;
@@ -108,99 +193,10 @@ main.addAuth() { |s, req, user, pass|
 
   isStreamPage = req.uri.path.end_with?("/stream");
   isMainPage = ['/','/index.html'].include?(req.uri.path);
-  ip_address = s.remote_address.ip_address;
-  user_agent = "";
-  user_agent = req.options["User-Agent"] if( req.options["User-Agent"] )
 
-  if req.uri.query or req.data
-    form = nil;
-    if req.data
-      json = JSON.parse(req.data);
-      form = json["login"] if(json and json["login"]);
-    else
-      form = Hash[URI.decode_www_form(req.uri.query)];
-    end
-
-    if(form and form["token"])
-      token = form["token"];
-      luser, uid = users.check_login_token(token);
-      if luser
-        sid = users.get_login_token_session(token);
-        if not sid
-          #TODO check if user has right to create session
-          sid = sessions.create(uid, ip_address, user_agent);
-          users.update_login_token_session(token, sid);
-        end
-
-        s.user.replace(luser);
-        s.sid.replace(sid);
-        user.replace(luser);
-        stream.channel_init(luser);
-        if not isStreamPage
-          req.options["Set-Cookie"] = []
-          req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-          req.options["Set-Cookie"] << Cookie.new({"user" => luser}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-        end
-        next "token"
-      end
-    end
-  end
-
-  if not isStreamPage and req.options["Cookie"]
-    cookies = Hash[req.options["Cookie"].split(';').map{ |i| i.strip().split('=')}];
-    if cookies["session"]
-      session = cookies["session"];
-
-      # Check if the session is known in RAM
-      if sessionsHttp.exists(session)
-        currentSession = sessionsHttp.get(session);
-        luser = currentSession.Items["user"];
-        uid = currentSession.Items["uid"];
-      else # Check in db
-        luser, uid = sessions.check(session, ip_address, user_agent);
-        if luser
-          currentSession = sessionsHttp.add(session, uid, luser, ip_address, user_agent);
-        end
-      end
-
-      if luser
-        s.user.replace(luser);
-        s.sid.replace(session);
-        user.replace(luser);
-        stream.channel_init(luser);
-
-        # Avoid update session last_access for each resources
-        if isMainPage 
-          currentSession.updateLastRequest() if currentSession;
-          sessions.updateLastConnexion(session);
-        end
-        next "cookie"
-      end
-    end
-  end
-
-  if pass
-    if(user != "void" and uid = users.login(user, pass) )
-      sid = sessions.create(uid, ip_address, user_agent);
-
-      if sessionsHttp.exists(sid)
-        currentSession = sessionsHttp.get(sid);
-      else
-        currentSession = sessionsHttp.add(sid, uid, user, ip_address, user_agent);
-      end
-
-      stream.channel_init(s.user)
-      s.sid.replace(sid)
-      if not isStreamPage 
-        req.options["Set-Cookie"] = []
-        req.options["Set-Cookie"] << Cookie.new({"session" => sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-        req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-      end
-      next "httpAuth"
-    end
-  end
-
-  nil;
+  check_login(user, pass, s, req, users, sessions, stream) ||
+  check_token(s, req, users, sessions, stream) ||
+  check_cookie(s, req, sessions, stream)
 }
 
 root = HttpRootNode.new({ "/api/json"  => json,

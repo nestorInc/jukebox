@@ -301,13 +301,21 @@ SQL
       debug("[DB] login");
       res = req.execute!();
       req.close();
-      return false if(res == nil or res[0] == nil)
+      return nil if(res == nil or res[0] == nil)
       # http://blog.phusion.nl/2012/10/06/sha-3-extensions-for-ruby-and-node-js/
       # Use bcrypt for hashing passwords
-      if( BCrypt::Password.new(res[0].at(1)) == pass )
-        return res[0][0];
+      if(BCrypt::Password.new(res[0].at(1)) == pass)
+        return res[0].at(0);
       end
       return nil;
+  end
+
+  def get(uid)
+    req = @db.prepare("SELECT nickname FROM users WHERE uid='#{uid}'AND validated = 1  LIMIT 1");
+    res = req.execute!();
+    req.close();
+
+    return res && res[0] && res[0][0]
   end
 
   def create_new_group( label )
@@ -337,7 +345,7 @@ SQL
     end
   end
 
-  def get_user_informations( sid )
+  def get_user_informations(sid)
     debug("[DB] get_user_informations");
     @db.execute("SELECT " +
                 " T.token, " +
@@ -351,7 +359,7 @@ SQL
                 "ON lt.uid = S.uid " +
                 "INNER JOIN tokens as T " +
                 "ON T.tid = LT.tid " +
-                "WHERE S.sid = '#{sid}' " +
+                "WHERE S.sid = '#{sid.sid}' " +
                 "LIMIT 1") do |row|
       return row
     end
@@ -414,18 +422,18 @@ SQL
   def get_login_token_session(token)
     begin
       debug("[DB] get_login_token_session");
-      sid = @db.execute("SELECT LT.sid FROM login_tokens as LT INNER JOIN tokens as T ON T.tid = LT.tid WHERE T.token='#{token}' LIMIT 1")[0]["sid"]
+      row = @db.execute("SELECT LT.* FROM login_tokens as LT INNER JOIN tokens as T ON T.tid = LT.tid WHERE T.token='#{token}' LIMIT 1")[0]
+      row && row["sid"] && Session.new(session)
     rescue => e
       error("get_login_token_sessions #{e}")
-      sid = nil
+      nil
     end
-    sid
   end
 
-  def update_login_token_session(token, sid)
+  def update_login_token_session(token, session)
     begin
       debug("[DB] update_login_token_session");
-      @db.execute("UPDATE login_tokens SET sid='#{sid}' WHERE tid='#{token}'")
+      @db.execute("UPDATE login_tokens SET sid='#{session.sid}' WHERE tid='#{token}'")
       sid
     rescue => e
       errror("update_token_session : #{e}")
