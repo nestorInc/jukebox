@@ -434,7 +434,7 @@ SQL
     begin
       debug("[DB] update_login_token_session");
       @db.execute("UPDATE login_tokens SET sid='#{session.sid}' WHERE tid='#{token}'")
-      sid
+      session
     rescue => e
       error("update_token_session : #{e}")
       nil

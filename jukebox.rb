@@ -143,7 +143,7 @@ def check_token(s, req, users, sessions, stream)
   stream.channel_init(luser);
 
   req.options["Set-Cookie"] = []
-  req.options["Set-Cookie"] << Cookie.new({"session" => s["sid"]}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+  req.options["Set-Cookie"] << Cookie.new({"session" => sid.sid}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
   return "token"
 end
 
