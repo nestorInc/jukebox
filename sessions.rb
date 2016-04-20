@@ -1,3 +1,37 @@
+require 'sqlite3'
+
+class Session
+  def initialize(row)
+    @sid             = row["sid"];
+    @uid             = row["uid"];
+    @user_agent      = row["user_agent"];
+    @remote_ip       = row["remote_ip"];
+    @creation        = row["creation"];
+    @last_connection = row["last_connection"];
+    @validity        = row["validity"];
+  end
+
+  def Session.create(sid, uid, user_agent, ip, creation, last_connection, validity)
+    row = {
+      "sid"             => sid,
+      "uid"             => uid,
+      "user_agent"      => user_agent,
+      "ip"              => ip,
+      "creation"        => creation,
+      "last_connection" => last_connection,
+      "validity"        => validity }
+    Session.new(row)
+  end
+
+  attr_accessor :sid
+  attr_accessor :uid
+  attr_accessor :user_agent
+  attr_accessor :remote_ip
+  attr_accessor :creation
+  attr_accessor :last_connection
+  attr_accessor :validity
+end
+
 class Sessions
   def initialize()
     @lastSessionsCleanUpTime = 0;
@@ -13,17 +47,28 @@ class Sessions
                        user_agent TEXT,
                        remote_ip TEXT,
                        creation INTEGER,
-                       last_connexion INTEGER,
+                       last_connection INTEGER,
                        validity INTEGER,
                        FOREIGN KEY(uid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE);
 SQL
     @db.execute_batch(sql);
   end
 
-  def invalidate( )
+  def get(uid, remote_ip, user_agent)
+    @db.execute("SELECT * FROM sessions WHERE uid='#{uid}' AND user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' LIMIT 1") do |row|
+      return Session.new(row)
+    end
+    nil;
+  end
+
+  def insert(s)
+    @db.execute("INSERT INTO sessions (sid, uid, user_agent, remote_ip, creation, last_connection, validity) VALUES ('#{s.sid}', '#{s.uid}', '#{s.user_agent}', '#{s.remote_ip}', #{s.creation}, #{s.creation}, #{s.validity})")
+  end
+
+  def purge()
     currentTime = Time.now()
     diff = currentTime - @lastSessionsCleanUpTime
-    if(diff.to_i > 60*10) # 10min
+    if(diff.to_i > 60 * 10) # 10min
       now = currentTime.strftime("%s");
       debug("[DB] invalidate_sessions");
       @db.execute("DELETE FROM sessions WHERE validity <= ?", now);
@@ -35,58 +80,39 @@ SQL
     #TODO Change a flag in order to add a message to the response when the user try to access an invalidated session
     now = (Time.now()).strftime("%s");
     debug("[DB] check_session");
-    @db.execute("SELECT U.nickname as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 AND validity > ? LIMIT 1", now) do |row|
-      return row["nick"]
+
+    req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
+
+    @db.execute("SELECT U.nickname, U.uid as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 AND validity > ? LIMIT 1", now) do |row|
+      return row["nick"], row["uid"]
     end
     nil;
   end
 
   #TODO refactor use execute and mapping values
-  def create(user, remote_ip, user_agent)
-    return false if(user == nil)
+  def create(uid, remote_ip, user_agent)
+    return false if(uid == nil)
 
-    #If session already exists return the already created session
-    debug("[DB] create_user_session select existing");
-    @db.execute("SELECT S.sid FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE u.nickname='#{user}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 LIMIT 1") do |row|
-      return row["sid"]
-    end
+    s = get(uid, remote_ip, user_agent)
+    return s if(s)
 
-    #retrieve user uid
-    uid = nil;
-    debug("[DB] create_user_session retrieve user uid");
-    res = @db.execute("SELECT uid FROM users WHERE nickname='#{user}'");
-    uid = res[0]["uid"] if(res[0] != nil);
+    now = Time.now()
 
-    creation = (Time.now()).strftime("%s");
+    creation = now.strftime("%s");
     #TODO constant for session validity
-    validity = (Time.now() + (24*60*60)).strftime("%s");
+    validity = (now + (24*60*60)).strftime("%s");
 
-    hashExists = false;
-    gen_hash_retry = 0;
-    char_set =  [('a'..'z'),('A'..'Z'), ('0'..'9')].map{|i| i.to_a}.flatten
-    random_string=nil;
-    while ( hashExists == false )
-      # generates a random string
-      # http://stackoverflow.com/questions/88311/how-best-to-generate-a-random-string-in-ruby
-      random_string = (0...50).map{ char_set[rand(char_set.length)] }.join
-      debug("[DB] create_user_session generate check hash existence");
-      res = @db.execute("SELECT count(*) as hash_exists FROM sessions WHERE sid='#{random_string}'");
-      hashExists = true if( res[0] != nil and res[0]["hash_exists"] == 0)
-      return nil if(gen_hash_retry >= 100)
-    end
+    r = Random.new();
+    hash = [ r.bytes(32) ].pack("m").strip
 
-    debug("[DB] create_user_session insert");
-    @db.execute("INSERT INTO sessions ( sid, uid, user_agent, remote_ip, creation, last_connexion, validity ) VALUES ('#{random_string}', '#{uid}', '#{user_agent}', '#{remote_ip}', #{creation}, #{creation}, #{validity})")
+    s = Session.create(hash, uid, user_agent, remote_ip, creation, creation, validity);
+    insert(s)
 
-    # Wtf why this line doesn't work ?
-    # @db.execute("INSERT INTO sessions ( sid, sudo_uid, uid, user_agent, remote_ip, creation, last_connexion, validity ) VALUES (?,?,?,?,?,?,?,?)", random_string, suid, uid, user_agent, remote_ip, creation, creation, validity);
-
-    # returns the newly session hash created
-    random_string;
+    s
   end
 
   def updateLastConnexion(sessionID)
-    debug("[DB] update_session_last_connexion");
-    @db.execute("UPDATE sessions SET last_connexion=#{(Time.now()).strftime("%s")} WHERE sid='#{sessionID}';");
+    debug("[DB] update_session_last_connection");
+    @db.execute("UPDATE sessions SET last_connection=#{(Time.now()).strftime("%s")} WHERE sid='#{sessionID}';");
   end
 end

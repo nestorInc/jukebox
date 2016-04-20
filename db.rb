@@ -8,5 +8,4 @@ class DBlite < SQLite3::Database
     @results_as_hash = true;
     table.each { |t| t.load(self) };
   end
-
 end

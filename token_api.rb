@@ -21,7 +21,7 @@ class TokenManager < HttpNode
       return;
     end
 
-    token = @users.get_user_login_token(s.user);
+    token = @users.get_user_login_token(s.udata[:user]);
     if( token == nil )
       rep = HttpResponse.generate401(req);
       s.write(rep.to_s);
