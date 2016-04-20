@@ -436,7 +436,7 @@ SQL
       @db.execute("UPDATE login_tokens SET sid='#{session.sid}' WHERE tid='#{token}'")
       sid
     rescue => e
-      errror("update_token_session : #{e}")
+      error("update_token_session : #{e}")
       nil
     end
   end
