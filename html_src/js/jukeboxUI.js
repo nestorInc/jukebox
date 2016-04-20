@@ -267,6 +267,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.displayAccount = function(infos)
 	{
+		this.updateUser(infos.nickname);
 		var tab = _tabs.getFirstTabByClass(AccountTab);
 		if(tab)
 		{
