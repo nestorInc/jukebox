@@ -874,6 +874,7 @@ function Jukebox(element, opts)
 		}
 		if(json.account)
 		{
+			$this.user = json.account.nickname;
 			_ui.displayAccount(json.account);
 		}
 		if(json.account_created)

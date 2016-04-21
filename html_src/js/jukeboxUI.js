@@ -452,7 +452,6 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			// Todo send a request to clean session
 			// Todo reset account tab informations
-			SetCookie("user", "", 0, "/");
 			SetCookie("session", "", 0, "/");
 			// Reset jukebox
 			window.location = window.location.protocol + "//void:void@" + window.location.host + window.location.pathname;
