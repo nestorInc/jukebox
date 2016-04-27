@@ -16,7 +16,7 @@ class Session
       "sid"             => sid,
       "uid"             => uid,
       "user_agent"      => user_agent,
-      "ip"              => ip,
+      "remote_ip"       => ip,
       "creation"        => creation,
       "last_connection" => last_connection,
       "validity"        => validity }
@@ -81,10 +81,8 @@ SQL
     now = (Time.now()).strftime("%s");
     debug("[DB] check_session");
 
-    req.options["Set-Cookie"] << Cookie.new({"user" => user}, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
-
-    @db.execute("SELECT U.nickname, U.uid as nick FROM sessions as S INNER JOIN users as U ON U.uid = S.uid WHERE S.sid='#{sid}' AND S.user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND U.validated=1 AND validity > ? LIMIT 1", now) do |row|
-      return row["nick"], row["uid"]
+    @db.execute("SELECT uid FROM sessions WHERE sid='#{sid}' AND user_agent='#{user_agent}' AND remote_ip='#{remote_ip}' AND VALIDITY > ? LIMIT 1", now) do |row|
+      return row["uid"]
     end
     nil;
   end
@@ -111,8 +109,8 @@ SQL
     s
   end
 
-  def updateLastConnexion(sessionID)
+  def updateLastConnexion(s)
     debug("[DB] update_session_last_connection");
-    @db.execute("UPDATE sessions SET last_connection=#{(Time.now()).strftime("%s")} WHERE sid='#{sessionID}';");
+    @db.execute("UPDATE sessions SET last_connection=#{(Time.now()).strftime("%s")} WHERE sid='#{s.sid}';");
   end
 end
