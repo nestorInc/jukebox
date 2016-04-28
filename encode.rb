@@ -70,6 +70,10 @@ class EncodingThread < Rev::IO
         Process.setpriority(Process::PRIO_PROCESS, 0, 2)
         exec("lame - \"#{dst}\" -r -b #{bitrate} -t > /dev/null 2> /dev/null");
       }
+
+      Process.detach(@pid_encoder)
+      Process.detach(@pid_decoder)
+
       rd.close();
       wr.close()
       debug("Process encoding #{@pid_encoder} decoding#{@pid_decoder}");
