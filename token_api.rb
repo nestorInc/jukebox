@@ -72,9 +72,7 @@ class LoginManager < HttpNode
     @stream.channel_init(user)
 
 
-    rep = HttpResponse.new(req.proto, 200, "OK",
-                             "Content-Type" => "text/html");
-    rep.setData('<HTML><HEAD><TITLE>Auth</TITLE></HEAD><BODY><H1>OK</H1></BODY></HTML>');
+    rep = HttpResponse.generate303(req, "/")
     rep.options["Set-Cookie"] = []
     rep.options["Set-Cookie"] << Cookie.new({"session" => sid.sid }, nil, "/", Time.now()+(2*7*24*60*60), nil, nil).to_s();
     s.write(rep.to_s);
