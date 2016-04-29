@@ -213,18 +213,17 @@ SQL
 
   def encode_file()
     begin
-      req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_WAIT} LIMIT 1");
+      req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_WAIT}");
       debug("[DB] encode_file");
       res = req.execute().map(&Song.from_db);
       req.close();
       return nil if(res[0] == nil)
-      res = res.first;
+      res
     rescue => e
       error(e.to_s + res.to_s, true, $error_file);
       change_stat(res[0], FILE_ENCODING_FAIL);
-      res = encode_file();
+      retry
     end
-    res;
   end
 
   def change_stat(mid, state)

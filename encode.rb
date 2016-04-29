@@ -104,6 +104,13 @@ class Encode < Rev::TimerWatcher
 
     @worker       = Worker.new(@max_job)
 
+    songs = @library.encode_file()
+    songs.each do |song|
+      @worker.add(song, @bitrate, @library) do |*args|
+        job(*args)
+      end
+    end
+
     super(@delay_scan, true);
   end
 
