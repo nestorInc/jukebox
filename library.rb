@@ -15,7 +15,6 @@ class Song
   attr_accessor :trackNb
   attr_accessor :status
   attr_accessor :bitrate
-  attr_accessor :frames
   attr_accessor :duration
 
   def initialize(params = {})
@@ -32,12 +31,6 @@ class Song
     @status   = params["status"]   && params["status"].to_i;
     @duration = params["duration"] && params["duration"].to_i;
     @bitrate  = params["bitrate"]  && params["bitrate"].to_i;
-    @frames   = params["frames"];
-    if(@frames == nil)
-      @frames = [];
-    else
-      @frames = @frames.split(",").map { |v| v.to_i(); }
-    end
   end
 
   def to_client()
@@ -69,7 +62,6 @@ class Song
     res[:status  ] = @status   if(@status);
     res[:bitrate ] = @bitrate  if(@bitrate);
     res[:duration] = @duration if(@duration);
-    res[:frames  ] = @frames .map { |v| v.to_s(); }.join(",") if(@frames);
     res;
   end
 
@@ -109,7 +101,7 @@ class Library
                        src TEXT, dst TEXT,
                        title TEXT, artist TEXT, album TEXT, years INTEGER UNSIGNED NULL,
                        track INTEGER UNSIGNED NULL, trackNb INTEGER UNSIGNED NULL, genre INTEGER UNSIGNED NULL,
-                       status INTEGER, frames TEXT, bitrate INTEGER, duration INTEGER);
+                       status INTEGER, bitrate INTEGER, duration INTEGER);
 UPDATE library SET status=#{FILE_WAIT} WHERE status=#{FILE_ENCODING_PROGRESS};
 SQL
     @db.execute_batch(sql);
