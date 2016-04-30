@@ -77,13 +77,6 @@ class Song
   end
 end
 
-class DB
-  def request()
-    
-  end
-
-end
-
 class Library
   FILE_WAIT              = 1;
   FILE_BAD_TAG           = 2;
@@ -256,6 +249,7 @@ SQL
     st = @db.prepare(req);
     debug("[DB] add");
     st.execute(v);
+    song.mid =  @db.last_insert_row_id()
     st.close();
   end
 

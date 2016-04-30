@@ -11,7 +11,7 @@ ENCODE_DELAY_SCAN = 30; # seconds
 MAX_ENCODE_JOB    = 2;
 DEFAULT_BITRATE   = 192;
 
-  def job(song, bitrate, lib)
+  def job(song, bitrate, messaging)
     log("Encoding #{song.src} -> #{song.dst}");
 
     tag = Id3.decode(song.src);
@@ -31,7 +31,7 @@ DEFAULT_BITRATE   = 192;
 
     if(tag.title == nil || tag.artist == nil || tag.album == nil)
       song.status = Library::FILE_BAD_TAG;
-      lib.update(song);
+      messaging.send(:library, :add, song);
       error("Bad tag #{song.src}");
       return
     end
@@ -61,27 +61,28 @@ DEFAULT_BITRATE   = 192;
       rd.close();
       wr.close()
       debug("Process encoding #{pid_encoder} decoding#{pid_decoder}");
-      
+
       Process.detach(pid_decoder)
 
       pid, status = Process.waitpid2(pid_encoder);
       if(status.exitstatus() == 0)
         frames = Mp3File.open(song.dst);
         song.duration = frames.map(&:duration).inject(&:+);
+        song.status = Library::FILE_OK;
       else
         song.status = Library::FILE_ENCODING_FAIL;
       end
-      lib.update(song);
+      messaging.send(:library, :add, song);
     rescue => e
       error("Encode execution error on file #{song.src}: #{([ e.to_s ] + e.backtrace).join("\n")}", true, $error_file);
       song.status = Library::FILE_ENCODING_FAIL;
-      lib.update(song);
+      messaging.send(:library, :add, song);
       raise e;
     end
   end
 
 class Encode < Rev::TimerWatcher
-  def initialize(library, conf)
+  def initialize(library, messaging, conf)
     @library              = library;
     @th                   = [];
     @cfile                = [];
@@ -102,12 +103,18 @@ class Encode < Rev::TimerWatcher
     @bitrate      = conf["bitrate"]    if(conf && conf["bitrate"]);
     @bitrate    ||= DEFAULT_BITRATE;
 
-    @worker       = Worker.new(@max_job)
+    @messaging    = messaging;
 
-    songs = @library.encode_file()
-    songs.each do |song|
-      @worker.add(song, @bitrate, @library) do |*args|
-        job(*args)
+    @messaging.create(:encode, @max_job) do |*args|
+      job(*args)
+    end
+
+    @messaging.create(:library, 1) do |action, song|
+      case(action)
+      when :add
+        @library.add(song)
+      when :update
+        @library.update(song)
       end
     end
 
@@ -132,28 +139,24 @@ class Encode < Rev::TimerWatcher
 
   def scan()
     files  = Dir.glob(@originDir + "/**/*.mp3");
+    files.map { |s| s.force_encoding("BINARY") }
     new_files = files - @cfile;
     @cfile = files;
     now = Time.now;
     new_files.each do | f |
-      name = f.force_encoding("BINARY").scan(/.*\/(.*)/);
+      name = f.scan(/.*\/(.*)/);
       name = name[0][0];
-      if(@library.check_file(f))
-        # Check file is not used actualy
-        if(now - File::Stat.new(f).mtime < @delay_scan * 2)
-          @cfile.delete(f);
-          next;
-        end
-        song = Song.new({
-                          "src"    => f,
-                          "dst"    => @encodedDir + "/" + name,
-                          "status" => Library::FILE_WAIT
-                        })
-        @library.add(song);
-        @worker.add(song, @bitrate, @library) do |*args|
-          job(*args)
-        end
+      # Check file is not used actualy
+      if(now - File::Stat.new(f).mtime < @delay_scan * 2)
+        @cfile.delete(f);
+        next;
       end
+      song = Song.new({
+                        "src"    => f,
+                        "dst"    => @encodedDir + "/" + name,
+                        "status" => Library::FILE_WAIT
+                      })
+      @messaging.send(:encode, song, @bitrate, @messaging)
     end
   end
 end
