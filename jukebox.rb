@@ -162,14 +162,14 @@ def check_cookie(s, req, users, sessions, stream)
   return nil if cookies["session"] == nil
   session = cookies["session"];
 
-  currentSession = s.udata
-  if(currentSession && currentSession != "")
-    if(currentSession[:session].sid != session)
-      s.udata = nil
-      debug("check_cookie: invalid session: #{currentSession[:session].sid} != #{session}");
-      return nil;
-    end
-  else
+  currentSession = s.udata;
+  gotValidSession = false;
+
+  if(currentSession && currentSession != "" && currentSession[:session].sid == session)
+    gotValidSession = true;
+  end
+
+  if (!gotValidSession)
     uid = sessions.check(session, ip_address, user_agent);
     if (uid == nil)
       debug("check_cookie: invalid uid");
@@ -190,6 +190,12 @@ def check_cookie(s, req, users, sessions, stream)
 
     currentSession = { :user => u, :session => sid }
     s.udata = currentSession;
+    gotValidSession = true;
+  end
+
+  if (!gotValidSession)
+    s.udata = nil;
+    return nil;
   end
 
   stream.channel_init(currentSession[:user]);
