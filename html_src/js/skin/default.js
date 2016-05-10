@@ -22,6 +22,11 @@ Jukebox.UI.skins["default"] =
 			<span class="#{root}-channel-display">channel_name</span> (<span class="#{root}-listening-count"></span> listeners)\
 			<a href="/api/token.m3u">Open stream</a>\
 		</div>\
+		<div class="right-icon">\
+			<a href="javascript:;" class="#{root}-disconnect-button">\
+				<i class="material-icons">exit_to_app</i>&nbsp;\
+			</a>\
+		</div>\
 		<div class="right">\
 				<span class="#{root}-user-display"></span>\
 		</div>\

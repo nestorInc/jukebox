@@ -36,12 +36,12 @@ class TokenManager < HttpNode
 
 end
 
-class LoginManager < HttpNode
-  def initialize(users, sessions, stream)
+class LoginManager < HttpNodeMapping
+  def initialize(child, users, sessions, stream)
     @users    = users;
     @sessions = sessions;
     @stream   = stream;
-    super();
+    super(child);
   end
 
 
@@ -49,12 +49,8 @@ class LoginManager < HttpNode
     j = req.data && Hash[req.data.split("&").map { |v| v.split('=') }];
     user = j && j["user"]
     pass = j && j["pass"]
-
     if(user == nil || pass == nil)
-      rep = HttpResponse.new(req.proto, 200, "OK",
-                             "Content-Type" => "text/html");
-      rep.setData('<HTML><HEAD><TITLE>Auth</TITLE></HEAD><BODY><FORM METHOD="POST"><INPUT NAME="pass" TYPE="text"/><INPUT NAME="user" TYPE="password"/><input type="submit" value="Submit"></FORM></BODY></HTML>');
-      return s.write(rep.to_s);
+      return super(s, req);
     end
       
     uid = @users.login(user, pass)

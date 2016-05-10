@@ -454,7 +454,7 @@ function JukeboxUI(jukebox, element, opts)
 			// Todo reset account tab informations
 			SetCookie("session", "", 0, "/");
 			// Reset jukebox
-			window.location = window.location.protocol + "//void:void@" + window.location.host + window.location.pathname;
+			window.location.reload();
 		},
 
 		/**
@@ -563,7 +563,7 @@ function JukeboxUI(jukebox, element, opts)
 			jukebox:			$JB,
 			tabs:				$JB.down(rootClass+'tabs'),
 			tabs_content:		$JB.down(rootClass+'tabs-content'),
-			deco_link:			$JB.down(rootClass+'user-header-deco'),
+			deco_link:			$JB.down(rootClass+'disconnect-button'),
 			search_input:		$JB.down(rootClass+'search-input'),
 			search_field:		$JB.down(rootClass+'search-field'),
 			search_genres:		$JB.down(rootClass+'search-genres'),
