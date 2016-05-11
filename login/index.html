@@ -3,13 +3,23 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Jukebox Reloaded</title>
-	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+	<link rel="shortcut icon" type="image/x-icon" href="/login/favicon.ico" />
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<link href="/login/style.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 
-<img src="/login/images/batman.gif" />
-<FORM METHOD="POST"><INPUT NAME="user" TYPE="text"/><INPUT NAME="pass" TYPE="password"/><input type="submit" value="Submit"></FORM>
+<div class="wrapper">
+	<div class="header-wrapper">
+	</div>
+	<form method="POST">
+		<input name="user" type="text" placeholder="Username" />
+		<input name="pass" type="password" placeholder="Password" />
+		<input type="submit" value="Login">
+	</form>
+	<div class="bottomquote"><p>Homemade jukebox over streaming</p></div>
+	<div style="clear: both;"></div>
+</div>
 
 </body>
 </html>
