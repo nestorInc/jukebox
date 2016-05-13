@@ -131,7 +131,8 @@ div, .jukebox span, .jukebox applet, .jukebox object, .jukebox iframe,
 	color: black;
 }
 
-.jukebox .jukebox-topbar-wrapper a:hover,
+.jukebox .jukebox-topbar-wrapper .left a:hover,
+.jukebox .jukebox-topbar-wrapper a:hover i,
 .jukebox .jukebox-activity-on,
 .jukebox input[type=text],
 .jukebox input[type=password],

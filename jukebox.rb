@@ -86,7 +86,7 @@ json   = JsonManager.new(channelList, users, library, config[:upload.to_s], conf
 basic  = BasicApi.new(channelList);
 upload = UploadManager.new(config[:upload.to_s]);
 debug  = DebugPage.new();
-login  = LoginManager.new(users, sessions, stream)
+login  = LoginManager.new("login", users, sessions, stream);
 token  = TokenManager.new(users, config);
 main   = HttpNodeMapping.new("html");
 main_src = HttpNodeMapping.new("html_src");
@@ -153,30 +153,49 @@ def check_cookie(s, req, users, sessions, stream)
   user_agent = req.options["User-Agent"] || ""
 
   cookies = req.options["Cookie"]
-  return nil if cookies == nil
+  if(cookies == nil)
+    debug("check_cookie: Nil cookies");
+    return nil;
+  end
   cookies = Hash[cookies.split(';').map{ |i| i.strip().split('=',2)}];
 
   return nil if cookies["session"] == nil
   session = cookies["session"];
 
-  currentSession = s.udata
-  if(currentSession && currentSession != "")
-    if(currentSession[:session].sid != session)
-      s.udata = nil
+  currentSession = s.udata;
+  gotValidSession = false;
+
+  if(currentSession && currentSession != "" && currentSession[:session].sid == session)
+    gotValidSession = true;
+  end
+
+  if (!gotValidSession)
+    uid = sessions.check(session, ip_address, user_agent);
+    if (uid == nil)
+      debug("check_cookie: invalid uid");
       return nil;
     end
-  else
-    uid = sessions.check(session, ip_address, user_agent);
-    return nil if(uid == nil)
 
     sid = sessions.get(uid, ip_address, user_agent)
-    return nil if(sid == nil)
+    if (sid == nil)
+      debug("check_cookie: invalid sid");
+      return nil;
+    end
 
     u = users.get(sid.uid)
-    return nil if(u == nil)
+    if (u == nil)
+      debug("check_cookie: invalid user get");
+      return nil;
+    end
 
     currentSession = { :user => u, :session => sid }
     s.udata = currentSession;
+    gotValidSession = true;
+  end
+
+  if (!gotValidSession)
+    s.udata = nil;
+    return nil;
   end
 
   stream.channel_init(currentSession[:user]);

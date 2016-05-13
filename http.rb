@@ -317,7 +317,7 @@ class HttpSession < Rev::SSLSocket
       break if(@sck_data.bytesize() < @length);
 
       @req.addData(@sck_data.slice!(0 .. @length - 1)) if(@length != 0);
-      log(@req);
+      #log(@req);
       m_auth    = nil;
       m_request = nil;
 
