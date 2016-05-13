@@ -24,6 +24,19 @@ module.exports = function(grunt)
 			skin:	OUT_DIR + 'css/skin/',
 			js:		OUT_DIR + 'js/',
 			libs:	OUT_DIR + 'js/lib/'
+		},
+
+		LOGIN_SRC_DIR = 'login_src/',
+		LOGIN_SRC =
+		{
+			css:	LOGIN_SRC_DIR,
+			img:	LOGIN_SRC_DIR + 'images/'
+		},
+
+		LOGIN_OUT_DIR = 'login/',
+		LOGIN_OUT =
+		{
+			css:	LOGIN_OUT_DIR
 		};
 
 	grunt.initConfig(
@@ -134,6 +147,11 @@ module.exports = function(grunt)
 				src: '<%= concat.css.dest %>',
 				dest: OUT.css + 'jukebox.min.css'
 			},
+			logincss:
+			{
+				src: LOGIN_SRC.css + 'style.css',
+				dest: LOGIN_OUT.css + 'style.css'
+			},
 			cssSkins: // For now, concat all skins inside a single minified file
 			{
 				src: [SRC.skin + 'default.css'],
@@ -205,17 +223,26 @@ module.exports = function(grunt)
 					SRC.libs + 'scriptaculous.js' // No more used */
 				],
 				dest: OUT_DIR
-			}/* Not required since thoses are integrated now into libs.min.js,
-			scriptaculous:
+			},
+			loginroot:
 			{
 				src:
 				[
-					SRC.libs + 'slider.js',
-					SRC.libs + 'dragdrop.js',
-					SRC.libs + 'effects.js'
+					SRC_DIR + 'favicon.ico',
+					LOGIN_SRC_DIR + 'index.html'
 				],
-				dest: OUT_DIR
-			}*/
+				dest: LOGIN_OUT_DIR
+			},
+			loginimages:
+			{
+				src:
+				[
+					LOGIN_SRC.img + '*.png',
+					LOGIN_SRC.img + '*.jpg',
+					LOGIN_SRC.img + '*.gif'
+				],
+				dest: LOGIN_OUT_DIR
+			}
 		}
 	});
 
@@ -231,6 +258,7 @@ module.exports = function(grunt)
 			fileObj.src.forEach(function(fileName)
 			{
 				var destination = fileName.replace(SRC_DIR, fileObj.dest);
+				destination = destination.replace(LOGIN_SRC_DIR, fileObj.dest);
 				//grunt.log.writeln("Copying " + fileName + " to " + destination);
 				grunt.file.copy(fileName, destination);
 				grunt.log.writeln("Copied " + fileName + " to " + destination);

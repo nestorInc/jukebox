@@ -1,4 +1,4 @@
-/* global Extend, Query, Action, JukeboxUI, soundManager, Notifications, Ajax, $R, HTML5Storage, ReadCookie */
+/* global Extend, Query, Action, JukeboxUI, soundManager, Notifications, Ajax, $R, HTML5Storage */
 
 var uniqid = 0,
 	sendQueryProxy;
@@ -50,8 +50,6 @@ function Jukebox(element, opts)
 		// http://www.schillmania.com/projects/soundmanager2/
 		_streamPlayer = null, // mp3 stream player (Flash/ActionScript)
 		_volume = 100,
-
-		_user = null,
 
 		// Utility
 		_last_nb_listening_users = 0,
@@ -792,14 +790,6 @@ function Jukebox(element, opts)
 	*/
 	function _parseJSONResponse(json)
 	{
-		if(_user !== json.user)
-		{
-			_user = ReadCookie("user");
-			$this.user = _user;
-			_ui.updateUser(_user);
-		}
-
-
 		if(json.timestamp)
 		{
 			_timestamp = json.timestamp;
@@ -884,6 +874,7 @@ function Jukebox(element, opts)
 		}
 		if(json.account)
 		{
+			$this.user = json.account.nickname;
 			_ui.displayAccount(json.account);
 		}
 		if(json.account_created)

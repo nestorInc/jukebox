@@ -157,8 +157,8 @@ class HttpResponse
     HttpResponse.generateMoveError(req, 302, "Found", location);
   end
 
-  def HttpResponse.generate301(req, location)
-    HttpResponse.generateMoveError(req, 301, "Moved Permanently", location);
+  def HttpResponse.generate303(req, location)
+    HttpResponse.generateMoveError(req, 303, "Moved temporary", location);
   end
 
   def HttpResponse.generate403(req, realm = "")
@@ -317,7 +317,7 @@ class HttpSession < Rev::SSLSocket
       break if(@sck_data.bytesize() < @length);
 
       @req.addData(@sck_data.slice!(0 .. @length - 1)) if(@length != 0);
-      log(@req);
+      #log(@req);
       m_auth    = nil;
       m_request = nil;
 
@@ -343,6 +343,7 @@ class HttpSession < Rev::SSLSocket
       }
       v = @req.options["Authorization"];
 
+      rsp = nil
       if(m_auth != nil)
         pass = nil;
         if(v)
@@ -356,12 +357,12 @@ class HttpSession < Rev::SSLSocket
           user = "unknown";
         end
 
-        @auth = m_auth.call(self, @req, user, pass) if(user);
+        @auth, rsp = m_auth.call(self, @req, user, pass);
       end
 
       if(m_auth != nil && @auth == nil)
         # Authentification error
-        rsp = HttpResponse.generate401(@req)
+        rsp ||= HttpResponse.generate401(@req)
         write(rsp.to_s);
         @length = nil;
         next

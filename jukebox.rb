@@ -79,16 +79,17 @@ Thread.new() {
   end
 }
 
+stream = Stream.new(channelList, library);
 
 # Create HTTP server
 json   = JsonManager.new(channelList, users, library, config[:upload.to_s], config[:encode.to_s]);
 basic  = BasicApi.new(channelList);
 upload = UploadManager.new(config[:upload.to_s]);
 debug  = DebugPage.new();
+login  = LoginManager.new("login", users, sessions, stream);
 token  = TokenManager.new(users, config);
 main   = HttpNodeMapping.new("html");
 main_src = HttpNodeMapping.new("html_src");
-stream = Stream.new(channelList, library);
 
 def check_login(user, pass, s, req, users, sessions, stream)
   return nil if(pass == nil)
@@ -147,39 +148,67 @@ def check_token(s, req, users, sessions, stream)
   return "token"
 end
 
-def check_cookie(s, req, sessions, stream)
+def check_cookie(s, req, users, sessions, stream)
   ip_address = s.remote_address.ip_address;
   user_agent = req.options["User-Agent"] || ""
 
   cookies = req.options["Cookie"]
-  return nil if cookies == nil
-  cookies = Hash[cookies.split(';').map{ |i| i.strip().split('=')}];
+  if(cookies == nil)
+    debug("check_cookie: Nil cookies");
+    return nil;
+  end
+  cookies = Hash[cookies.split(';').map{ |i| i.strip().split('=',2)}];
 
   return nil if cookies["session"] == nil
   session = cookies["session"];
 
-  currentSession = s.udata
-  if(currentSession && currentSession != "")
-    if(currentSession[:session].sid != session)
-      s.udata = nil
+  currentSession = s.udata;
+  gotValidSession = false;
+
+  if(currentSession && currentSession != "" && currentSession[:session].sid == session)
+    gotValidSession = true;
+  end
+
+  if (!gotValidSession)
+    uid = sessions.check(session, ip_address, user_agent);
+    if (uid == nil)
+      debug("check_cookie: invalid uid");
       return nil;
     end
-  else
-    sid = sessions.get(session, ip_address, user_agent);
-    return nil if(sid == nil)
-    u = users.get(i.uid)
-    return nil if(u == nil)
+
+    sid = sessions.get(uid, ip_address, user_agent)
+    if (sid == nil)
+      debug("check_cookie: invalid sid");
+      return nil;
+    end
+
+    u = users.get(sid.uid)
+    if (u == nil)
+      debug("check_cookie: invalid user get");
+      return nil;
+    end
+
     currentSession = { :user => u, :session => sid }
-    s.uid = currentSession;
+    s.udata = currentSession;
+    gotValidSession = true;
+  end
+
+  if (!gotValidSession)
+    s.udata = nil;
+    return nil;
   end
 
   stream.channel_init(currentSession[:user]);
 
-  currentSession.updateLastRequest() if currentSession;
-  sessions.updateLastConnexion(session);
+#  currentSession[:sesssion].updateLastRequest() if currentSession;
+  sessions.updateLastConnexion(currentSession[:session]);
 
   return "cookie"
 end
+
+login.addAuth() { |s, req, user, pass|
+  "noAuth"
+}
 
 main.addAuth() { |s, req, user, pass|
 #  next nil if(s.ssl != true);
@@ -192,18 +221,21 @@ main.addAuth() { |s, req, user, pass|
 
   req.options = {} if req.options == nil
 
-  isStreamPage = req.uri.path.end_with?("/stream");
-  isMainPage = ['/','/index.html'].include?(req.uri.path);
+  m = check_token(s, req, users, sessions, stream) ||
+  check_cookie(s, req, users, sessions, stream)
 
-  check_login(user, pass, s, req, users, sessions, stream) ||
-  check_token(s, req, users, sessions, stream) ||
-  check_cookie(s, req, sessions, stream)
+  if(m == nil)
+    [ nil, HttpResponse.generate303(req, "/login") ]
+  else
+    [ m, nil ]
+  end
 }
 
 root = HttpRootNode.new({ "/api/json"  => json,
                           "/api"       => basic,
                           "/upload"    => upload,
                           "/"          => main,
+                          "/login"     => login,
                           "/src"       => main_src,
                           "/api/token.m3u" => token,
                           "/stream"    => stream});

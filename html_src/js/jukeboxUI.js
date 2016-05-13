@@ -267,6 +267,7 @@ function JukeboxUI(jukebox, element, opts)
 	*/
 	this.displayAccount = function(infos)
 	{
+		this.updateUser(infos.nickname);
 		var tab = _tabs.getFirstTabByClass(AccountTab);
 		if(tab)
 		{
@@ -451,10 +452,9 @@ function JukeboxUI(jukebox, element, opts)
 		{
 			// Todo send a request to clean session
 			// Todo reset account tab informations
-			SetCookie("user", "", 0, "/");
 			SetCookie("session", "", 0, "/");
 			// Reset jukebox
-			window.location = window.location.protocol + "//void:void@" + window.location.host + window.location.pathname;
+			window.location.reload();
 		},
 
 		/**
@@ -563,7 +563,7 @@ function JukeboxUI(jukebox, element, opts)
 			jukebox:			$JB,
 			tabs:				$JB.down(rootClass+'tabs'),
 			tabs_content:		$JB.down(rootClass+'tabs-content'),
-			deco_link:			$JB.down(rootClass+'user-header-deco'),
+			deco_link:			$JB.down(rootClass+'disconnect-button'),
 			search_input:		$JB.down(rootClass+'search-input'),
 			search_field:		$JB.down(rootClass+'search-field'),
 			search_genres:		$JB.down(rootClass+'search-genres'),
