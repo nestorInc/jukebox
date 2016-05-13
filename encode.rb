@@ -84,7 +84,6 @@ DEFAULT_BITRATE   = 192;
 class Encode < Rev::TimerWatcher
   def initialize(library, messaging, conf)
     @library              = library;
-    @th                   = [];
     @cfile                = [];
     @originDir   = conf["source_dir"]  if(conf && conf["source_dir"]);
     raise "Config: encode::source_dir not found" if(@originDir == nil);

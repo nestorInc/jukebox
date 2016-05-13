@@ -23,6 +23,7 @@ require 'basic_api.rb'
 require 'web_debug.rb'
 require 'token_api.rb'
 require 'user.rb'
+require 'messaging.rb'
 
 raise("Not support ruby version < 1.9") if(RUBY_VERSION < "1.9.0");
 
@@ -66,18 +67,19 @@ users = Users.new()
 sessions = Sessions.new()
 db = DBlite.new("jukebox.db", [library, users, sessions]);
 channelList = {};
+messaging = Messaging.new()
 
 # Encode
-Thread.new() {
-  e = Encode.new(library, config[:encode.to_s]);
+Thread.new() do
+  e = Encode.new(library, messaging, config[:encode.to_s]);
   e.attach(Rev::Loop.default);
   begin
-    Rev::Loop.default.run();
+    Rev::Loop.default.run(); 
   rescue => e
     error(([ e.to_s ] + e.backtrace).join("\n"), true, $error_file);
     retry;
   end
-}
+end
 
 stream = Stream.new(channelList, library);
 
