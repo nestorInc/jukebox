@@ -522,11 +522,25 @@ class HttpNodeMapping < HttpNode
       s.write(rsp.to_s);
       return;
     end
+
     ext  = path.scan(/.*\.(.*)/).first;
     contentType = nil;
     contentType = ContentTypeTab[ext.first]  if(ext);
     contentType = ContentTypeTab[nil]        if(contentType == nil);
-    rsp  = HttpResponse.new(req.proto, 200, "OK", {"Set-Cookie" => req.options["Set-Cookie"]} );
+
+    modifiedSince  = req.options["If-Modified-Since"] && Time.httpdate(req.options["If-Modified-Since"])
+    if(modifiedSince && modifiedSince.to_i >= st.mtime.to_i)
+      rsp  = HttpResponse.new(req.proto, 304, "Not Modifed");
+      rsp.setData("", contentType);
+      s.write(rsp.to_s);
+      return
+    end
+
+    rsp  = HttpResponse.new(req.proto, 200, "OK", {
+                            "Set-Cookie" => req.options["Set-Cookie"],
+                            "Cache-Control" => "max-age=#{3600*48}",
+                            "Last-Modified" => st.mtime.httpdate
+                            } );
     #debug(path);
     data = File.read(path)
     rsp.setData(data, contentType);
