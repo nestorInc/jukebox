@@ -160,13 +160,12 @@ class Mp3File
   def self.open(file)
     frames          = [];
 
-    data = File.open(file) { |fd| fd.read(); }
-    data.force_encoding("BINARY");
+    data = File.read(file).force_encoding("BINARY");
     
     while(data.size >= 4)
       frame = Mp3Frame.fetch(data);
       if(frame)
-        frames.push(frame.to_s.bytesize);
+        frames.push(frame);
       else
         data.replace(data[1, -1]);
       end

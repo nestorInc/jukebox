@@ -43,8 +43,8 @@ class Channel
     @library      = library;
     @connections  = [];
     @queue        = SongQueue.new();
-    @cur          = nil;
-    @pos          = 0;
+    @frames       = [];
+    @frame        = 0;
     @currentEntry = nil;
     @timestamp    = 0;
     @time         = 0;
@@ -111,7 +111,7 @@ class Channel
   def getCurrentSongInfo()
     return nil if(@currentEntry == nil)
     rsp           = @currentEntry.to_client();
-    rsp[:elapsed] = @currentEntry.duration * @frame / @cur.size;
+    rsp[:elapsed] = (@frames.size == 0) ? 0 : @currentEntry.duration * @frame / @frames.size;
     rsp;
   end
 
@@ -139,7 +139,7 @@ class Channel
   def to_client()
     return nil if(@currentEntry == nil)
     rsp                  = @currentEntry.to_client();
-    rsp[:elapsed]        = @currentEntry.duration * @frame / @cur.size;
+    rsp[:elapsed]        = (@frames.size == 0) ? 0 : @currentEntry.duration * @frame / @frames.size;
     rsp[:listener_count] = @connections.size();
     rsp;
   end
@@ -152,15 +152,8 @@ class Channel
       @currentEntry = @library.get_file(mid).first;
       file = @currentEntry.dst;
       log("Fetching on channel #{@name}: #{file}");
-      data = File.open(file) { |fd| fd.read; }
-      data.force_encoding("BINARY");
-      pos = 0;
-      @cur = @currentEntry.frames.map { |b|
-        f = data[pos, b];
-        pos += b;
-        f;
-      }
-      @frame = 0;
+      @frames = Mp3File.open(file);
+      @frame  = 0;
       tag = Id3.new();
       tag.title  = @currentEntry.title;
       tag.artist = @currentEntry.artist;
@@ -191,10 +184,11 @@ class Channel
     delta = now - @time;
     @remaining += delta * @currentEntry.bitrate * 1000 / 8;
     begin
-      @cur[@frame..-1].each { |f|
-        data << f;
-        @remaining -= f.bytesize();
-        @frame     += 1;
+      @frames[@frame..-1].each { |f|
+        d = f.to_s
+        data << d;
+        @remaining -= d.bytesize();
+        @frame += 1
         break if(@remaining <= 0)
       }
 
