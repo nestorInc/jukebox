@@ -11,6 +11,7 @@ class Users
     create table if not exists users (
                        uid INTEGER PRIMARY KEY,
                        nickname TEXT UNIQUE,
+                       salt TEXT,
                        hash TEXT,
                        right,
                        validated INTEGER UNSIGNED,
@@ -67,16 +68,19 @@ SQL
     end
 
     # Generates a random password for root
-    char_set =  [('a'..'z'),('A'..'Z'), ('0'..'9')].map{|i| i.to_a}.flatten
-    random_string = (0...50).map{ char_set[rand(char_set.length)] }.join
+    r = Random.new();
+    random_string = [ r.bytes(32) ].pack("m").strip
     log("root password : #{random_string}");
 
-    bcrypt_pass = BCrypt::Password.create(random_string);
+    r = Random.new();
+    salt = [ r.bytes(32) ].pack("m").strip
+
+    bcrypt_pass = BCrypt::Password.create(salt + random_string);
     creation = Time.now();
 
     sql = <<SQL
      BEGIN;
-     INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) VALUES (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}root', 'root', '#{bcrypt_pass}', 1, #{creation.strftime("%s")});
+     INSERT OR IGNORE INTO users (uid, right, nickname, salt, hash, validated, creation) VALUES (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}root', 'root', '#{salt}', '#{bcrypt_pass}', 1, #{creation.strftime("%s")});
 
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
      SELECT 
@@ -151,8 +155,11 @@ SQL
   end
 
   def create_new_user( user, pass, validated )
-    bcrypt_pass = BCrypt::Password.create(pass);
+    r = Random.new();
+    salt = [ r.bytes(32) ].pack("m").strip
+    bcrypt_pass = BCrypt::Password.create(salt + pass);
     creation = Time.now();
+
 
     debug("[DB] create_new_user 1/3");
     @db.execute("SELECT uid FROM users WHERE nickname='#{user}'") do |row|
@@ -163,9 +170,9 @@ SQL
     sql = <<SQL
       BEGIN;
 
-      INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) 
+      INSERT OR IGNORE INTO users (uid, right, nickname, salt, hash, validated, creation) 
       VALUES 
-      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/', '#{user}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
+      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/', '#{user}', '#{salt}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
 
       INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
       SELECT
@@ -297,14 +304,14 @@ SQL
   end
 
   def login(user, pass)
-      req = @db.prepare("SELECT uid, hash FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
+      req = @db.prepare("SELECT uid, hash, salt FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
       debug("[DB] login");
       res = req.execute!();
       req.close();
       return nil if(res == nil or res[0] == nil)
       # http://blog.phusion.nl/2012/10/06/sha-3-extensions-for-ruby-and-node-js/
       # Use bcrypt for hashing passwords
-      if(BCrypt::Password.new(res[0].at(1)) == pass)
+      if(BCrypt::Password.new(res[0].at(1)) == res[0].at(2) + pass)
         return res[0].at(0);
       end
       return nil;
