@@ -97,7 +97,7 @@ def check_login(user, pass, s, req, users, sessions, stream)
   return nil if(pass == nil)
   return nil if(user == "void")
 
-  uid = users.login(user, pass)
+  uid, _ = users.login(user, pass)
   if(uid == nil)
     s.udata = nil;
     return nil

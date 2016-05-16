@@ -2,6 +2,7 @@ require "sqlite3"
 
 require 'display.rb'
 require 'user_space.rb'
+require 'digest'
 
 class Users
   def load(db)
@@ -135,13 +136,13 @@ SQL
   def create(user, pass, validated)
     r = Random.new();
     salt = [ r.bytes(32) ].pack("m").strip
-    bcrypt_pass = BCrypt::Password.create(salt + pass);
+    salt_pass = Digest::SHA256.base64digest(salt + pass);
     creation = Time.now();
 
     sql = <<SQL
       INSERT OR IGNORE INTO users (uid, right, nickname, salt, hash, validated, creation) 
       VALUES 
-      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/', '#{user}', '#{salt}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
+      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/', '#{user}', '#{salt}', '#{salt_pass}', #{validated}, #{creation.strftime("%s")});
 SQL
     @db.execute(sql) do |row|
       error("Could not create User #{user}, already exists in base");
@@ -282,15 +283,13 @@ SQL
   end
 
   def login(user, pass)
-      req = @db.prepare("SELECT uid, hash, salt FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
+      req = @db.prepare("SELECT uid, hash, salt, right FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
       debug("[DB] login");
       res = req.execute!();
       req.close();
       return nil if(res == nil or res[0] == nil)
-      # http://blog.phusion.nl/2012/10/06/sha-3-extensions-for-ruby-and-node-js/
-      # Use bcrypt for hashing passwords
-      if(BCrypt::Password.new(res[0].at(1)) == res[0].at(2) + pass)
-        return res[0].at(0);
+      if(res[0].at(1) == Digest::SHA256.base64digest(res[0].at(2) + pass))
+        return res[0].at(0), res[0].at(3);
       end
       return nil;
   end
@@ -353,18 +352,17 @@ SQL
 
   def change_user_password(user, sid, nickname, old_pass, new_pass, new_pass2)
     return nil if( new_pass != new_pass2)
-    return nil if( not login( nickname, old_pass ))
+    uid, right = login(nickname, old_pass)
+    return nil if(uid == nil)
     debug("[DB] change_user_password select");
-    @db.execute("SELECT " +
-                " U.right " +
-                "FROM users as U " +
-                "WHERE U.nickname = '#{nickname}' " +
-                "LIMIT 1") do |row|
-      if user_has_right(user, row["right"], Rights_Flag::WRITE ) 
-        debug("[DB] change_user_password update");
-        @db.execute("UPDATE users SET hash='#{BCrypt::Password.create(new_pass)}' WHERE nickname='#{nickname}'")
-        return true
-      end
+    if user_has_right(user, right, Rights_Flag::WRITE) 
+      r = Random.new();
+      salt = [ r.bytes(32) ].pack("m").strip
+      salt_pass = Digest::SHA256.base64digest(salt + new_pass);
+
+      debug("[DB] change_user_password update");
+      @db.execute("UPDATE users SET hash='#{salt_pass}', salt='#{salt}' WHERE nickname='#{nickname}'")
+      return true
     end
     false
   end
