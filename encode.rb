@@ -146,6 +146,7 @@ class Encode < Rev::TimerWatcher
       name = f.scan(/.*\/(.*)/);
       name = name[0][0];
       # Check file is not used actualy
+      next if(@library.check_file(f) == false)
       if(now - File::Stat.new(f).mtime < @delay_scan * 2)
         @cfile.delete(f);
         next;
