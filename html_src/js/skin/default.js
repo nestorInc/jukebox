@@ -111,7 +111,7 @@ Jukebox.UI.skins["default"] =
 	</div>\
 	<div class="#{root}-mainpanel-wrapper #{root}-tabs-content"></div>\
 	<div style="clear: both;"> </div>\
-	<footer>Home made jukebox over streaming</footer>\
+	<footer>Home made jukebox over streaming - <a href="#{milestoneUrl}" target="_blank">#{milestoneName}</a></footer>\
 </div>',
 		tabs:
 		{

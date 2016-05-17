@@ -52,6 +52,7 @@ module.exports = function(grunt)
 					SRC.js + 'intro.js',
 
 					// Helpers
+					SRC.js + 'version.js',
 					SRC.js + 'genres.js',
 					SRC.js + 'tools.js',
 					SRC.js + 'storage.js',

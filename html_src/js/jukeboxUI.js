@@ -1,4 +1,4 @@
-/* global Extend, Tabs, TabsManager, FormatTime, SearchTab, PlayQueueTab, UploadTab, DebugTab, AccountTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $$, $R, Event, Notifications, SetCookie */
+/* global Extend, Tabs, TabsManager, FormatTime, SearchTab, PlayQueueTab, UploadTab, DebugTab, AccountTab, PlaylistTab, NotificationTab, CustomQueriesTab, genresOrdered, $, $$, $R, Event, Notifications, SetCookie, gJukeboxVersion */
 
 /**
 * Represents a Jukebox graphical interface.
@@ -543,7 +543,9 @@ function JukeboxUI(jukebox, element, opts)
 				play: 'Play stream',
 				stop: 'Stop stream',
 				volume: 'Volume :',
-				listenersCount: J.listenersCount
+				listenersCount: J.listenersCount,
+				milestoneUrl: gJukeboxVersion.milestoneUrl,
+				milestoneName: gJukeboxVersion.milestoneName
 			};
 			$elem.update(jukeboxTpl.evaluate(jukeboxTplVars)); // DOM insertion ; Only location where $elem is modified
 			$elem.up(1).setStyle({backgroundColor: _skin.params.backgroundColor});
