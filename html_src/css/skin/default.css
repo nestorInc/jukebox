@@ -104,8 +104,11 @@ div, .jukebox span, .jukebox applet, .jukebox object, .jukebox iframe,
 .jukebox footer{
 	padding: 4px;
 	text-align: right;
-	font-style: italic;
 	font-size: 12px;
+}
+
+.jukebox footer a{
+	font-style: italic;
 }
 
 /* fonts and colors */
@@ -124,6 +127,7 @@ div, .jukebox span, .jukebox applet, .jukebox object, .jukebox iframe,
 }
 
 .jukebox .selected,
+.jukebox footer a:hover,
 .jukebox .jukebox-slider:hover .jukebox-slider-handle,
 .jukebox .jukebox-sidepanel-wrapper .list-element:active,
 .jukebox .jukebox-tabs-active .list-element {
