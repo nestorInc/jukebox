@@ -2,6 +2,7 @@ require "sqlite3"
 
 require 'display.rb'
 require 'user_space.rb'
+require 'digest'
 
 class Users
   def load(db)
@@ -11,10 +12,12 @@ class Users
     create table if not exists users (
                        uid INTEGER PRIMARY KEY,
                        nickname TEXT UNIQUE,
+                       salt TEXT,
                        hash TEXT,
                        right,
                        validated INTEGER UNSIGNED,
-                       creation INTEGER);
+                       creation INTEGER,
+                       UNIQUE(nickname));
     create table if not exists groups (
                        gid TEXT PRIMARY KEY,
                        label TEXT );
@@ -60,85 +63,65 @@ SQL
   end
 
   def init_root()
-    # todo check if root exists
-    debug("[DB] init_root 1/2");
-    @db.execute("SELECT uid FROM users WHERE nickname='root' LIMIT 1") do |row|
-      return nil;
-    end
-
     # Generates a random password for root
-    char_set =  [('a'..'z'),('A'..'Z'), ('0'..'9')].map{|i| i.to_a}.flatten
-    random_string = (0...50).map{ char_set[rand(char_set.length)] }.join
-    log("root password : #{random_string}");
+    r = Random.new();
+    random_string = [ r.bytes(32) ].pack("m").strip
 
-    bcrypt_pass = BCrypt::Password.create(random_string);
-    creation = Time.now();
+    id = create("root", random_string, 1);
+    return false if(id == nil)
+
+    log("root password : #{random_string}");
 
     sql = <<SQL
      BEGIN;
-     INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) VALUES (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}root', 'root', '#{bcrypt_pass}', 1, #{creation.strftime("%s")});
+     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
+     VALUES (
+        '#{$right_paths["root"]}', 
+        #{id}, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+        0);
+
+     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
+     VALUES ( 
+        '#{$right_paths["root"]}#{$right_paths["users"]}', 
+        #{id}, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+        0);
+
+     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
+     VALUES ( 
+        '#{$right_paths["root"]}#{$right_paths["channels"]}', 
+        #{id}, 
+        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
+        0);
 
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
-     SELECT 
-        '#{$right_paths["root"]}', 
-        U.uid, 
-        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
-        0
-     FROM users as U
-     WHERE U.nickname = 'root';
-
-     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
-     SELECT 
-        '#{$right_paths["root"]}#{$right_paths["users"]}', 
-        U.uid, 
-        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
-        0
-     FROM users as U
-     WHERE U.nickname = 'root';
-
-     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
-     SELECT 
-        '#{$right_paths["root"]}#{$right_paths["channels"]}', 
-        U.uid, 
-        #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
-        0
-     FROM users as U
-     WHERE U.nickname = 'root';
-
-     INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )      
-     SELECT 
+     VALUES (
         '#{$right_paths["root"]}#{$right_paths["groups"]}', 
-        U.uid, 
+        #{id}, 
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
-        0
-     FROM users as U
-     WHERE U.nickname = 'root';
+        0);
 
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
-     SELECT 
+     VALUES ( 
         '#{$right_paths["root"]}#{$right_paths["users"]}root/', 
-        U.uid, 
+        #{id}, 
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
-        0
-     FROM users as U
-     WHERE U.nickname = 'root';
+        0);
 
      INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others ) 
-     SELECT 
+     VALUES ( 
         '#{$right_paths["root"]}#{$right_paths["groups"]}root', 
-        U.uid, 
+        #{id}, 
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER }, 
-        0
-     FROM users as U
-     WHERE U.nickname = 'root';
+        0);
 
      INSERT OR IGNORE INTO groups (gid, label) VALUES ("#{$right_paths["root"]}#{$right_paths["groups"]}root", "root");
      INSERT OR IGNORE INTO groups_users (gid, uid) 
-     SELECT 
+     VALUES(
         '#{$right_paths["root"]}#{$right_paths["groups"]}root', 
-        U.uid 
-     FROM users AS U
-     WHERE nickname="root";
+        #{id});
+
      INSERT OR REPLACE INTO rights_groups (right, gid, flag_group) VALUES ("#{$right_paths["root"]}#{$right_paths["users"]}root/", "#{$right_paths["root"]}#{$right_paths["groups"]}root", #{Rights_Flag::OWNER});
      COMMIT;
 SQL
@@ -150,60 +133,63 @@ SQL
     end
   end
 
-  def create_new_user( user, pass, validated )
-    bcrypt_pass = BCrypt::Password.create(pass);
+  def create(user, pass, validated)
+    r = Random.new();
+    salt = [ r.bytes(32) ].pack("m").strip
+    salt_pass = Digest::SHA256.base64digest(salt + pass);
     creation = Time.now();
 
-    debug("[DB] create_new_user 1/3");
-    @db.execute("SELECT uid FROM users WHERE nickname='#{user}'") do |row|
+    sql = <<SQL
+      INSERT OR IGNORE INTO users (uid, right, nickname, salt, hash, validated, creation) 
+      VALUES 
+      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/', '#{user}', '#{salt}', '#{salt_pass}', #{validated}, #{creation.strftime("%s")});
+SQL
+    @db.execute(sql) do |row|
       error("Could not create User #{user}, already exists in base");
       return nil;
     end
 
+    return nil if(@db.last_insert_row_id == 0)
+
+    debug("[DB] create user #{user}");
+      
+    return @db.last_insert_row_id
+  end
+
+  def create_new_user( user, pass, validated )
+    id = create(user, pass, validated);
+    return false if(id == nil)
+
     sql = <<SQL
-      BEGIN;
-
-      INSERT OR IGNORE INTO users (uid, right, nickname, hash, validated, creation) 
-      VALUES 
-      (NULL, '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/', '#{user}', '#{bcrypt_pass}', #{validated}, #{creation.strftime("%s")});
-
+    BEGIN;
       INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
-      SELECT
+      VALUES(
         '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/',
-        U.uid,
+        #{id},
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER },
-        0
-      FROM users as U
-      WHERE U.nickname = '#{user}'; 
+        0);
 
       INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
-      SELECT
+      VALUES(
         '#{$right_paths["root"]}#{$right_paths["users"]}#{user}/#{$right_paths["tokens"]}',
-        U.uid,
+        #{id},
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER },
-        0
-      FROM users as U
-      WHERE U.nickname = '#{user}'; 
-
+        0);
 
       INSERT OR REPLACE INTO rights (right, owner, flag_owner, flag_others )
-      SELECT
+      VALUES(
         '#{$right_paths["root"]}#{$right_paths["channels"]}#{user}/',
-        U.uid,
+        #{id},
         #{ Rights_Flag::READ | Rights_Flag::WRITE | Rights_Flag::EXECUTE | Rights_Flag::CREATION | Rights_Flag::DELETE | Rights_Flag::TOKENIZE | Rights_Flag::OWNER },
-        #{ Rights_Flag::READ }
-      FROM users as U
-      WHERE U.nickname = '#{user}';
+        #{ Rights_Flag::READ });
 
       INSERT OR IGNORE INTO groups (gid, label) 
       VALUES ("#{$right_paths["root"]}#{$right_paths["groups"]}#{user}", "#{user}");
 
       INSERT OR IGNORE INTO groups_users (gid, uid)
-      SELECT
+      VALUES(
         '#{$right_paths["root"]}#{$right_paths["groups"]}#{user}',
-        U.uid
-      FROM users as U
-      WHERE U.nickname = '#{user}';
+        #{id});
 
       INSERT OR REPLACE INTO rights_groups (right, gid, flag_group) 
       VALUES ("#{$right_paths["root"]}#{$right_paths["users"]}#{user}/", "#{$right_paths["root"]}#{$right_paths["groups"]}#{user}", #{Rights_Flag::READ | Rights_Flag::WRITE});
@@ -297,15 +283,13 @@ SQL
   end
 
   def login(user, pass)
-      req = @db.prepare("SELECT uid, hash FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
+      req = @db.prepare("SELECT uid, hash, salt, right FROM users WHERE nickname='#{user}'AND validated = 1  LIMIT 1");
       debug("[DB] login");
       res = req.execute!();
       req.close();
       return nil if(res == nil or res[0] == nil)
-      # http://blog.phusion.nl/2012/10/06/sha-3-extensions-for-ruby-and-node-js/
-      # Use bcrypt for hashing passwords
-      if(BCrypt::Password.new(res[0].at(1)) == pass)
-        return res[0].at(0);
+      if(res[0].at(1) == Digest::SHA256.base64digest(res[0].at(2) + pass))
+        return res[0].at(0), res[0].at(3);
       end
       return nil;
   end
@@ -368,18 +352,17 @@ SQL
 
   def change_user_password(user, sid, nickname, old_pass, new_pass, new_pass2)
     return nil if( new_pass != new_pass2)
-    return nil if( not login( nickname, old_pass ))
+    uid, right = login(nickname, old_pass)
+    return nil if(uid == nil)
     debug("[DB] change_user_password select");
-    @db.execute("SELECT " +
-                " U.right " +
-                "FROM users as U " +
-                "WHERE U.nickname = '#{nickname}' " +
-                "LIMIT 1") do |row|
-      if user_has_right(user, row["right"], Rights_Flag::WRITE ) 
-        debug("[DB] change_user_password update");
-        @db.execute("UPDATE users SET hash='#{BCrypt::Password.create(new_pass)}' WHERE nickname='#{nickname}'")
-        return true
-      end
+    if user_has_right(user, right, Rights_Flag::WRITE) 
+      r = Random.new();
+      salt = [ r.bytes(32) ].pack("m").strip
+      salt_pass = Digest::SHA256.base64digest(salt + new_pass);
+
+      debug("[DB] change_user_password update");
+      @db.execute("UPDATE users SET hash='#{salt_pass}', salt='#{salt}' WHERE nickname='#{nickname}'")
+      return true
     end
     false
   end

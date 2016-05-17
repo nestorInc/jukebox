@@ -53,7 +53,7 @@ class LoginManager < HttpNodeMapping
       return super(s, req);
     end
       
-    uid = @users.login(user, pass)
+    uid, _ = @users.login(user, pass)
     if(uid == nil)
       rep = HttpResponse.generate303(req, "/login")
       return s.write(rep.to_s);
