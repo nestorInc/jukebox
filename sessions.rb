@@ -7,18 +7,16 @@ class Session
     @user_agent      = row["user_agent"];
     @remote_ip       = row["remote_ip"];
     @creation        = row["creation"];
-    @last_connection = row["last_connection"];
     @validity        = row["validity"];
   end
 
-  def Session.create(sid, uid, user_agent, ip, creation, last_connection, validity)
+  def Session.create(sid, uid, user_agent, ip, creation, validity)
     row = {
       "sid"             => sid,
       "uid"             => uid,
       "user_agent"      => user_agent,
       "remote_ip"       => ip,
       "creation"        => creation,
-      "last_connection" => last_connection,
       "validity"        => validity }
     Session.new(row)
   end
@@ -28,7 +26,6 @@ class Session
   attr_accessor :user_agent
   attr_accessor :remote_ip
   attr_accessor :creation
-  attr_accessor :last_connection
   attr_accessor :validity
 end
 
@@ -47,7 +44,6 @@ class Sessions
                        user_agent TEXT,
                        remote_ip TEXT,
                        creation INTEGER,
-                       last_connection INTEGER,
                        validity INTEGER,
                        FOREIGN KEY(uid) REFERENCES users(uid) ON UPDATE CASCADE ON DELETE CASCADE);
 SQL
@@ -62,7 +58,7 @@ SQL
   end
 
   def insert(s)
-    @db.execute("INSERT INTO sessions (sid, uid, user_agent, remote_ip, creation, last_connection, validity) VALUES ('#{s.sid}', '#{s.uid}', '#{s.user_agent}', '#{s.remote_ip}', #{s.creation}, #{s.creation}, #{s.validity})")
+    @db.execute("INSERT INTO sessions (sid, uid, user_agent, remote_ip, creation, validity) VALUES ('#{s.sid}', '#{s.uid}', '#{s.user_agent}', '#{s.remote_ip}', #{s.creation}, #{s.validity})")
   end
 
   def purge()
@@ -107,10 +103,5 @@ SQL
     insert(s)
 
     s
-  end
-
-  def updateLastConnexion(s)
-    debug("[DB] update_session_last_connection");
-    @db.execute("UPDATE sessions SET last_connection=#{(Time.now()).strftime("%s")} WHERE sid='#{s.sid}';");
   end
 end
