@@ -83,7 +83,6 @@ SQL
     nil;
   end
 
-  #TODO refactor use execute and mapping values
   def create(uid, remote_ip, user_agent)
     return false if(uid == nil)
 
@@ -99,7 +98,7 @@ SQL
     r = Random.new();
     hash = [ r.bytes(32) ].pack("m").strip
 
-    s = Session.create(hash, uid, user_agent, remote_ip, creation, creation, validity);
+    s = Session.create(hash, uid, user_agent, remote_ip, creation, validity);
     insert(s)
 
     s
