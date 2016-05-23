@@ -127,6 +127,16 @@ SQL
     res[0].at(0);
   end
 
+  def get_files(nb)
+    debug("[DB] get_file");
+
+    req = @db.prepare("SELECT * FROM library WHERE status=#{FILE_OK} ORDER BY RANDOM() LIMIT #{nb}");
+    res = req.execute().map(&Song.from_db)
+    req.close();
+
+    res
+  end
+
   def get_file(*mids)
     debug("[DB] get_file");
     if(mids.size == 0 || mids[0] == nil)
