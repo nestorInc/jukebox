@@ -229,7 +229,6 @@ SQL
 
   def check_file(src)
     req = @db.prepare("SELECT mid FROM library WHERE src=?");
-    debug("[DB] check_file");
     res = req.execute!(src);
     req.close();
     res.size == 0;

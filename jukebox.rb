@@ -203,7 +203,6 @@ def check_cookie(s, req, users, sessions, stream)
   stream.channel_init(currentSession[:user]);
 
 #  currentSession[:sesssion].updateLastRequest() if currentSession;
-  sessions.updateLastConnexion(currentSession[:session]);
 
   return "cookie"
 end
