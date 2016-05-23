@@ -265,4 +265,11 @@ SQL
     st.execute(v);
     st.close();
   end
+
+  def truncate()
+    request  = "DELETE FROM library";
+    st = @db.prepare(req);
+    st.execute(v);
+    st.close();
+  end
 end

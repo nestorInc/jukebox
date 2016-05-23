@@ -101,6 +101,8 @@ class JsonManager < HttpNode
     resp ||= {};
     resp[:timestamp] = Time.now.to_i();
     case(req["name"])
+    when "clear_library"
+      @library.truncate();
     when "next"
       ch.next();
     when "previous"
