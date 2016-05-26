@@ -120,7 +120,14 @@ end
 def check_token(s, req, users, sessions, stream)
   return nil if req.uri.query == nil and req.data == nil
   form = if req.data
-           json = JSON.parse(req.data);
+           begin
+             if (req.options["Content-Type"] == "application/octet-stream")
+               return nil;
+             end
+             json = JSON.parse(req.data);
+           rescue => e
+             return nil;
+           end
            json["login"] if(json and json["login"]);
          else
            Hash[URI.decode_www_form(req.uri.query)];
