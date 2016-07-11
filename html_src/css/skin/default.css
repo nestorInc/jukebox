@@ -283,7 +283,8 @@ margin: 5px 0;
 /* main layout */
 
 .jukebox {
-	width: 800px;
+	min-width: 800px;
+	max-width: 800px;
 	min-height: 600px;
 	margin-left: auto;
 	margin-right: auto;
@@ -292,8 +293,8 @@ margin: 5px 0;
 
 .jukebox .jukebox-mainpanel-wrapper {
 	box-sizing: border-box;
-	float: left;
-	width: 627px;
+	overflow: hidden;
+	width: auto;
 	min-height: 507px;
 	border-left: 1px solid;
 }
@@ -361,9 +362,11 @@ margin: 5px 0;
 /* current song */
 .jukebox .jukebox-currentsong-wrapper {
 	box-sizing: border-box;
-	float: left;
+	overflow: hidden;
 	width: 620px;
 	min-height: 95px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .jukebox .jukebox-currentsong-wrapper .coverart-wrapper {
@@ -603,7 +606,7 @@ margin: 5px 0;
 	font-size: 14px;
 }
 
-.jukebox .jukebox-upload-table {
+.jukebox .jukebox-uploaded-files {
 	font-size: 11px;
 }
 

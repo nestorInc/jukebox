@@ -1,9 +1,10 @@
+/* jshint nonstandard:true, sub:true */
 /* global Template, FormatTime, Draggable, Droppables */
 /* exported Songlist */
 
 var Songlist = this.Songlist = Class.create(
 {
-	initialize: function(rootCSS, jukebox, skin, DOM, columns, headerActions, songActions, allowDragAndDrop, droppedCallback)
+	initialize: function(rootCSS, jukebox, skin, DOM, columns, headerActions, songActions, allowDragAndDrop, droppedCallback, allowSearchLinks, checkboxCallback)
 	{
 		/*this.DOM and this.className are defined by updateContent*/
 		this.rootCSS = rootCSS;
@@ -20,6 +21,22 @@ var Songlist = this.Songlist = Class.create(
 		this.cookAction(headerActions);
 
 		this.droppedCallback = droppedCallback;
+
+		this.allowSearchLinks = allowSearchLinks;
+
+		this.checkboxCallback = checkboxCallback;
+
+		this.generateTableId();
+	},
+
+	getTableId: function()
+	{
+		return this.rootCSS + "-songlist-" + this.tableId;
+	},
+
+	generateTableId: function()
+	{
+		this.tableId = new Date().getTime();
 	},
 
 	cookAction: function(actions)
@@ -59,6 +76,12 @@ var Songlist = this.Songlist = Class.create(
 		}
 		else if (column == 'track')
 		{
+			var trackSlashIndex = song.track.toString().indexOf("/");
+			if(trackSlashIndex != -1)
+			{
+				var parts = song.track.split("/");
+				return parts[0];
+			}
 			return song.track;
 		}
 		else if (column == 'genre')
@@ -74,11 +97,50 @@ var Songlist = this.Songlist = Class.create(
 				a.insert(action.html);
 				a.on("click", function()
 				{
-					action.callback(song.mid, index, count);
+					action.callback(("filename" in song) ? song.filename : song.mid, index, count);
 				});
+
+				if (action.hidden === true)
+				{
+					a.firstDescendant().hide();
+				}
+
 				cellContent.insert(a);
 			});
 			return cellContent;
+		}
+		else if (column == 'checkbox')
+		{
+			var that = this;
+			var input = new Element('input');
+			input.addClassName('song-list-checkbox');
+			input.type = "checkbox";
+			input.on("click", function()
+			{
+				that.updateCheckboxStates(false);
+				if (that.checkboxCallback !== null)
+				{
+					that.checkboxCallback(input.checked, ("filename" in song) ? song.filename : song.mid, index, count);
+				}
+			});
+			return input;
+		}
+		else if (column == 'filename')
+		{
+			return song.filename;
+		}
+		else if (column == 'year')
+		{
+			return song.year;
+		}
+		else if (column == 'trackNb')
+		{
+			var trackNbSlashIndex = song.track.toString().indexOf("/");
+			if(trackNbSlashIndex != -1)
+			{
+				return song.track.split("/")[1];
+			}
+			return song.trackNb;
 		}
 
 		return column;
@@ -97,9 +159,31 @@ var Songlist = this.Songlist = Class.create(
 				{
 					action.callback();
 				});
+
+				if (action.hidden === true)
+				{
+					a.firstDescendant().hide();
+				}
+
 				cellContent.insert(a);
 			});
 			return cellContent;
+		}
+		else if (column == 'checkbox')
+		{
+			var that = this;
+			var input = new Element('input');
+			input.addClassName('song-list-header-checkbox');
+			input.type = "checkbox";
+			input.on("click", function()
+			{
+				that.updateCheckboxStates(true, input.checked);
+				if (that.checkboxCallback !== null)
+				{
+					that.checkboxCallback(input.checked, -1, -1, 0);
+				}
+			});
+			return input;
 		}
 
 		return column.capitalize();
@@ -107,7 +191,21 @@ var Songlist = this.Songlist = Class.create(
 
 	cellShouldHaveSearchLink: function(column)
 	{
+		if (!this.allowSearchLinks)
+		{
+			return false;
+		}
+
 		if (column == 'artist' || column == 'album' || column == 'genre')
+		{
+			return true;
+		}
+		return false;
+	},
+
+	shouldContentBeStatic: function(column)
+	{
+		if (column == 'checkbox' || column == 'filename' || column == 'controls')
 		{
 			return true;
 		}
@@ -116,6 +214,8 @@ var Songlist = this.Songlist = Class.create(
 
 	setSongs: function(songs)
 	{
+		this.generateTableId();
+
 		this.songs = songs;
 		var that = this;
 
@@ -165,12 +265,21 @@ var Songlist = this.Songlist = Class.create(
 				tr.store('song-index', currentSongIndex);
 			}
 
+			if (that.columns.indexOf('filename') > -1)
+			{
+				tr.id = 'song-list-cell-row-' + escape(song.filename);
+			}
+
 			// Populate cells
 			that.columns.each(function(column)
 			{
 				var td = new Element('td');
 				td.addClassName('song-list-cell');
 				td.addClassName('song-list-cell-' + column);
+				if (that.shouldContentBeStatic(column))
+				{
+					td.addClassName('song-list-cell-static');
+				}
 
 				var cellContent = that.getCellContent(song, column, currentSongIndex, songs.length);
 
@@ -225,6 +334,7 @@ var Songlist = this.Songlist = Class.create(
 		}
 
 		songlist = songlist.wrap('table');
+		songlist.id = this.getTableId();
 		this.DOM.update(songlist);
 	},
 
@@ -257,5 +367,37 @@ var Songlist = this.Songlist = Class.create(
 				}
 			}
 		});
+	},
+
+	updateCheckboxStates: function(headerCheckboxChanged, headerCheckboxValue)
+	{
+		var i = 0,
+			checkboxes = this.DOM.select('.song-list-checkbox'),
+			headerCheckboxes = this.DOM.select('.song-list-header-checkbox'),
+			allischecked = true;
+
+		for(i = 0; i < checkboxes.length; ++i)
+		{
+			if (headerCheckboxChanged)
+			{
+				checkboxes[i].checked = headerCheckboxValue;
+			}
+			else
+			{
+				allischecked = allischecked && checkboxes[i].checked;
+			}
+		}
+
+		for(i = 0; i < headerCheckboxes.length; ++i)
+		{
+			if (headerCheckboxChanged)
+			{
+				headerCheckboxes[i].checked = headerCheckboxValue;
+			}
+			else
+			{
+				headerCheckboxes[i].checked = allischecked;
+			}
+		}
 	}
 });

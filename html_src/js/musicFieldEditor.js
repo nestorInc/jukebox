@@ -5,7 +5,7 @@ function MusicFieldEditor(name, rootCSS, uploadedFiles, uploadedFilesEdition)
 {
 	this.name = name;
 	this.rootCSS = rootCSS;
-	this.prefix = rootCSS + '-upload-';
+	this.prefix = 'song-list-cell-';
 	this.uploadedFiles = uploadedFiles;
 	this.uploadedFilesEdition = uploadedFilesEdition;
 }
@@ -39,13 +39,13 @@ MusicFieldEditor.prototype.undo = function(cell)
 	{
 		var uploadedFile = this.uploadedFiles[i],
 			fname = escape(uploadedFile.filename);
-		if(this.prefix + "line-" + fname == identifier)
+		if(this.prefix + "row-" + fname == identifier)
 		{
 			var property = this.name.substring(this.prefix.length);
 			if(row.select('.'+this.rootCSS+'-uploaded-file-modified').length == 1)
 			{
-				row.select('.'+this.rootCSS+'-uploaded-file-update').each(function(e){e.hide();});
-				row.select('.'+this.rootCSS+'-uploaded-file-validate').each(function(e){e.show();});
+				row.select('.'+this.rootCSS+'-update').each(function(e){e.hide();});
+				row.select('.'+this.rootCSS+'-validate').each(function(e){e.show();});
 			}
 			if(this.name == this.prefix + "track")
 			{
@@ -102,7 +102,7 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 	{
 		var fileE = this.uploadedFilesEdition[i],
 			fname = escape(fileE.filename);
-		if(this.prefix + "line-" + fname == identifier)
+		if(this.prefix + "row-" + fname == identifier)
 		{
 			if(property == "genre")
 			{
@@ -164,8 +164,8 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 				// Default behaviour
 				cell.addClassName(this.rootCSS+'-uploaded-file-modified');
 
-				row.select('.'+this.rootCSS+'-uploaded-file-update').each(function(e){e.show();});
-				row.select('.'+this.rootCSS+'-uploaded-file-validate').each(function(e){e.hide();});
+				row.select('.'+this.rootCSS+'-update').each(function(e){e.show();});
+				row.select('.'+this.rootCSS+'-validate').each(function(e){e.hide();});
 
 			}
 
@@ -187,7 +187,7 @@ MusicFieldEditor.prototype.submit = function(cell, form)
 MusicFieldEditor.prototype.edit = function(cell)
 {
 	cell = $(cell);
-	if(cell.hasClassName(this.rootCSS + "-upload-cell-static"))
+	if(cell.hasClassName("song-list-cell-static"))
 	{
 		return;
 	}
@@ -227,7 +227,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 
 		for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 		{
-			if(this.prefix + "line-" + escape(this.uploadedFilesEdition[i].filename) == identifier)
+			if(this.prefix + "row-" + escape(this.uploadedFilesEdition[i].filename) == identifier)
 			{
 				if(this.uploadedFilesEdition[i]["genre"] != this.uploadedFiles[i]["genre"])
 				{
@@ -263,7 +263,7 @@ MusicFieldEditor.prototype.edit = function(cell)
 		for(i = 0, len = this.uploadedFilesEdition.length; i < len; ++i)
 		{
 			var fileE = this.uploadedFilesEdition[i];
-			if(this.prefix + "line-" + escape(fileE.filename) == identifier)
+			if(this.prefix + "row-" + escape(fileE.filename) == identifier)
 			{
 				if(property == "track")
 				{

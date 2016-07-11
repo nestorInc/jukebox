@@ -195,7 +195,7 @@ this.SearchTab = Class.create(Tab,
 		var columns = [ 'artist', 'album', 'title', 'track', 'genre', 'duration', 'controls' ];
 		this.songList = new Songlist(this.rootCSS, this.jukebox, this.template, this.DOM.down('.' + this.rootCSS + "-search"),
 							columns, headerActions, songActions, // Content
-							false); // Drag and drop
+							false, null, true, null); // Drag and drop
 
 		this.initAndDisplaySearchResults();
 	},

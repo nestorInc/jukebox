@@ -170,7 +170,8 @@ Jukebox.UI.skins["default"] =
 				main:
 '<p class="#{root}-tab-title">#{title}</p>\
 <div class="#{root}-file-uploader"></div>\
-<div class="#{root}-uploaded-files"></div>',
+<div class="#{root}-upload-batch-controls"></div>\
+<div class="#{root}-uploaded-files song-list"></div>',
 				tableController:
 '<select class="#{root}-upload-global-action-select">\
 	<option value="artist">Artist</option>\
@@ -194,38 +195,7 @@ Jukebox.UI.skins["default"] =
 <input class="#{root}-upload-global-min-idx" type="text" value="min" size=4/>\
 <input class="#{root}-upload-global-max-idx" type="text" value="max" size=4/>\
 <input class="#{root}-upload-global-submit" type="submit" value="Appliquer" />',
-				tableHead:
-'<tr>\
-	<th class="#{root}-upload-selector">\
-		<input class="#{root}-upload-selector-checkbox" type="checkbox" />\
-	</th>\
-	<th class="#{root}-upload-filename">Filename</th>\
-	<th class="#{root}-upload-artist">Artist</th>\
-	<th class="#{root}-upload-album">Album</th>\
-	<th class="#{root}-upload-title">Title</th>\
-	<th class="#{root}-upload-year">Year</th>\
-	<th class="#{root}-upload-track">Track</th>\
-	<th class="#{root}-upload-trackNb">TrackNb</th>\
-	<th class="#{root}-upload-genre">Genre</th>\
-	<th class="#{root}-upload-actions">Actions</th>\
-</tr>',
-				tableBody:
-'<tr id="#{rowId}">\
-	<td class="#{root}-upload-cell-static"><input class="#{root}-upload-cell-checkbox" type="checkbox" /></td>\
-	<td class="#{root}-upload-cell-static #{root}-upload-cell-filename">#{filename}</td>\
-	<td class="#{root}-upload-cell-artist">#{artist}</td>\
-	<td class="#{root}-upload-cell-album">#{album}</td>\
-	<td class="#{root}-upload-cell-title" >#{title}</td>\
-	<td class="#{root}-upload-cell-year">#{year}</td>\
-	<td class="#{root}-upload-cell-track">#{track}</td>\
-	<td class="#{root}-upload-cell-trackNb">#{trackNb}</td>\
-	<td class="#{root}-upload-cell-genre">#{genre}</td>\
-	<td class="#{root}-uploaded-file-actions #{root}-upload-cell-static">\
-		<a href="javascript:;" class="#{root}-uploaded-file-delete">X</a>\
-		<a href="javascript:;" class="#{root}-uploaded-file-update" style="display:none;">Update</a>\
-		<a href="javascript:;" class="#{root}-uploaded-file-validate">Validate</a>\
-	</td>\
-</tr>'
+				controlButton: '<span class="#{root}-#{name}"><i class="material-icons">#{icon}</i></span>'
 			},
 			SearchTab:
 			{
