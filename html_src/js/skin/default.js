@@ -170,8 +170,11 @@ Jukebox.UI.skins["default"] =
 				main:
 '<p class="#{root}-tab-title">#{title}</p>\
 <div class="#{root}-file-uploader"></div>\
-<div class="#{root}-upload-batch-controls"></div>\
-<div class="#{root}-uploaded-files song-list"></div>',
+<div class="#{root}-upload-batch-controls-wrapper">\
+	Batch controls\
+	<div class="#{root}-upload-batch-controls"></div>\
+</div>\
+<div class="#{root}-uploaded-files song-list song-list-compact"></div>',
 				tableController:
 '<select class="#{root}-upload-global-action-select">\
 	<option value="artist">Artist</option>\

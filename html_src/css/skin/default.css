@@ -213,7 +213,9 @@ div, .jukebox span, .jukebox applet, .jukebox object, .jukebox iframe,
 }
 
 .jukebox .bg-red,
-.jukebox .jukebox-sidepanel-wrapper .list-delete-icon:hover {
+.jukebox .jukebox-sidepanel-wrapper .list-delete-icon:hover,
+.jukebox .song-list td.song-list-cell-controls .jukebox-delete:hover i,
+.jukebox .song-list td.song-list-cell-controls .jukebox-delete:hover {
 	background-color: #E04144;
 	color: black;
 }
@@ -280,6 +282,12 @@ margin: 5px 0;
 	border-radius: 2px;
 }
 
+.editable-cell-form input[type=text],
+.editable-cell-form select {
+	width: 100%;
+	font-size: 100%;
+}
+
 /* main layout */
 
 .jukebox {
@@ -289,7 +297,6 @@ margin: 5px 0;
 	margin-left: auto;
 	margin-right: auto;
 }
-
 
 .jukebox .jukebox-mainpanel-wrapper {
 	box-sizing: border-box;
@@ -606,7 +613,7 @@ margin: 5px 0;
 	font-size: 14px;
 }
 
-.jukebox .jukebox-uploaded-files {
+.jukebox .song-list-compact {
 	font-size: 11px;
 }
 
@@ -621,7 +628,7 @@ margin: 5px 0;
 
 .jukebox th.song-list-sortcol,
 .jukebox th.sortcol {
-	padding-right: 20px;
+	padding-right: 14px;
 	background-repeat: no-repeat;
 	background-position: right center;
 }
@@ -647,6 +654,10 @@ margin: 5px 0;
 	vertical-align: middle;
 }
 
+.jukebox .song-list-compact td, .song-list-compact th {
+	padding: 1px 0px 1px 0px;
+}
+
 .jukebox .song-list table {
 	width: 100%;
 	border-collapse: separate;
@@ -666,7 +677,9 @@ margin: 5px 0;
 	max-width: 110px;
 }
 
-.jukebox th.song-list-cell-track {
+.jukebox th.song-list-cell-track,
+.jukebox th.song-list-cell-year,
+.jukebox th.song-list-cell-trackNb {
 	width: 40px;
 	max-width: 40px;
 }
@@ -678,7 +691,7 @@ margin: 5px 0;
 
 .jukebox th.song-list-cell-controls,
 .jukebox td.song-list-cell-controls {
-	width: 72px;
+	width: 77px;
 	padding: 0;
 }
 
@@ -697,3 +710,41 @@ margin: 5px 0;
 	margin: 15px 0;
 }
 
+.song-list td.jukebox-uploaded-file-modified {
+	font-weight: bold;
+	background-color: #FF9F29;
+	color: black;
+}
+
+.jukebox-upload-batch-controls-wrapper {
+	display: inline-block;
+	margin: 8px 0 8px 8px;
+	padding: 4px;
+	border-left: 1px solid #00E074;
+}
+
+.jukebox-upload-batch-controls {
+	margin: 8px 0 4px 0px;
+}
+
+.qq-upload-button {
+	background-color: #292929;
+	border-bottom: 1px solid #00e074;
+	color: #00e074;
+	margin: 10px;
+}
+
+.qq-upload-drop-area,
+.qq-upload-button-hover {
+	background: #FF9F29;
+	color: #212413;
+}
+
+.qq-upload-list {
+	padding: 6px;
+}
+
+.qq-upload-list li {
+	border-bottom: 1px solid #00e074;
+	padding: 2px;
+}

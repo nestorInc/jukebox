@@ -185,6 +185,14 @@ var Songlist = this.Songlist = Class.create(
 			});
 			return input;
 		}
+		else if (column == 'track')
+		{
+			return '#';
+		}
+		else if (column == 'trackNb')
+		{
+			return 'nb';
+		}
 
 		return column.capitalize();
 	},
@@ -241,6 +249,11 @@ var Songlist = this.Songlist = Class.create(
 			var th = new Element('th');
 			th.addClassName('song-list-cell');
 			th.addClassName('song-list-cell-' + column);
+
+			if (column == 'checkbox' || column == 'controls')
+			{
+				th.addClassName('nosort');
+			}
 
 			th.update(that.getHeaderContent(column));
 
