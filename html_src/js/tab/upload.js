@@ -172,21 +172,9 @@ this.UploadTab = Class.create(Tab,
 		{
 			if(id !== null)
 			{
-				// Delete entry
-				for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
-				{
-					if(this.uploadedFiles[i].filename == id)
-					{
-						this.uploadedFiles.splice(i, 1);
-						this.uploadedFilesEdition.splice(i, 1); // at same index
-						break;
-					}
-				}
+				this.removeSongFromList(id);
 
 				Notifications.Display(2, "Song " + id + " sucessfully deleted");
-
-				//TODO: notify songlist of song deletion instead of refreshing everything
-				this.refreshTableDisplay();
 			}
 		}
 		else if(ret == "error")
@@ -272,18 +260,7 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(1, message);
 			if(id !== null)
 			{
-				// Delete entry
-				for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
-				{
-					if(this.uploadedFiles[i].filename == id)
-					{
-						this.uploadedFiles.splice(i, 1);
-						this.uploadedFilesEdition.splice(i, 1); // at same index
-						break;
-					}
-				}
-				// TODO: notify songlist of song deletion instead of refreshing everything
-				this.refreshTableDisplay();
+				this.removeSongFromList(id);
 			}
 		}
 		else if(ret == "error")
@@ -533,6 +510,24 @@ this.UploadTab = Class.create(Tab,
 		}
 	},
 
+	removeSongFromList: function(filename)
+	{
+		// Remove from arrays
+		var i, len;
+		for(i = 0, len = this.uploadedFiles.length; i < len; ++i)
+		{
+			if(this.uploadedFiles[i].filename == filename)
+			{
+				this.uploadedFiles.splice(i, 1);
+				this.uploadedFilesEdition.splice(i, 1); // at same index
+				break;
+			}
+		}
+
+		// Remove from song list
+		this.songList.deleteRow(filename);
+	},
+
 	displayUploadedFiles: function(uploaded_files)
 	{
 		this.scheduleUpdate();
@@ -559,6 +554,8 @@ this.UploadTab = Class.create(Tab,
 			this.makeCellEditable("song-list-cell-filename");
 			this.makeCellEditable("song-list-cell-controls");
 
+			this.songList.setSongs(this.uploadedFiles);
+
 			this.refreshTableDisplay();
 		}
 
@@ -584,18 +581,7 @@ this.UploadTab = Class.create(Tab,
 		// Deletes all deleted lines
 		for(i = 0; i < deleteLines.length; ++i)
 		{
-			// Delete unmodified reference entry
-			for(j = 0, len = this.uploadedFiles.length; j < len; ++j)
-			{
-				if(this.uploadedFiles[j].filename == deleteLines[i])
-				{
-					this.uploadedFiles.splice(j, 1);
-					this.uploadedFilesEdition.splice(j, 1); // at same index
-					break;
-				}
-			}
-
-			// TODO: make song list remove element
+			this.removeSongFromList(deleteLines[i]);
 		}
 
 		// Find files to add
@@ -621,26 +607,24 @@ this.UploadTab = Class.create(Tab,
 		for(i = 0, len = newLines.length; i < len; ++i)
 		{
 			//TODO: clone with Extend(true, {}, object);
-			//TODO: make songlist support adding line
 			this.uploadedFiles.push(Object.toJSON(newLines[i]).evalJSON());
 			this.uploadedFilesEdition.push(Object.toJSON(newLines[i]).evalJSON());
+
+			this.songList.addRow(newLines[i]);
 
 			this.removeFileFromQQUpload(newLines[i].filename);
 		}
 
-		// Since we do not let song list do the add / remove lines, for now re-create song list at every change
-		// TODO: this has to go away
-		if(newLines.length > 0 || deleteLines.length > 0)
+		// We have to reinit tablekit when adding new songs
+		if(newLines.length > 0)
 		{
 			this.refreshTableDisplay();
 		}
-		return;
 	},
 
 	refreshTableDisplay: function()
 	{
-		this.songList.setSongs(this.uploadedFiles);
-
+		this.songList.generateTableId();
 		this.tableKit = new TableKit(this.songList.getTableId(),
 			{
 				'sortable': true,

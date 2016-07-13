@@ -37,6 +37,12 @@ var Songlist = this.Songlist = Class.create(
 	generateTableId: function()
 	{
 		this.tableId = new Date().getTime();
+
+		var table = this.DOM.down('table');
+		if (table)
+		{
+			table.id = this.getTableId();
+		}
 	},
 
 	cookAction: function(actions)
@@ -56,8 +62,10 @@ var Songlist = this.Songlist = Class.create(
 		});
 	},
 
-	getCellContent: function(song, column, index, count)
+	getCellContent: function(song, column, index)
 	{
+		var that = this;
+		
 		if (column == 'artist')
 		{
 			return song.artist;
@@ -97,7 +105,7 @@ var Songlist = this.Songlist = Class.create(
 				a.insert(action.html);
 				a.on("click", function()
 				{
-					action.callback(("filename" in song) ? song.filename : song.mid, index, count);
+					action.callback(("filename" in song) ? song.filename : song.mid, index, that.songs.length);
 				});
 
 				if (action.hidden === true)
@@ -111,7 +119,6 @@ var Songlist = this.Songlist = Class.create(
 		}
 		else if (column == 'checkbox')
 		{
-			var that = this;
 			var input = new Element('input');
 			input.addClassName('song-list-checkbox');
 			input.type = "checkbox";
@@ -120,7 +127,7 @@ var Songlist = this.Songlist = Class.create(
 				that.updateCheckboxStates(false);
 				if (that.checkboxCallback !== null)
 				{
-					that.checkboxCallback(input.checked, ("filename" in song) ? song.filename : song.mid, index, count);
+					that.checkboxCallback(input.checked, ("filename" in song) ? song.filename : song.mid, index, that.songs.length);
 				}
 			});
 			return input;
@@ -220,11 +227,66 @@ var Songlist = this.Songlist = Class.create(
 		return false;
 	},
 
+	insertSong: function(song, currentSongIndex, songlist)
+	{
+		var that = this;
+
+		var tr = new Element('tr');
+		tr.addClassName((currentSongIndex%2 === 0) ? 'roweven' : 'rowodd');
+		tr.addClassName(this.rootCSS + '-song-list-song');
+		tr.addClassName(this.rootCSS + '-song-list-song-' + currentSongIndex);
+
+		if (this.allowDragAndDrop)
+		{
+			tr.store('song-mid', song.mid);
+			tr.store('song-index', currentSongIndex);
+		}
+
+		if (this.columns.indexOf('filename') > -1)
+		{
+			tr.id = 'song-list-cell-row-' + escape(song.filename);
+			tr.store('filename', song.filename);
+		}
+
+		// Populate cells
+		this.columns.each(function(column)
+		{
+			var td = new Element('td');
+			td.addClassName('song-list-cell');
+			td.addClassName('song-list-cell-' + column);
+			if (that.shouldContentBeStatic(column))
+			{
+				td.addClassName('song-list-cell-static');
+			}
+
+			var cellContent = that.getCellContent(song, column, currentSongIndex);
+
+			// Generate search link if appropriate
+			if (that.cellShouldHaveSearchLink(column) === true)
+			{
+				var a = new Element('a');
+				a.update(cellContent);
+				a.on("click", function(evt)
+				{
+					that.jukebox.getUI().searchCategory(cellContent, column, evt);
+				});
+				td.insert(a);
+			}
+			else
+			{
+				td.update(cellContent);
+			}
+			tr.insert(td);
+		});
+		songlist.insert(tr);
+		this.songs.push(song);
+	},
+
 	setSongs: function(songs)
 	{
 		this.generateTableId();
 
-		this.songs = songs;
+		this.songs = [];
 		var that = this;
 
 		if (this.allowDragAndDrop)
@@ -266,54 +328,7 @@ var Songlist = this.Songlist = Class.create(
 
 		songs.each(function(song)
 		{
-			// Generate line
-			var tr = new Element('tr');
-			tr.addClassName((currentSongIndex%2 === 0) ? 'roweven' : 'rowodd');
-			tr.addClassName(that.rootCSS + '-song-list-song');
-			tr.addClassName(that.rootCSS + '-song-list-song-' + currentSongIndex);
-
-			if (that.allowDragAndDrop)
-			{
-				tr.store('song-mid', song.mid);
-				tr.store('song-index', currentSongIndex);
-			}
-
-			if (that.columns.indexOf('filename') > -1)
-			{
-				tr.id = 'song-list-cell-row-' + escape(song.filename);
-			}
-
-			// Populate cells
-			that.columns.each(function(column)
-			{
-				var td = new Element('td');
-				td.addClassName('song-list-cell');
-				td.addClassName('song-list-cell-' + column);
-				if (that.shouldContentBeStatic(column))
-				{
-					td.addClassName('song-list-cell-static');
-				}
-
-				var cellContent = that.getCellContent(song, column, currentSongIndex, songs.length);
-
-				// Generate search link if appropriate
-				if (that.cellShouldHaveSearchLink(column) === true)
-				{
-					var a = new Element('a');
-					a.update(cellContent);
-					a.on("click", function(evt)
-					{
-						that.jukebox.getUI().searchCategory(cellContent, column, evt);
-					});
-					td.insert(a);
-				}
-				else
-				{
-					td.update(cellContent);
-				}
-				tr.insert(td);
-			});
-			songlist.insert(tr);
+			that.insertSong(song, currentSongIndex, songlist);
 
 			currentSongIndex++;
 		});
@@ -412,5 +427,21 @@ var Songlist = this.Songlist = Class.create(
 				headerCheckboxes[i].checked = allischecked;
 			}
 		}
+	},
+
+	deleteRow: function(rowId)
+	{
+		this.DOM.select('tr').each(function(row)
+		{
+			if (rowId === row.retrieve('filename') || rowId === row.retrieve('song-mid'))
+			{
+				row.remove();
+			}
+		});
+	},
+
+	addRow: function(song)
+	{
+		this.insertSong(song, this.songs.length, this.DOM.down('tbody'));
 	}
 });
