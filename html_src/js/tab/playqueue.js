@@ -40,7 +40,9 @@ this.PlayQueueTab = Class.create(Tab,
 		var columns = [ 'artist', 'album', 'title', 'duration', 'controls' ];
 		this.songList = new Songlist(this.rootCSS, this.jukebox, this.template, this.DOM.down('.'+this.rootCSS+'-playqueue-content'),
 							columns, headerActions, songActions, // Content
-							true, this.onPlayQueueDrop.bind(this), true, null); // Drag and drop
+							true, this.onPlayQueueDrop.bind(this), // Drag and drop
+							true, // Allow search links
+							null); // Checkboxes callback
 	},
 
 	setSongs: function(songs)

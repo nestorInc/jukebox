@@ -1,4 +1,3 @@
-/* jshint nonstandard:true, sub:true */
 /* global Template, FormatTime, Draggable, Droppables */
 /* exported Songlist */
 
@@ -84,13 +83,7 @@ var Songlist = this.Songlist = Class.create(
 		}
 		else if (column == 'track')
 		{
-			var trackSlashIndex = song.track.toString().indexOf("/");
-			if(trackSlashIndex != -1)
-			{
-				var parts = song.track.split("/");
-				return parts[0];
-			}
-			return song.track;
+			return song.track.split("/")[0];
 		}
 		else if (column == 'genre')
 		{
@@ -108,7 +101,7 @@ var Songlist = this.Songlist = Class.create(
 					action.callback(("filename" in song) ? song.filename : song.mid, index, that.songs.length);
 				});
 
-				if (action.hidden === true)
+				if (action.hidden)
 				{
 					a.firstDescendant().hide();
 				}
@@ -125,7 +118,7 @@ var Songlist = this.Songlist = Class.create(
 			input.on("click", function()
 			{
 				that.updateCheckboxStates(false);
-				if (that.checkboxCallback !== null)
+				if (that.checkboxCallback)
 				{
 					that.checkboxCallback(input.checked, ("filename" in song) ? song.filename : song.mid, index, that.songs.length);
 				}
@@ -167,7 +160,7 @@ var Songlist = this.Songlist = Class.create(
 					action.callback();
 				});
 
-				if (action.hidden === true)
+				if (action.hidden)
 				{
 					a.firstDescendant().hide();
 				}
@@ -185,7 +178,7 @@ var Songlist = this.Songlist = Class.create(
 			input.on("click", function()
 			{
 				that.updateCheckboxStates(true, input.checked);
-				if (that.checkboxCallback !== null)
+				if (that.checkboxCallback)
 				{
 					that.checkboxCallback(input.checked, -1, -1, 0);
 				}
@@ -244,7 +237,7 @@ var Songlist = this.Songlist = Class.create(
 
 		if (this.columns.indexOf('filename') > -1)
 		{
-			tr.id = 'song-list-cell-row-' + escape(song.filename);
+			tr.id = 'song-list-cell-row-' + encodeURIComponent(song.filename);
 			tr.store('filename', song.filename);
 		}
 
@@ -262,7 +255,7 @@ var Songlist = this.Songlist = Class.create(
 			var cellContent = that.getCellContent(song, column, currentSongIndex);
 
 			// Generate search link if appropriate
-			if (that.cellShouldHaveSearchLink(column) === true)
+			if (that.cellShouldHaveSearchLink(column))
 			{
 				var a = new Element('a');
 				a.update(cellContent);

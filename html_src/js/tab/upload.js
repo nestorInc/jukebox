@@ -1,4 +1,3 @@
-/* jshint nonstandard:true, sub:true */
 /* global MusicFieldEditor, Notifications, qq, TableKit, genresOrdered, Songlist */
 
 this.UploadTab = Class.create(Tab,
@@ -48,14 +47,14 @@ this.UploadTab = Class.create(Tab,
 				var fnames = [];
 				for(var i = 0; i < file_name.length; ++i)
 				{
-					fnames.push(unescape(file_name[i]));
+					fnames.push(decodeURIComponent(file_name[i]));
 				}
 				this.lastSendingDeletionIdentifier = fnames;
 				this.jukebox.deleteUploadedFile(fnames);
 			}
 			else
 			{
-				var fname = unescape(file_name);
+				var fname = decodeURIComponent(file_name);
 				this.lastSendingDeletionIdentifier = fname;
 				this.jukebox.deleteUploadedFile(fname);
 			}
@@ -80,7 +79,7 @@ this.UploadTab = Class.create(Tab,
 				tmp=null;
 				for(var i = 0; i < file_name.length; ++i)
 				{
-					fnames.push(unescape(file_name[i]));
+					fnames.push(decodeURIComponent(file_name[i]));
 					tmp = this.getUploadedFileEditionFromFilename(fnames[i]);
 					opts.push(
 					{
@@ -98,7 +97,7 @@ this.UploadTab = Class.create(Tab,
 			}
 			else
 			{
-				var fname = unescape(file_name);
+				var fname = decodeURIComponent(file_name);
 				this.lastSendingUpdateIdentifier = fname;
 				tmp = this.getUploadedFileEditionFromFilename(fname);
 				opts =
@@ -129,14 +128,14 @@ this.UploadTab = Class.create(Tab,
 				var fnames = [];
 				for(var i = 0; i < file_name.length; ++i)
 				{
-					fnames.push(unescape(file_name[i]));
+					fnames.push(decodeURIComponent(file_name[i]));
 				}
 				this.lastSendingValidationIdentifier = fnames;
 				this.jukebox.validateUploadedFile(fnames);
 			}
 			else
 			{
-				var fname = unescape(file_name);
+				var fname = decodeURIComponent(file_name);
 				this.lastSendingValidationIdentifier = fname;
 				this.jukebox.validateUploadedFile(fname);
 			}
@@ -188,12 +187,12 @@ this.UploadTab = Class.create(Tab,
 		var lastId = null;
 		if( Object.isArray(this.lastSendingUpdateIdentifier) )
 		{
-			lastId = escape(this.lastSendingUpdateIdentifier[0]);
+			lastId = encodeURIComponent(this.lastSendingUpdateIdentifier[0]);
 			this.lastSendingUpdateIdentifier.shift();
 		}
 		else
 		{
-			lastId = escape(this.lastSendingUpdateIdentifier);
+			lastId = encodeURIComponent(this.lastSendingUpdateIdentifier);
 		}
 
 		if(ret == "success")
@@ -240,12 +239,12 @@ this.UploadTab = Class.create(Tab,
 
 		if( Object.isArray(this.lastSendingValidationIdentifier) )
 		{
-			id = escape(this.lastSendingValidationIdentifier[0]);
+			id = encodeURIComponent(this.lastSendingValidationIdentifier[0]);
 			this.lastSendingValidationIdentifier.shift();
 		}
 		else
 		{
-			id = escape(this.lastSendingUpdateIdentifier);
+			id = encodeURIComponent(this.lastSendingUpdateIdentifier);
 		}
 
 		// Wether success or error, reset the last sending identifier to allow a new validation
@@ -430,7 +429,7 @@ this.UploadTab = Class.create(Tab,
 				}
 				else if( selectedOption === "delete" || selectedOption === "update" || selectedOption === "validate")
 				{
-					fname = unescape(tr.id.split('song-list-cell-row-')[1]);
+					fname = decodeURIComponent(tr.id.split('song-list-cell-row-')[1]);
 					identifiers.push(fname);
 				}
 				else if( selectedOption === "fillfromfilename" )
@@ -452,7 +451,7 @@ this.UploadTab = Class.create(Tab,
 						td = tr.down('.song-list-cell-track');
 					}
 
-					fname = unescape(tr.id.split('song-list-cell-row-')[1]).replace(".mp3","");
+					fname = decodeURIComponent(tr.id.split('song-list-cell-row-')[1]).replace(".mp3","");
 					form = td.down("form");
 					this.tableKit.editCell(td);
 
