@@ -83,7 +83,7 @@ var Songlist = this.Songlist = Class.create(
 		}
 		else if (column == 'track')
 		{
-			return song.track.split("/")[0];
+			return song.track.toString().split("/")[0];
 		}
 		else if (column == 'genre')
 		{
@@ -138,7 +138,7 @@ var Songlist = this.Songlist = Class.create(
 			var trackNbSlashIndex = song.track.toString().indexOf("/");
 			if(trackNbSlashIndex != -1)
 			{
-				return song.track.split("/")[1];
+				return song.track.toString().split("/")[1];
 			}
 			return song.trackNb;
 		}
