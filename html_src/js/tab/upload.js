@@ -1,5 +1,4 @@
-/* jshint nonstandard:true, sub:true */
-/* global MusicFieldEditor, Notifications, qq, TableKit, genresOrdered */
+/* global MusicFieldEditor, Notifications, qq, TableKit, genresOrdered, Songlist */
 
 this.UploadTab = Class.create(Tab,
 {
@@ -48,14 +47,14 @@ this.UploadTab = Class.create(Tab,
 				var fnames = [];
 				for(var i = 0; i < file_name.length; ++i)
 				{
-					fnames.push(unescape(file_name[i]));
+					fnames.push(decodeURIComponent(file_name[i]));
 				}
 				this.lastSendingDeletionIdentifier = fnames;
 				this.jukebox.deleteUploadedFile(fnames);
 			}
 			else
 			{
-				var fname = unescape(file_name);
+				var fname = decodeURIComponent(file_name);
 				this.lastSendingDeletionIdentifier = fname;
 				this.jukebox.deleteUploadedFile(fname);
 			}
@@ -80,7 +79,7 @@ this.UploadTab = Class.create(Tab,
 				tmp=null;
 				for(var i = 0; i < file_name.length; ++i)
 				{
-					fnames.push(unescape(file_name[i]));
+					fnames.push(decodeURIComponent(file_name[i]));
 					tmp = this.getUploadedFileEditionFromFilename(fnames[i]);
 					opts.push(
 					{
@@ -98,7 +97,7 @@ this.UploadTab = Class.create(Tab,
 			}
 			else
 			{
-				var fname = unescape(file_name);
+				var fname = decodeURIComponent(file_name);
 				this.lastSendingUpdateIdentifier = fname;
 				tmp = this.getUploadedFileEditionFromFilename(fname);
 				opts =
@@ -129,14 +128,14 @@ this.UploadTab = Class.create(Tab,
 				var fnames = [];
 				for(var i = 0; i < file_name.length; ++i)
 				{
-					fnames.push(unescape(file_name[i]));
+					fnames.push(decodeURIComponent(file_name[i]));
 				}
 				this.lastSendingValidationIdentifier = fnames;
 				this.jukebox.validateUploadedFile(fnames);
 			}
 			else
 			{
-				var fname = unescape(file_name);
+				var fname = decodeURIComponent(file_name);
 				this.lastSendingValidationIdentifier = fname;
 				this.jukebox.validateUploadedFile(fname);
 			}
@@ -172,23 +171,9 @@ this.UploadTab = Class.create(Tab,
 		{
 			if(id !== null)
 			{
-				// Delete entry
-				for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
-				{
-					if(this.uploadedFiles[i].filename == id)
-					{
-						this.uploadedFiles.splice(i, 1);
-						this.uploadedFilesEdition.splice(i, 1); // at same index
-						break;
-					}
-				}
+				this.removeSongFromList(id);
 
-				// Delete html part
-				var $uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files');
-				$uploaded_files.down('[id="' + this.rootCSS + '-upload-line-' + escape(id) + '"]').remove();
 				Notifications.Display(2, "Song " + id + " sucessfully deleted");
-
-				this.reinitTable();
 			}
 		}
 		else if(ret == "error")
@@ -199,23 +184,25 @@ this.UploadTab = Class.create(Tab,
 
 	updateResponse: function(ret, message)
 	{
+		var lastId = null;
+		if( Object.isArray(this.lastSendingUpdateIdentifier) )
+		{
+			lastId = encodeURIComponent(this.lastSendingUpdateIdentifier[0]);
+			this.lastSendingUpdateIdentifier.shift();
+		}
+		else
+		{
+			lastId = encodeURIComponent(this.lastSendingUpdateIdentifier);
+		}
+
 		if(ret == "success")
 		{
 			Notifications.Display(1, message);
-			var lastId = null;
 
-			if( Object.isArray(this.lastSendingUpdateIdentifier) )
-			{
-				lastId = escape(this.lastSendingUpdateIdentifier[0]);
-				this.lastSendingUpdateIdentifier.shift();
-			}
-			else
-			{
-				lastId = escape(this.lastSendingUpdateIdentifier);
-			}
+			// TOTO: handle action button visibility within song list
 			var rootCSS = this.rootCSS,
 			$uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files'),
-			$selector = $uploaded_files.down('[id="' + this.rootCSS + '-upload-line-' + lastId + '"]');
+			$selector = $uploaded_files.down('[id="song-list-cell-row-' + lastId + '"]');
 
 			// Delete all modified styles
 			$selector.select('.'+rootCSS+'-uploaded-file-modified').each(function(e)
@@ -224,13 +211,13 @@ this.UploadTab = Class.create(Tab,
 			});
 
 			// Hide update
-			$selector.select('.'+rootCSS+'-uploaded-file-update').each(function(e)
+			$selector.select('.'+rootCSS+'-update').each(function(e)
 			{
 				e.hide();
 			});
 
 			// Show validate
-			$selector.select('.'+rootCSS+'-uploaded-file-validate').each(function(e)
+			$selector.select('.'+rootCSS+'-validate').each(function(e)
 			{
 				e.show();
 			});
@@ -252,12 +239,12 @@ this.UploadTab = Class.create(Tab,
 
 		if( Object.isArray(this.lastSendingValidationIdentifier) )
 		{
-			id = escape(this.lastSendingValidationIdentifier[0]);
+			id = encodeURIComponent(this.lastSendingValidationIdentifier[0]);
 			this.lastSendingValidationIdentifier.shift();
 		}
 		else
 		{
-			id = escape(this.lastSendingUpdateIdentifier);
+			id = encodeURIComponent(this.lastSendingUpdateIdentifier);
 		}
 
 		// Wether success or error, reset the last sending identifier to allow a new validation
@@ -272,51 +259,12 @@ this.UploadTab = Class.create(Tab,
 			Notifications.Display(1, message);
 			if(id !== null)
 			{
-				// Delete entry
-				for(var i = 0, len = this.uploadedFiles.length; i < len; ++i)
-				{
-					if(this.uploadedFiles[i].filename == id)
-					{
-						this.uploadedFiles.splice(i, 1);
-						this.uploadedFilesEdition.splice(i, 1); // at same index
-						break;
-					}
-				}
-
-				// Delete html part
-				var $uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files');
-				$uploaded_files.down('[id="' + this.rootCSS + '-upload-line-' + escape(id) + '"]').remove();
-
-				this.reinitTable();
+				this.removeSongFromList(id);
 			}
 		}
 		else if(ret == "error")
 		{
 			Notifications.Display(4, message);
-		}
-	},
-
-	reinitTable: function()
-	{
-		var $uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files');
-		if($uploaded_files.down('tbody').childElementCount === 0)
-		{
-			$uploaded_files.update("No file uploaded yet.");
-			this.uploadedFilesEdition = null;
-			this.uploadedFiles = null;
-		}
-		else
-		{
-			var temp = new Date().getTime();
-			$uploaded_files.down('[id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '"]').id = this.rootCSS + '-uploaded-filelist-' + temp;
-			this.tableId = temp;
-			this.tableKit = new TableKit(this.rootCSS + '-uploaded-filelist-' + this.tableId,
-			{
-				'sortable': true,
-				'editable': true,
-				'trueResize': true,
-				'keepWidth': true
-			});
 		}
 	},
 
@@ -345,58 +293,6 @@ this.UploadTab = Class.create(Tab,
 		{
 			this.displayUploadedFiles(resp.files);
 		}
-	},
-
-	addRow: function(obj, tbody)
-	{
-		// Prepare variables
-		var trackSlashIndex = obj.track.toString().indexOf("/"),
-			track,
-			trackNb;
-		if(trackSlashIndex != -1)
-		{
-			var parts = obj.track.split("/");
-			track = parts[0];
-			trackNb = parts[1];
-		}
-		else
-		{
-			track = obj.track;
-			trackNb = 0;
-		}
-
-		var genre = genres[obj.genre] ? genres[obj.genre] : '',
-			fname = escape(obj.filename);
-
-		// Instanciate template
-		var tableBodyTpl = new Template(this.template.tableBody),
-			tableBodyVars =
-			{
-				root: this.rootCSS,
-				rowId: this.rootCSS + '-upload-line-' + fname,
-				filename: obj.filename,
-				artist: obj.artist,
-				album: obj.album,
-				title: obj.title,
-				year: obj.year,
-				track: track,
-				trackNb: trackNb,
-				genre: genre
-			},
-			tr = tableBodyTpl.evaluate(tableBodyVars); // as a string
-
-		// Compute a dom element
-		tbody.insert(tr);
-		tr = tbody.childElements().last();
-
-		// Register listeners
-		var linkDelete = tr.down('.'+this.rootCSS+'-uploaded-file-delete'),
-			linkUpdate = tr.down('.'+this.rootCSS+'-uploaded-file-update'),
-			linkValidate = tr.down('.'+this.rootCSS+'-uploaded-file-validate');
-		
-		linkDelete.on("click", this.deleteUploadedSong.bind(this, fname));
-		linkUpdate.on("click", this.updateUploadedSong.bind(this, fname));
-		linkValidate.on("click", this.validateUploadedSong.bind(this, fname));
 	},
 
 	change_global_action: function()
@@ -478,7 +374,7 @@ this.UploadTab = Class.create(Tab,
 	apply_global_modifications: function()
 	{
 		var i = 0,
-			elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox'),
+			elements = this.DOM.select('.song-list-checkbox'),
 			select = this.DOM.down('.'+this.rootCSS+'-upload-global-action-select'),
 			selectedOption = select.options[select.selectedIndex].value,
 			input = this.DOM.down('.'+this.rootCSS+'-upload-global-action-input'),
@@ -518,7 +414,7 @@ this.UploadTab = Class.create(Tab,
 					selectedOption === "genre" ||
 					selectedOption === "trackNb" )
 				{
-					td = tr.down('.'+this.rootCSS+'-upload-cell-' + selectedOption);
+					td = tr.down('.song-list-cell-' + selectedOption);
 					form = td.down("form");
 					this.tableKit.editCell(td);
 					if (selectedOption === "genre")
@@ -533,29 +429,29 @@ this.UploadTab = Class.create(Tab,
 				}
 				else if( selectedOption === "delete" || selectedOption === "update" || selectedOption === "validate")
 				{
-					fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]);
+					fname = decodeURIComponent(tr.id.split('song-list-cell-row-')[1]);
 					identifiers.push(fname);
 				}
 				else if( selectedOption === "fillfromfilename" )
 				{
 					if( dst_value  === "title")
 					{
-						td = tr.down('.'+this.rootCSS+'-upload-cell-title');
+						td = tr.down('.song-list-cell--title');
 					}
 					else if( dst_value  === "album")
 					{
-						td = tr.down('.'+this.rootCSS+'-upload-cell-album');
+						td = tr.down('.song-list-cell-album');
 					}
 					else if( dst_value  === "artist")
 					{
-						td = tr.down('.'+this.rootCSS+'-upload-cell-artist');
+						td = tr.down('.song-list-cell-artist');
 					}
 					else if( dst_value  === "track")
 					{
-						td = tr.down('.'+this.rootCSS+'-upload-cell-track');
+						td = tr.down('.song-list-cell-track');
 					}
 
-					fname = unescape(tr.id.split(this.rootCSS+'-upload-line-')[1]).replace(".mp3","");
+					fname = decodeURIComponent(tr.id.split('song-list-cell-row-')[1]).replace(".mp3","");
 					form = td.down("form");
 					this.tableKit.editCell(td);
 
@@ -613,238 +509,128 @@ this.UploadTab = Class.create(Tab,
 		}
 	},
 
-	toggle_checkbox_selection: function(checkbox)
+	removeSongFromList: function(filename)
 	{
-		var i = 0,
-			elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
-		for(i = 0; i < elements.length; ++i)
+		// Remove from arrays
+		var i, len;
+		for(i = 0, len = this.uploadedFiles.length; i < len; ++i)
 		{
-			elements[i].checked = checkbox.checked;
+			if(this.uploadedFiles[i].filename == filename)
+			{
+				this.uploadedFiles.splice(i, 1);
+				this.uploadedFilesEdition.splice(i, 1); // at same index
+				break;
+			}
 		}
 
-		elements = this.DOM.select('.'+this.rootCSS+'-upload-selector-checkbox');
-		for(i = 0; i < elements.length; ++i)
-		{
-			elements[i].checked = checkbox.checked;
-		}
-	},
-	resolve_toggle: function()
-	{
-		var i = 0,
-			elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox'),
-			allischecked = true;
-		for(i = 0; i < elements.length; ++i)
-		{
-			allischecked = allischecked && elements[i].checked;
-		}
-
-		elements = this.DOM.select('.'+this.rootCSS+'-upload-selector-checkbox');
-		for(i = 0; i < elements.length; ++i)
-		{
-			elements[i].checked = allischecked;
-		}
+		// Remove from song list
+		this.songList.deleteRow(filename);
 	},
 
 	displayUploadedFiles: function(uploaded_files)
 	{
-		var i, j,
-			len,
-			found,
-			$uploaded_files = this.DOM.down('.'+this.rootCSS+'-uploaded-files'),
-			$uploaded_files_tbody = $uploaded_files.down('tbody');
-
 		this.scheduleUpdate();
 
-		/*TODO:
-		The following code doesn't work in a multi-users scenario where users upload/delete/validate files at the same time
-		For example, the case this.uploadedFiles.length == uploaded_files.length but with different files is not handle
-		=> recreate the whole table each time? Recheck all items to delete/add ?
-		*/
+		var i, j, len,
+			found = false;
 
-		// Insertion when there was no item in the array in the previous state
-		if(this.uploadedFiles === null /*|| this.uploadedFilesEdition == null*/ ||
-			(
-				$uploaded_files_tbody === null ||
-				$uploaded_files_tbody.childElementCount === 0 && uploaded_files.length > 0
-			)
-		)
+		if(this.uploadedFiles === null || this.uploadedFilesEdition === null)
 		{
-			if(uploaded_files.length > 0)
+			// First time setup
+			this.uploadedFiles = [];
+			this.uploadedFilesEdition = [];
+
+			// Editable
+			this.makeCellEditable("song-list-cell-artist");
+			this.makeCellEditable("song-list-cell-album");
+			this.makeCellEditable("song-list-cell-title");
+			this.makeCellEditable("song-list-cell-year");
+			this.makeCellEditable("song-list-cell-track");
+			this.makeCellEditable("song-list-cell-trackNb");
+			this.makeCellEditable("song-list-cell-genre");
+
+			this.makeCellEditable("song-list-cell-checkbox");
+			this.makeCellEditable("song-list-cell-filename");
+			this.makeCellEditable("song-list-cell-controls");
+
+			this.songList.setSongs(this.uploadedFiles);
+
+			this.refreshTableDisplay();
+		}
+
+		// Find deleted lines
+		var deleteLines = [];
+		for(j = 0, len = this.uploadedFiles.length; j < len; ++j)
+		{
+			found = false;
+			for(i = 0; i < uploaded_files.length; ++i)
 			{
-				// trick used to clone ; TODO: replace with Extend
-				this.uploadedFiles = Object.toJSON(uploaded_files).evalJSON();
-				this.uploadedFilesEdition = Object.toJSON(uploaded_files).evalJSON();
-
-				var tableControllerTpl = new Template(this.template.tableController),
-					tableControllerTplVars = {root: this.rootCSS},
-					controller = tableControllerTpl.evaluate(tableControllerTplVars);
-
-				var html = controller + '<table id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '" class="' + this.rootCSS + '-upload-table song-list">';
-				var tableHeadTpl = new Template(this.template.tableHead),
-					tableHeadTplVars = {root: this.rootCSS},
-					tr = tableHeadTpl.evaluate(tableHeadTplVars);
-
-
-				html += '<thead>' + tr + '</thead><tfoot>' + tr + '</tfoot></table>';
-				$uploaded_files.update(html);
-
-				// Construct <tbody>
-				var tbody = new Element('tbody');
-				for(i = 0; i < uploaded_files.length; ++i)
+				if(uploaded_files[i].filename == this.uploadedFiles[j].filename)
 				{
-					this.addRow(uploaded_files[i], tbody);
-					this.removeFileFromQQUpload(uploaded_files[i].filename);
+					found = true;
+					break;
 				}
-				$uploaded_files.down('table').insert(tbody);
-
-				// Editable
-				this.makeCellEditable(this.rootCSS + "-upload-artist");
-				this.makeCellEditable(this.rootCSS + "-upload-album");
-				this.makeCellEditable(this.rootCSS + "-upload-title");
-				this.makeCellEditable(this.rootCSS + "-upload-year");
-				this.makeCellEditable(this.rootCSS + "-upload-track");
-				this.makeCellEditable(this.rootCSS + "-upload-trackNb");
-				this.makeCellEditable(this.rootCSS + "-upload-genre");
-				// Non-editable, but we have to register them anyway
-				this.makeCellEditable(this.rootCSS + "-upload-selector");
-				this.makeCellEditable(this.rootCSS + "-upload-filename");
-				this.makeCellEditable(this.rootCSS + "-upload-actions");
-
-				this.tableKit = new TableKit(this.rootCSS + '-uploaded-filelist-' + this.tableId,
-				{
-					'sortable': true,
-					'editable': true,
-					'trueResize': true,
-					'keepWidth': true
-				});
-
-
-				// Checkbox controller and global form
-				this.DOM.down('.'+this.rootCSS+'-upload-global-submit').on("click",this.apply_global_modifications.bind(this));
-
-				var elements = this.DOM.select('.'+this.rootCSS+'-upload-selector-checkbox');
-				for(i = 0; i < elements.length; ++i)
-				{
-					elements[i].on("change", this.toggle_checkbox_selection.bind(this, elements[i]));
-				}
-
-				elements = this.DOM.select('.'+this.rootCSS+'-upload-cell-checkbox');
-				for(i = 0; i < elements.length; ++i)
-				{
-					elements[i].on("change", this.resolve_toggle.bind(this));
-				}
-
-				var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
-				//fill genre global list
-				for(i = 0, len = genresOrdered.length; i < len; ++i)
-				{
-					var genre = genresOrdered[i],
-					option = document.createElement('option');
-					option.value = genre.id;
-					option.appendChild(document.createTextNode(genre.name));
-					genres.appendChild(option);
-				}
-				genres.hide();
-				var min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-min-idx'),
-					max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx'),
-					select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
-
-				select_dst.on("change", this.change_global_fill_labels.bind(this));
-
-				min_idx.on("click", this.clean_numeric_field.bind(this, min_idx, ""));
-				max_idx.on("click", this.clean_numeric_field.bind(this, max_idx, ""));
-				min_idx.on("blur", this.clean_numeric_field.bind(this, min_idx, "min"));
-				max_idx.on("blur", this.clean_numeric_field.bind(this, max_idx, "max"));
-
-				min_idx.hide();
-				max_idx.hide();
-				select_dst.hide();
-
-				this.DOM.down('.'+this.rootCSS+'-upload-global-action-select').on("change", this.change_global_action.bind(this));
 			}
-			else // uploaded_files.length == 0
+			if(!found)
 			{
-				// The array is empty and nothing to insert
-				$uploaded_files.update("No file uploaded yet.");
+				deleteLines.push(this.uploadedFiles[j].filename);
 			}
 		}
-		else if(this.uploadedFiles.length > uploaded_files.length)
+
+		// Deletes all deleted lines
+		for(i = 0; i < deleteLines.length; ++i)
 		{
-			// Find files to delete
-			var deleteLines = [];
-			for(j = 0, len = this.uploadedFiles.length; j < len; ++j)
+			this.removeSongFromList(deleteLines[i]);
+		}
+
+		// Find files to add
+		var newLines = [];
+		for(i = 0, len = uploaded_files.length; i < len; ++i)
+		{
+			found = false;
+			for(j = 0; j < this.uploadedFiles.length; ++j)
 			{
-				found = false;
-				for(i = 0; i < uploaded_files.length; ++i)
+				if(uploaded_files[i].filename == this.uploadedFiles[j].filename)
 				{
-					if(uploaded_files[i].filename == this.uploadedFiles[j].filename)
-					{
-						found = true;
-						break;
-					}
-				}
-				if(!found)
-				{
-					deleteLines.push(this.uploadedFiles[j].filename);
+					found = true;
+					break;
 				}
 			}
-
-			// Deletes unneeded references
-			for(i = 0; i < deleteLines.length; ++i)
+			if(!found)
 			{
-				// Delete unmodified reference entry
-				for(j = 0, len = this.uploadedFiles.length; j < len; ++j)
-				{
-					if(this.uploadedFiles[i].filename == deleteLines[i].filename)
-					{
-						this.uploadedFiles.splice(i, 1);
-						this.uploadedFilesEdition.splice(i, 1); // at same index
-						break;
-					}
-				}
-
-				// Remove the html Element
-				$uploaded_files.down('[id="' + this.rootCSS + '-upload-line-' + escape(deleteLines[i]) + '"]').remove();
+				newLines.push(uploaded_files[i]);
 			}
 		}
-		else if(this.uploadedFiles.length < uploaded_files.length)
+
+		// Add files to references
+		for(i = 0, len = newLines.length; i < len; ++i)
 		{
-			// Find files to add
-			var newLines = [];
-			for(i = 0, len = uploaded_files.length; i < len; ++i)
-			{
-				found = false;
-				for(j = 0; j < this.uploadedFiles.length; ++j)
-				{
-					if(uploaded_files[i].filename == this.uploadedFiles[j].filename)
-					{
-						found = true;
-						break;
-					}
-				}
-				if(!found)
-				{
-					newLines.push(uploaded_files[i]);
-				}
-			}
+			//TODO: clone with Extend(true, {}, object);
+			this.uploadedFiles.push(Object.toJSON(newLines[i]).evalJSON());
+			this.uploadedFilesEdition.push(Object.toJSON(newLines[i]).evalJSON());
 
-			// Add files to references
-			for(i = 0, len = newLines.length; i < len; ++i)
-			{
-				//TODO: clone with Extend(true, {}, object);
-				this.uploadedFiles.push(Object.toJSON(newLines[i]).evalJSON());
-				this.uploadedFilesEdition.push(Object.toJSON(newLines[i]).evalJSON());
-				var tbody2 = $uploaded_files.down('[id="' + this.rootCSS + '-uploaded-filelist-' + this.tableId + '"]').down('tbody');
-				this.addRow(newLines[i], tbody2);
+			this.songList.addRow(newLines[i]);
 
-				this.removeFileFromQQUpload(newLines[i].filename);
-			}
-
-			if(this.uploadedFiles.length !== 0 && newLines.length > 0)
-			{
-				this.reinitTable();
-			}
+			this.removeFileFromQQUpload(newLines[i].filename);
 		}
+
+		// We have to reinit tablekit when adding new songs
+		if(newLines.length > 0)
+		{
+			this.refreshTableDisplay();
+		}
+	},
+
+	refreshTableDisplay: function()
+	{
+		this.songList.generateTableId();
+		this.tableKit = new TableKit(this.songList.getTableId(),
+			{
+				'sortable': true,
+				'editable': true,
+				'trueResize': true,
+				'keepWidth': true
+			});
 	},
 
 	makeCellEditable: function(name)
@@ -925,6 +711,58 @@ this.UploadTab = Class.create(Tab,
 				Notifications.Display(4, msg);
 			}
 		});
+
+		var headerActions = [];
+		var songActions = [
+			{ name: 'update', icon: 'done', callback: this.updateUploadedSong.bind(this), hidden: true },
+			{ name: 'validate', icon: 'file_upload', callback: this.validateUploadedSong.bind(this) },
+			{ name: 'delete', icon: 'delete_forever', callback: this.deleteUploadedSong.bind(this) }
+		];
+
+		var columns = [ 'checkbox', 'filename', 'artist', 'album', 'title', 'year', 'track', 'trackNb', 'genre', 'controls' ];
+		this.songList = new Songlist(this.rootCSS, this.jukebox, this.template, this.DOM.down('.' + this.rootCSS + "-uploaded-files"),
+							columns, headerActions, songActions, // Content
+							false, null, // Drag and drop
+							false, // Disable search links
+							null);
+
+		// Setup batch controls
+		var tableControllerTpl = new Template(this.template.tableController),
+				tableControllerTplVars = {root: this.rootCSS},
+				controller = tableControllerTpl.evaluate(tableControllerTplVars);
+
+		this.DOM.down('.'+this.rootCSS+'-upload-batch-controls').update(controller);
+
+		this.DOM.down('.'+this.rootCSS+'-upload-global-submit').on("click",this.apply_global_modifications.bind(this));
+
+		var genres = this.DOM.down('.'+this.rootCSS+'-upload-global-action-genre-select');
+		//fill genre global list
+		for(var i = 0, len = genresOrdered.length; i < len; ++i)
+		{
+			var genre = genresOrdered[i],
+			option = document.createElement('option');
+			option.value = genre.id;
+			option.appendChild(document.createTextNode(genre.name));
+			genres.appendChild(option);
+		}
+		genres.hide();
+		var min_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-min-idx'),
+			max_idx = this.DOM.down('.'+this.rootCSS+'-upload-global-max-idx'),
+			select_dst = this.DOM.down('.'+this.rootCSS+'-upload-global-action-fill-dst');
+
+		select_dst.on("change", this.change_global_fill_labels.bind(this));
+
+		min_idx.on("click", this.clean_numeric_field.bind(this, min_idx, ""));
+		max_idx.on("click", this.clean_numeric_field.bind(this, max_idx, ""));
+		min_idx.on("blur", this.clean_numeric_field.bind(this, min_idx, "min"));
+		max_idx.on("blur", this.clean_numeric_field.bind(this, max_idx, "max"));
+
+		min_idx.hide();
+		max_idx.hide();
+		select_dst.hide();
+
+		this.DOM.down('.'+this.rootCSS+'-upload-global-action-select').on("change", this.change_global_action.bind(this));
+		// batch controls setup end
 
 		// Send a json query to obtain the list of uploaded files
 		this.getUploadedFiles();
