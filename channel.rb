@@ -1,15 +1,19 @@
 #!/usr/bin/env ruby
 
-require 'rev'
 require 'time'
+require 'eventmachine'
 
 require 'display.rb'
 require 'playlist.rb'
 
-class ChannelsCron < Rev::TimerWatcher
+class ChannelsCron
   def initialize()
-    super(0.2, true);
     @channels = [];
+    EM::add_periodic_timer(0.2) do
+      @channels.each { |c|
+        c.cron();
+      }
+    end
   end
 
   def register(ch)
@@ -21,17 +25,7 @@ class ChannelsCron < Rev::TimerWatcher
     @channels.delete(ch);
     log("Cron unregister channel #{ch.name()} [#{@channels.size()}]");
   end
-
-  private
-  def on_timer
-    @channels.each { |c|
-      c.cron();
-    }
-  end
 end
-
-$channelsCron = ChannelsCron.new();
-$channelsCron.attach(Rev::Loop.default)
 
 class Channel
   attr_reader   :name

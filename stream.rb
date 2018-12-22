@@ -13,23 +13,23 @@ class Stream < HttpNode
 
     def write(data, low = false)
       if(@icyRemaining == 0 || low)
-        super(data);
+        send_data(data);
         return;
       end
       while(data.bytesize() != 0)
         if(@icyRemaining > data.bytesize())
-          super(data);
+          send_data(data);
           @icyRemaining -= data.bytesize();
           data     = "";
         else
-          super(data[0..@icyRemaining-1]);
+          send_data(data[0..@icyRemaining-1]);
           data     = data[@icyRemaining..-1];
           generateIcyMetaData();
           @icyRemaining = @icyInterval;
         end
       end
 
-      super(data)
+      send_data(data)
     end
 
     def stream_init(icy_meta, ch, proto)

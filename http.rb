@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 require 'date'
-require 'rev/ssl'
 require 'uri'
+require 'eventmachine'
 
 # HttpServer create new HttpSession for each HTTP connection
 # Http server have HttpRootNode. this object represent the hierarchie
@@ -212,19 +212,7 @@ class HttpResponse
   end
 end
 
-# Dirty fix for catch exception
-module SocketDirtyFix
-  def on_readable
-    begin
-      super();
-    rescue Errno::EAGAIN
-    rescue Errno::ECONNRESET, EOFError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH
-      close
-    end
-  end
-end
-
-class HttpSession < Rev::SSLSocket
+class HttpSession < EM::Connection
   attr_reader   :user;
   attr_accessor :udata;
   attr_reader   :ssl;
@@ -232,29 +220,19 @@ class HttpSession < Rev::SSLSocket
   attr_accessor :auth;
   @@logfd = nil;
 
-  def initialize(socket, root, options = {})
+  def initialize(root, options)
     @root        = root;
     @sck_data    = "";
     @length      = nil;
     @ssl         = options[:ssl.to_s] || false;
     @certificate = options[:certificate.to_s];
     @key         = options[:key.to_s];
-    # fix for quick connect disconnect
-    begin
-      super(socket);
-    rescue
-      def attach(loop)
-      end
-    end
     sync         = true;
   end
 
   def remote_address()
-    @_io.remote_address();
-  end
-
-  def local_address()
-    @_io.local_address();
+    port, ip = Socket.unpack_sockaddr_in(get_peername)
+    ip
   end
 
   private
@@ -266,29 +244,16 @@ class HttpSession < Rev::SSLSocket
     super(str, false, @@logfd);
   end
 
-  def ssl_context
-    @_ssl_context = OpenSSL::SSL::SSLContext.new();
-    @_ssl_context.set_params;
-    @_ssl_context.cert = OpenSSL::X509::Certificate.new(File.open(@certificate)) if(@certificate);
-    @_ssl_context.key  = OpenSSL::PKey::RSA.new(File.open(@key)) if(@key);
-    @_ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE;
-    @_ssl_context;
-  end
-
-  def on_connect
+  def post_init
+    start_tls(:private_key_file => @key, :cert_chain_file => @certificate, :verify_peer => false) if(@ssl)
     log("connected");
-    if(@ssl)
-      extend Rev::SSL
-      @_connecting ? ssl_client_start : ssl_server_start
-    end
-    extend SocketDirtyFix;
   end
 
-  def on_close()
+  def close_connection()
     log("disconnected");
   end
 
-  def on_read(data)
+  def receive_data(data)
     #debug("HTTP data\n" + data);
     @sck_data << data;
     while(@sck_data.bytesize != 0)
@@ -324,7 +289,7 @@ class HttpSession < Rev::SSLSocket
       if(@req.uri.path == nil)
         # Authentification error
         rsp = HttpResponse.generate500(@req)
-        write(rsp.to_s);
+        send_data(rsp.to_s);
         @length = nil;
         next
       end
@@ -363,7 +328,7 @@ class HttpSession < Rev::SSLSocket
       if(m_auth != nil && @auth == nil)
         # Authentification error
         rsp ||= HttpResponse.generate401(@req)
-        write(rsp.to_s);
+        send_data(rsp.to_s);
         @length = nil;
         next
       end
@@ -378,7 +343,7 @@ class HttpSession < Rev::SSLSocket
       if(m_request == nil)
         # No ressource found
         rsp = HttpResponse.generate404(@req)
-        write(rsp.to_s);
+        send_data(rsp.to_s);
         next;
       end
 
@@ -395,7 +360,6 @@ class HttpSession < Rev::SSLSocket
       @length = nil;
     end
   end
-  private
 end
 
 class HttpNode
@@ -515,11 +479,11 @@ class HttpNodeMapping < HttpNode
       raise "try to access files outside jukebox root path" if( not resolved_path.start_with?(@dir) )
     rescue Errno::ENOENT
       rsp = HttpResponse.generate404(req);
-      s.write(rsp.to_s);
+      s.send_data(rsp.to_s);
       return;
     rescue  => e
       rsp = HttpResponse.generate403(req);
-      s.write(rsp.to_s);
+      s.send_data(rsp.to_s);
       return;
     end
 
@@ -532,7 +496,7 @@ class HttpNodeMapping < HttpNode
     if(modifiedSince && modifiedSince.to_i >= st.mtime.to_i)
       rsp  = HttpResponse.new(req.proto, 304, "Not Modifed");
       rsp.setData("", contentType);
-      s.write(rsp.to_s);
+      s.send_data(rsp.to_s);
       return
     end
 
@@ -544,7 +508,7 @@ class HttpNodeMapping < HttpNode
     #debug(path);
     data = File.read(path)
     rsp.setData(data, contentType);
-    s.write(rsp.to_s);
+    s.send_data(rsp.to_s);
   end
 end
 
@@ -601,7 +565,7 @@ class HttpRootNode
   end
 end
 
-class HttpServer < Rev::TCPServer
+class HttpServer
   attr_reader :root
 
   @@logfd = nil;
@@ -613,13 +577,13 @@ class HttpServer < Rev::TCPServer
   #  * certificate (default nil, only use with ssl)
   def initialize(root = nil, options = {})
     port = options[:port.to_s] || 8080;
-    host = options[:host.to_s] || nil;
+    host = options[:host.to_s] || "0.0.0.0";
 
     @root   = root
     @root ||= HttpRootNode.new();
 
     log("starting http server")
-    super(host, port, HttpSession, @root, options);
+    EM.start_server(host, port, HttpSession, @root, options)
   end
 
   private

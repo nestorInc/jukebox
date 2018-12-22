@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require 'json'
-require 'rev'
 require 'http.rb'
 require 'display.rb'
 require 'uri'
@@ -38,7 +37,7 @@ class UploadManager < HttpNode
                              "Content-Type" => "application/json");
       res = '{ "error": "HttpRequest too big. #{req.to_s.length}  > #{@max_request_size_in_bytes}" , success: false}';
       rep.setData(res);
-      s.write(rep.to_s);
+      s.send_data(rep.to_s);
       return;
     end
 
@@ -51,7 +50,7 @@ class UploadManager < HttpNode
                              "Content-Type" => "application/json");
       res = '{ error: "Unauthorized file extension \'' + URI.unescape(File.extname(req.options['X-File-Name'])) + '\'. Authorized extensions are ' + allowed_extensions_str +'", success: false}';
       rep.setData(res);
-      s.write(rep.to_s);
+      s.send_data(rep.to_s);
       return;
     end
 
@@ -61,7 +60,7 @@ class UploadManager < HttpNode
                              "Content-Type" => "application/json");
       res = '{ error: "File too big. ' + req.options['Content-Length'] + ' > #{@max_file_size_in_bytes}" , success: false}';
       rep.setData(res);
-      s.write(rep.to_s);
+      s.send_data(rep.to_s);
       return;
     end
 
@@ -72,7 +71,7 @@ class UploadManager < HttpNode
                              "Content-Type" => "application/json");
       res = '{ error: "' + URI.unescape(req.options['X-File-Name']) + ' already exists. upload canceled.", success: false}';
       rep.setData(res);
-      s.write(rep.to_s);
+      s.send_data(rep.to_s);
       return;
     end
 
@@ -91,7 +90,7 @@ class UploadManager < HttpNode
       res = '{ error: "Could not save uploaded file.", success: false}';
     ensure
       rep.setData(res);
-      s.write(rep.to_s);
+      s.send_data(rep.to_s);
     end
   end
 

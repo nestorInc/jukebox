@@ -42,6 +42,6 @@ class DebugPage < HttpNode
     page << "</body></head>";
     rep.setData(page);
 
-    s.write(rep.to_s);  
+    s.send_data(rep.to_s);
   end
 end

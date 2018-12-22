@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 $:.unshift File.dirname($0)
 
-require 'rev'
 require 'socket'
 require 'cgi'
 require 'yaml.rb'
@@ -69,18 +68,6 @@ db = DBlite.new("jukebox.db", [library, users, sessions]);
 channelList = {};
 messaging = Messaging.new()
 
-# Encode
-Thread.new() do
-  e = Encode.new(library, messaging, config[:encode.to_s]);
-  e.attach(Rev::Loop.default);
-  begin
-    Rev::Loop.default.run(); 
-  rescue => e
-    error(([ e.to_s ] + e.backtrace).join("\n"), true, $error_file);
-    retry;
-  end
-end
-
 stream = Stream.new(channelList, library);
 
 # Create HTTP server
@@ -103,7 +90,7 @@ def check_login(user, pass, s, req, users, sessions, stream)
     return nil
   end
 
-  ip_address = s.remote_address.ip_address;
+  ip_address = s.remote_address;
   user_agent = req.options["User-Agent"] || ""
 
   sid = sessions.create(uid, ip_address, user_agent);
@@ -142,7 +129,7 @@ def check_token(s, req, users, sessions, stream)
   sid = users.get_login_token_session(token);
   if not sid
     #TODO check if user has right to create session
-    ip_address = s.remote_address.ip_address;
+    ip_address = s.remote_address;
     user_agent = req.options["User-Agent"] || ""
 
     sid = sessions.create(uid, ip_address, user_agent);
@@ -158,7 +145,7 @@ def check_token(s, req, users, sessions, stream)
 end
 
 def check_cookie(s, req, users, sessions, stream)
-  ip_address = s.remote_address.ip_address;
+  ip_address = s.remote_address;
   user_agent = req.options["User-Agent"] || ""
 
   cookies = req.options["Cookie"]
@@ -247,16 +234,7 @@ root = HttpRootNode.new({ "/api/json"  => json,
                           "/src"       => main_src,
                           "/api/token.m3u" => token,
                           "/stream"    => stream});
-#                          "/debug"    => debug,
 
-if(config[:server.to_s] == nil)
-  error("Config file error: no server section", true, $error_file);
-  exit(1);
-end
-config[:server.to_s].each { |server_config|
-  h = HttpServer.new(root, server_config);
-  h.attach(Rev::Loop.default)
-}
 
 class BugInfo
   attr_accessor :issue
@@ -267,9 +245,19 @@ class BugInfo
   end
 end
 
-# Main loop
 begin
-  Rev::Loop.default.run();
+  # Main loop
+  EM.run do
+    $channelsCron = ChannelsCron.new();
+    e = Encode.new(library, messaging, config[:encode.to_s]);
+    if(config[:server.to_s] == nil)
+      error("Config file error: no server section", true, $error_file);
+      exit(1);
+    end
+    config[:server.to_s].each do |server_config|
+      h = HttpServer.new(root, server_config);
+    end
+  end
 rescue => e
   File.delete(pid_filename);
 

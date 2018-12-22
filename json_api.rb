@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require 'json'
-require 'rev'
 require 'http.rb'
 require 'display.rb'
 require 'upload.rb'
@@ -36,7 +35,7 @@ class JsonManager < HttpNode
       res = parse(req.data, ch, s.udata[:user], s.udata[:session]);
     end
     rep.setData(res, "application/json");
-    s.write(rep.to_s);
+    s.send_data(rep.to_s);
   end
 
   def JsonManager.add_message(resp, lvl, code, msg)

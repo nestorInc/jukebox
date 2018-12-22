@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'rev'
 require 'thread'
 require 'date'
 require 'mp3.rb'
@@ -81,7 +80,7 @@ DEFAULT_BITRATE   = 192;
     end
   end
 
-class Encode < Rev::TimerWatcher
+class Encode
   def initialize(library, messaging, conf)
     @library              = library;
     @cfile                = [];
@@ -104,6 +103,10 @@ class Encode < Rev::TimerWatcher
 
     @messaging    = messaging;
 
+    @messaging.create(:file_scan, 1) do |*args|
+      scan()
+    end
+
     @messaging.create(:encode, @max_job) do |*args|
       job(*args)
     end
@@ -117,7 +120,9 @@ class Encode < Rev::TimerWatcher
       end
     end
 
-    super(@delay_scan, true);
+    EM::add_periodic_timer(@delay_scan) do
+      @messaging.send(:file_scan)
+    end
   end
 
   def files()
@@ -131,10 +136,6 @@ class Encode < Rev::TimerWatcher
   end
 
   private
-
-  def on_timer
-    scan();
-  end
 
   def scan()
     files  = Dir.glob(@originDir + "/**/*.mp3");
