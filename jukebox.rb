@@ -39,13 +39,13 @@ rescue => e
 end
 
 begin
-  pid_filename = config[:pid.to_s] || "jukebox.pid";
-  old_pid = File.read(pid_filename);
+  if(config[:pid.to_s])
+    old_pid = File.read(config[:pid.to_s]);
+  end
 rescue => e
-
 end
 
-if old_pid
+if old_pid && config[:pid.to_s]
   begin
     Process.getpgid( old_pid.to_i )
     error("Jukebox already started with pid #{old_pid}");
@@ -56,7 +56,7 @@ if old_pid
 end
 
 begin
-  File.open(pid_filename, 'w') { |file| file.write(Process.pid) }
+  File.open(pid_filename, 'w') { |file| file.write(Process.pid) } if(config[:pid.to_s])
 rescue => e
   error("Could not save pid #{pid_filename}");
 end
