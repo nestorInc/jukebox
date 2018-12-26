@@ -64,7 +64,7 @@ end
 library = Library.new();
 users = Users.new()
 sessions = Sessions.new()
-db = DBlite.new("jukebox.db", [library, users, sessions]);
+db = DBlite.new(config[:encode.to_s] + "/jukebox.db", [library, users, sessions]);
 channelList = {};
 messaging = Messaging.new()
 
